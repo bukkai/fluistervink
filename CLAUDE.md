@@ -1,0 +1,101 @@
+# Thijsse — spraakgestuurde vogelwaarnemingen
+
+Thijsse is een app waarmee je tijdens het vogelen waarnemingen inspreekt ("Thijsse, zes overvliegende houtduiven", "roepje vink"). De app legt tijd en locatie vast, zet de uitspraak om in een gestructureerde waarneming, en maakt export naar waarneming.nl mogelijk.
+
+Vernoemd naar Jac. P. Thijsse. "Thijsse" is ook het (toekomstige) wake word.
+
+## Werkwijze in het veld
+
+1. App openen → sessie (= één wandeling) start. Een duidelijke knop "stop wandeling" beëindigt de sessie.
+2. Iets gezien of gehoord → knop indrukken (MVP) of later het wake word "Thijsse" zeggen, en de waarneming inspreken.
+3. Elke uitspraak wordt verwerkt en verschijnt in het overzicht. Bevestiging via trillen, zodat de gebruiker niet naar het scherm hoeft te kijken.
+4. Correcties kunnen in het veld met de stem: "nee, keep in plaats van vink", "nog drie erbij", "die laatste weg".
+5. Thuis: review van soort, aantal, gedrag en locatie, nalopen van onzekere waarnemingen, audio terugluisteren.
+6. Inzenden naar waarneming.nl (MVP: CSV-export; later via de API).
+
+## Vastgelegde ontwerpkeuzes
+
+- **Doelgroep:** persoonlijk gebruik, recreatief vogelen op wandelingen. Geen professionele inventarisatieprotocollen.
+- **Platform:** Android. Start als PWA (Chrome op Android); later in Capacitor verpakken met een native Kotlin-plugin voor wake word en achtergrondaudio. Houd de webcode daarom platformonafhankelijk.
+- **Spraak naar tekst:** Whisper, met een soortenlijst in de prompt om herkenning van soortnamen te verbeteren. Vergelijken met de Web Speech API op basis van de testset (zie hieronder).
+- **Interpretatie:** een LLM (klein en snel model, bv. Claude Haiku) met tool use. Het model geeft acties terug, de app voert ze uit:
+  - `add_observation`, `update_observation`, `delete_observation`, `undo`
+  - Context per aanroep: de laatste waarnemingen van de huidige sessie, zodat verwijzingen als "die", "de vorige" en "nog drie" werken.
+  - Soorten alleen via ID's uit een vaste soortenlijst (Nederlandse vogels, in de systeemprompt, met prompt caching). De app valideert elk soort-ID; het model kan geen soorten verzinnen.
+  - Bij twijfel zet het model een `uncertain`-vlag in plaats van terug te vragen. Uitspraken zonder waarneming worden genegeerd.
+- **Tijd en locatie:** vastleggen op het moment dat de opname start, inclusief GPS-nauwkeurigheid.
+- **Local-first:** elke uitspraak (audio, tijd, GPS) wordt eerst lokaal opgeslagen (IndexedDB) en daarna verwerkt, één voor één, op volgorde. Dit is in feite een wachtrij die normaal direct leeg is; echte offline-ondersteuning kan later met weinig moeite worden toegevoegd.
+- **Feedback:** trilpatronen. Eén korte tril = opgeslagen; twee = niet begrepen; een afwijkend patroon = opgeslagen maar onzeker.
+- **API-sleutels:** nooit in de client. Een kleine proxy (Cloudflare Worker) praat met de STT- en LLM-API's.
+- **Hosting:** Cloudflare Pages (HTTPS is vereist voor microfoon en GPS), automatisch deployen vanuit GitHub.
+
+## MVP-scope
+
+Doel: valideren dat herkenning en interpretatie in het veld goed genoeg werken.
+
+**Wel in de MVP:**
+
+- Sessie starten en stoppen
+- Push-to-talk-knop in de interface (scherm aan)
+- Opname → Whisper → LLM met tools → waarneming(en)
+- Tijd en GPS bij start van de opname
+- Local-first opslag en sequentiële verwerking in IndexedDB
+- Trilfeedback
+- Overzichtslijst met eenvoudig bewerken (soort, aantal, gedrag, verwijderen)
+- CSV-export in het importformaat van waarneming.nl
+- Proxy voor API-sleutels
+- Testset: van elke uitspraak de audio, het transcript, de LLM-uitvoer en de uiteindelijke (gecorrigeerde) waarneming bewaren, en kunnen exporteren. Bedoeld om STT-opties, prompts en modellen objectief te vergelijken.
+
+**Bewust níet in de MVP (niet toevoegen zonder overleg):**
+
+- Wake word en achtergrondgebruik met het scherm uit
+- Capacitor of native code
+- GPS-track en kaartweergave
+- Echte offline-ondersteuning (verwerken zodra er verbinding is, sync-status)
+- Uploaden via de API van waarneming.nl
+- Automatisch pauzeren als een andere app (zoals Merlin) de microfoon gebruikt
+- Accounts, delen of multi-user
+
+## Datamodel (eerste schets)
+
+- **Session:** id, start- en eindtijd, status
+- **Utterance:** id, sessionId, tijdstip, lat/lon/nauwkeurigheid, audio, transcript, LLM-uitvoer, verwerkingsstatus
+- **Observation:** id, sessionId, utteranceId (bron), soort-ID, aantal, activiteit/gedrag (bv. overvliegend, ter plaatse, roepend, zingend), methode (gezien/gehoord), optioneel geslacht/leeftijd/kleed, tijdstip, lat/lon/nauwkeurigheid, `uncertain`, status (concept / gereviewd / geëxporteerd)
+
+Stem de velden en codes af op het importformaat van waarneming.nl zodra dat bekend is.
+
+## Openstaande punten
+
+- **Importformaat van waarneming.nl (CSV):** uitzoeken welke velden, codes voor activiteit/gedrag en soort-ID's verwacht worden. Dit bepaalt het datamodel, dus vroeg uitzoeken.
+- **Bron voor de soortenlijst** (bij voorkeur met waarneming.nl-soort-ID's en Nederlandse namen, inclusief veelgebruikte alternatieve namen).
+- **STT-keuze:** Whisper tegenover Web Speech API, beslissen op basis van de testset.
+- **Mapping van gesproken termen naar velden** ("roepje" → gehoord/roepend, "overvliegend" → activiteit overvliegend, enz.).
+
+## Voorgestelde bouwvolgorde
+
+1. Projectopzet: PWA-skelet, IndexedDB, sessies, deploy naar Cloudflare Pages.
+2. Proxy (Cloudflare Worker) voor de API-sleutels.
+3. LLM-interpretatie met tools, eerst getest met tekstinvoer (zonder spraak).
+4. Opname en Whisper-koppeling, met tijd en GPS bij start van de opname.
+5. Trilfeedback en overzichtslijst met bewerken.
+6. Opslaan en exporteren van de testset.
+7. CSV-export voor waarneming.nl.
+
+## Wanneer is de MVP geslaagd?
+
+Na drie à vier echte wandelingen is het grootste deel van de waarnemingen zonder correctie correct, en werken spraakcorrecties ("nee, keep") betrouwbaar. Pas dan investeren in de native laag (Capacitor, wake word "Thijsse", achtergrondgebruik).
+
+## Latere roadmap
+
+- Capacitor met een native Kotlin-plugin: foreground service met microfoon, wake word "Thijsse" (bv. Porcupine of openWakeWord)
+- Automatisch pauzeren en hervatten als een andere app de microfoon gebruikt (AudioRecordingCallback)
+- GPS-track tijdens de sessie en een kaart in de review om locaties te verslepen
+- Offline wachtrij met sync-status
+- Upload via de API van waarneming.nl (OAuth; client-ID aanvragen bij Observation.org)
+- Eventueel: BirdNET on-device voor soortsuggesties
+
+## Werkafspraken
+
+- Werk in kleine stappen: één feature per branch en pull request, met een duidelijke beschrijving.
+- De eigenaar programmeert zelf weinig maar heeft een front-end-achtergrond (JavaScript): leg keuzes kort uit in de PR-beschrijving.
+- Houd dit bestand actueel wanneer ontwerpkeuzes veranderen.
