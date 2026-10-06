@@ -1,0 +1,2403 @@
+[
+ {
+  "id": 2265,
+  "name": "Eend, Gans of Zwaan onbekend",
+  "scientific": "Anatidae indet.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 240802,
+  "name": "Eend onbekend",
+  "scientific": "Anatinae indet.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 136,
+  "name": "Knobbelzwaan",
+  "scientific": "Cygnus olor",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 212,
+  "name": "Zwarte Zwaan",
+  "scientific": "Cygnus atratus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 240786,
+  "name": "Wilde of Kleine Zwaan",
+  "scientific": "Cygnus cygnus / columbianus",
+  "type": "M",
+  "rarity": 2
+ },
+ {
+  "id": 243797,
+  "name": "Kleine Zwaan",
+  "scientific": "Cygnus columbianus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 351,
+  "name": "Wilde Zwaan",
+  "scientific": "Cygnus cygnus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 172,
+  "name": "Rotgans",
+  "scientific": "Branta bernicla",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 313,
+  "name": "Roodhalsgans",
+  "scientific": "Branta ruficollis",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 235,
+  "name": "Canadese Gans onbekend",
+  "scientific": "Branta canadensis / hutchinsii",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 110,
+  "name": "Grote Canadese Gans",
+  "scientific": "Branta canadensis",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 79,
+  "name": "Brandgans",
+  "scientific": "Branta leucopsis",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 758,
+  "name": "Kleine Canadese Gans",
+  "scientific": "Branta hutchinsii",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 124,
+  "name": "Indische Gans",
+  "scientific": "Anser indicus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 327,
+  "name": "Sneeuwgans",
+  "scientific": "Anser caerulescens",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 104,
+  "name": "Grauwe Gans",
+  "scientific": "Anser anser",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 244,
+  "name": "Dwerggans",
+  "scientific": "Anser erythropus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 139,
+  "name": "Kolgans",
+  "scientific": "Anser albifrons",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 312,
+  "name": "Taiga- of Toendrarietgans",
+  "scientific": "Anser fabalis / serrirostris",
+  "type": "M",
+  "rarity": 2
+ },
+ {
+  "id": 341,
+  "name": "Toendrarietgans",
+  "scientific": "Anser serrirostris",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 1384,
+  "name": "Kleine Rietgans",
+  "scientific": "Anser brachyrhynchus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 147,
+  "name": "Mandarijneend",
+  "scientific": "Aix galericulata",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 797,
+  "name": "Carolina-eend",
+  "scientific": "Aix sponsa",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 152,
+  "name": "Nijlgans",
+  "scientific": "Alopochen aegyptiaca",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 61,
+  "name": "Bergeend",
+  "scientific": "Tadorna tadorna",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 236,
+  "name": "Casarca",
+  "scientific": "Tadorna ferruginea",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 264,
+  "name": "IJseend",
+  "scientific": "Clangula hyemalis",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 11,
+  "name": "Eider",
+  "scientific": "Somateria mollissima",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 357,
+  "name": "Zwarte Zee-eend",
+  "scientific": "Melanitta nigra",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 258,
+  "name": "Grote Zee-eend",
+  "scientific": "Melanitta fusca",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 80,
+  "name": "Brilduiker",
+  "scientific": "Bucephala clangula",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 153,
+  "name": "Nonnetje",
+  "scientific": "Mergellus albellus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 292,
+  "name": "Middelste Zaagbek",
+  "scientific": "Mergus serrator",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 114,
+  "name": "Grote Zaagbek",
+  "scientific": "Mergus merganser",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 10,
+  "name": "Krooneend",
+  "scientific": "Netta rufina",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 772,
+  "name": "Witoogeend",
+  "scientific": "Aythya nyroca",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 184,
+  "name": "Tafeleend",
+  "scientific": "Aythya ferina",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 144,
+  "name": "Kuifeend",
+  "scientific": "Aythya fuligula",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 187,
+  "name": "Topper",
+  "scientific": "Aythya marila",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 355,
+  "name": "Zomertaling",
+  "scientific": "Spatula querquedula",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 175,
+  "name": "Slobeend",
+  "scientific": "Spatula clypeata",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 142,
+  "name": "Krakeend",
+  "scientific": "Mareca strepera",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 176,
+  "name": "Smient",
+  "scientific": "Mareca penelope",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 198,
+  "name": "Wilde Eend",
+  "scientific": "Anas platyrhynchos",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 160,
+  "name": "Pijlstaart",
+  "scientific": "Anas acuta",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 243854,
+  "name": "Wintertaling",
+  "scientific": "Anas crecca",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 16,
+  "name": "Patrijs",
+  "scientific": "Perdix perdix",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 88,
+  "name": "Fazant",
+  "scientific": "Phasianus colchicus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 287,
+  "name": "Kwartel",
+  "scientific": "Coturnix coturnix",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 1401,
+  "name": "Flamingo",
+  "scientific": "Phoenicopterus roseus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 2,
+  "name": "Dodaars",
+  "scientific": "Tachybaptus ruficollis",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 286,
+  "name": "Kuifduiker",
+  "scientific": "Podiceps auritus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 367,
+  "name": "Roodhalsfuut",
+  "scientific": "Podiceps grisegena",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 91,
+  "name": "Fuut",
+  "scientific": "Podiceps cristatus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 3,
+  "name": "Geoorde Fuut",
+  "scientific": "Podiceps nigricollis",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 137,
+  "name": "Koekoek",
+  "scientific": "Cuculus canorus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 72499,
+  "name": "Steenduif",
+  "scientific": "Columbina talpacoti",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 342,
+  "name": "Zomertortel",
+  "scientific": "Streptopelia turtur",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 191,
+  "name": "Turkse Tortel",
+  "scientific": "Streptopelia decaocto",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 120,
+  "name": "Houtduif",
+  "scientific": "Columba palumbus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 119,
+  "name": "Holenduif",
+  "scientific": "Columba oenas",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 19,
+  "name": "Kraanvogel",
+  "scientific": "Grus grus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 348,
+  "name": "Waterral",
+  "scientific": "Rallus aquaticus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 18,
+  "name": "Kwartelkoning",
+  "scientific": "Crex crex",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 17,
+  "name": "Porseleinhoen",
+  "scientific": "Porzana porzana",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 195,
+  "name": "Waterhoen",
+  "scientific": "Gallinula chloropus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 149,
+  "name": "Meerkoet",
+  "scientific": "Fulica atra",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 20,
+  "name": "Kluut",
+  "scientific": "Recurvirostra avosetta",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 332,
+  "name": "Steltkluut",
+  "scientific": "Himantopus himantopus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 173,
+  "name": "Scholekster",
+  "scientific": "Haematopus ostralegus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 240775,
+  "name": "Zilver- of Goudplevier onbekend",
+  "scientific": "Pluvialis spec.",
+  "type": "M",
+  "rarity": 2
+ },
+ {
+  "id": 206,
+  "name": "Zilverplevier",
+  "scientific": "Pluvialis squatarola",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 100,
+  "name": "Goudplevier",
+  "scientific": "Pluvialis apricaria",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 294,
+  "name": "Morinelplevier",
+  "scientific": "Eudromias morinellus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 22,
+  "name": "Bontbekplevier",
+  "scientific": "Charadrius hiaticula",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 761,
+  "name": "Kleine Plevier",
+  "scientific": "Thinornis dubius",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 129,
+  "name": "Kievit",
+  "scientific": "Vanellus vanellus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 23,
+  "name": "Strandplevier",
+  "scientific": "Anarhynchus alexandrinus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 240774,
+  "name": "Wulp onbekend",
+  "scientific": "Numenius spec.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 163,
+  "name": "Regenwulp",
+  "scientific": "Numenius phaeopus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 203,
+  "name": "Wulp",
+  "scientific": "Numenius arquata",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 240773,
+  "name": "Grutto onbekend",
+  "scientific": "Limosa spec.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 170,
+  "name": "Rosse Grutto",
+  "scientific": "Limosa lapponica",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 26,
+  "name": "Grutto",
+  "scientific": "Limosa limosa",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 231,
+  "name": "Bokje",
+  "scientific": "Lymnocryptes minimus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 121,
+  "name": "Houtsnip",
+  "scientific": "Scolopax rusticola",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 240777,
+  "name": "Snip (Gallinago) onbekend",
+  "scientific": "Gallinago spec.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 25,
+  "name": "Watersnip",
+  "scientific": "Gallinago gallinago",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 154,
+  "name": "Oeverloper",
+  "scientific": "Actitis hypoleucos",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 240795,
+  "name": "Franjepoot onbekend",
+  "scientific": "Phalaropus spec.",
+  "type": "M",
+  "rarity": 3
+ },
+ {
+  "id": 318,
+  "name": "Rosse Franjepoot",
+  "scientific": "Phalaropus fulicarius",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 253,
+  "name": "Grauwe Franjepoot",
+  "scientific": "Phalaropus lobatus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 201,
+  "name": "Witgat",
+  "scientific": "Tringa ochropus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 307,
+  "name": "Poelruiter",
+  "scientific": "Tringa stagnatilis",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 76,
+  "name": "Bosruiter",
+  "scientific": "Tringa glareola",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 27,
+  "name": "Tureluur",
+  "scientific": "Tringa totanus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 210,
+  "name": "Zwarte Ruiter",
+  "scientific": "Tringa erythropus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 108,
+  "name": "Groenpootruiter",
+  "scientific": "Tringa nebularia",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 182,
+  "name": "Steenloper",
+  "scientific": "Arenaria interpres",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 16661,
+  "name": "Strandloper onbekend",
+  "scientific": "Calidris spec.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 125,
+  "name": "Kanoet",
+  "scientific": "Calidris canutus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 24,
+  "name": "Kemphaan",
+  "scientific": "Calidris pugnax",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 283,
+  "name": "Krombekstrandloper",
+  "scientific": "Calidris ferruginea",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 339,
+  "name": "Temmincks Strandloper",
+  "scientific": "Calidris temminckii",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 83,
+  "name": "Drieteenstrandloper",
+  "scientific": "Calidris alba",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 68,
+  "name": "Bonte Strandloper",
+  "scientific": "Calidris alpina",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 158,
+  "name": "Paarse Strandloper",
+  "scientific": "Calidris maritima",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 370,
+  "name": "Gestreepte Strandloper",
+  "scientific": "Calidris melanotos",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 133,
+  "name": "Kleine Strandloper",
+  "scientific": "Calidris minuta",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 273,
+  "name": "Kleine Jager",
+  "scientific": "Stercorarius parasiticus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 278,
+  "name": "Kleinste Jager",
+  "scientific": "Stercorarius longicaudus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 291,
+  "name": "Middelste Jager",
+  "scientific": "Stercorarius pomarinus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 256,
+  "name": "Grote Jager",
+  "scientific": "Stercorarius skua",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 304,
+  "name": "Papegaaiduiker",
+  "scientific": "Fratercula arctica",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 215,
+  "name": "Alk",
+  "scientific": "Alca torda",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 270,
+  "name": "Kleine Alk",
+  "scientific": "Alle alle",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 354,
+  "name": "Zeekoet",
+  "scientific": "Uria aalge",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 31,
+  "name": "Dwergstern",
+  "scientific": "Sternula albifrons",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 311,
+  "name": "Reuzenstern",
+  "scientific": "Hydroprogne caspia",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 368,
+  "name": "Lachstern",
+  "scientific": "Gelochelidon nilotica",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 762,
+  "name": "Witwangstern",
+  "scientific": "Chlidonias hybrida",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 361,
+  "name": "Witvleugelstern",
+  "scientific": "Chlidonias leucopterus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 32,
+  "name": "Zwarte Stern",
+  "scientific": "Chlidonias niger",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 194614,
+  "name": "Grote Stern",
+  "scientific": "Thalasseus sandvicensis",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 240781,
+  "name": "Stern (Sterna) onbekend",
+  "scientific": "Sterna spec.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 30,
+  "name": "Noordse Stern",
+  "scientific": "Sterna paradisaea",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 29,
+  "name": "Visdief",
+  "scientific": "Sterna hirundo",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 84,
+  "name": "Dwergmeeuw",
+  "scientific": "Hydrocoloeus minutus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 241,
+  "name": "Drieteenmeeuw",
+  "scientific": "Rissa tridactyla",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 1387,
+  "name": "Vorkstaartmeeuw",
+  "scientific": "Xema sabini",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 138,
+  "name": "Kokmeeuw",
+  "scientific": "Chroicocephalus ridibundus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 363,
+  "name": "Zwartkopmeeuw",
+  "scientific": "Ichthyaetus melanocephalus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 20638,
+  "name": "Meeuw (Larus) onbekend",
+  "scientific": "Larus spec.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 183,
+  "name": "Stormmeeuw",
+  "scientific": "Larus canus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 937,
+  "name": "Pontische Meeuw",
+  "scientific": "Larus cachinnans",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 205,
+  "name": "Zilvermeeuw",
+  "scientific": "Larus argentatus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 250,
+  "name": "Geelpootmeeuw",
+  "scientific": "Larus michahellis",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 112,
+  "name": "Grote Mantelmeeuw",
+  "scientific": "Larus marinus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 255,
+  "name": "Grote Burgemeester",
+  "scientific": "Larus hyperboreus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 131,
+  "name": "Kleine Mantelmeeuw",
+  "scientific": "Larus fuscus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 272,
+  "name": "Kleine Burgemeester",
+  "scientific": "Larus glaucoides",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 1970,
+  "name": "Duiker onbekend",
+  "scientific": "Gavia spec.",
+  "type": "M",
+  "rarity": 2
+ },
+ {
+  "id": 314,
+  "name": "Roodkeelduiker",
+  "scientific": "Gavia stellata",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 263,
+  "name": "IJsduiker",
+  "scientific": "Gavia immer",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 305,
+  "name": "Parelduiker",
+  "scientific": "Gavia arctica",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 343,
+  "name": "Vaal Stormvogeltje",
+  "scientific": "Hydrobates leucorhous",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 298,
+  "name": "Noordse Stormvogel",
+  "scientific": "Fulmarus glacialis",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 1388,
+  "name": "Grauwe Pijlstormvogel",
+  "scientific": "Ardenna grisea",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 1971,
+  "name": "Pijlstormvogel onbekend",
+  "scientific": "Puffinus spec.",
+  "type": "M",
+  "rarity": 2
+ },
+ {
+  "id": 297,
+  "name": "Noordse Pijlstormvogel",
+  "scientific": "Puffinus puffinus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 362,
+  "name": "Zwarte Ooievaar",
+  "scientific": "Ciconia nigra",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 7,
+  "name": "Ooievaar",
+  "scientific": "Ciconia ciconia",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 267,
+  "name": "Jan-van-gent",
+  "scientific": "Morus bassanus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 285,
+  "name": "Kuifaalscholver",
+  "scientific": "Gulosus aristotelis",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 58,
+  "name": "Aalscholver",
+  "scientific": "Phalacrocorax carbo",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 853,
+  "name": "Zwarte Ibis",
+  "scientific": "Plegadis falcinellus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 8,
+  "name": "Lepelaar",
+  "scientific": "Platalea leucorodia",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 1,
+  "name": "Roerdomp",
+  "scientific": "Botaurus stellaris",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 4,
+  "name": "Woudaap",
+  "scientific": "Botaurus minutus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 132,
+  "name": "Kleine Zilverreiger",
+  "scientific": "Egretta garzetta",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 5,
+  "name": "Kwak",
+  "scientific": "Nycticorax nycticorax",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 115,
+  "name": "Grote Zilverreiger",
+  "scientific": "Ardea alba",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 360,
+  "name": "Koereiger",
+  "scientific": "Ardea ibis",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 6,
+  "name": "Purperreiger",
+  "scientific": "Ardea purpurea",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 64,
+  "name": "Blauwe Reiger",
+  "scientific": "Ardea cinerea",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 36,
+  "name": "Nachtzwaluw",
+  "scientific": "Caprimulgus europaeus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 703827,
+  "name": "Gierzwaluw (Apus) onbekend",
+  "scientific": "Apus spec.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 97,
+  "name": "Gierzwaluw",
+  "scientific": "Apus apus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 33,
+  "name": "Kerkuil",
+  "scientific": "Tyto alba",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 34,
+  "name": "Steenuil",
+  "scientific": "Athene noctua",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 35,
+  "name": "Velduil",
+  "scientific": "Asio flammeus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 310,
+  "name": "Ransuil",
+  "scientific": "Asio otus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 300,
+  "name": "Oehoe",
+  "scientific": "Bubo bubo",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 77,
+  "name": "Bosuil",
+  "scientific": "Strix aluco",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 346,
+  "name": "Visarend",
+  "scientific": "Pandion haliaetus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 1385,
+  "name": "Grijze Wouw",
+  "scientific": "Elanus caeruleus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 349,
+  "name": "Wespendief",
+  "scientific": "Pernis apivorus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 324,
+  "name": "Slangenarend",
+  "scientific": "Circaetus gallicus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 682007,
+  "name": "Havik of Sperwer onbekend",
+  "scientific": "Accipiter spec.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 178,
+  "name": "Sperwer",
+  "scientific": "Accipiter nisus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 117,
+  "name": "Havik",
+  "scientific": "Astur gentilis",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 334,
+  "name": "Steppekiekendief",
+  "scientific": "Circus macrourus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 13,
+  "name": "Blauwe Kiekendief",
+  "scientific": "Circus cyaneus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 14,
+  "name": "Grauwe Kiekendief",
+  "scientific": "Circus pygargus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 81,
+  "name": "Bruine Kiekendief",
+  "scientific": "Circus aeruginosus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 12,
+  "name": "Rode Wouw",
+  "scientific": "Milvus milvus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 364,
+  "name": "Zwarte Wouw",
+  "scientific": "Milvus migrans",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 353,
+  "name": "Zeearend",
+  "scientific": "Haliaeetus albicilla",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 321,
+  "name": "Ruigpootbuizerd",
+  "scientific": "Buteo lagopus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 82,
+  "name": "Buizerd",
+  "scientific": "Buteo buteo",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 38,
+  "name": "Hop",
+  "scientific": "Upupa epops",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 1386,
+  "name": "Bijeneter",
+  "scientific": "Merops apiaster",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 37,
+  "name": "IJsvogel",
+  "scientific": "Alcedo atthis",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 39,
+  "name": "Draaihals",
+  "scientific": "Jynx torquilla",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 40,
+  "name": "Groene Specht",
+  "scientific": "Picus viridis",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 759,
+  "name": "Zwarte Specht",
+  "scientific": "Dryocopus martius",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 290,
+  "name": "Middelste Bonte Specht",
+  "scientific": "Dendrocoptes medius",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 109,
+  "name": "Grote Bonte Specht",
+  "scientific": "Dendrocopos major",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 271,
+  "name": "Kleine Bonte Specht",
+  "scientific": "Dryobates minor",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 689408,
+  "name": "Valk onbekend",
+  "scientific": "Falco spec.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 188,
+  "name": "Torenvalk",
+  "scientific": "Falco tinnunculus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 316,
+  "name": "Roodpootvalk",
+  "scientific": "Falco vespertinus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 326,
+  "name": "Smelleken",
+  "scientific": "Falco columbarius",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 74,
+  "name": "Boomvalk",
+  "scientific": "Falco subbuteo",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 325,
+  "name": "Slechtvalk",
+  "scientific": "Falco peregrinus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 18724,
+  "name": "Grote Alexanderparkiet",
+  "scientific": "Psittacula eupatria",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 116,
+  "name": "Halsbandparkiet",
+  "scientific": "Psittacula krameri",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 350,
+  "name": "Wielewaal",
+  "scientific": "Oriolus oriolus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 52,
+  "name": "Klapekster",
+  "scientific": "Lanius excubitor",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 51,
+  "name": "Grauwe Klauwier",
+  "scientific": "Lanius collurio",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 92,
+  "name": "Gaai",
+  "scientific": "Garrulus glandarius",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 87,
+  "name": "Ekster",
+  "scientific": "Pica pica",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 126,
+  "name": "Kauw",
+  "scientific": "Coloeus monedula",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 692458,
+  "name": "Kraai onbekend",
+  "scientific": "Corvus spec.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 167,
+  "name": "Roek",
+  "scientific": "Corvus frugilegus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 54,
+  "name": "Raaf",
+  "scientific": "Corvus corax",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 208,
+  "name": "Zwarte Kraai",
+  "scientific": "Corvus corone",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 1206,
+  "name": "Buidelmees",
+  "scientific": "Remiz pendulinus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 161,
+  "name": "Pimpelmees",
+  "scientific": "Cyanistes caeruleus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 140,
+  "name": "Koolmees",
+  "scientific": "Parus major",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 209,
+  "name": "Zwarte Mees",
+  "scientific": "Periparus ater",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 145,
+  "name": "Kuifmees",
+  "scientific": "Lophophanes cristatus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 98,
+  "name": "Glanskop",
+  "scientific": "Poecile palustris",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 148,
+  "name": "Matkop",
+  "scientific": "Poecile montanus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 50,
+  "name": "Baardman",
+  "scientific": "Panurus biarmicus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 72,
+  "name": "Boomleeuwerik",
+  "scientific": "Lullula arborea",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 192,
+  "name": "Veldleeuwerik",
+  "scientific": "Alauda arvensis",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 336,
+  "name": "Strandleeuwerik",
+  "scientific": "Eremophila alpestris",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 1111,
+  "name": "Graszanger",
+  "scientific": "Cisticola juncidis",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 698106,
+  "name": "Spotvogel onbekend",
+  "scientific": "Hippolais spec.",
+  "type": "M",
+  "rarity": 2
+ },
+ {
+  "id": 179,
+  "name": "Spotvogel",
+  "scientific": "Hippolais icterina",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 302,
+  "name": "Orpheusspotvogel",
+  "scientific": "Hippolais polyglotta",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 695714,
+  "name": "Rietzanger of karekiet onbekend",
+  "scientific": "Acrocephalus spec.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 48,
+  "name": "Rietzanger",
+  "scientific": "Acrocephalus schoenobaenus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 1129,
+  "name": "Waterrietzanger",
+  "scientific": "Acrocephalus paludicola",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 75,
+  "name": "Bosrietzanger",
+  "scientific": "Acrocephalus palustris",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 130,
+  "name": "Kleine Karekiet",
+  "scientific": "Acrocephalus scirpaceus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 49,
+  "name": "Grote Karekiet",
+  "scientific": "Acrocephalus arundinaceus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 47,
+  "name": "Snor",
+  "scientific": "Locustella luscinioides",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 330,
+  "name": "Sprinkhaanzanger",
+  "scientific": "Locustella naevia",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 155,
+  "name": "Oeverzwaluw",
+  "scientific": "Riparia riparia",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 65,
+  "name": "Boerenzwaluw",
+  "scientific": "Hirundo rustica",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 123,
+  "name": "Huiszwaluw",
+  "scientific": "Delichon urbicum",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 181,
+  "name": "Staartmees",
+  "scientific": "Aegithalos caudatus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 237,
+  "name": "Cetti's Zanger",
+  "scientific": "Cettia cetti",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 704618,
+  "name": "Boszanger onbekend",
+  "scientific": "Phylloscopus spec.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 90,
+  "name": "Fluiter",
+  "scientific": "Phylloscopus sibilatrix",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 227,
+  "name": "Bladkoning",
+  "scientific": "Phylloscopus inornatus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 262,
+  "name": "Humes Bladkoning",
+  "scientific": "Phylloscopus humei",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 303,
+  "name": "Pallas' Boszanger",
+  "scientific": "Phylloscopus proregulus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 1503,
+  "name": "Bruine Boszanger",
+  "scientific": "Phylloscopus fuscatus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 89,
+  "name": "Fitis",
+  "scientific": "Phylloscopus trochilus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 186,
+  "name": "Tjiftjaf",
+  "scientific": "Phylloscopus collybita",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 189,
+  "name": "Tuinfluiter",
+  "scientific": "Sylvia borin",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 213,
+  "name": "Zwartkop",
+  "scientific": "Sylvia atricapilla",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 371,
+  "name": "Sperwergrasmus",
+  "scientific": "Curruca nisoria",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 78,
+  "name": "Braamsluiper",
+  "scientific": "Curruca curruca",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 102,
+  "name": "Grasmus",
+  "scientific": "Curruca communis",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 306,
+  "name": "Pestvogel",
+  "scientific": "Bombycilla garrulus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 347,
+  "name": "Vuurgoudhaan",
+  "scientific": "Regulus ignicapilla",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 99,
+  "name": "Goudhaan",
+  "scientific": "Regulus regulus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 70,
+  "name": "Boomklever",
+  "scientific": "Sitta europaea",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 337,
+  "name": "Taigaboomkruiper",
+  "scientific": "Certhia familiaris",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 71,
+  "name": "Boomkruiper",
+  "scientific": "Certhia brachydactyla",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 199,
+  "name": "Winterkoning",
+  "scientific": "Troglodytes troglodytes",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 180,
+  "name": "Spreeuw",
+  "scientific": "Sturnus vulgaris",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 199294,
+  "name": "Roze Spreeuw",
+  "scientific": "Pastor roseus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 111,
+  "name": "Grote Lijster",
+  "scientific": "Turdus viscivorus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 204,
+  "name": "Zanglijster",
+  "scientific": "Turdus philomelos",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 141,
+  "name": "Koperwiek",
+  "scientific": "Turdus iliacus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 150,
+  "name": "Merel",
+  "scientific": "Turdus merula",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 143,
+  "name": "Kramsvogel",
+  "scientific": "Turdus pilaris",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 226,
+  "name": "Beflijster",
+  "scientific": "Turdus torquatus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 105,
+  "name": "Grauwe Vliegenvanger",
+  "scientific": "Muscicapa striata",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 168,
+  "name": "Roodborst",
+  "scientific": "Erithacus rubecula",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 295,
+  "name": "Nachtegaal",
+  "scientific": "Luscinia megarhynchos",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 62,
+  "name": "Blauwborst",
+  "scientific": "Luscinia svecica",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 1182,
+  "name": "Kleine Vliegenvanger",
+  "scientific": "Ficedula parva",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 69,
+  "name": "Bonte Vliegenvanger",
+  "scientific": "Ficedula hypoleuca",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 700051,
+  "name": "Roodstaart onbekend",
+  "scientific": "Phoenicurus spec.",
+  "type": "M",
+  "rarity": 2
+ },
+ {
+  "id": 356,
+  "name": "Zwarte Roodstaart",
+  "scientific": "Phoenicurus ochruros",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 94,
+  "name": "Gekraagde Roodstaart",
+  "scientific": "Phoenicurus phoenicurus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 44,
+  "name": "Paapje",
+  "scientific": "Saxicola rubetra",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 45,
+  "name": "Roodborsttapuit",
+  "scientific": "Saxicola rubicola",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 1003731,
+  "name": "Tapuit onbekend",
+  "scientific": "Oenanthe spec.",
+  "type": "M",
+  "rarity": 2
+ },
+ {
+  "id": 46,
+  "name": "Tapuit",
+  "scientific": "Oenanthe oenanthe",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 118,
+  "name": "Heggenmus",
+  "scientific": "Prunella modularis",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 166,
+  "name": "Ringmus",
+  "scientific": "Passer montanus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 122,
+  "name": "Huismus",
+  "scientific": "Passer domesticus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 1465,
+  "name": "Kwikstaart onbekend",
+  "scientific": "Motacilla spec.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 756,
+  "name": "Grote Gele Kwikstaart",
+  "scientific": "Motacilla cinerea",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 95,
+  "name": "Gele Kwikstaart",
+  "scientific": "Motacilla flava",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 202,
+  "name": "Witte Kwikstaart",
+  "scientific": "Motacilla alba",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 43,
+  "name": "Duinpieper",
+  "scientific": "Anthus campestris",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 757,
+  "name": "Grote Pieper",
+  "scientific": "Anthus richardi",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 73,
+  "name": "Boompieper",
+  "scientific": "Anthus trivialis",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 1525,
+  "name": "Siberische Boompieper",
+  "scientific": "Anthus hodgsoni",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 755,
+  "name": "Roodkeelpieper",
+  "scientific": "Anthus cervinus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 103,
+  "name": "Graspieper",
+  "scientific": "Anthus pratensis",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 358,
+  "name": "Oeverpieper",
+  "scientific": "Anthus petrosus",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 196,
+  "name": "Waterpieper",
+  "scientific": "Anthus spinoletta",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 127,
+  "name": "Keep",
+  "scientific": "Fringilla montifringilla",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 193,
+  "name": "Vink",
+  "scientific": "Fringilla coelebs",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 59,
+  "name": "Appelvink",
+  "scientific": "Coccothraustes coccothraustes",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 315,
+  "name": "Roodmus",
+  "scientific": "Carpodacus erythrinus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 101,
+  "name": "Goudvink",
+  "scientific": "Pyrrhula pyrrhula",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 261771,
+  "name": "Groenling",
+  "scientific": "Chloris chloris",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 249,
+  "name": "Frater",
+  "scientific": "Linaria flavirostris",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 135,
+  "name": "Kneu",
+  "scientific": "Linaria cannabina",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 223,
+  "name": "Barmsijs",
+  "scientific": "Acanthis flammea",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 696884,
+  "name": "Kruisbek onbekend",
+  "scientific": "Loxia spec.",
+  "type": "M",
+  "rarity": 2
+ },
+ {
+  "id": 284,
+  "name": "Kruisbek",
+  "scientific": "Loxia curvirostra",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 162,
+  "name": "Putter",
+  "scientific": "Carduelis carduelis",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 248,
+  "name": "Europese Kanarie",
+  "scientific": "Serinus serinus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 174,
+  "name": "Sijs",
+  "scientific": "Spinus spinus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 329,
+  "name": "Sneeuwgors",
+  "scientific": "Plectrophenax nivalis",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 265,
+  "name": "IJsgors",
+  "scientific": "Calcarius lapponicus",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 164,
+  "name": "Rietgors",
+  "scientific": "Emberiza schoeniclus",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 245,
+  "name": "Dwerggors",
+  "scientific": "Emberiza pusilla",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 57,
+  "name": "Grauwe Gors",
+  "scientific": "Emberiza calandra",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 56,
+  "name": "Ortolaan",
+  "scientific": "Emberiza hortulana",
+  "type": "S",
+  "rarity": 3
+ },
+ {
+  "id": 55,
+  "name": "Geelgors",
+  "scientific": "Emberiza citrinella",
+  "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 1967,
+  "name": "Alk of Zeekoet",
+  "scientific": "Alca torda / Uria aalge",
+  "type": "M",
+  "rarity": 2
+ },
+ {
+  "id": 1969,
+  "name": "Jager onbekend",
+  "scientific": "Stercorariidae indet.",
+  "type": "M",
+  "rarity": 2
+ },
+ {
+  "id": 1986,
+  "name": "Noordse Stern of Visdief",
+  "scientific": "Sterna hirundo/paradisaea",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 18653,
+  "name": "Gans (Anser/Branta) onbekend",
+  "scientific": "Anser / Branta spec.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 18883,
+  "name": "Flamingo onbekend",
+  "scientific": "Phoenicopteridae indet.",
+  "type": "M",
+  "rarity": 2
+ },
+ {
+  "id": 20640,
+  "name": "Steltloper onbekend",
+  "scientific": "Scolopacidae indet.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 20645,
+  "name": "Stormvogeltje onbekend",
+  "scientific": "Hydrobatidae indet.",
+  "type": "M",
+  "rarity": 3
+ },
+ {
+  "id": 26965,
+  "name": "Lijster onbekend",
+  "scientific": "Turdidae indet.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 86479,
+  "name": "Pontische of Geelpootmeeuw",
+  "scientific": "Larus cachinnans / michahellis",
+  "type": "M",
+  "rarity": 2
+ },
+ {
+  "id": 87883,
+  "name": "Grote Valk onbekend of hybride",
+  "scientific": "Falco rusticolus / cherrug / biarmicus / Falco x",
+  "type": "M",
+  "rarity": 3
+ },
+ {
+  "id": 240779,
+  "name": "Meeuw of Stern onbekend",
+  "scientific": "Laridae indet.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 240788,
+  "name": "Aalscholver onbekend",
+  "scientific": "Phalacrocoracidae indet.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 240801,
+  "name": "Reiger onbekend",
+  "scientific": "Ardeidae indet.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 265020,
+  "name": "Bosrietzanger of Kleine Karekiet",
+  "scientific": "Acrocephalus palustris / scirpaceus",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 534639,
+  "name": "Water- of Oeverpieper",
+  "scientific": "Anthus petrosus / spinoletta",
+  "type": "M",
+  "rarity": 2
+ },
+ {
+  "id": 595858,
+  "name": "Tjiftjaf of Fitis",
+  "scientific": "Phylloscopus collybita / trochilus",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 643328,
+  "name": "Goudhaan onbekend",
+  "scientific": "Regulidae indet.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 643335,
+  "name": "Vink onbekend",
+  "scientific": "Fringillidae indet.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 643346,
+  "name": "Vliegenvanger onbekend",
+  "scientific": "Muscicapidae indet.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 643350,
+  "name": "Boomkruiper onbekend",
+  "scientific": "Certhiidae indet.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
+  "id": 805941,
+  "name": "Grauwe of Steppekiekendief",
+  "scientific": "Circus pygargus / macrourus",
+  "type": "M",
+  "rarity": 3
+ }
+]

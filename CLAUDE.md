@@ -60,16 +60,16 @@ Doel: valideren dat herkenning en interpretatie in het veld goed genoeg werken.
 
 - **Session:** id, start- en eindtijd, status
 - **Utterance:** id, sessionId, tijdstip, lat/lon/nauwkeurigheid, audio, transcript, LLM-uitvoer, verwerkingsstatus
-- **Observation:** id, sessionId, utteranceId (bron), soort-ID, aantal, activiteit/gedrag (bv. overvliegend, ter plaatse, roepend, zingend), methode (gezien/gehoord), optioneel geslacht/leeftijd/kleed, tijdstip, lat/lon/nauwkeurigheid, `uncertain`, status (concept / gereviewd / geëxporteerd)
+- **Observation:** id, sessionId, utteranceId (bron), soort-ID, aantal, telmethode, activiteit/gedrag (bv. overvliegend, ter plaatse, roepend, zingend), methode (gezien/gehoord), optioneel geslacht/leeftijd/kleed, tijdstip, lat/lon/nauwkeurigheid, `uncertain`, status (concept / gereviewd / geëxporteerd)
 
-Stem de velden en codes af op het importformaat van waarneming.nl zodra dat bekend is.
+Soort, activiteit, methode, kleed en telmethode worden opgeslagen als **waarneming.nl-ID's** (zie `data/` en `docs/waarneming-nl.md`). Die werken direct met de latere API; voor de CSV-export zet de app ze om naar wetenschappelijke naam en tekst.
 
 ## Openstaande punten
 
-- **Importformaat van waarneming.nl (CSV):** uitzoeken welke velden, codes voor activiteit/gedrag en soort-ID's verwacht worden. Dit bepaalt het datamodel, dus vroeg uitzoeken.
-- **Bron voor de soortenlijst** (bij voorkeur met waarneming.nl-soort-ID's en Nederlandse namen, inclusief veelgebruikte alternatieve namen).
+- **Importformaat van waarneming.nl:** grotendeels uitgezocht, zie `docs/waarneming-nl.md`. De CSV-import gebruikt het eBird-formaat (23 kolommen, soort via wetenschappelijke naam) en heeft geen velden voor activiteit, methode of kleed; die gaan als tekst in `Species Comments`. Nog nagaan: biedt de importpagina (alleen ingelogd) andere formaten?
+- **Soortenlijst:** opgelost. `scripts/fetch-species.mjs` haalt de lijst op bij de openbare API van waarneming.nl → `data/soorten-nl.json` (343 soorten met waarneming.nl-ID's). Alternatieve namen ("stadsduif") nog aanvullen op basis van de testset.
 - **STT-keuze:** Whisper tegenover Web Speech API, beslissen op basis van de testset.
-- **Mapping van gesproken termen naar velden** ("roepje" → gehoord/roepend, "overvliegend" → activiteit overvliegend, enz.).
+- **Mapping van gesproken termen naar velden:** eerste voorstel in `docs/waarneming-nl.md`, verfijnen met de testset.
 
 ## Voorgestelde bouwvolgorde
 

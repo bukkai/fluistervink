@@ -1,0 +1,376 @@
+{
+ "activity": [
+  {
+   "id": 1,
+   "name": "ter plaatse"
+  },
+  {
+   "id": 3,
+   "name": "roepend"
+  },
+  {
+   "id": 2,
+   "name": "foeragerend"
+  },
+  {
+   "id": 4,
+   "name": "baltsend / zingend"
+  },
+  {
+   "id": 6,
+   "name": "overvliegend"
+  },
+  {
+   "id": 3052,
+   "name": "paar in broedbiotoop"
+  },
+  {
+   "id": 3053,
+   "name": "adult in broedbiotoop"
+  },
+  {
+   "id": 3114,
+   "name": "bezet nest met eieren"
+  },
+  {
+   "id": 3115,
+   "name": "bezet nest met jongen"
+  },
+  {
+   "id": 3116,
+   "name": "transport voedsel of ontlasting"
+  },
+  {
+   "id": 3051,
+   "name": "bezet nest"
+  },
+  {
+   "id": 3117,
+   "name": "waarschijnlijke nestplaats"
+  },
+  {
+   "id": 3118,
+   "name": "baltsend paar (ook paring)"
+  },
+  {
+   "id": 3119,
+   "name": "nestbouw"
+  },
+  {
+   "id": 25,
+   "name": "alarmerend"
+  },
+  {
+   "id": 3121,
+   "name": "pas uitgevlogen/dons jongen"
+  },
+  {
+   "id": 3122,
+   "name": "vogel met broedvlek"
+  },
+  {
+   "id": 3120,
+   "name": "recent gebruikt nest"
+  },
+  {
+   "id": 3124,
+   "name": "afleidingsgedrag"
+  },
+  {
+   "id": 28,
+   "name": "nestindicerend gedrag"
+  },
+  {
+   "id": 29,
+   "name": "vastgesteld territorium"
+  },
+  {
+   "id": 30,
+   "name": "jagend"
+  },
+  {
+   "id": 11,
+   "name": "overvliegend noord"
+  },
+  {
+   "id": 12,
+   "name": "overvliegend zuid"
+  },
+  {
+   "id": 13,
+   "name": "overvliegend oost"
+  },
+  {
+   "id": 14,
+   "name": "overvliegend west"
+  },
+  {
+   "id": 8,
+   "name": "overvliegend noordwest"
+  },
+  {
+   "id": 7,
+   "name": "overvliegend noordoost"
+  },
+  {
+   "id": 9,
+   "name": "overvliegend zuidoost"
+  },
+  {
+   "id": 10,
+   "name": "overvliegend zuidwest"
+  },
+  {
+   "id": 2016,
+   "name": "slachtoffer verkeer"
+  },
+  {
+   "id": 17,
+   "name": "vondst (dood)"
+  },
+  {
+   "id": 3197,
+   "name": "zonnend"
+  },
+  {
+   "id": 3099,
+   "name": "vangst door kat"
+  },
+  {
+   "id": 3275,
+   "name": "prooi (dood)"
+  },
+  {
+   "id": 3158,
+   "name": "ruiend"
+  },
+  {
+   "id": 79,
+   "name": "(kleur)ringdragend"
+  },
+  {
+   "id": 26,
+   "name": "pleisterend"
+  },
+  {
+   "id": 31,
+   "name": "opvliegend"
+  },
+  {
+   "id": 3268,
+   "name": "slachtoffer verdrinking"
+  },
+  {
+   "id": 3148,
+   "name": "slachtoffer hoogspanningsleiding"
+  },
+  {
+   "id": 3149,
+   "name": "slachtoffer windmolen"
+  },
+  {
+   "id": 3154,
+   "name": "slachtoffer raambotsing"
+  },
+  {
+   "id": 3144,
+   "name": "ziek/gewond"
+  },
+  {
+   "id": 77,
+   "name": "rustend"
+  },
+  {
+   "id": 78,
+   "name": "slaapplaats"
+  },
+  {
+   "id": 3273,
+   "name": "slachtoffer prikkeldraad"
+  },
+  {
+   "id": 3354,
+   "name": "Slachtoffer olievervuiling"
+  },
+  {
+   "id": 3265,
+   "name": "vernietigd nest"
+  }
+ ],
+ "method": [
+  {
+   "id": 47,
+   "name": "onbekend"
+  },
+  {
+   "id": 48,
+   "name": "gezien"
+  },
+  {
+   "id": 49,
+   "name": "gehoord"
+  },
+  {
+   "id": 51,
+   "name": "gezien en gehoord"
+  },
+  {
+   "id": 579,
+   "name": "sporen"
+  },
+  {
+   "id": 27,
+   "name": "gevangen"
+  },
+  {
+   "id": 585,
+   "name": "in braakbal"
+  },
+  {
+   "id": 795,
+   "name": "warmtekijker"
+  },
+  {
+   "id": 586,
+   "name": "zichtwaarneming met zoeklicht"
+  },
+  {
+   "id": 587,
+   "name": "met fotoval"
+  },
+  {
+   "id": 588,
+   "name": "op geluidsrecorder"
+  },
+  {
+   "id": 32,
+   "name": "verzameld (in collectie)"
+  },
+  {
+   "id": 34,
+   "name": "telemetrie"
+  },
+  {
+   "id": 42,
+   "name": "(e)dna barcoding"
+  },
+  {
+   "id": 589,
+   "name": "binnenshuis"
+  },
+  {
+   "id": 784,
+   "name": "op voederplaats"
+  },
+  {
+   "id": 815,
+   "name": "translocatie"
+  },
+  {
+   "id": 832,
+   "name": "Nest(kast)"
+  }
+ ],
+ "life_stage": [
+  {
+   "id": 1,
+   "name": "onbekend"
+  },
+  {
+   "id": 2,
+   "name": "adult"
+  },
+  {
+   "id": 3,
+   "name": "adult zomerkleed"
+  },
+  {
+   "id": 4,
+   "name": "adult winterkleed"
+  },
+  {
+   "id": 5,
+   "name": "juveniel"
+  },
+  {
+   "id": 6,
+   "name": "subadult"
+  },
+  {
+   "id": 7,
+   "name": "eerste najaar"
+  },
+  {
+   "id": 8,
+   "name": "eerste winter"
+  },
+  {
+   "id": 9,
+   "name": "eerste zomer"
+  },
+  {
+   "id": 10,
+   "name": "tweede winter"
+  },
+  {
+   "id": 11,
+   "name": "tweede zomer"
+  },
+  {
+   "id": 12,
+   "name": "eclips"
+  },
+  {
+   "id": 13,
+   "name": "eerste jaar"
+  },
+  {
+   "id": 14,
+   "name": "eerste kalenderjaar"
+  },
+  {
+   "id": 15,
+   "name": "tweede kalenderjaar"
+  },
+  {
+   "id": 16,
+   "name": "derde kalenderjaar"
+  },
+  {
+   "id": 62,
+   "name": "derde winter"
+  },
+  {
+   "id": 72,
+   "name": "vierde kalenderjaar"
+  },
+  {
+   "id": 1175,
+   "name": "vijfde kalenderjaar"
+  },
+  {
+   "id": 86,
+   "name": "afwijkend"
+  },
+  {
+   "id": 1176,
+   "name": "melanistisch"
+  },
+  {
+   "id": 1009,
+   "name": "pullus"
+  },
+  {
+   "id": 1010,
+   "name": "onvolwassen"
+  },
+  {
+   "id": 1101,
+   "name": "zomerkleed"
+  },
+  {
+   "id": 1102,
+   "name": "winterkleed"
+  }
+ ]
+}
