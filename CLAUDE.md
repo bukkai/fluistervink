@@ -16,6 +16,7 @@ Vernoemd naar Jac. P. Thijsse. "Thijsse" is ook het (toekomstige) wake word.
 ## Vastgelegde ontwerpkeuzes
 
 - **Doelgroep:** persoonlijk gebruik, recreatief vogelen op wandelingen. Geen professionele inventarisatieprotocollen.
+- **Front-end-stack:** Vite, Svelte 5 met TypeScript, Dexie (IndexedDB), vite-plugin-pwa. Gekozen omdat Svelte-runes en -templates dicht bij de Angular-ervaring van de eigenaar liggen, met weinig boilerplate.
 - **Platform:** Android. Start als PWA (Chrome op Android); later in Capacitor verpakken met een native Kotlin-plugin voor wake word en achtergrondaudio. Houd de webcode daarom platformonafhankelijk.
 - **Spraak naar tekst:** Whisper, met een soortenlijst in de prompt om herkenning van soortnamen te verbeteren. Vergelijken met de Web Speech API op basis van de testset (zie hieronder).
 - **Interpretatie:** een LLM (klein en snel model, bv. Claude Haiku) met tool use. Het model geeft acties terug, de app voert ze uit:

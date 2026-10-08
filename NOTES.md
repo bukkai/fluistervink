@@ -5,11 +5,13 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 ## Waar ik ben
 
 - Onderzoek waarneming.nl afgerond en gemerged (PR #1): importformaat, soortenlijst (`data/soorten-nl.json`) en codes (`data/attributen-vogels.json`, `docs/waarneming-nl.md`).
-- Nog geen app-code: stap 1 van de bouwvolgorde in `CLAUDE.md` is nog niet begonnen.
+- Stap 1 (projectopzet) op branch `projectopzet`: Vite + Svelte 5 + TypeScript + Dexie, PWA, wandelingen starten/stoppen. Lokaal getest.
 
 ## Volgende stap
 
-1. Projectopzet: PWA-skelet, IndexedDB, sessies starten/stoppen, deploy naar Cloudflare Pages.
+1. PR van `projectopzet` reviewen en mergen.
+2. Cloudflare Pages koppelen aan de GitHub-repo (build: `npm run build`, output: `dist`), en de app op de telefoon installeren.
+3. Stap 2: proxy (Cloudflare Worker) voor de API-sleutels. Overwegen: app en proxy samen als één Worker met static assets in plaats van Pages.
 
 ## Open vragen / losse eindjes
 
