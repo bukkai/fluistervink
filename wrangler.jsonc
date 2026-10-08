@@ -12,7 +12,12 @@
     "run_worker_first": ["/api/*"],
     "not_found_handling": "single-page-application"
   },
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+  // Previews: een eigen versie per branch (Workers Builds draait daarvoor
+  // `wrangler preview`). Leeg, want app en assets gebruiken de instellingen
+  // hierboven. Previews erven géén geheimen van productie: die staan apart in
+  // het dashboard onder Variables and Secrets → Previews Base.
+  "previews": {}
   // Geheimen (ACCESS_CODE, OPENAI_API_KEY, ANTHROPIC_API_KEY): lokaal in
   // .dev.vars, in productie via `npx wrangler secret put <NAAM>`.
 }
