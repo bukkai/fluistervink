@@ -4,14 +4,15 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 
 ## Waar ik ben
 
-- Onderzoek waarneming.nl afgerond en gemerged (PR #1): importformaat, soortenlijst (`data/soorten-nl.json`) en codes (`data/attributen-vogels.json`, `docs/waarneming-nl.md`).
-- Stap 1 (projectopzet) op branch `projectopzet`: Vite + Svelte 5 + TypeScript + Dexie, PWA, wandelingen starten/stoppen. Lokaal getest.
+- Stap 1 (projectopzet) gemerged (PR #2).
+- Stap 2 (proxy) op branch `proxy`: één Cloudflare Worker serveert app + `/api`. Endpoints `/api/ping`, `/api/transcribe` (OpenAI), `/api/messages` (Anthropic). Toegangscode in de app onder "Instellingen". Lokaal getest met nep-sleutels.
 
 ## Volgende stap
 
-1. PR van `projectopzet` reviewen en mergen.
-2. Cloudflare Pages koppelen aan de GitHub-repo (build: `npm run build`, output: `dist`), en de app op de telefoon installeren.
-3. Stap 2: proxy (Cloudflare Worker) voor de API-sleutels. Overwegen: app en proxy samen als één Worker met static assets in plaats van Pages.
+1. PR van `proxy` reviewen en mergen.
+2. Cloudflare instellen (zie README → Deploy), geheimen invullen, app op de telefoon installeren en de toegangscode testen.
+3. Op elke computer: `.dev.vars` aanmaken vanuit `.dev.vars.example` met echte sleutels.
+4. Stap 3: LLM-interpretatie met tools, eerst met tekstinvoer.
 
 ## Open vragen / losse eindjes
 

@@ -7,9 +7,12 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json"
+    "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json && tsc -p tsconfig.worker.json",
+    "deploy": "npm run build && wrangler deploy",
+    "types": "wrangler types worker/worker-configuration.d.ts"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.63.1",
     "@sveltejs/vite-plugin-svelte": "^7.3.0",
     "@tsconfig/svelte": "^5.0.8",
     "@types/node": "^24.13.3",
@@ -17,9 +20,11 @@
     "svelte-check": "^4.7.6",
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
-    "vite-plugin-pwa": "^2.0.0"
+    "vite-plugin-pwa": "^2.0.0",
+    "wrangler": "^4.149.0"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.132.1",
     "dexie": "^4.4.6"
   }
 }
