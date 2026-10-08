@@ -2,8 +2,9 @@
   import { ApiError, getAccessCode, ping, setAccessCode } from './api';
 
   let code = $state(getAccessCode());
-  // Alleen bij het laden: open zolang er nog geen code is ingevuld
-  const startOpen = !getAccessCode();
+  // Bij het laden open zolang er nog geen code is; daarna houdt bind:open
+  // bij of de gebruiker het paneel open- of dichtklapt.
+  let open = $state(!getAccessCode());
   let status = $state<'idle' | 'busy' | 'ok' | 'error'>('idle');
   let message = $state('');
 
@@ -25,7 +26,7 @@
   }
 </script>
 
-<details open={startOpen}>
+<details bind:open>
   <summary>Instellingen</summary>
   <form onsubmit={save}>
     <label>
