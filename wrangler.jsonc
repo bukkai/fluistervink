@@ -1,0 +1,18 @@
+// Configuratie voor de Cloudflare Worker die de app serveert en de /api-routes
+// afhandelt. Zie https://developers.cloudflare.com/workers/wrangler/configuration/
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "thijsse",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    // De Worker draait alleen voor /api/*; al het andere zijn statische
+    // bestanden uit de Vite-build.
+    "run_worker_first": ["/api/*"],
+    "not_found_handling": "single-page-application"
+  },
+  "observability": { "enabled": true }
+  // Geheimen (ACCESS_CODE, OPENAI_API_KEY, ANTHROPIC_API_KEY): lokaal in
+  // .dev.vars, in productie via `npx wrangler secret put <NAAM>`.
+}

@@ -7,6 +7,7 @@
     startSession,
     stopSession,
   } from './lib/sessions';
+  import Settings from './lib/Settings.svelte';
 
   // liveQuery draait opnieuw zodra de data in IndexedDB verandert, en is
   // direct bruikbaar als Svelte-store ($sessions).
@@ -75,6 +76,8 @@
       {/each}
     </ul>
   {/if}
+
+  <Settings />
 </main>
 
 <style>

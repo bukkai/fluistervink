@@ -18,7 +18,7 @@ Vernoemd naar Jac. P. Thijsse. "Thijsse" is ook het (toekomstige) wake word.
 - **Doelgroep:** persoonlijk gebruik, recreatief vogelen op wandelingen. Geen professionele inventarisatieprotocollen.
 - **Front-end-stack:** Vite, Svelte 5 met TypeScript, Dexie (IndexedDB), vite-plugin-pwa. Gekozen omdat Svelte-runes en -templates dicht bij de Angular-ervaring van de eigenaar liggen, met weinig boilerplate.
 - **Platform:** Android. Start als PWA (Chrome op Android); later in Capacitor verpakken met een native Kotlin-plugin voor wake word en achtergrondaudio. Houd de webcode daarom platformonafhankelijk.
-- **Spraak naar tekst:** Whisper, met een soortenlijst in de prompt om herkenning van soortnamen te verbeteren. Vergelijken met de Web Speech API op basis van de testset (zie hieronder).
+- **Spraak naar tekst:** Whisper via de API van OpenAI (`gpt-4o-transcribe`, `gpt-4o-mini-transcribe` of `whisper-1`), met een soortenlijst in de prompt om herkenning van soortnamen te verbeteren. Vergelijken met de Web Speech API op basis van de testset (zie hieronder).
 - **Interpretatie:** een LLM (klein en snel model, bv. Claude Haiku) met tool use. Het model geeft acties terug, de app voert ze uit:
   - `add_observation`, `update_observation`, `delete_observation`, `undo`
   - Context per aanroep: de laatste waarnemingen van de huidige sessie, zodat verwijzingen als "die", "de vorige" en "nog drie" werken.
@@ -27,8 +27,9 @@ Vernoemd naar Jac. P. Thijsse. "Thijsse" is ook het (toekomstige) wake word.
 - **Tijd en locatie:** vastleggen op het moment dat de opname start, inclusief GPS-nauwkeurigheid.
 - **Local-first:** elke uitspraak (audio, tijd, GPS) wordt eerst lokaal opgeslagen (IndexedDB) en daarna verwerkt, één voor één, op volgorde. Dit is in feite een wachtrij die normaal direct leeg is; echte offline-ondersteuning kan later met weinig moeite worden toegevoegd.
 - **Feedback:** trilpatronen. Eén korte tril = opgeslagen; twee = niet begrepen; een afwijkend patroon = opgeslagen maar onzeker.
-- **API-sleutels:** nooit in de client. Een kleine proxy (Cloudflare Worker) praat met de STT- en LLM-API's.
-- **Hosting:** Cloudflare Pages (HTTPS is vereist voor microfoon en GPS), automatisch deployen vanuit GitHub.
+- **API-sleutels:** nooit in de client. Een kleine proxy (`worker/index.ts`) praat met de STT- en LLM-API's: `/api/transcribe` (OpenAI) en `/api/messages` (Anthropic, doorgeefluik met een lijst toegestane modellen). De app stelt prompt en tools zelf samen.
+- **Toegang:** de proxy eist een geheime toegangscode (`ACCESS_CODE`), die de gebruiker één keer in de app invult. Geen accounts.
+- **Hosting:** één Cloudflare Worker met static assets: serveert de app én de `/api`-routes (één project, één URL; HTTPS is vereist voor microfoon en GPS). Automatisch deployen vanuit GitHub via Workers Builds.
 
 ## MVP-scope
 
@@ -74,7 +75,7 @@ Soort, activiteit, methode, kleed en telmethode worden opgeslagen als **waarnemi
 
 ## Voorgestelde bouwvolgorde
 
-1. Projectopzet: PWA-skelet, IndexedDB, sessies, deploy naar Cloudflare Pages.
+1. Projectopzet: PWA-skelet, IndexedDB, sessies, deploy naar Cloudflare.
 2. Proxy (Cloudflare Worker) voor de API-sleutels.
 3. LLM-interpretatie met tools, eerst getest met tekstinvoer (zonder spraak).
 4. Opname en Whisper-koppeling, met tijd en GPS bij start van de opname.
