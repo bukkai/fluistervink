@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#2f6b3a"/>
+  <!-- Vogeltje in silhouet, ruim binnen de veilige zone voor maskable icons -->
+  <g fill="#f7f5ef">
+    <ellipse cx="250" cy="290" rx="105" ry="75"/>
+    <circle cx="330" cy="215" r="48"/>
+    <path d="M372 205 L412 220 L372 232 Z"/>
+    <path d="M160 270 L100 230 L150 310 Z"/>
+    <rect x="235" y="355" width="10" height="45"/>
+    <rect x="270" y="355" width="10" height="45"/>
+  </g>
+  <circle cx="340" cy="208" r="8" fill="#2f6b3a"/>
+</svg>
