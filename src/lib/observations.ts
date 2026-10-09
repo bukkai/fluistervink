@@ -271,9 +271,14 @@ async function applyActions(utterance: Utterance, actions: Action[]): Promise<Ch
         if (action.addCount) {
           patch.count = Math.max(1, (patch.count ?? current.count) + action.addCount);
         }
-        // Een correctie zonder twijfel maakt een eerder onzekere waarneming zeker
-        patch.uncertain ??= false;
-        if (!patch.uncertain) patch.uncertainReason = undefined;
+        // Een correctie zonder twijfel maakt een eerder onzekere waarneming
+        // zeker; alleen een opmerking toevoegen niet
+        const onlyRemarks =
+          !action.addCount && Object.keys(action.fields).every((key) => key === 'remarks');
+        if (!onlyRemarks) {
+          patch.uncertain ??= false;
+          if (!patch.uncertain) patch.uncertainReason = undefined;
+        }
 
         const before = Object.fromEntries(
           Object.keys(patch).map((key) => [key, current[key as keyof Observation]]),

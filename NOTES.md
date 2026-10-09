@@ -65,6 +65,8 @@ Typen werkt, ook met de ingebouwde spraakinvoer van Android (die is matig). Besl
 - Interpretatie: het model laat optionele velden graag weg; daarom zijn activiteit, methode en telmethode verplicht bij `add_observation`. Bij `update_observation` blijven ze optioneel.
 - Testgeval terugblik: "vannacht op de nocmig een waterral overvliegend, half 3 's nachts een roepje" werd 1 × Waterral om 17:14, overvliegend, gezien en gehoord, onzeker (twijfel of het om twee vogels ging). Bedoeld: 1 × Waterral om 02:30, overvliegend, methode 588 "op geluidsrecorder". Oplossing: optioneel tijdveld in `add_observation` (model krijgt huidige datum/tijd mee, app rekent om) en methode 588 toestaan met "nocmig" → 588 in de prompt. Valt buiten de MVP-kern; meenemen als de testset er is.
 - "Ongedaan maken" van een ongedaan-maken wordt niet ondersteund; een tweede "undo" gaat een uitspraak verder terug.
+- Opmerkingenveld bij een waarneming (branch `opmerkingen`): "mogelijk woudaap, bij thuiskomst terugluisteren" → Woudaap onzeker met opmerking. Een latere opmerking ("die zat op het hek") vult aan en laat de twijfel staan. Bij de CSV-export (stap 6) mee in `Species Comments`.
+- Idee eigenaar (10 okt): een onterecht gestopte wandeling weer kunnen voortzetten. Klein: knop "Wandeling voortzetten" bij een eerdere wandeling (status terug naar `active`, `endedAt` weg); alleen als er geen andere wandeling loopt. Eventueel alleen bij de meest recente of binnen een paar uur.
 
 ## Overstappen tussen computers
 
