@@ -10,7 +10,7 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 
 ## Volgende stap
 
-0. Dev notes (PR #7) en alles terugzien (PR #8) gemerged. Bevinding 2 (meten + time-out) in PR #9: reviewen en mergen. Daarna op de telefoon "dev note, …" uitproberen en meteen de traagheid testen (zie bevinding 2): per uitspraak staat nu de duur in de lijst, en of de app op de achtergrond stond. JSON-export (Instellingen) aan Claude geven voor analyse.
+0. Dev notes (PR #7), alles terugzien (PR #8) en meten (PR #9) gemerged. Locatie-terugval in PR #10: reviewen en mergen. Daarna een prompt-PR met de interpretatiepunten van de testronde op de bank + bijnamenlijst. Daarna op de telefoon "dev note, …" uitproberen en meteen de traagheid testen (zie bevinding 2): per uitspraak staat nu de duur in de lijst, en of de app op de achtergrond stond. JSON-export (Instellingen) aan Claude geven voor analyse.
 
 1. Op de telefoon controleren of de nauwkeurigheid klopt (buiten vaak 3–10 m).
 2. Op de telefoon uitproberen met eigen zinnen; opvallende fouten noteren voor de prompt.
@@ -41,10 +41,10 @@ Typen werkt, ook met de ingebouwde spraakinvoer van Android (die is matig). Besl
 - **Snelheid:** 1,9–4,2 s per uitspraak, vrijwel alles bij Anthropic (proxy ±0,1 s), geen wachtrij, app op de voorgrond. De 1–2 minuten van de telefoon zijn op desktop dus niet te zien; telefoontest nodig.
 - **Locatie raakt kwijt (desktop):** één positie bij de start (±35 m, wifi), daarna geen updates meer; de positie veroudert (9 s … 109 s) en na 2 min (`STALE_MS`) krijgen uitspraken géén locatie meer. Ook de verse meting lukt dan niet; er komt geen `gps_error`. Op een Mac zonder GPS en stilzittend logisch, maar hetzelfde kan op de telefoon gebeuren als je lang stilstaat (bij een plas). Voorstel: altijd terugvallen op de laatst bekende positie (met de echte meettijd, zodat de leeftijd zichtbaar is) in plaats van niets; per uitspraak vastleggen hoe de positie tot stand kwam (vers / laatst bekend / geen) en hoe lang het duurde. Op de telefoon nagaan of het daar ook gebeurt.
 - **Interpretatie, voor de prompt:**
-  - "een roek en een kraai" → Kraai onbekend; "kraai" = Zwarte Kraai (208). Idem "groepje kraaien".
+  - "een roek en een kraai" → Kraai onbekend; "kraai" = Zwarte Kraai (208). Idem "groepje kraaien". **Besloten:** kraai is altijd Zwarte Kraai, tenzij expliciet "bonte kraai".
   - "ja dat klopte" → genegeerd, maar "vorige waarneming is correct" → onzeker-vlag eraf. Bevestigingen consistent maken: onzeker eraf bij #1.
-  - "phylloscopus" → Tjiftjaf of Fitis; "phylloscoop" → Boszanger onbekend. Geslachtsnaam → Boszanger onbekend.
-  - "sibopi" → Siberische Boompieper (goed, met onzeker). Vogelaarsjargon ("sibo", "tjif", "grote gele") in de alternatieve namen opnemen.
+  - "phylloscopus" → Tjiftjaf of Fitis; "phylloscoop" → Boszanger onbekend. **Besloten:** phylloscopus/phylloscoop = Tjiftjaf of Fitis (595858); een bijzondere boszanger wordt later gecorrigeerd.
+  - "sibopi" → Siberische Boompieper (goed, met onzeker). Vogelaarsjargon wordt veel gebruikt (eigenaar: "mibo", "tova", "rbt'tje", "robotap", …). Plan: bijnamenlijst `data/bijnamen.json` (bijnaam → soort-ID), door de eigenaar aan te vullen, in de systeemprompt en later in de Whisper-prompt.
   - "twee duiven" → Houtduif, onzeker: redelijk (er is geen Duif onbekend).
   - "het waren twee mannetjes en de rest vrouwtjes" → netjes gesplitst in 2 ♂ + 5 ♀. "Nee het zijn er 7" goed.
   - "mogelijk woudaap, bij thuiskomst geluiden terugluisteren" → Woudaap onzeker; de opdracht "terugluisteren" gaat verloren. Idee: vrij opmerkingenveld bij een waarneming (waarneming.nl heeft er een).
