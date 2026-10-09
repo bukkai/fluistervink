@@ -67,6 +67,12 @@ Typen werkt, ook met de ingebouwde spraakinvoer van Android (die is matig). Besl
 - "Ongedaan maken" van een ongedaan-maken wordt niet ondersteund; een tweede "undo" gaat een uitspraak verder terug.
 - Opmerkingenveld bij een waarneming (branch `opmerkingen`): "mogelijk woudaap, bij thuiskomst terugluisteren" → Woudaap onzeker met opmerking. Een latere opmerking ("die zat op het hek") vult aan en laat de twijfel staan. Bij de CSV-export (stap 6) mee in `Species Comments`.
 - Idee eigenaar (10 okt): een onterecht gestopte wandeling weer kunnen voortzetten. Klein: knop "Wandeling voortzetten" bij een eerdere wandeling (status terug naar `active`, `endedAt` weg); alleen als er geen andere wandeling loopt. Eventueel alleen bij de meest recente of binnen een paar uur.
+- Idee eigenaar (10 okt): bij een waarneming laten zien wáár hij was; nog bepalen hoe gedetailleerd. De coördinaten worden al bewaard, het gaat om de weergave. Opties, van eenvoudig naar meer werk:
+  1. De "±35 m" bij een waarneming tikbaar maken → kaart (Google Maps/OSM). Dat werkt al zo bij dev notes (`mapsUrl`), nog niet bij waarnemingen.
+  2. Een plaats- of straatnaam erbij ("Bergen, Duinweg"), via reverse geocoding: PDOK Locatieserver (NL, gratis, geen sleutel) of Nominatim (OSM). Eén keer opvragen en bij de waarneming bewaren.
+  3. Het gebied van waarneming.nl ("Schoorlse Duinen"), het detailniveau dat de site zelf gebruikt. Kan via hun API (onderzoeken; vermoedelijk met inloggen).
+  4. Een kleine kaart met alle waarnemingen van een wandeling (Leaflet + OSM), bij de review. Stond al op de roadmap.
+  Voorstel: nu 1 (klein), en 2 of 3 bij de review (stap 5). Echte offline-ondersteuning valt buiten de MVP, dus de naam opvragen bij het verwerken kan.
 
 ## Overstappen tussen computers
 
