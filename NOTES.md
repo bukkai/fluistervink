@@ -10,6 +10,8 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 
 ## Volgende stap
 
+0. PR #7 (dev notes) reviewen en mergen; daarna op de telefoon "dev note, …" uitproberen en meteen de traagheid testen (zie bevinding 2).
+
 1. Op de telefoon controleren of de nauwkeurigheid klopt (buiten vaak 3–10 m).
 2. Op de telefoon uitproberen met eigen zinnen; opvallende fouten noteren voor de prompt.
 3. Op elke computer `.dev.vars` aanmaken (zie README).
