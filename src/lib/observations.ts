@@ -10,6 +10,8 @@ import { ApiError } from './api';
 import { MODEL, interpret, promptVersion, type Action, type Interpretation } from './interpret';
 import { currentPosition } from './location.svelte';
 import { APP_VERSION, logEvent, wasHiddenSince } from './log';
+import type { Recording } from './recorder.svelte';
+import { TRANSCRIBE_MODEL, transcribe, transcribePromptVersion } from './transcribe';
 import { DEFAULT_ACTIVITY, DEFAULT_COUNTING_METHOD, DEFAULT_METHOD } from './vocab';
 
 // Local-first verwerking: elke uitspraak wordt eerst opgeslagen (status
@@ -31,17 +33,41 @@ export async function listUtterances(sessionId: string): Promise<Utterance[]> {
 
 /** Slaat een getypte uitspraak op en zet hem in de wachtrij. */
 export async function submitText(sessionId: string, text: string): Promise<void> {
-  const id = crypto.randomUUID();
   // Positie opvragen op het moment van de uitspraak, maar niet erop wachten:
   // de uitspraak wordt meteen opgeslagen en verwerkt.
-  const lookup = currentPosition();
-  await db.utterances.add({
-    id,
-    sessionId,
-    recordedAt: Date.now(),
-    transcript: text.trim(),
-    status: 'pending',
-  });
+  await submit(
+    { sessionId, recordedAt: Date.now(), transcript: text.trim() },
+    currentPosition(),
+  );
+}
+
+/**
+ * Slaat een opname op en zet hem in de wachtrij; de spraakherkenning is de
+ * eerste verwerkingsstap.
+ * @param lookup Positie, opgevraagd bij het indrukken van de opnameknop
+ */
+export async function submitRecording(
+  sessionId: string,
+  recording: Recording,
+  lookup: Promise<PositionLookup>,
+): Promise<void> {
+  await submit(
+    {
+      sessionId,
+      recordedAt: recording.startedAt,
+      audio: recording.audio,
+      audioDurationMs: recording.durationMs,
+    },
+    lookup,
+  );
+}
+
+async function submit(
+  fields: Pick<Utterance, 'sessionId' | 'recordedAt' | 'transcript' | 'audio' | 'audioDurationMs'>,
+  lookup: Promise<PositionLookup>,
+): Promise<void> {
+  const id = crypto.randomUUID();
+  await db.utterances.add({ id, ...fields, status: 'pending' });
   processQueue();
   attachPosition(id, lookup);
 }
@@ -64,6 +90,11 @@ async function attachPosition(utteranceId: string, pending: Promise<PositionLook
       .filter((obs) => !obs.position)
       .modify({ position });
   });
+}
+
+/** Einde van de uitspraak: bij een opname het einde van de opname. */
+export function spokenAt(utterance: Utterance): number {
+  return utterance.recordedAt + (utterance.audioDurationMs ?? 0);
 }
 
 export async function retry(utteranceId: string): Promise<void> {
@@ -108,21 +139,35 @@ export function devNoteText(transcript: string): string | undefined {
 }
 
 async function processUtterance(utterance: Utterance): Promise<void> {
-  // Dev notes gaan niet naar het model: snel, gratis en altijd goed herkend
-  if (devNoteText(utterance.transcript ?? '') !== undefined) {
-    await db.utterances.update(utterance.id, { status: 'done', kind: 'dev_note', result: 'note' });
-    return;
-  }
-
   const startedAt = Date.now();
   const attempts = (utterance.attempts ?? 0) + 1;
   const ids = { sessionId: utterance.sessionId, utteranceId: utterance.id };
   await db.utterances.update(utterance.id, { status: 'processing', attempts });
 
+  let step: 'transcribe' | 'interpret' = 'transcribe';
   let interpretation: Interpretation;
   try {
+    // Opname: eerst spraak naar tekst. Na een fout bij de interpretatie blijft
+    // het transcript bewaard, zodat "Opnieuw" alleen die stap herhaalt.
+    if (utterance.transcript === undefined && utterance.audio) {
+      utterance = await transcribeUtterance(utterance);
+    }
+    const transcript = utterance.transcript ?? '';
+
+    // Dev notes gaan niet naar het model: snel, gratis en altijd goed herkend
+    if (devNoteText(transcript) !== undefined) {
+      await db.utterances.update(utterance.id, { status: 'done', kind: 'dev_note', result: 'note' });
+      return;
+    }
+    // Niets verstaan (wind, per ongeluk ingedrukt): niet naar het model
+    if (!transcript) {
+      await db.utterances.update(utterance.id, { status: 'done', result: 'ignored' });
+      return;
+    }
+
+    step = 'interpret';
     const recent = await listObservations(utterance.sessionId);
-    interpretation = await interpret(utterance.transcript ?? '', recent);
+    interpretation = await interpret(transcript, recent);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     // In de log, want een volgende poging overschrijft de fout bij de uitspraak
@@ -130,16 +175,18 @@ async function processUtterance(utterance: Utterance): Promise<void> {
       'attempt_failed',
       {
         attempt: attempts,
+        step,
         error: message,
         status: error instanceof ApiError ? error.status : undefined,
-        waitedMs: startedAt - utterance.recordedAt,
+        waitedMs: startedAt - spokenAt(utterance),
         durationMs: Date.now() - startedAt,
         wasHidden: wasHiddenSince(utterance.recordedAt),
         online: navigator.onLine,
       },
       ids,
     );
-    await db.utterances.update(utterance.id, { status: 'failed', error: message });
+    const prefix = step === 'transcribe' ? 'Spraakherkenning: ' : '';
+    await db.utterances.update(utterance.id, { status: 'failed', error: prefix + message });
     return;
   }
 
@@ -173,6 +220,21 @@ async function processUtterance(utterance: Utterance): Promise<void> {
       error: interpretation.rejected.length ? interpretation.rejected.join('; ') : undefined,
     });
   });
+}
+
+/** Zet de opname om in tekst en slaat het transcript op. */
+async function transcribeUtterance(utterance: Utterance): Promise<Utterance> {
+  const { text, timing } = await transcribe(utterance.audio!);
+  const changes = {
+    transcript: text,
+    transcription: {
+      model: TRANSCRIBE_MODEL,
+      promptVersion: await transcribePromptVersion,
+      ...timing,
+    },
+  };
+  await db.utterances.update(utterance.id, changes);
+  return { ...utterance, ...changes };
 }
 
 /** Voert de acties uit en geeft terug wat er veranderde. */

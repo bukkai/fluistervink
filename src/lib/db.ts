@@ -43,8 +43,13 @@ export interface Utterance {
   position?: Position;
   /** Hoe `position` gevonden werd (zonder de positie zelf) */
   positionLookup?: Omit<PositionLookup, 'position'>;
+  /** Opname bij een ingesproken uitspraak; leeg bij getypte invoer */
   audio?: Blob;
+  audioDurationMs?: number;
+  /** Bij een opname leeg tot de spraakherkenning klaar is */
   transcript?: string;
+  /** Meetgegevens van de spraakherkenning, voor de vergelijking van STT-opties */
+  transcription?: TranscriptionMetrics;
   /** Ruwe uitvoer van het LLM (tool calls), bewaard voor de testset */
   llmOutput?: unknown;
   status: 'pending' | 'processing' | 'done' | 'failed';
@@ -71,6 +76,15 @@ export interface Utterance {
   metrics?: ProcessingMetrics;
 }
 
+export interface TranscriptionMetrics {
+  model: string;
+  /** Korte hash van model en prompt */
+  promptVersion: string;
+  /** Duur van het verzoek aan de proxy, en daarvan de tijd bij OpenAI */
+  requestMs: number;
+  upstreamMs?: number;
+}
+
 export interface ProcessingMetrics {
   /** Commit van de app die de uitspraak verwerkte */
   appVersion: string;
@@ -79,7 +93,10 @@ export interface ProcessingMetrics {
   promptVersion: string;
   /** De recente waarnemingen zoals het model ze kreeg */
   context: string;
-  /** Begin en eind van de verwerking; begin min `recordedAt` = tijd in de wachtrij */
+  /**
+   * Begin en eind van de verwerking (inclusief spraakherkenning). Begin min
+   * einde van de uitspraak (`recordedAt` + `audioDurationMs`) = tijd in de wachtrij.
+   */
   startedAt: number;
   finishedAt: number;
   /** Duur van het verzoek aan de proxy, en daarvan de tijd bij Anthropic */
