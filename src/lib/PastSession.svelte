@@ -1,8 +1,15 @@
 <script lang="ts">
   import type { Session } from './db';
+  import { resumeSession } from './sessions';
   import SessionLog from './SessionLog.svelte';
 
-  let { session }: { session: Session } = $props();
+  /** `resumable`: de meest recente wandeling, en er loopt geen andere */
+  let { session, resumable }: { session: Session; resumable: boolean } = $props();
+
+  async function resume() {
+    if (!confirm('Deze wandeling voortzetten?')) return;
+    if (await resumeSession(session.id)) location.hash = '';
+  }
 
   const dateFormat = new Intl.DateTimeFormat('nl-NL', { dateStyle: 'full' });
   const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
@@ -17,10 +24,23 @@
     : '?'}
 </p>
 
+{#if resumable}
+  <button onclick={resume}>Wandeling voortzetten</button>
+{/if}
+
 <SessionLog {session} />
 
 <style>
   a {
+    color: var(--green);
+  }
+
+  button {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--green);
+    border-radius: 0.5rem;
+    font: inherit;
+    background: none;
     color: var(--green);
   }
 
