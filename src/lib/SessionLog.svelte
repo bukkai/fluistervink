@@ -41,6 +41,13 @@
       .join(', ');
   }
 
+  /** Van uitspraak tot verwerkt, inclusief de tijd in de wachtrij */
+  function duration(u: Utterance): string | undefined {
+    if (!u.metrics) return undefined;
+    const seconds = (u.metrics.finishedAt - u.recordedAt) / 1000;
+    return `${seconds.toLocaleString('nl-NL', { maximumFractionDigits: 1 })} s`;
+  }
+
   function statusLabel(u: Utterance): string {
     if (u.kind === 'dev_note') return 'dev note';
     if (u.undone) return 'teruggedraaid';
@@ -97,6 +104,9 @@
         <div>
           “{u.transcript}”
           <span class="status {u.status} {u.result}">{statusLabel(u)}</span>
+          {#if duration(u)}
+            <span class="status">· {duration(u)}{u.metrics?.wasHidden ? ' (app op achtergrond)' : ''}</span>
+          {/if}
         </div>
         {#if u.error}
           <div class="reason">{u.error}</div>

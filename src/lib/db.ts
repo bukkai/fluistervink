@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
+import type { LogEvent } from './log';
 
 // Datamodel, zie CLAUDE.md. ID's zijn UUID's (crypto.randomUUID), zodat ze
 // later ook buiten dit apparaat uniek blijven. Tijden zijn epoch-milliseconden.
@@ -47,6 +48,29 @@ export interface Utterance {
   changes?: Change[];
   /** Teruggedraaid door een latere `undo` */
   undone?: boolean;
+  /** Aantal verwerkingspogingen (meer dan 1 na "Opnieuw" of een herstart) */
+  attempts?: number;
+  /** Meetgegevens van de laatste verwerkingspoging, voor analyse */
+  metrics?: ProcessingMetrics;
+}
+
+export interface ProcessingMetrics {
+  /** Commit van de app die de uitspraak verwerkte */
+  appVersion: string;
+  model: string;
+  /** Korte hash van systeemprompt en tools; verandert bij elke promptwijziging */
+  promptVersion: string;
+  /** De recente waarnemingen zoals het model ze kreeg */
+  context: string;
+  /** Begin en eind van de verwerking; begin min `recordedAt` = tijd in de wachtrij */
+  startedAt: number;
+  finishedAt: number;
+  /** Duur van het verzoek aan de proxy, en daarvan de tijd bij Anthropic */
+  requestMs?: number;
+  upstreamMs?: number;
+  /** De app was tussen uitspraak en eind verwerking (even) op de achtergrond */
+  wasHidden: boolean;
+  online: boolean;
 }
 
 export type Change =
@@ -83,6 +107,7 @@ export const db = new Dexie('thijsse') as Dexie & {
   sessions: EntityTable<Session, 'id'>;
   utterances: EntityTable<Utterance, 'id'>;
   observations: EntityTable<Observation, 'id'>;
+  events: EntityTable<LogEvent, 'id'>;
 };
 
 // Alleen velden waarop we zoeken staan in het schema; de rest wordt gewoon
@@ -91,4 +116,8 @@ db.version(1).stores({
   sessions: 'id, status, startedAt',
   utterances: 'id, sessionId, status, recordedAt',
   observations: 'id, sessionId, utteranceId, observedAt',
+});
+
+db.version(2).stores({
+  events: '++id, at, type',
 });

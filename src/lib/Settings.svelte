@@ -1,6 +1,7 @@
 <script lang="ts">
   import { ApiError, getAccessCode, ping, setAccessCode } from './api';
   import { download, exportAllJson } from './export';
+  import { APP_VERSION } from './log';
 
   let code = $state(getAccessCode());
   // Bij het laden open zolang er nog geen code is; daarna houdt bind:open
@@ -45,6 +46,7 @@
     {/if}
   </form>
   <button class="secondary" onclick={exportData}>Alle gegevens exporteren (JSON)</button>
+  <p class="version">Versie {APP_VERSION}</p>
 </details>
 
 <style>
@@ -88,6 +90,10 @@
     border: 1px solid var(--border);
     background: var(--bg);
     color: var(--fg);
+  }
+
+  .version {
+    font-size: 0.8rem;
   }
 
   .ok {

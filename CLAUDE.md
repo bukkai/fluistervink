@@ -28,6 +28,7 @@ Vernoemd naar Jac. P. Thijsse. "Thijsse" is ook het (toekomstige) wake word.
 - **Local-first:** elke uitspraak (audio, tijd, GPS) wordt eerst lokaal opgeslagen (IndexedDB) en daarna verwerkt, één voor één, op volgorde. Dit is in feite een wachtrij die normaal direct leeg is; echte offline-ondersteuning kan later met weinig moeite worden toegevoegd.
 - **Feedback:** trilpatronen. Eén korte tril = opgeslagen; twee = niet begrepen; een afwijkend patroon = opgeslagen maar onzeker.
 - **API-sleutels:** nooit in de client. Een kleine proxy (`worker/index.ts`) praat met de STT- en LLM-API's: `/api/transcribe` (OpenAI) en `/api/messages` (Anthropic, doorgeefluik met een lijst toegestane modellen). De app stelt prompt en tools zelf samen.
+- **Meten in de ontwikkelfase:** bij elke uitspraak worden appversie (commit), model, promptversie (hash), de meegestuurde context en de tijden per stap bewaard (wachtrij, verzoek, tijd bij Anthropic), plus of de app op de achtergrond stond. Een gebeurtenissenlog (tabel `events`) bewaart fouten, mislukte pogingen, voor-/achtergrond, online/offline en GPS. Alles blijft lokaal en gaat mee in de JSON-export.
 - **Toegang:** de proxy eist een geheime toegangscode (`ACCESS_CODE`), die de gebruiker één keer in de app invult. Geen accounts.
 - **Hosting:** één Cloudflare Worker met static assets: serveert de app én de `/api`-routes (één project, één URL; HTTPS is vereist voor microfoon en GPS). Automatisch deployen vanuit GitHub via Workers Builds.
 
