@@ -28,7 +28,23 @@ export interface Utterance {
   /** Ruwe uitvoer van het LLM (tool calls), bewaard voor de testset */
   llmOutput?: unknown;
   status: 'pending' | 'processing' | 'done' | 'failed';
+  /**
+   * Uitkomst na verwerking; bepaalt later ook het trilpatroon.
+   * `ignored`: geen waarneming in de uitspraak (of niet begrepen).
+   */
+  result?: 'saved' | 'uncertain' | 'ignored';
+  /** Foutmelding bij status `failed`, of acties die niet uitgevoerd konden worden */
+  error?: string;
+  /** Wat deze uitspraak in de database veranderde, zodat `undo` het kan terugdraaien */
+  changes?: Change[];
+  /** Teruggedraaid door een latere `undo` */
+  undone?: boolean;
 }
+
+export type Change =
+  | { type: 'add'; observationId: string }
+  | { type: 'update'; observationId: string; before: Partial<Observation> }
+  | { type: 'delete'; observation: Observation };
 
 export interface Observation {
   id: string;
@@ -46,8 +62,12 @@ export interface Observation {
   /** Geslacht is in de API een vaste keuze, geen ID */
   sex?: 'male' | 'female' | 'unknown';
   observedAt: number;
+  /** Volgorde van aanmaken, voor waarnemingen uit dezelfde uitspraak */
+  createdAt: number;
   position?: Position;
   uncertain: boolean;
+  /** Waarom het model twijfelde, om de review makkelijker te maken */
+  uncertainReason?: string;
   status: 'draft' | 'reviewed' | 'exported';
 }
 
