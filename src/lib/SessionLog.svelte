@@ -1,7 +1,7 @@
 <script lang="ts">
   import { liveQuery } from 'dexie';
   import type { Observation, Session, Utterance } from './db';
-  import { listObservations, listUtterances, retry } from './observations';
+  import { listObservations, listUtterances, retry, spokenAt } from './observations';
   import {
     DEFAULT_COUNTING_METHOD,
     activities,
@@ -48,11 +48,22 @@
     return minutes >= 1 ? `positie ${minutes} min oud` : undefined;
   }
 
-  /** Van uitspraak tot verwerkt, inclusief de tijd in de wachtrij */
+  /** Van einde uitspraak tot verwerkt, inclusief de tijd in de wachtrij */
   function duration(u: Utterance): string | undefined {
     if (!u.metrics) return undefined;
-    const seconds = (u.metrics.finishedAt - u.recordedAt) / 1000;
-    return `${seconds.toLocaleString('nl-NL', { maximumFractionDigits: 1 })} s`;
+    return seconds(u.metrics.finishedAt - spokenAt(u));
+  }
+
+  /** Speelt de opname af, om te horen wat er gezegd werd. */
+  function play(u: Utterance) {
+    const url = URL.createObjectURL(u.audio!);
+    const audio = new Audio(url);
+    audio.onended = () => URL.revokeObjectURL(url);
+    audio.play();
+  }
+
+  function seconds(ms: number): string {
+    return `${(ms / 1000).toLocaleString('nl-NL', { maximumFractionDigits: 1 })} s`;
   }
 
   function statusLabel(u: Utterance): string {
@@ -62,7 +73,7 @@
       case 'pending':
         return 'in wachtrij';
       case 'processing':
-        return 'bezig…';
+        return u.transcript === undefined && u.audio ? 'verstaan…' : 'bezig…';
       case 'failed':
         return 'fout';
       case 'done':
@@ -112,7 +123,14 @@
     {#each $utterances as u (u.id)}
       <li>
         <div>
-          “{u.transcript}”
+          {#if u.audio}
+            <button class="play" onclick={() => play(u)} aria-label="Opname afspelen">▶</button>
+          {/if}
+          {#if u.transcript !== undefined}
+            “{u.transcript}”
+          {:else}
+            <span class="muted">Opname van {seconds(u.audioDurationMs ?? 0)}</span>
+          {/if}
           <span class="status {u.status} {u.result}">{statusLabel(u)}</span>
           {#if duration(u)}
             <span class="status">· {duration(u)}{u.metrics?.wasHidden ? ' (app op achtergrond)' : ''}</span>
@@ -138,6 +156,12 @@
     font: inherit;
     background: var(--green);
     color: white;
+  }
+
+  button.play {
+    margin: 0 0.25rem 0 0;
+    padding: 0 0.5rem;
+    font-size: 0.8rem;
   }
 
   ul {

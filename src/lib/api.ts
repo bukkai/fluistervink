@@ -85,12 +85,14 @@ export interface TranscribeOptions {
 export async function transcribe(
   audio: Blob,
   { model, prompt }: TranscribeOptions = {},
-): Promise<{ text: string; model: string }> {
+): Promise<{ data: { text: string; model: string }; timing: Timing }> {
   const form = new FormData();
-  form.set('audio', audio, 'opname.webm');
+  // OpenAI herkent het formaat aan de extensie: "audio/webm;codecs=opus" → .webm
+  const extension = /^audio\/(\w+)/.exec(audio.type)?.[1] ?? 'webm';
+  form.set('audio', audio, `opname.${extension}`);
   if (model) form.set('model', model);
   if (prompt) form.set('prompt', prompt);
-  return request('/api/transcribe', { method: 'POST', body: form });
+  return timedRequest('/api/transcribe', { method: 'POST', body: form });
 }
 
 /** Stuurt een verzoek door naar de Messages API van Anthropic. */

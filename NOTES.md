@@ -10,12 +10,12 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 
 ## Volgende stap
 
-0. Dev notes (PR #7), alles terugzien (PR #8) en meten (PR #9) gemerged. Locatie-terugval in PR #10 en bijnamen + promptregels in PR #11: reviewen en mergen. Nog open uit de testronde: vrij opmerkingenveld bij een waarneming ("bij thuiskomst terugluisteren"). Daarna op de telefoon "dev note, …" uitproberen en meteen de traagheid testen (zie bevinding 2): per uitspraak staat nu de duur in de lijst, en of de app op de achtergrond stond. JSON-export (Instellingen) aan Claude geven voor analyse.
+0. Alles t/m PR #11 gemerged (dev notes, terugzien, meten, locatie-terugval, bijnamen). Stap 4 (opname en Whisper) in PR #12 (branch `opname`): reviewen en mergen. Daarna op de telefoon testen: inspreken (tikken of vasthouden), "dev note, …", traagheid (per uitspraak staat de duur in de lijst, gemeten vanaf het einde van de opname) en GPS-nauwkeurigheid. JSON-export (Instellingen) aan Claude geven voor analyse. Nog open uit de testronde: vrij opmerkingenveld bij een waarneming ("bij thuiskomst terugluisteren").
 
 1. Op de telefoon controleren of de nauwkeurigheid klopt (buiten vaak 3–10 m).
 2. Op de telefoon uitproberen met eigen zinnen; opvallende fouten noteren voor de prompt.
 3. Op elke computer `.dev.vars` aanmaken (zie README).
-4. Stap 4: opname en Whisper-koppeling. `currentPosition()` aanroepen bij het indrukken van de opnameknop. De transcriptie komt dan in `utterance.transcript` en loopt verder door dezelfde wachtrij. Daarna: 5 review (incl. afgelopen wandelingen openen), 6 CSV-export, 7 testset (volgorde aangepast op 9 okt, zie `CLAUDE.md`).
+4. Daarna: 5 review (trilfeedback, bewerken, onzekere nalopen), 6 CSV-export, 7 testset (volgorde aangepast op 9 okt, zie `CLAUDE.md`).
 
 ## Bevindingen eerste test op de telefoon (9 okt)
 
@@ -49,6 +49,12 @@ Typen werkt, ook met de ingebouwde spraakinvoer van Android (die is matig). Besl
   - "het waren twee mannetjes en de rest vrouwtjes" → netjes gesplitst in 2 ♂ + 5 ♀. "Nee het zijn er 7" goed.
   - "mogelijk woudaap, bij thuiskomst geluiden terugluisteren" → Woudaap onzeker; de opdracht "terugluisteren" gaat verloren. Idee: vrij opmerkingenveld bij een waarneming (waarneming.nl heeft er een).
   - Vragen ("hoeveel soorten hebben we nu gezien?") worden terecht genegeerd.
+
+## Opname (stap 4, 10 okt)
+
+- Lokaal getest met een nep-microfoon (macOS-stem Xander): "zes overvliegende houtduiven en een roepje tjiftjaf" en "nee, keep in plaats van tjiftjaf" werden goed verstaan en verwerkt. Spraakherkenning ±2,1 s, interpretatie ±2,7 s.
+- Nog niet getest met een echte microfoon (kan niet in de browser van Claude). Op de telefoon letten op: wordt het begin van de zin afgekapt (de microfoon gaat pas aan bij het indrukken), wind, en of de toestemmingsvraag één keer komt.
+- Whisper-prompt: soortnamen (zeldzaamheid 1–2, ±270) en alle bijnamen. Zeldzame soorten staan er niet in; als die slecht verstaan worden, de lijst uitbreiden.
 
 ## Open vragen / losse eindjes
 

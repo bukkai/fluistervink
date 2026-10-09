@@ -1,7 +1,8 @@
 <script lang="ts">
-  import type { Session } from './db';
-  import { gps, startTracking, stopTracking } from './location.svelte';
-  import { submitText } from './observations';
+  import type { PositionLookup, Session } from './db';
+  import { currentPosition, gps, startTracking, stopTracking } from './location.svelte';
+  import { submitRecording, submitText } from './observations';
+  import { recorder, startRecording, stopRecording } from './recorder.svelte';
   import SessionLog from './SessionLog.svelte';
 
   let { session }: { session: Session } = $props();
@@ -11,8 +12,67 @@
   // GPS aan zolang dit scherm (de lopende wandeling) zichtbaar is
   $effect(() => {
     startTracking();
-    return stopTracking;
+    return () => {
+      stopTracking();
+      // Wandeling gestopt tijdens een opname: microfoon uit, opname bewaren
+      if (recorder.status === 'recording') finishRecording();
+    };
   });
+
+  /** Langer ingedrukt dan dit = vasthouden (loslaten stopt); korter = tikken (nog eens tikken stopt). */
+  const HOLD_MS = 400;
+  /** Vergeten te stoppen: na een minuut stopt de opname vanzelf. */
+  const MAX_RECORDING_MS = 60_000;
+
+  let pressedAt = 0;
+  let lookup: Promise<PositionLookup> | undefined;
+  let maxTimer: ReturnType<typeof setTimeout> | undefined;
+  let elapsed = $state(0);
+
+  async function press(event: PointerEvent) {
+    event.preventDefault();
+    // Loslaten telt ook als de vinger van de knop afglijdt
+    (event.currentTarget as Element).setPointerCapture(event.pointerId);
+    if (recorder.status === 'starting') return;
+    if (recorder.status === 'recording') {
+      finishRecording();
+      return;
+    }
+    pressedAt = Date.now();
+    // Tijd en positie horen bij het begin van de opname, niet bij het eind
+    lookup = currentPosition();
+    if (await startRecording()) {
+      maxTimer = setTimeout(finishRecording, MAX_RECORDING_MS);
+    }
+  }
+
+  function release() {
+    if (recorder.status === 'recording' && Date.now() - pressedAt > HOLD_MS) finishRecording();
+  }
+
+  async function finishRecording() {
+    clearTimeout(maxTimer);
+    const recording = await stopRecording();
+    if (recording && lookup) await submitRecording(session.id, recording, lookup);
+  }
+
+  // Lopende tijd tijdens de opname
+  $effect(() => {
+    if (recorder.status !== 'recording') return;
+    const timer = setInterval(() => (elapsed = Date.now() - (recorder.startedAt ?? 0)), 200);
+    return () => {
+      clearInterval(timer);
+      elapsed = 0;
+    };
+  });
+
+  const micLabels: Record<typeof recorder.status, string> = {
+    idle: 'Tik of houd vast om in te spreken',
+    starting: 'Microfoon aanzetten…',
+    recording: 'Loslaten of tikken om te stoppen',
+    denied: 'Geen toegang tot de microfoon. Sta dit toe in de browserinstellingen.',
+    unsupported: 'Opnemen kan niet in deze browser.',
+  };
 
   const gpsLabels: Record<typeof gps.status, string> = {
     off: '',
@@ -38,10 +98,24 @@
   {/if}
 </p>
 
+<button
+  class="talk"
+  class:recording={recorder.status === 'recording'}
+  disabled={recorder.status === 'unsupported'}
+  onpointerdown={press}
+  onpointerup={release}
+  oncontextmenu={(event) => event.preventDefault()}
+>
+  {recorder.status === 'recording' ? `Stop · ${Math.floor(elapsed / 1000)} s` : 'Inspreken'}
+</button>
+<p class="mic {recorder.status}">
+  {micLabels[recorder.status]}
+</p>
+
 <form onsubmit={submit}>
   <input
     bind:value={text}
-    placeholder="Bv. zes overvliegende houtduiven"
+    placeholder="Of typ: zes overvliegende houtduiven"
     autocomplete="off"
     enterkeyhint="send"
   />
@@ -58,8 +132,41 @@
   }
 
   .gps.denied,
-  .gps.unavailable {
+  .gps.unavailable,
+  .mic.denied,
+  .mic.unsupported {
     color: var(--red);
+  }
+
+  .talk {
+    display: block;
+    width: 100%;
+    margin-top: 1rem;
+    padding: 2.5rem 1rem;
+    border-radius: 1rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    /* Geen tekstselectie of contextmenu bij lang indrukken op Android */
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: none;
+  }
+
+  .talk.recording {
+    background: var(--red);
+  }
+
+  .talk:disabled {
+    opacity: 0.5;
+  }
+
+  .mic {
+    margin: 0.5rem 0 0;
+    min-height: 1.5em;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--muted);
   }
 
   form {
