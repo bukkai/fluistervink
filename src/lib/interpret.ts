@@ -36,6 +36,7 @@ export interface ObservationFields {
   sex?: 'male' | 'female';
   uncertain?: boolean;
   uncertainReason?: string;
+  remarks?: string;
 }
 
 export type Action =
@@ -80,6 +81,11 @@ const fieldProperties = {
     type: 'string',
     description:
       'Alleen als uncertain true is: kort waarom je twijfelt, bv. "verstaan als vink, kan ook keep zijn".',
+  },
+  remarks: {
+    type: 'string',
+    description:
+      'Opmerking of opdracht van de gebruiker bij deze waarneming, bv. "bij thuiskomst terugluisteren". Kort, in de woorden van de gebruiker. Bij update_observation vervangt dit de bestaande opmerking.',
   },
 } as const;
 
@@ -166,6 +172,10 @@ const SYSTEM_PROMPT = `Je bent de interpretatielaag van Thijsse, een app waarmee
 - Geen waarneming of correctie in de uitspraak (gepraat, "hallo", "test", vragen) → roep geen enkele tool aan.
 - Het woord "Thijsse" aan het begin is de aanspreekvorm van de app; negeer het.
 
+## Opmerkingen
+
+Zegt de gebruiker iets over een waarneming dat niet in de andere velden past, zoals een opdracht voor later ("bij thuiskomst terugluisteren", "foto checken") of een bijzonderheid ("met ring", "zat op het hek"), zet dat dan in remarks. Hoort het bij een eerdere waarneming ("die heb ik op de foto"), gebruik dan update_observation. Heeft die al een opmerking (zie de lijst), herhaal die dan en voeg de nieuwe toe. Zet geen twijfel in remarks; daarvoor is uncertain_reason.
+
 ## Soorten
 
 Gebruik alleen een ID uit de soortenlijst hieronder; verzin nooit een ID. Spraakherkenning maakt fouten: kies de soort die het meest waarschijnlijk bedoeld is en zet dan uncertain op true met een korte reden. Algemene namen ("een meeuw", "een eend") → de verzamelsoort ("Meeuw onbekend", "Eend onbekend") als die bestaat. Is de soort echt niet te bepalen, maar is er duidelijk wel een vogel gezien, kies dan de best passende verzamelsoort met uncertain ("een vogel" → Vogel onbekend).
@@ -233,6 +243,7 @@ function describe(obs: Observation): string {
     codeName(lifeStages, obs.lifeStageId),
     obs.sex === 'male' ? 'man' : obs.sex === 'female' ? 'vrouw' : undefined,
     obs.uncertain ? 'onzeker' : undefined,
+    obs.remarks ? `opmerking: "${obs.remarks}"` : undefined,
   ];
   return `${timeFormat.format(obs.observedAt)} ${parts.filter(Boolean).join(', ')}`;
 }
@@ -297,6 +308,7 @@ interface RawFields {
   sex?: 'male' | 'female';
   uncertain?: boolean;
   uncertain_reason?: string;
+  remarks?: string;
 }
 
 const validCode = (codes: Code[], id: number | undefined) =>
@@ -318,6 +330,7 @@ function toAction(block: Anthropic.ToolUseBlock, context: Observation[]): Action
     sex: input.sex,
     uncertain: input.uncertain,
     uncertainReason: input.uncertain ? input.uncertain_reason : undefined,
+    remarks: input.remarks?.trim() || undefined,
   };
   // Weglaten wat het model niet meegaf, zodat een update alleen wijzigt wat bedoeld is
   for (const key of Object.keys(fields) as (keyof ObservationFields)[]) {

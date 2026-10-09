@@ -117,6 +117,11 @@ export interface Observation {
   uncertain: boolean;
   /** Waarom het model twijfelde, om de review makkelijker te maken */
   uncertainReason?: string;
+  /**
+   * Vrije opmerking van de gebruiker ("bij thuiskomst terugluisteren").
+   * Gaat bij de CSV-export mee in `Species Comments`.
+   */
+  remarks?: string;
   status: 'draft' | 'reviewed' | 'exported';
 }
 
