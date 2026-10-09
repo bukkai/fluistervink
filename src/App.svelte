@@ -7,7 +7,12 @@
     startSession,
     stopSession,
   } from './lib/sessions';
+  import ActiveSession from './lib/ActiveSession.svelte';
+  import { processQueue } from './lib/observations';
   import Settings from './lib/Settings.svelte';
+
+  // Uitspraken die bij het afsluiten nog niet verwerkt waren, alsnog verwerken
+  processQueue();
 
   // liveQuery draait opnieuw zodra de data in IndexedDB verandert, en is
   // direct bruikbaar als Svelte-store ($sessions).
@@ -58,6 +63,7 @@
       </p>
       <button class="stop" onclick={stop}>Stop wandeling</button>
     </section>
+    <ActiveSession session={active} />
   {:else}
     <button class="start" onclick={start}>Start wandeling</button>
   {/if}

@@ -5,6 +5,7 @@
   --border: #d9d6cc;
   --green: #2f6b3a;
   --red: #b3372f;
+  --amber: #a5670c;
 
   color-scheme: light dark;
   font-family: system-ui, sans-serif;
@@ -19,6 +20,7 @@
     --border: #2c352d;
     --green: #3d8a4b;
     --red: #c4473e;
+    --amber: #d9a03f;
   }
 }
 
