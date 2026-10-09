@@ -10,6 +10,7 @@
   import ActiveSession from './lib/ActiveSession.svelte';
   import { processQueue } from './lib/observations';
   import DevNotes from './lib/DevNotes.svelte';
+  import PastSession from './lib/PastSession.svelte';
   import Settings from './lib/Settings.svelte';
 
   // Uitspraken die bij het afsluiten nog niet verwerkt waren, alsnog verwerken
@@ -21,6 +22,20 @@
 
   let active = $derived($sessions?.find((s) => s.status === 'active'));
   let past = $derived($sessions?.filter((s) => s.status === 'ended') ?? []);
+
+  // Een eerdere wandeling openen gaat via de URL (#wandeling/<id>), zodat de
+  // terugknop van Android terug naar het overzicht gaat.
+  let hash = $state(location.hash);
+  const onHashChange = () => {
+    hash = location.hash;
+    window.scrollTo(0, 0);
+  };
+  window.addEventListener('hashchange', onHashChange);
+  onDestroy(() => window.removeEventListener('hashchange', onHashChange));
+
+  let opened = $derived(
+    hash.startsWith('#wandeling/') ? past.find((s) => s.id === hash.slice(11)) : undefined,
+  );
 
   // Klok voor de looptijd van de lopende wandeling
   let now = $state(Date.now());
@@ -56,6 +71,8 @@
 
   {#if $sessions === undefined}
     <!-- Database wordt nog geladen -->
+  {:else if opened}
+    <PastSession session={opened} />
   {:else if active}
     <section class="active">
       <p>
@@ -69,16 +86,18 @@
     <button class="start" onclick={start}>Start wandeling</button>
   {/if}
 
-  {#if past.length > 0}
+  {#if past.length > 0 && !opened}
     <h2>Eerdere wandelingen</h2>
     <ul>
       {#each past as session (session.id)}
         <li>
-          {dateFormat.format(session.startedAt)},
-          {timeFormat.format(session.startedAt)}
-          <span class="muted">
-            ({duration((session.endedAt ?? session.startedAt) - session.startedAt)})
-          </span>
+          <a href="#wandeling/{session.id}">
+            {dateFormat.format(session.startedAt)},
+            {timeFormat.format(session.startedAt)}
+            <span class="muted">
+              ({duration((session.endedAt ?? session.startedAt) - session.startedAt)})
+            </span>
+          </a>
         </li>
       {/each}
     </ul>
@@ -124,7 +143,19 @@
   }
 
   li {
-    padding: 0.75rem 0;
     border-bottom: 1px solid var(--border);
+  }
+
+  li a {
+    display: block;
+    padding: 0.75rem 0;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  li a::after {
+    content: '›';
+    float: right;
+    color: var(--muted);
   }
 </style>

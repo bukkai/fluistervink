@@ -1,5 +1,6 @@
 <script lang="ts">
   import { ApiError, getAccessCode, ping, setAccessCode } from './api';
+  import { download, exportAllJson } from './export';
 
   let code = $state(getAccessCode());
   // Bij het laden open zolang er nog geen code is; daarna houdt bind:open
@@ -24,6 +25,11 @@
           : 'Proxy niet bereikbaar.';
     }
   }
+
+  async function exportData() {
+    const date = new Date().toISOString().slice(0, 10);
+    download(await exportAllJson(), `thijsse-${date}.json`);
+  }
 </script>
 
 <details bind:open>
@@ -38,6 +44,7 @@
       <p class={status}>{message}</p>
     {/if}
   </form>
+  <button class="secondary" onclick={exportData}>Alle gegevens exporteren (JSON)</button>
 </details>
 
 <style>
@@ -73,6 +80,14 @@
     font: inherit;
     background: var(--green);
     color: white;
+  }
+
+  .secondary {
+    width: 100%;
+    margin-top: 1.5rem;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--fg);
   }
 
   .ok {
