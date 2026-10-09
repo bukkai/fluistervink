@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { PositionLookup, Session } from './db';
+  import { vibrate } from './feedback';
   import { currentPosition, gps, startTracking, stopTracking } from './location.svelte';
   import { submitRecording, submitText } from './observations';
   import { recorder, startRecording, stopRecording } from './recorder.svelte';
@@ -42,6 +43,7 @@
     // Tijd en positie horen bij het begin van de opname, niet bij het eind
     lookup = currentPosition();
     if (await startRecording()) {
+      vibrate('recording');
       maxTimer = setTimeout(finishRecording, MAX_RECORDING_MS);
     }
   }
