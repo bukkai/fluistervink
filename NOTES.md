@@ -19,6 +19,7 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 - Branch `onderzoek-waarneming-nl` is gemerged en kan op GitHub weg.
 - Cloudflare-previews: branch-builds draaien sinds 9 okt `npx wrangler versions upload` (en falen met "name must match") terwijl Previews Base op `npx wrangler preview` staat. Builds van `main` werken wel. Mogelijke oplossing: repo in het dashboard loskoppelen en opnieuw koppelen, of preview-builds uitzetten.
 - Interpretatie: het model laat optionele velden graag weg; daarom zijn activiteit, methode en telmethode verplicht bij `add_observation`. Bij `update_observation` blijven ze optioneel.
+- Testgeval terugblik: "vannacht op de nocmig een waterral overvliegend, half 3 's nachts een roepje" werd 1 × Waterral om 17:14, overvliegend, gezien en gehoord, onzeker (twijfel of het om twee vogels ging). Bedoeld: 1 × Waterral om 02:30, overvliegend, methode 588 "op geluidsrecorder". Oplossing: optioneel tijdveld in `add_observation` (model krijgt huidige datum/tijd mee, app rekent om) en methode 588 toestaan met "nocmig" → 588 in de prompt. Valt buiten de MVP-kern; meenemen als de testset er is.
 - "Ongedaan maken" van een ongedaan-maken wordt niet ondersteund; een tweede "undo" gaat een uitspraak verder terug.
 
 ## Overstappen tussen computers
