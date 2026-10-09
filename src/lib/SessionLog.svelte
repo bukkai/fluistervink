@@ -1,7 +1,15 @@
 <script lang="ts">
   import { liveQuery } from 'dexie';
   import type { Observation, Session, Utterance } from './db';
-  import { listObservations, listUtterances, retry, spokenAt } from './observations';
+  import { mapsUrl } from './devNotes';
+  import ObservationEditor from './ObservationEditor.svelte';
+  import {
+    editObservation,
+    listObservations,
+    listUtterances,
+    retry,
+    spokenAt,
+  } from './observations';
   import {
     DEFAULT_COUNTING_METHOD,
     activities,
@@ -24,6 +32,22 @@
   let queued = $derived(
     $utterances?.filter((u) => u.status === 'pending' || u.status === 'processing').length ?? 0,
   );
+
+  let utteranceById = $derived(new Map(($utterances ?? []).map((u) => [u.id, u])));
+
+  /** De waarneming die nu bewerkt wordt (één tegelijk) */
+  let editing = $state<string>();
+
+  let onlyUncertain = $state(false);
+  let uncertainCount = $derived($observations?.filter((obs) => obs.uncertain).length ?? 0);
+  let shown = $derived(
+    ($observations ?? []).filter((obs) => !onlyUncertain || obs.uncertain || obs.id === editing),
+  );
+
+  /** Onzekere waarneming nagelopen en goed bevonden */
+  function confirmObservation(obs: Observation) {
+    editObservation(obs.id, { uncertain: false, uncertainReason: undefined });
+  }
 
   const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
 
@@ -90,32 +114,63 @@
 {/if}
 
 <h2>Waarnemingen</h2>
-{#if $observations?.length}
+{#if uncertainCount > 0 || onlyUncertain}
+  <label class="filter">
+    <input type="checkbox" bind:checked={onlyUncertain} />
+    Alleen onzeker ({uncertainCount})
+  </label>
+{/if}
+{#if shown.length}
   <ul>
-    {#each $observations as obs (obs.id)}
+    {#each shown as obs (obs.id)}
+      {@const source = utteranceById.get(obs.utteranceId)}
       <li class:uncertain={obs.uncertain}>
-        <div>
-          <strong>{obs.count} × {getSpecies(obs.speciesId)?.name}</strong>
-          <span class="muted">{timeFormat.format(obs.observedAt)}</span>
-          {#if obs.position}
-            <span class="muted">±{Math.round(obs.position.accuracy)} m</span>
-            {#if positionAge(obs)}
-              <span class="reason">{positionAge(obs)}</span>
+        {#if editing === obs.id}
+          <ObservationEditor observation={obs} utterance={source} onclose={() => (editing = undefined)} />
+        {:else}
+          <button class="row" onclick={() => (editing = obs.id)} aria-label="Waarneming aanpassen">
+            <div>
+              <strong>{obs.count} × {getSpecies(obs.speciesId)?.name}</strong>
+              <span class="muted">{timeFormat.format(obs.observedAt)}</span>
+              {#if obs.status === 'reviewed'}
+                <span class="muted" title="Nagelopen">✓</span>
+              {/if}
+            </div>
+            <div class="muted">{details(obs)}</div>
+            {#if obs.uncertain}
+              <div class="reason">Onzeker{obs.uncertainReason ? `: ${obs.uncertainReason}` : ''}</div>
             {/if}
-          {:else}
-            <span class="reason">geen locatie</span>
-          {/if}
-        </div>
-        <div class="muted">{details(obs)}</div>
-        {#if obs.uncertain}
-          <div class="reason">Onzeker{obs.uncertainReason ? `: ${obs.uncertainReason}` : ''}</div>
-        {/if}
-        {#if obs.remarks}
-          <div class="remarks">“{obs.remarks}”</div>
+            {#if obs.remarks}
+              <div class="remarks">“{obs.remarks}”</div>
+            {/if}
+          </button>
+          <div class="actions">
+            {#if source?.audio}
+              <button class="play" onclick={() => play(source)} aria-label="Opname afspelen">▶</button>
+            {/if}
+            {#if obs.position}
+              <a
+                class="muted"
+                href={mapsUrl(obs.position.lat, obs.position.lon)}
+                target="_blank"
+                rel="noopener">±{Math.round(obs.position.accuracy)} m</a
+              >
+              {#if positionAge(obs)}
+                <span class="reason">{positionAge(obs)}</span>
+              {/if}
+            {:else}
+              <span class="reason">geen locatie</span>
+            {/if}
+            {#if obs.uncertain}
+              <button class="confirm" onclick={() => confirmObservation(obs)}>Klopt</button>
+            {/if}
+          </div>
         {/if}
       </li>
     {/each}
   </ul>
+{:else if onlyUncertain}
+  <p class="muted">Geen onzekere waarnemingen meer.</p>
 {:else}
   <p class="muted">Nog niets waargenomen.</p>
 {/if}
@@ -175,6 +230,37 @@
   li {
     padding: 0.5rem 0;
     border-bottom: 1px solid var(--border);
+  }
+
+  button.row {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: none;
+    color: inherit;
+    text-align: left;
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .actions a {
+    text-decoration: underline dotted;
+  }
+
+  button.confirm {
+    margin: 0 0 0 auto;
+  }
+
+  .filter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   li.uncertain {

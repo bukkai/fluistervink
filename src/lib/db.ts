@@ -139,6 +139,8 @@ export interface Observation {
    * Gaat bij de CSV-export mee in `Species Comments`.
    */
   remarks?: string;
+  /** Laatst met de hand aangepast (in de review); leeg = zoals het model hem maakte */
+  editedAt?: number;
   status: 'draft' | 'reviewed' | 'exported';
 }
 
