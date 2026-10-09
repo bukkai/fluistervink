@@ -1,4 +1,5 @@
 import type { Position } from './db';
+import { logEvent } from './log';
 
 // GPS tijdens een wandeling. Een losse meting duurt vaak 5–20 seconden voordat
 // hij nauwkeurig is; daarom houden we de GPS warm zolang er een wandeling
@@ -27,13 +28,21 @@ export function startTracking(): void {
     return;
   }
   gps.status = 'searching';
+  const startedAt = Date.now();
   watchId = navigator.geolocation.watchPosition(
     (fix) => {
       gps.latest = toPosition(fix);
+      if (gps.status !== 'ok') {
+        // Hoe lang het duurt voor er een positie is, en hoe nauwkeurig die is
+        logEvent('gps_fix', { afterMs: Date.now() - startedAt, accuracy: fix.coords.accuracy });
+      }
       gps.status = 'ok';
     },
     (error) => {
-      gps.status = error.code === error.PERMISSION_DENIED ? 'denied' : 'searching';
+      const status = error.code === error.PERMISSION_DENIED ? 'denied' : 'searching';
+      if (status !== gps.status)
+        logEvent('gps_error', { code: error.code, message: error.message });
+      gps.status = status;
     },
     { enableHighAccuracy: true, maximumAge: 0 },
   );

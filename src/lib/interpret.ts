@@ -1,5 +1,5 @@
 import type Anthropic from '@anthropic-ai/sdk';
-import { createMessage } from './api';
+import { createMessage, type Timing } from './api';
 import type { Observation } from './db';
 import {
   activities,
@@ -49,6 +49,9 @@ export interface Interpretation {
   rejected: string[];
   /** Volledige respons van de API, bewaard voor de testset */
   response: Anthropic.Message;
+  /** De recente waarnemingen zoals het model ze kreeg */
+  context: string;
+  timing: Timing;
 }
 
 // ---------------------------------------------------------------------------
@@ -197,6 +200,16 @@ Twijfel je over soort, aantal of welke waarneming bedoeld wordt, voer dan de mee
 
 ${species.map((s) => `${s.id}|${s.name}`).join('\n')}`;
 
+/**
+ * Korte hash van systeemprompt en tools. Bij elke uitspraak bewaard, zodat
+ * resultaten van verschillende promptversies uit elkaar te houden zijn.
+ */
+export const promptVersion: Promise<string> = crypto.subtle
+  .digest('SHA-256', new TextEncoder().encode(SYSTEM_PROMPT + JSON.stringify(TOOLS)))
+  .then((hash) =>
+    [...new Uint8Array(hash).slice(0, 4)].map((b) => b.toString(16).padStart(2, '0')).join(''),
+  );
+
 // ---------------------------------------------------------------------------
 // Aanroep
 
@@ -227,7 +240,7 @@ export async function interpret(
     ? context.map((obs, i) => `#${i + 1} ${describe(obs)}`).join('\n')
     : '(nog geen waarnemingen)';
 
-  const response = await createMessage<Anthropic.Message>({
+  const { data: response, timing } = await createMessage<Anthropic.Message>({
     model: MODEL,
     max_tokens: 4096,
     // Weinig nadenken: snelheid telt in het veld, en de taak is eenvoudig
@@ -256,7 +269,7 @@ export async function interpret(
     if (typeof result === 'string') rejected.push(result);
     else actions.push(result);
   }
-  return { actions, rejected, response };
+  return { actions, rejected, response, context: contextText, timing };
 }
 
 // ---------------------------------------------------------------------------

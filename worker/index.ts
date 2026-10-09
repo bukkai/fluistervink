@@ -75,6 +75,7 @@ async function transcribe(request: Request, env: WorkerEnv): Promise<Response> {
   upstream.set('response_format', 'json');
   if (typeof prompt === 'string' && prompt) upstream.set('prompt', prompt);
 
+  const start = Date.now();
   const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${env.OPENAI_API_KEY}` },
@@ -85,7 +86,7 @@ async function transcribe(request: Request, env: WorkerEnv): Promise<Response> {
   if (!response.ok) {
     return json({ error: result.error?.message ?? 'Fout bij OpenAI' }, upstreamStatus(response.status));
   }
-  return json({ text: result.text ?? '', model });
+  return json({ text: result.text ?? '', model }, 200, Date.now() - start);
 }
 
 /**
@@ -100,12 +101,13 @@ async function messages(request: Request, env: WorkerEnv): Promise<Response> {
   }
 
   const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+  const start = Date.now();
   const message = await client.messages.create({
     ...body,
     stream: false,
     max_tokens: Math.min(body.max_tokens ?? MAX_OUTPUT_TOKENS, MAX_OUTPUT_TOKENS),
   });
-  return json(message);
+  return json(message, 200, Date.now() - start);
 }
 
 /**
@@ -134,6 +136,12 @@ function upstreamStatus(status: number | undefined): number {
   return status;
 }
 
-function json(data: unknown, status = 200): Response {
-  return Response.json(data, { status });
+/**
+ * @param upstreamMs Tijd bij OpenAI/Anthropic; gaat als Server-Timing-header
+ *   mee, zodat de app kan zien waar de wachttijd zit.
+ */
+function json(data: unknown, status = 200, upstreamMs?: number): Response {
+  const headers: HeadersInit =
+    upstreamMs === undefined ? {} : { 'Server-Timing': `upstream;dur=${upstreamMs}` };
+  return Response.json(data, { status, headers });
 }

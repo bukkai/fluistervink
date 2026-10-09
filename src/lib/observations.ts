@@ -1,6 +1,15 @@
-import { db, type Change, type Observation, type Position, type Utterance } from './db';
-import { interpret, type Action, type Interpretation } from './interpret';
+import {
+  db,
+  type Change,
+  type Observation,
+  type Position,
+  type ProcessingMetrics,
+  type Utterance,
+} from './db';
+import { ApiError } from './api';
+import { MODEL, interpret, promptVersion, type Action, type Interpretation } from './interpret';
 import { currentPosition } from './location.svelte';
+import { APP_VERSION, logEvent, wasHiddenSince } from './log';
 import { DEFAULT_ACTIVITY, DEFAULT_COUNTING_METHOD, DEFAULT_METHOD } from './vocab';
 
 // Local-first verwerking: elke uitspraak wordt eerst opgeslagen (status
@@ -70,6 +79,9 @@ export async function processQueue(): Promise<void> {
   running = true;
   try {
     // Uitspraken die bleven hangen (app afgesloten tijdens verwerken) opnieuw
+    const stuck = await db.utterances.where('status').equals('processing').toArray();
+    for (const u of stuck)
+      logEvent('requeued', undefined, { sessionId: u.sessionId, utteranceId: u.id });
     await db.utterances.where('status').equals('processing').modify({ status: 'pending' });
 
     while (true) {
@@ -99,19 +111,46 @@ async function processUtterance(utterance: Utterance): Promise<void> {
     return;
   }
 
-  await db.utterances.update(utterance.id, { status: 'processing' });
+  const startedAt = Date.now();
+  const attempts = (utterance.attempts ?? 0) + 1;
+  const ids = { sessionId: utterance.sessionId, utteranceId: utterance.id };
+  await db.utterances.update(utterance.id, { status: 'processing', attempts });
 
   let interpretation: Interpretation;
   try {
     const recent = await listObservations(utterance.sessionId);
     interpretation = await interpret(utterance.transcript ?? '', recent);
   } catch (error) {
-    await db.utterances.update(utterance.id, {
-      status: 'failed',
-      error: error instanceof Error ? error.message : String(error),
-    });
+    const message = error instanceof Error ? error.message : String(error);
+    // In de log, want een volgende poging overschrijft de fout bij de uitspraak
+    logEvent(
+      'attempt_failed',
+      {
+        attempt: attempts,
+        error: message,
+        status: error instanceof ApiError ? error.status : undefined,
+        waitedMs: startedAt - utterance.recordedAt,
+        durationMs: Date.now() - startedAt,
+        wasHidden: wasHiddenSince(utterance.recordedAt),
+        online: navigator.onLine,
+      },
+      ids,
+    );
+    await db.utterances.update(utterance.id, { status: 'failed', error: message });
     return;
   }
+
+  const metrics: ProcessingMetrics = {
+    appVersion: APP_VERSION,
+    model: MODEL,
+    promptVersion: await promptVersion,
+    context: interpretation.context,
+    startedAt,
+    finishedAt: Date.now(),
+    ...interpretation.timing,
+    wasHidden: wasHiddenSince(utterance.recordedAt),
+    online: navigator.onLine,
+  };
 
   await db.transaction('rw', db.observations, db.utterances, async () => {
     // Opnieuw ophalen: de positie kan intussen binnengekomen zijn
@@ -125,6 +164,7 @@ async function processUtterance(utterance: Utterance): Promise<void> {
     await db.utterances.update(utterance.id, {
       status: 'done',
       llmOutput: interpretation.response,
+      metrics,
       changes,
       result: interpretation.actions.length === 0 ? 'ignored' : uncertain ? 'uncertain' : 'saved',
       error: interpretation.rejected.length ? interpretation.rejected.join('; ') : undefined,
