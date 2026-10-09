@@ -10,7 +10,7 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 
 ## Volgende stap
 
-0. Dev notes gemerged (PR #7). Bevinding 1 (alles terugzien) in PR #8: reviewen en mergen. Daarna op de telefoon "dev note, …" uitproberen en meteen de traagheid testen (zie bevinding 2).
+0. Dev notes (PR #7) en alles terugzien (PR #8) gemerged. Bevinding 2 (meten + time-out) in PR #9: reviewen en mergen. Daarna op de telefoon "dev note, …" uitproberen en meteen de traagheid testen (zie bevinding 2): per uitspraak staat nu de duur in de lijst, en of de app op de achtergrond stond. JSON-export (Instellingen) aan Claude geven voor analyse.
 
 1. Op de telefoon controleren of de nauwkeurigheid klopt (buiten vaak 3–10 m).
 2. Op de telefoon uitproberen met eigen zinnen; opvallende fouten noteren voor de prompt.
