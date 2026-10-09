@@ -75,13 +75,13 @@ Soort, activiteit, methode, kleed en telmethode worden opgeslagen als **waarnemi
 
 ## Voorgestelde bouwvolgorde
 
-1. Projectopzet: PWA-skelet, IndexedDB, sessies, deploy naar Cloudflare.
-2. Proxy (Cloudflare Worker) voor de API-sleutels.
-3. LLM-interpretatie met tools, eerst getest met tekstinvoer (zonder spraak).
-4. Opname en Whisper-koppeling, met tijd en GPS bij start van de opname.
-5. Trilfeedback en overzichtslijst met bewerken.
-6. Opslaan en exporteren van de testset.
-7. CSV-export voor waarneming.nl.
+1. Projectopzet: PWA-skelet, IndexedDB, sessies, deploy naar Cloudflare. *(klaar)*
+2. Proxy (Cloudflare Worker) voor de API-sleutels. *(klaar)*
+3. LLM-interpretatie met tools, eerst getest met tekstinvoer (zonder spraak). *(klaar)*
+4. Opname en Whisper-koppeling, met tijd en GPS bij start van de opname. *(GPS klaar, los gebouwd; opname en Whisper nog te doen)*
+5. Review: trilfeedback, afgelopen wandelingen kunnen openen, overzichtslijst met bewerken (soort, aantal, gedrag, verwijderen), onzekere waarnemingen nalopen, audio terugluisteren.
+6. CSV-export voor waarneming.nl.
+7. Opslaan en exporteren van de testset. Bewust na de CSV-export: de testset wordt pas nuttig na een paar wandelingen, en de gegevens ervoor (audio, transcript, LLM-uitvoer, gecorrigeerde waarneming) worden vanaf stap 4 al bewaard.
 
 ## Wanneer is de MVP geslaagd?
 

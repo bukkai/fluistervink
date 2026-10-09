@@ -13,7 +13,7 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 1. Op de telefoon controleren of de nauwkeurigheid klopt (buiten vaak 3–10 m).
 2. Op de telefoon uitproberen met eigen zinnen; opvallende fouten noteren voor de prompt.
 3. Op elke computer `.dev.vars` aanmaken (zie README).
-4. Stap 4: opname en Whisper-koppeling. `currentPosition()` aanroepen bij het indrukken van de opnameknop. De transcriptie komt dan in `utterance.transcript` en loopt verder door dezelfde wachtrij.
+4. Stap 4: opname en Whisper-koppeling. `currentPosition()` aanroepen bij het indrukken van de opnameknop. De transcriptie komt dan in `utterance.transcript` en loopt verder door dezelfde wachtrij. Daarna: 5 review (incl. afgelopen wandelingen openen), 6 CSV-export, 7 testset (volgorde aangepast op 9 okt, zie `CLAUDE.md`).
 
 ## Open vragen / losse eindjes
 
