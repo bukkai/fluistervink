@@ -2,7 +2,7 @@ import {
   db,
   type Change,
   type Observation,
-  type Position,
+  type PositionLookup,
   type ProcessingMetrics,
   type Utterance,
 } from './db';
@@ -34,7 +34,7 @@ export async function submitText(sessionId: string, text: string): Promise<void>
   const id = crypto.randomUUID();
   // Positie opvragen op het moment van de uitspraak, maar niet erop wachten:
   // de uitspraak wordt meteen opgeslagen en verwerkt.
-  const position = currentPosition();
+  const lookup = currentPosition();
   await db.utterances.add({
     id,
     sessionId,
@@ -43,18 +43,21 @@ export async function submitText(sessionId: string, text: string): Promise<void>
     status: 'pending',
   });
   processQueue();
-  attachPosition(id, position);
+  attachPosition(id, lookup);
 }
 
 /**
  * Koppelt de positie aan de uitspraak zodra die bekend is. Is de uitspraak
  * dan al verwerkt, dan krijgen de waarnemingen eruit de positie alsnog.
  */
-async function attachPosition(utteranceId: string, pending: Promise<Position | undefined>) {
-  const position = await pending;
-  if (!position) return;
+async function attachPosition(utteranceId: string, pending: Promise<PositionLookup>) {
+  const { position, ...positionLookup } = await pending;
+  if (!position) {
+    await db.utterances.update(utteranceId, { positionLookup });
+    return;
+  }
   await db.transaction('rw', db.utterances, db.observations, async () => {
-    await db.utterances.update(utteranceId, { position });
+    await db.utterances.update(utteranceId, { position, positionLookup });
     await db.observations
       .where('utteranceId')
       .equals(utteranceId)

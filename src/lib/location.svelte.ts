@@ -1,4 +1,4 @@
-import type { Position } from './db';
+import type { Position, PositionLookup } from './db';
 import { logEvent } from './log';
 
 // GPS tijdens een wandeling. Een losse meting duurt vaak 5–20 seconden voordat
@@ -8,8 +8,6 @@ import { logEvent } from './log';
 
 /** Een positie is vers genoeg als hij niet ouder is dan dit. */
 const FRESH_MS = 15_000;
-/** Ouder dan dit is onbruikbaar: je bent dan al te ver doorgelopen. */
-const STALE_MS = 2 * 60_000;
 /** Zo lang wachten we hooguit op een verse positie. */
 const MAX_WAIT_MS = 10_000;
 
@@ -59,22 +57,37 @@ export function stopTracking(): void {
  * De positie op dit moment: de laatste meting als die vers is, anders een
  * nieuwe opvragen. Bij stilstaan (vogel kijken!) geeft watchPosition soms
  * minutenlang geen update, vandaar die extra vraag. Lukt dat niet binnen
- * MAX_WAIT_MS, dan een iets oudere meting, of niets.
+ * MAX_WAIT_MS, dan de laatst bekende positie, hoe oud ook: wie lang bij een
+ * hut of vogelscherm staat, is daar nog steeds. De meettijd blijft bewaard,
+ * zodat in de review te zien is hoe oud hij was.
  */
-export async function currentPosition(): Promise<Position | undefined> {
-  if (gps.status !== 'searching' && gps.status !== 'ok') return undefined;
-  const age = (p?: Position) => (p ? Date.now() - p.fixedAt : Infinity);
-  if (age(gps.latest) <= FRESH_MS) return $state.snapshot(gps.latest);
+export async function currentPosition(): Promise<PositionLookup> {
+  const start = Date.now();
+  const result = (source: PositionLookup['source'], position?: Position, error?: string) => ({
+    source,
+    position,
+    waitMs: Date.now() - start,
+    ...(error && { error }),
+  });
 
+  if (gps.status !== 'searching' && gps.status !== 'ok')
+    return result('none', undefined, gps.status);
+  const latest = gps.latest && $state.snapshot(gps.latest);
+  if (latest && start - latest.fixedAt <= FRESH_MS) return result('recent', latest);
+
+  let error: string | undefined;
   const fresh = await new Promise<Position | undefined>((resolve) =>
     navigator.geolocation.getCurrentPosition(
       (fix) => resolve(toPosition(fix)),
-      () => resolve(undefined),
+      (e) => {
+        error = e.message || `code ${e.code}`;
+        resolve(undefined);
+      },
       { enableHighAccuracy: true, maximumAge: FRESH_MS, timeout: MAX_WAIT_MS },
     ),
   );
-  if (fresh) return fresh;
-  return age(gps.latest) <= STALE_MS ? $state.snapshot(gps.latest) : undefined;
+  if (fresh) return result('fresh', fresh);
+  return latest ? result('last_known', latest, error) : result('none', undefined, error);
 }
 
 function toPosition(fix: GeolocationPosition): Position {
