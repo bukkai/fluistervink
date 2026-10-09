@@ -8,6 +8,16 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 - Locatie gemerged (PR #6) en gedeployd: GPS warm tijdens de wandeling, positie (met nauwkeurigheid en meettijd) bij elke uitspraak en waarneming. Getest met nep-GPS: verse meting, stilstaan, trage meting, geen toegang.
 - Stap 3 (interpretatie met tekstinvoer) gemerged (PR #5) en gedeployd: tijdens een wandeling typ je een uitspraak, Claude Haiku 5.5 zet hem om in tool calls (`add_observation`, `update_observation`, `delete_observation`, `undo`), de app valideert en voert ze uit. Lokaal getest met echte sleutels: 13 testuitspraken (toevoegen, correctie, "nog drie erbij", verwijderen, ongedaan maken, gepraat negeren) gingen allemaal goed, ±2 s per uitspraak. Prompt caching werkt (~6900 tokens uit de cache).
 
+## Stap 5 (review), 10 okt
+
+Opgesplitst in drie PR's, elk los te reviewen en mergen:
+
+- **#14 Trilfeedback:** patronen in `src/lib/feedback.ts` (opgeslagen 1 kort; onzeker kort-lang; niet begrepen 2 kort; fout 3 kort; tikje bij start opname). Op de telefoon nalopen of ze te onderscheiden zijn.
+- **#15 Bewerken en nalopen:** tik op een waarneming → formulier (soort via lijst met suggesties, aantal, gedrag, methode, kleed, geslacht, telmethode, opmerking, onzeker, verwijderen). "Alleen onzeker"-filter en knop "Klopt". ▶ en kaartlink bij elke waarneming (locatie-idee optie 1). Nieuw veld `editedAt`.
+- **#16 Wandeling voortzetten:** knop bij de meest recente wandeling, als er geen andere loopt.
+
+Nog open voor stap 5: plaatsnaam bij een waarneming (locatie-idee optie 2 of 3) en eventueel bijnamen in het soortveld van het formulier. Daarna stap 6 (CSV-export).
+
 ## Volgende stap
 
 0. Alles t/m PR #11 gemerged (dev notes, terugzien, meten, locatie-terugval, bijnamen). Stap 4 (opname en Whisper) in PR #12 (branch `opname`): reviewen en mergen. Daarna op de telefoon testen: inspreken (tikken of vasthouden), "dev note, …", traagheid (per uitspraak staat de duur in de lijst, gemeten vanaf het einde van de opname) en GPS-nauwkeurigheid. JSON-export (Instellingen) aan Claude geven voor analyse. Nog open uit de testronde: vrij opmerkingenveld bij een waarneming ("bij thuiskomst terugluisteren").
