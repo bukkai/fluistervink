@@ -23,6 +23,13 @@ const EXOTICS = [
   'Zwarte Zwaan', 'Halsbandparkiet', 'Grote Alexanderparkiet',
 ];
 
+// Soorten die buiten de filters vallen maar die je wel inspreekt: Bonte Kraai
+// (in de bron type Y), en verzamelsoorten voor "een vogel" en "KBV" (klein
+// bruin vogeltje), die zeldzaamheid 0 hebben.
+const EXTRA_IDS = [67, 18926, 1003144];
+// Heeft in de bron geen Nederlandse naam
+const NAMES = { 1003144: 'Zangvogel onbekend' };
+
 async function get(path) {
   const res = await fetch(`${API}${path}`, {
     headers: { Accept: 'application/json', 'Accept-Language': 'nl' },
@@ -36,12 +43,16 @@ const missing = EXOTICS.filter((name) => !all.some((s) => s.name === name));
 if (missing.length) console.warn(`Niet gevonden: ${missing.join(', ')}`);
 
 const species = all
-  .filter((s) => TYPES.includes(s.type))
-  .filter((s) => (s.native && RARITIES.includes(s.rarity)) || EXOTICS.includes(s.name))
+  .filter(
+    (s) =>
+      EXTRA_IDS.includes(s.species) ||
+      (TYPES.includes(s.type) &&
+        ((s.native && RARITIES.includes(s.rarity)) || EXOTICS.includes(s.name))),
+  )
   .sort((a, b) => a.sort_order_taxonomy - b.sort_order_taxonomy)
   .map((s) => ({
     id: s.species,
-    name: s.name,
+    name: NAMES[s.species] ?? s.name,
     scientific: s.scientific_name,
     type: s.type,
     rarity: s.rarity,

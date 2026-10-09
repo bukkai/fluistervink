@@ -1,4 +1,5 @@
 import attributes from '../../data/attributen-vogels.json';
+import aliasList from '../../data/bijnamen.json';
 import speciesList from '../../data/soorten-nl.json';
 
 // Vaste lijsten met waarneming.nl-ID's: soorten, gedrag, methode, kleed en
@@ -8,8 +9,8 @@ export interface Species {
   id: number;
   name: string;
   scientific: string;
-  /** S = soort, M = verzamelsoort ("Eend onbekend") */
-  type: 'S' | 'M';
+  /** S = soort, M = verzamelsoort ("Eend onbekend"), Y = soort die de bron apart groepeert (Bonte Kraai) */
+  type: 'S' | 'M' | 'Y';
   rarity: number;
 }
 
@@ -24,6 +25,22 @@ const speciesById = new Map(species.map((s) => [s.id, s]));
 export function getSpecies(id: number): Species | undefined {
   return speciesById.get(id);
 }
+
+/**
+ * Bijnamen en afkortingen uit vogelaarsjargon ("tova", "robotap", "KBV"),
+ * zie data/bijnamen.json. `naam` staat er alleen voor de leesbaarheid.
+ */
+export interface Alias {
+  soort: number;
+  naam: string;
+  bijnamen: string[];
+}
+
+export const aliases = (aliasList as Alias[]).filter((a) => {
+  if (getSpecies(a.soort)) return true;
+  console.warn(`bijnamen.json: onbekende soort-ID ${a.soort} (${a.naam})`);
+  return false;
+});
 
 // Uit de volledige lijsten van waarneming.nl alleen de codes die je tijdens
 // een wandeling uitspreekt. Het model mag alleen hieruit kiezen.
