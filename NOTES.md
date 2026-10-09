@@ -5,13 +5,15 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 ## Waar ik ben
 
 - Stap 1 (projectopzet) en stap 2 (proxy) gemerged (PR #2, #3, #4).
+- Locatie op branch `locatie`: GPS warm tijdens de wandeling, positie (met nauwkeurigheid en meettijd) bij elke uitspraak en waarneming. Getest met nep-GPS: verse meting, stilstaan, trage meting, geen toegang.
 - Stap 3 (interpretatie met tekstinvoer) gemerged (PR #5) en gedeployd: tijdens een wandeling typ je een uitspraak, Claude Haiku 5.5 zet hem om in tool calls (`add_observation`, `update_observation`, `delete_observation`, `undo`), de app valideert en voert ze uit. Lokaal getest met echte sleutels: 13 testuitspraken (toevoegen, correctie, "nog drie erbij", verwijderen, ongedaan maken, gepraat negeren) gingen allemaal goed, ±2 s per uitspraak. Prompt caching werkt (~6900 tokens uit de cache).
 
 ## Volgende stap
 
-1. Op de telefoon uitproberen met eigen zinnen; opvallende fouten noteren voor de prompt.
-2. Op elke computer `.dev.vars` aanmaken (zie README).
-3. Stap 4: opname en Whisper-koppeling, met tijd en GPS bij start van de opname. De transcriptie komt dan in `utterance.transcript` en loopt verder door dezelfde wachtrij.
+1. PR `locatie` mergen en op de telefoon controleren of de nauwkeurigheid klopt (buiten vaak 3–10 m).
+2. Op de telefoon uitproberen met eigen zinnen; opvallende fouten noteren voor de prompt.
+3. Op elke computer `.dev.vars` aanmaken (zie README).
+4. Stap 4: opname en Whisper-koppeling. `currentPosition()` aanroepen bij het indrukken van de opnameknop. De transcriptie komt dan in `utterance.transcript` en loopt verder door dezelfde wachtrij.
 
 ## Open vragen / losse eindjes
 

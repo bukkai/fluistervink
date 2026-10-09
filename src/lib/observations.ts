@@ -1,5 +1,6 @@
-import { db, type Change, type Observation, type Utterance } from './db';
+import { db, type Change, type Observation, type Position, type Utterance } from './db';
 import { interpret, type Action, type Interpretation } from './interpret';
+import { currentPosition } from './location.svelte';
 import { DEFAULT_ACTIVITY, DEFAULT_COUNTING_METHOD, DEFAULT_METHOD } from './vocab';
 
 // Local-first verwerking: elke uitspraak wordt eerst opgeslagen (status
@@ -21,14 +22,36 @@ export async function listUtterances(sessionId: string): Promise<Utterance[]> {
 
 /** Slaat een getypte uitspraak op en zet hem in de wachtrij. */
 export async function submitText(sessionId: string, text: string): Promise<void> {
+  const id = crypto.randomUUID();
+  // Positie opvragen op het moment van de uitspraak, maar niet erop wachten:
+  // de uitspraak wordt meteen opgeslagen en verwerkt.
+  const position = currentPosition();
   await db.utterances.add({
-    id: crypto.randomUUID(),
+    id,
     sessionId,
     recordedAt: Date.now(),
     transcript: text.trim(),
     status: 'pending',
   });
   processQueue();
+  attachPosition(id, position);
+}
+
+/**
+ * Koppelt de positie aan de uitspraak zodra die bekend is. Is de uitspraak
+ * dan al verwerkt, dan krijgen de waarnemingen eruit de positie alsnog.
+ */
+async function attachPosition(utteranceId: string, pending: Promise<Position | undefined>) {
+  const position = await pending;
+  if (!position) return;
+  await db.transaction('rw', db.utterances, db.observations, async () => {
+    await db.utterances.update(utteranceId, { position });
+    await db.observations
+      .where('utteranceId')
+      .equals(utteranceId)
+      .filter((obs) => !obs.position)
+      .modify({ position });
+  });
 }
 
 export async function retry(utteranceId: string): Promise<void> {
@@ -75,7 +98,9 @@ async function processUtterance(utterance: Utterance): Promise<void> {
   }
 
   await db.transaction('rw', db.observations, db.utterances, async () => {
-    const changes = await applyActions(utterance, interpretation.actions);
+    // Opnieuw ophalen: de positie kan intussen binnengekomen zijn
+    const latest = (await db.utterances.get(utterance.id)) ?? utterance;
+    const changes = await applyActions(latest, interpretation.actions);
     const touched = await db.observations.bulkGet(
       changes.flatMap((c) => (c.type === 'delete' ? [] : [c.observationId])),
     );
