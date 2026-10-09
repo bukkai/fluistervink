@@ -8,6 +8,8 @@ export interface Position {
   lon: number;
   /** GPS-nauwkeurigheid in meters */
   accuracy: number;
+  /** Moment van de GPS-meting; kan iets eerder zijn dan de uitspraak */
+  fixedAt: number;
 }
 
 export interface Session {

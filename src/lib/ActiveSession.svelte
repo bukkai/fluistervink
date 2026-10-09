@@ -1,6 +1,7 @@
 <script lang="ts">
   import { liveQuery } from 'dexie';
   import type { Observation, Session, Utterance } from './db';
+  import { gps, startTracking, stopTracking } from './location.svelte';
   import { listObservations, listUtterances, retry, submitText } from './observations';
   import {
     DEFAULT_COUNTING_METHOD,
@@ -19,6 +20,20 @@
   let utterances = $derived(liveQuery(() => listUtterances(session.id)));
 
   let text = $state('');
+
+  // GPS aan zolang dit scherm (de lopende wandeling) zichtbaar is
+  $effect(() => {
+    startTracking();
+    return stopTracking;
+  });
+
+  const gpsLabels: Record<typeof gps.status, string> = {
+    off: '',
+    ok: '',
+    searching: 'Locatie zoeken…',
+    denied: 'Geen toegang tot locatie. Sta dit toe in de browserinstellingen.',
+    unavailable: 'Locatie niet beschikbaar op dit apparaat.',
+  };
 
   async function submit(event: SubmitEvent) {
     event.preventDefault();
@@ -58,6 +73,14 @@
   }
 </script>
 
+<p class="gps {gps.status}">
+  {#if gps.status === 'ok' && gps.latest}
+    Locatie ±{Math.round(gps.latest.accuracy)} m
+  {:else}
+    {gpsLabels[gps.status]}
+  {/if}
+</p>
+
 <form onsubmit={submit}>
   <input
     bind:value={text}
@@ -76,6 +99,11 @@
         <div>
           <strong>{obs.count} × {getSpecies(obs.speciesId)?.name}</strong>
           <span class="muted">{timeFormat.format(obs.observedAt)}</span>
+          {#if obs.position}
+            <span class="muted">±{Math.round(obs.position.accuracy)} m</span>
+          {:else}
+            <span class="reason">geen locatie</span>
+          {/if}
         </div>
         <div class="muted">{details(obs)}</div>
         {#if obs.uncertain}
@@ -111,6 +139,17 @@
 {/if}
 
 <style>
+  .gps {
+    margin: 0.75rem 0 0;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .gps.denied,
+  .gps.unavailable {
+    color: var(--red);
+  }
+
   form {
     display: flex;
     gap: 0.5rem;
