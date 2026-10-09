@@ -46,6 +46,7 @@ Doel: valideren dat herkenning en interpretatie in het veld goed genoeg werken.
 - Overzichtslijst met eenvoudig bewerken (soort, aantal, gedrag, verwijderen)
 - CSV-export in het importformaat van waarneming.nl
 - Proxy voor API-sleutels
+- Dev notes: een uitspraak die begint met "dev note" wordt geen waarneming maar een bevinding over de app (gaat niet naar het model). Los te lezen en als Markdown te kopiëren, om door te geven aan een ontwikkelsessie.
 - Testset: van elke uitspraak de audio, het transcript, de LLM-uitvoer en de uiteindelijke (gecorrigeerde) waarneming bewaren, en kunnen exporteren. Bedoeld om STT-opties, prompts en modellen objectief te vergelijken.
 
 **Bewust níet in de MVP (niet toevoegen zonder overleg):**

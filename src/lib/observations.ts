@@ -82,7 +82,23 @@ export async function processQueue(): Promise<void> {
   }
 }
 
+/**
+ * "Dev note, …" aan het begin van een uitspraak, ook zoals spraakherkenning
+ * het vaak verstaat ("def note", "devnoot", "Dev. Note:"). Geeft de tekst
+ * erna terug, of undefined als het geen dev note is.
+ */
+export function devNoteText(transcript: string): string | undefined {
+  const match = /^\s*(dev|def|deaf)\W*(notes?|noot|nood)\b[\s,:;.!-]*/i.exec(transcript);
+  return match ? transcript.slice(match[0].length).trim() : undefined;
+}
+
 async function processUtterance(utterance: Utterance): Promise<void> {
+  // Dev notes gaan niet naar het model: snel, gratis en altijd goed herkend
+  if (devNoteText(utterance.transcript ?? '') !== undefined) {
+    await db.utterances.update(utterance.id, { status: 'done', kind: 'dev_note', result: 'note' });
+    return;
+  }
+
   await db.utterances.update(utterance.id, { status: 'processing' });
 
   let interpretation: Interpretation;

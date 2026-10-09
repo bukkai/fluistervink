@@ -9,6 +9,7 @@
   } from './lib/sessions';
   import ActiveSession from './lib/ActiveSession.svelte';
   import { processQueue } from './lib/observations';
+  import DevNotes from './lib/DevNotes.svelte';
   import Settings from './lib/Settings.svelte';
 
   // Uitspraken die bij het afsluiten nog niet verwerkt waren, alsnog verwerken
@@ -83,6 +84,7 @@
     </ul>
   {/if}
 
+  <DevNotes />
   <Settings />
 </main>
 

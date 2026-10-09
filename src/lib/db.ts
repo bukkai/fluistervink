@@ -31,10 +31,16 @@ export interface Utterance {
   llmOutput?: unknown;
   status: 'pending' | 'processing' | 'done' | 'failed';
   /**
+   * `dev_note`: een bevinding over de app ("dev note, …") in plaats van een
+   * waarneming. Gaat niet naar het model. Leeg = gewone uitspraak.
+   */
+  kind?: 'dev_note';
+  /**
    * Uitkomst na verwerking; bepaalt later ook het trilpatroon.
    * `ignored`: geen waarneming in de uitspraak (of niet begrepen).
+   * `note`: opgeslagen als dev note.
    */
-  result?: 'saved' | 'uncertain' | 'ignored';
+  result?: 'saved' | 'uncertain' | 'ignored' | 'note';
   /** Foutmelding bij status `failed`, of acties die niet uitgevoerd konden worden */
   error?: string;
   /** Wat deze uitspraak in de database veranderde, zodat `undo` het kan terugdraaien */

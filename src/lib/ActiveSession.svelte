@@ -59,6 +59,7 @@
   }
 
   function statusLabel(u: Utterance): string {
+    if (u.kind === 'dev_note') return 'dev note';
     if (u.undone) return 'teruggedraaid';
     switch (u.status) {
       case 'pending':
@@ -214,6 +215,10 @@
   .status.failed,
   .status.ignored {
     color: var(--red);
+  }
+
+  .status.note {
+    color: var(--green);
   }
 
   .status.uncertain {
