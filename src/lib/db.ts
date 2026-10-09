@@ -13,6 +13,21 @@ export interface Position {
   fixedAt: number;
 }
 
+/** Hoe de positie bij een uitspraak tot stand kwam, voor analyse */
+export interface PositionLookup {
+  /**
+   * `recent`: meting van de warme GPS, hooguit 15 s oud. `fresh`: nieuw
+   * opgevraagd. `last_known`: verse meting lukte niet, laatst bekende positie
+   * (kan oud zijn). `none`: geen positie.
+   */
+  source: 'recent' | 'fresh' | 'last_known' | 'none';
+  position?: Position;
+  /** Hoe lang het zoeken duurde */
+  waitMs: number;
+  /** Waarom een verse meting mislukte, of de GPS-status bij `none` */
+  error?: string;
+}
+
 export interface Session {
   id: string;
   startedAt: number;
@@ -26,6 +41,8 @@ export interface Utterance {
   /** Moment waarop de opname startte */
   recordedAt: number;
   position?: Position;
+  /** Hoe `position` gevonden werd (zonder de positie zelf) */
+  positionLookup?: Omit<PositionLookup, 'position'>;
   audio?: Blob;
   transcript?: string;
   /** Ruwe uitvoer van het LLM (tool calls), bewaard voor de testset */

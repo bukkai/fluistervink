@@ -41,6 +41,13 @@
       .join(', ');
   }
 
+  /** Leeftijd van de positie als die merkbaar ouder is dan de waarneming */
+  function positionAge(obs: Observation): string | undefined {
+    if (!obs.position) return undefined;
+    const minutes = Math.floor((obs.observedAt - obs.position.fixedAt) / 60_000);
+    return minutes >= 1 ? `positie ${minutes} min oud` : undefined;
+  }
+
   /** Van uitspraak tot verwerkt, inclusief de tijd in de wachtrij */
   function duration(u: Utterance): string | undefined {
     if (!u.metrics) return undefined;
@@ -81,6 +88,9 @@
           <span class="muted">{timeFormat.format(obs.observedAt)}</span>
           {#if obs.position}
             <span class="muted">±{Math.round(obs.position.accuracy)} m</span>
+            {#if positionAge(obs)}
+              <span class="reason">{positionAge(obs)}</span>
+            {/if}
           {:else}
             <span class="reason">geen locatie</span>
           {/if}
