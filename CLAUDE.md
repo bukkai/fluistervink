@@ -71,7 +71,7 @@ Soort, activiteit, methode, kleed en telmethode worden opgeslagen als **waarnemi
 ## Openstaande punten
 
 - **Importformaat van waarneming.nl:** grotendeels uitgezocht, zie `docs/waarneming-nl.md`. De CSV-import gebruikt het eBird-formaat (23 kolommen, soort via wetenschappelijke naam) en heeft geen velden voor activiteit, methode of kleed; die gaan als tekst in `Species Comments`. Nog nagaan: biedt de importpagina (alleen ingelogd) andere formaten?
-- **Soortenlijst:** opgelost. `scripts/fetch-species.mjs` haalt de lijst op bij de openbare API van waarneming.nl → `data/soorten-nl.json` (343 soorten met waarneming.nl-ID's). Alternatieve namen ("stadsduif") nog aanvullen op basis van de testset.
+- **Soortenlijst:** opgelost. `scripts/fetch-species.mjs` haalt de lijst op bij de openbare API van waarneming.nl → `data/soorten-nl.json` (343 soorten met waarneming.nl-ID's). Bijnamen en afkortingen uit vogelaarsjargon ("tova", "robotap", "KBV") staan in `data/bijnamen.json` (bijnaam → soort-ID) en gaan mee in de systeemprompt; vrij aan te vullen.
 - **STT-keuze:** Whisper tegenover Web Speech API, beslissen op basis van de testset.
 - **Mapping van gesproken termen naar velden:** eerste voorstel in `docs/waarneming-nl.md`, verfijnen met de testset.
 

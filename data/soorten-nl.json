@@ -25,7 +25,7 @@
   "name": "Zwarte Zwaan",
   "scientific": "Cygnus atratus",
   "type": "S",
-  "rarity": 1
+  "rarity": 2
  },
  {
   "id": 240786,
@@ -2254,6 +2254,13 @@
   "rarity": 1
  },
  {
+  "id": 67,
+  "name": "Bonte Kraai",
+  "scientific": "Corvus cornix",
+  "type": "Y",
+  "rarity": 3
+ },
+ {
   "id": 1967,
   "name": "Alk of Zeekoet",
   "scientific": "Alca torda / Uria aalge",
@@ -2287,6 +2294,13 @@
   "scientific": "Phoenicopteridae indet.",
   "type": "M",
   "rarity": 2
+ },
+ {
+  "id": 18926,
+  "name": "Vogel onbekend",
+  "scientific": "Aves indet.",
+  "type": "M",
+  "rarity": 0
  },
  {
   "id": 20640,
@@ -2399,5 +2413,12 @@
   "scientific": "Circus pygargus / macrourus",
   "type": "M",
   "rarity": 3
+ },
+ {
+  "id": 1003144,
+  "name": "Zangvogel onbekend",
+  "scientific": "Passeriformes indet.",
+  "type": "M",
+  "rarity": 0
  }
 ]
