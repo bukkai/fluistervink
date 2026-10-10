@@ -148,6 +148,11 @@ Typen werkt, ook met de ingebouwde spraakinvoer van Android (die is matig). Besl
   3. Het gebied van waarneming.nl ("Schoorlse Duinen"), het detailniveau dat de site zelf gebruikt. Kan via hun API (onderzoeken; vermoedelijk met inloggen).
   4. Een kleine kaart met alle waarnemingen van een wandeling (Leaflet + OSM), bij de review. Stond al op de roadmap.
   Voorstel: nu 1 (klein), en 2 of 3 bij de review (stap 5). Echte offline-ondersteuning valt buiten de MVP, dus de naam opvragen bij het verwerken kan.
+- Idee eigenaar (10 okt): interne statistieken van alle ingevoerde soorten, over alle gebruikers heen, om bij veel gebruik te zien wat uit de soortenlijst, bijnamen en Whisper-prompt kan (nooit gebruikt) of erbij moet (vaak "Gezegd: …" in de twijfelreden, vaak met de hand gecorrigeerd). Pas relevant bij meer gebruikers (multi-user valt buiten de MVP). Aanzet:
+  - Tellen per soort-ID: door het model gekozen, met de hand gecorrigeerd (van → naar), onzeker, en soorten die het model niet kon plaatsen. Die laatste zijn het waardevolst voor wat er bij moet.
+  - Waar: de proxy (`worker/index.ts`) ziet elke `/api/messages`-aanroep al en kan soort-ID's uit de tool calls tellen (Workers Analytics Engine of D1). Correcties gebeuren in de app; die zou de app los moeten melden.
+  - Privacy: alleen geaggregeerde tellingen, geen locaties, tijden of audio; gebruikers hierover informeren.
+  - Tot die tijd geeft de JSON-export van de eigen wandelingen hetzelfde beeld voor één gebruiker (past bij de testset, stap 7).
 
 ## Overstappen tussen computers
 
