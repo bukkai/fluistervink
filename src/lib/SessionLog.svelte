@@ -5,9 +5,12 @@
   import { mapsUrl } from './devNotes';
   import ObservationEditor from './ObservationEditor.svelte';
   import {
+    deleteObservation,
     editObservation,
+    listDeleted,
     listObservations,
     listUtterances,
+    restoreObservation,
     retry,
     setSkipExport,
     spokenAt,
@@ -30,6 +33,7 @@
   // Opnieuw opvragen als de wandeling wisselt; liveQuery volgt daarna zelf de database
   let observations = $derived(liveQuery(() => listObservations(session.id)));
   let utterances = $derived(liveQuery(() => listUtterances(session.id)));
+  let deleted = $derived(liveQuery(() => listDeleted(session.id)));
 
   // Gebiedsnamen die nog ontbreken (geen verbinding, oudere wandelingen) alsnog opzoeken
   $effect(() => {
@@ -50,6 +54,17 @@
   let shown = $derived(
     ($observations ?? []).filter((obs) => !onlyUncertain || obs.uncertain || obs.id === editing),
   );
+
+  /** Aantal soorten, zonder verzamelsoorten ("Eend onbekend") */
+  let speciesCount = $derived(
+    new Set(
+      ($observations ?? [])
+        .filter((obs) => getSpecies(obs.speciesId)?.type !== 'M')
+        .map((obs) => obs.speciesId),
+    ).size,
+  );
+
+  const deletedByLabel = { hand: 'met de hand', voice: 'met de stem', undo: 'ongedaan gemaakt' };
 
   /** Onzekere waarneming nagelopen en goed bevonden */
   function confirmObservation(obs: Observation) {
@@ -152,6 +167,12 @@
 {/if}
 
 <h2>Waarnemingen</h2>
+{#if $observations?.length}
+  <p class="muted summary">
+    {speciesCount === 1 ? '1 soort' : `${speciesCount} soorten`} ·
+    {$observations.length === 1 ? '1 waarneming' : `${$observations.length} waarnemingen`}
+  </p>
+{/if}
 {#if uncertainCount > 0 || onlyUncertain}
   <label class="filter">
     <input type="checkbox" bind:checked={onlyUncertain} />
@@ -189,14 +210,6 @@
             {/if}
           </button>
           <div class="actions">
-            {#if source?.audio}
-              <button
-                class="play"
-                onclick={() => togglePlay(source)}
-                aria-label={playingId === source.id ? 'Opname pauzeren' : 'Opname afspelen'}
-                >{playingId === source.id ? PAUSE : PLAY}</button
-              >
-            {/if}
             {#if obs.position}
               <a
                 class="muted"
@@ -212,6 +225,7 @@
             {/if}
             <span class="end">
               {#if obs.uncertain}
+                <button class="discard" onclick={() => deleteObservation(obs.id)}>Weg</button>
                 <button class="confirm" onclick={() => confirmObservation(obs)}>Klopt</button>
               {/if}
               <!-- Exporteren kan alleen bij een afgelopen wandeling -->
@@ -235,6 +249,29 @@
   <p class="muted">Geen onzekere waarnemingen meer.</p>
 {:else}
   <p class="muted">Nog niets waargenomen.</p>
+{/if}
+
+{#if $deleted?.length}
+  <details class="deleted">
+    <summary>Verwijderd ({$deleted.length})</summary>
+    <ul>
+      {#each $deleted as obs (obs.id)}
+        <li>
+          <div class="actions">
+            <div>
+              <strong>{obs.count} × {getSpecies(obs.speciesId)?.name}</strong>
+              <span class="muted">{timeFormat.format(obs.observedAt)}</span>
+              <div class="muted">{details(obs)}</div>
+              <div class="muted">verwijderd {deletedByLabel[obs.deletedBy]}</div>
+            </div>
+            <span class="end">
+              <button onclick={() => restoreObservation(obs.id)}>Terugzetten</button>
+            </span>
+          </div>
+        </li>
+      {/each}
+    </ul>
+  </details>
 {/if}
 
 {#if $utterances?.length}
@@ -327,8 +364,29 @@
     margin-left: auto;
   }
 
-  button.confirm {
+  button.confirm,
+  button.discard {
     margin: 0;
+  }
+
+  button.discard {
+    background: var(--red);
+  }
+
+  .summary {
+    margin-top: -0.5rem;
+  }
+
+  .deleted {
+    margin-top: 1rem;
+  }
+
+  .deleted summary {
+    color: var(--muted);
+  }
+
+  .deleted li strong {
+    opacity: 0.6;
   }
 
   .export {
