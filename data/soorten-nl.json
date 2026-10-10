@@ -1050,6 +1050,13 @@
   "rarity": 3
  },
  {
+  "id": 369,
+  "name": "Vale Pijlstormvogel",
+  "scientific": "Puffinus yelkouan mauretanicus",
+  "type": "I",
+  "rarity": 4
+ },
+ {
   "id": 362,
   "name": "Zwarte Ooievaar",
   "scientific": "Ciconia nigra",
