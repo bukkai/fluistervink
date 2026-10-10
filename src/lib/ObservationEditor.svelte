@@ -56,7 +56,7 @@
   }
 
   async function remove() {
-    if (!confirm(`${original.count} × ${getSpecies(original.speciesId)?.name} verwijderen?`)) return;
+    // Geen bevestiging nodig: hij komt in "Verwijderd" en is terug te zetten
     await deleteObservation(original.id);
     onclose();
   }

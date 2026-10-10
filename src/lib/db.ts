@@ -161,10 +161,21 @@ export interface Observation {
   status: 'draft' | 'reviewed' | 'exported';
 }
 
+/**
+ * Verwijderde waarneming, in een aparte tabel ("prullenbak") zodat hij terug
+ * te zetten is. Zo hoeven lijst, export, kaart en model niet te filteren.
+ */
+export interface DeletedObservation extends Observation {
+  deletedAt: number;
+  /** `hand`: in de review; `voice`: met de stem ("die mag weg"); `undo`: ongedaan gemaakt */
+  deletedBy: 'hand' | 'voice' | 'undo';
+}
+
 export const db = new Dexie('thijsse') as Dexie & {
   sessions: EntityTable<Session, 'id'>;
   utterances: EntityTable<Utterance, 'id'>;
   observations: EntityTable<Observation, 'id'>;
+  deletedObservations: EntityTable<DeletedObservation, 'id'>;
   events: EntityTable<LogEvent, 'id'>;
 };
 
@@ -178,4 +189,8 @@ db.version(1).stores({
 
 db.version(2).stores({
   events: '++id, at, type',
+});
+
+db.version(3).stores({
+  deletedObservations: 'id, sessionId',
 });

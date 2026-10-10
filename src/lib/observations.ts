@@ -1,6 +1,7 @@
 import {
   db,
   type Change,
+  type DeletedObservation,
   type Observation,
   type PositionLookup,
   type ProcessingMetrics,
@@ -117,9 +118,40 @@ export async function setSkipExport(id: string, skip: boolean): Promise<void> {
   await db.observations.update(id, { skipExport: skip || undefined });
 }
 
-/** Verwijdert een waarneming met de hand (niet via de stem, dus niet terug te draaien). */
+/** Verwijderde waarnemingen van een wandeling, laatst verwijderd eerst. */
+export async function listDeleted(sessionId: string): Promise<DeletedObservation[]> {
+  const all = await db.deletedObservations.where('sessionId').equals(sessionId).toArray();
+  return all.sort((a, b) => b.deletedAt - a.deletedAt);
+}
+
+/** Verwijdert een waarneming met de hand; hij gaat naar de prullenbak. */
 export async function deleteObservation(id: string): Promise<void> {
+  await db.transaction('rw', db.observations, db.deletedObservations, () =>
+    moveToBin(id, 'hand'),
+  );
+}
+
+/** Zet een verwijderde waarneming terug in de lijst. */
+export async function restoreObservation(id: string): Promise<void> {
+  await db.transaction('rw', db.observations, db.deletedObservations, async () => {
+    const deleted = await db.deletedObservations.get(id);
+    if (!deleted) return;
+    const { deletedAt: _at, deletedBy: _by, ...observation } = deleted;
+    await db.observations.put(observation);
+    await db.deletedObservations.delete(id);
+  });
+}
+
+/** Verplaatst een waarneming naar de prullenbak; geeft hem terug zoals hij was. */
+async function moveToBin(
+  id: string,
+  deletedBy: DeletedObservation['deletedBy'],
+): Promise<Observation | undefined> {
+  const observation = await db.observations.get(id);
+  if (!observation) return undefined;
+  await db.deletedObservations.put({ ...observation, deletedAt: Date.now(), deletedBy });
   await db.observations.delete(id);
+  return observation;
 }
 
 export async function retry(utteranceId: string): Promise<void> {
@@ -229,7 +261,7 @@ async function processUtterance(utterance: Utterance): Promise<void> {
     online: navigator.onLine,
   };
 
-  await db.transaction('rw', db.observations, db.utterances, async () => {
+  await db.transaction('rw', db.observations, db.deletedObservations, db.utterances, async () => {
     // Opnieuw ophalen: de positie kan intussen binnengekomen zijn
     const latest = (await db.utterances.get(utterance.id)) ?? utterance;
     const changes = await applyActions(latest, interpretation.actions);
@@ -325,9 +357,8 @@ async function applyActions(utterance: Utterance, actions: Action[]): Promise<Ch
       }
 
       case 'delete': {
-        const current = await db.observations.get(action.observationId);
+        const current = await moveToBin(action.observationId, 'voice');
         if (!current) break;
-        await db.observations.delete(current.id);
         changes.push({ type: 'delete', observation: current });
         break;
       }
@@ -357,9 +388,12 @@ async function undoPrevious(utterance: Utterance): Promise<void> {
   if (!previous) return;
 
   for (const change of [...previous.changes!].reverse()) {
-    if (change.type === 'add') await db.observations.delete(change.observationId);
+    if (change.type === 'add') await moveToBin(change.observationId, 'undo');
     if (change.type === 'update') await db.observations.update(change.observationId, change.before);
-    if (change.type === 'delete') await db.observations.put(change.observation);
+    if (change.type === 'delete') {
+      await db.observations.put(change.observation);
+      await db.deletedObservations.delete(change.observation.id);
+    }
   }
   await db.utterances.update(previous.id, { undone: true });
 }
