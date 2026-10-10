@@ -292,9 +292,10 @@ async function applyActions(utterance: Utterance, actions: Action[]): Promise<Ch
           patch.count = Math.max(1, (patch.count ?? current.count) + action.addCount);
         }
         // Een correctie zonder twijfel maakt een eerder onzekere waarneming
-        // zeker; alleen een opmerking toevoegen niet
+        // zeker; alleen een opmerking of notitie toevoegen niet
         const onlyRemarks =
-          !action.addCount && Object.keys(action.fields).every((key) => key === 'remarks');
+          !action.addCount &&
+          Object.keys(action.fields).every((key) => key === 'remarks' || key === 'privateNote');
         if (!onlyRemarks) {
           patch.uncertain ??= false;
           if (!patch.uncertain) patch.uncertainReason = undefined;

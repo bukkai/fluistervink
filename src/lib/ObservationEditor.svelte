@@ -29,6 +29,7 @@
   let lifeStageId = $state(original.lifeStageId);
   let sex = $state(original.sex === 'unknown' ? undefined : original.sex);
   let remarks = $state(original.remarks ?? '');
+  let privateNote = $state(original.privateNote ?? '');
   let uncertain = $state(original.uncertain);
 
   const speciesByName = new Map(species.map((s) => [s.name.toLowerCase(), s]));
@@ -47,6 +48,7 @@
       lifeStageId,
       sex,
       remarks: remarks.trim() || undefined,
+      privateNote: privateNote.trim() || undefined,
       uncertain,
       uncertainReason: uncertain ? original.uncertainReason : undefined,
     });
@@ -149,7 +151,12 @@
   </label>
 
   <label>
-    Opmerking
+    Eigen notitie (gaat niet mee in de export)
+    <textarea bind:value={privateNote} rows="2"></textarea>
+  </label>
+
+  <label>
+    Opmerking voor waarneming.nl
     <textarea bind:value={remarks} rows="2"></textarea>
   </label>
 

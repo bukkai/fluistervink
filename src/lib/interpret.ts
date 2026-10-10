@@ -37,6 +37,7 @@ export interface ObservationFields {
   uncertain?: boolean;
   uncertainReason?: string;
   remarks?: string;
+  privateNote?: string;
 }
 
 export type Action =
@@ -85,7 +86,12 @@ const fieldProperties = {
   remarks: {
     type: 'string',
     description:
-      'Opmerking of opdracht van de gebruiker bij deze waarneming, bv. "bij thuiskomst terugluisteren". Kort, in de woorden van de gebruiker. Bij update_observation vervangt dit de bestaande opmerking.',
+      'Bijzonderheid over de vogel die mee mag naar waarneming.nl, bv. "met ring", "zat op het hek". Kort, in de woorden van de gebruiker. Bij update_observation vervangt dit de bestaande opmerking.',
+  },
+  private_note: {
+    type: 'string',
+    description:
+      'Notitie van de gebruiker voor zichzelf, voor het nalopen thuis, bv. "bij thuiskomst terugluisteren", "locatie klopt niet, zat verderop". Kort, in de woorden van de gebruiker. Bij update_observation vervangt dit de bestaande notitie.',
   },
 } as const;
 
@@ -174,7 +180,10 @@ const SYSTEM_PROMPT = `Je bent de interpretatielaag van Thijsse, een app waarmee
 
 ## Opmerkingen
 
-Zegt de gebruiker iets over een waarneming dat niet in de andere velden past, zoals een opdracht voor later ("bij thuiskomst terugluisteren", "foto checken") of een bijzonderheid ("met ring", "zat op het hek"), zet dat dan in remarks. Hoort het bij een eerdere waarneming ("die heb ik op de foto"), gebruik dan update_observation. Heeft die al een opmerking (zie de lijst), herhaal die dan en voeg de nieuwe toe. Zet geen twijfel in remarks; daarvoor is uncertain_reason.
+Zegt de gebruiker iets over een waarneming dat niet in de andere velden past, zet dat dan in een van twee velden:
+- private_note: een notitie voor zichzelf, om thuis na te lopen. Opdrachten voor later ("bij thuiskomst terugluisteren", "foto checken", "determinatie nakijken") en opmerkingen over de locatie ("zat verderop in een boom", "locatie aanpassen"). Gaat niet naar waarneming.nl.
+- remarks: een bijzonderheid over de vogel zelf, die mee mag naar waarneming.nl ("met ring", "zat op het hek", "in gezelschap van spreeuwen").
+Bevat een uitspraak allebei, verdeel het dan: "zat verderop in een boom, met een ring" → private_note "zat verderop in een boom" en remarks "met ring". Laat niets weg: elke bijzonderheid die de gebruiker noemt, komt in een van de twee velden. Bij twijfel tussen de twee: private_note. Hoort het bij een eerdere waarneming ("die heb ik op de foto"), gebruik dan update_observation. Heeft die al een opmerking of notitie (zie de lijst), herhaal die dan en voeg de nieuwe toe. Zet geen twijfel over de soort in deze velden; daarvoor is uncertain_reason.
 
 ## Soorten
 
@@ -245,6 +254,7 @@ function describe(obs: Observation): string {
     obs.sex === 'male' ? 'man' : obs.sex === 'female' ? 'vrouw' : undefined,
     obs.uncertain ? 'onzeker' : undefined,
     obs.remarks ? `opmerking: "${obs.remarks}"` : undefined,
+    obs.privateNote ? `notitie: "${obs.privateNote}"` : undefined,
   ];
   return `${timeFormat.format(obs.observedAt)} ${parts.filter(Boolean).join(', ')}`;
 }
@@ -310,6 +320,7 @@ interface RawFields {
   uncertain?: boolean;
   uncertain_reason?: string;
   remarks?: string;
+  private_note?: string;
 }
 
 const validCode = (codes: Code[], id: number | undefined) =>
@@ -332,6 +343,7 @@ function toAction(block: Anthropic.ToolUseBlock, context: Observation[]): Action
     uncertain: input.uncertain,
     uncertainReason: input.uncertain ? input.uncertain_reason : undefined,
     remarks: input.remarks?.trim() || undefined,
+    privateNote: input.private_note?.trim() || undefined,
   };
   // Weglaten wat het model niet meegaf, zodat een update alleen wijzigt wat bedoeld is
   for (const key of Object.keys(fields) as (keyof ObservationFields)[]) {

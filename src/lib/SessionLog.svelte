@@ -149,6 +149,9 @@
             {#if obs.uncertain}
               <div class="reason">Onzeker{obs.uncertainReason ? `: ${obs.uncertainReason}` : ''}</div>
             {/if}
+            {#if obs.privateNote}
+              <div class="note">Notitie: {obs.privateNote}</div>
+            {/if}
             {#if obs.remarks}
               <div class="remarks">“{obs.remarks}”</div>
             {/if}
@@ -289,6 +292,11 @@
   .remarks {
     font-size: 0.9rem;
     font-style: italic;
+  }
+
+  .note {
+    font-size: 0.9rem;
+    color: var(--muted);
   }
 
   .status {

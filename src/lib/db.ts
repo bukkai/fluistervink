@@ -145,10 +145,15 @@ export interface Observation {
   /** Waarom het model twijfelde, om de review makkelijker te maken */
   uncertainReason?: string;
   /**
-   * Vrije opmerking van de gebruiker ("bij thuiskomst terugluisteren").
-   * Gaat bij de CSV-export mee in `Species Comments`.
+   * Opmerking voor waarneming.nl ("met ring", "zat op het hek"). Gaat mee in
+   * de export.
    */
   remarks?: string;
+  /**
+   * Eigen notitie voor het nalopen ("bij thuiskomst terugluisteren", "zat
+   * verderop in een boom"). Gaat niet mee in de export.
+   */
+  privateNote?: string;
   /** Laatst met de hand aangepast (in de review); leeg = zoals het model hem maakte */
   editedAt?: number;
   status: 'draft' | 'reviewed' | 'exported';
