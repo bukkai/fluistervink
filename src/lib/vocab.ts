@@ -46,7 +46,7 @@ export const aliases = (aliasList as Alias[]).filter((a) => {
 
 // Uit de volledige lijsten van waarneming.nl alleen de codes die je tijdens
 // een wandeling uitspreekt. Het model mag alleen hieruit kiezen.
-const FIELD_ACTIVITIES = [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 25, 26, 30, 31, 77];
+const FIELD_ACTIVITIES = [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 25, 26, 30, 31, 77, 2016];
 const FIELD_METHODS = [48, 49, 51];
 const FIELD_LIFE_STAGES = [2, 3, 4, 5, 14, 15, 1101, 1102];
 

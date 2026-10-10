@@ -44,7 +44,8 @@ export type Action =
   | { type: 'add'; fields: ObservationFields & { speciesId: number; count: number } }
   | { type: 'update'; observationId: string; fields: ObservationFields; addCount?: number }
   | { type: 'delete'; observationId: string }
-  | { type: 'undo' };
+  | { type: 'undo' }
+  | { type: 'dev_note' };
 
 export interface Interpretation {
   actions: Action[];
@@ -159,6 +160,13 @@ const TOOLS: Anthropic.Tool[] = [
     strict: true,
     input_schema: { type: 'object', properties: {}, additionalProperties: false },
   },
+  {
+    name: 'add_dev_note',
+    description:
+      'Bewaart de uitspraak als dev note: een opmerking over de app zelf in plaats van over vogels.',
+    strict: true,
+    input_schema: { type: 'object', properties: {}, additionalProperties: false },
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -171,11 +179,13 @@ const SYSTEM_PROMPT = `Je bent de interpretatielaag van Thijsse, een app waarmee
 ## Wat je doet
 
 - Nieuwe waarneming(en) → add_observation, één per soort. "Zes houtduiven en een vink" zijn twee aanroepen.
+- Eén uitspraak kan meerdere dingen tegelijk bevatten: nieuwe waarnemingen én correcties op eerdere. Voer ze allemaal uit. "Buizerd overvliegend west, en die ruigpoot van daarnet mag weg" = add_observation (Buizerd) + delete_observation.
 - Correctie op iets eerders → update_observation of delete_observation, met het nummer (ref) uit de lijst met recente waarnemingen. Zonder nadere aanduiding gaat het om #1, de meest recente. "Nee, keep in plaats van vink" slaat op de meest recente vink.
 - "Nog drie erbij" → update_observation met add_count 3 op de bedoelde (meestal meest recente) waarneming.
 - "Ongedaan maken", "terug", "dat was fout" → undo.
 - Bevestiging ("ja, klopt", "dat was goed", "vorige is correct") → update_observation op #1 met alleen uncertain: false, als #1 onzeker is. Is #1 niet onzeker, roep dan geen tool aan.
-- Geen waarneming of correctie in de uitspraak (gepraat, "hallo", "test", vragen) → roep geen enkele tool aan.
+- Een opmerking over de app zelf (wat beter kan, wat niet werkt, een idee voor een functie), ook zonder "dev note" ervoor → add_dev_note. Bijvoorbeeld "bij grote groepen wil ik een schatting kunnen opgeven" of "hij trilt niet".
+- Geen waarneming, correctie of opmerking over de app (gepraat, "hallo", "test", vragen) → roep geen enkele tool aan.
 - Het woord "Thijsse" aan het begin is de aanspreekvorm van de app; negeer het.
 
 ## Opmerkingen
@@ -190,6 +200,7 @@ Bevat een uitspraak allebei, verdeel het dan: "zat verderop in een boom, met een
 Gebruik alleen een ID uit de soortenlijst hieronder; verzin nooit een ID. Spraakherkenning maakt fouten: kies de soort die het meest waarschijnlijk bedoeld is en zet dan uncertain op true met een korte reden. Algemene namen ("een meeuw", "een eend") → de verzamelsoort ("Meeuw onbekend", "Eend onbekend") als die bestaat. Is de soort echt niet te bepalen, maar is er duidelijk wel een vogel gezien, kies dan de best passende verzamelsoort met uncertain ("een vogel" → Vogel onbekend).
 
 Vogelaars gebruiken veel bijnamen en afkortingen; zie de lijst met bijnamen hieronder. Die gelden ook in verbogen vormen en verkleinwoorden ("twee pimmetjes", "drie tova's") en als spraakherkenning ze iets anders schrijft ("robo tap", "ka be vee"). Vaste afspraken:
+- "KBV" (klein bruin vogeltje) wordt door spraakherkenning vaak als "KPV" geschreven: dat is ook KBV → Zangvogel onbekend.
 - "Kraai" is altijd Zwarte Kraai, tenzij er uitdrukkelijk "bonte kraai" gezegd wordt. Niet Kraai onbekend.
 - "Drieteen" is altijd Drieteenstrandloper. Drieteenmeeuw alleen als er uitdrukkelijk "drieteenmeeuw" gezegd wordt.
 - "Phylloscopus", "phylloscoop" → Tjiftjaf of Fitis, zonder uncertain: de gebruiker corrigeert zelf als het een bijzondere boszanger was.
@@ -197,12 +208,21 @@ Vogelaars gebruiken veel bijnamen en afkortingen; zie de lijst met bijnamen hier
 ## Aantal en telmethode
 
 - Een getal → count, telmethode 2 (exact aantal). Geen getal → 1, telmethode 2.
-- "Ongeveer", "zo'n", "een stuk of", "een paar" → telmethode 6 (schatting). "Een paar" ≈ 3; "een paartje" = 2, exact.
+- "Ongeveer", "zo'n", "een stuk of", "een paar", "schatting", "geschat" → telmethode 6 (schatting). "Vijfhonderd schatting" en "schatting vijfhonderd" = count 500, telmethode 6. "Een paar" ≈ 3; "een paartje" = 2, exact.
+- Meerdere getallen voor dezelfde soort in één uitspraak ("vijf houtduiven overvliegend, ... nog twee houtduiven") → tel ze op in één waarneming, zonder uncertain.
+
+## Geslacht
+
+Een waarneming heeft één geslacht. Noemt de gebruiker aantallen mannetjes en vrouwtjes, roep add_observation dan aan voor elk geslacht apart, met sex en het aantal van dat geslacht; samen vormen ze het totaal. Zet de verdeling niet in remarks.
+- "Vijf wilde eenden, twee vrouwtjes en drie mannetjes" → twee aanroepen: add_observation Wilde Eend count 3 sex male, en add_observation Wilde Eend count 2 sex female.
+- Corrigeert de gebruiker zich in dezelfde uitspraak ("vier eenden, een vrouwtje en drie mannetjes, nee wacht, twee vrouwtjes en drie mannetjes"), gebruik dan alleen de laatste versie, maar nog steeds met een aanroep per geslacht.
+Latere correcties gaan per geslacht: "nog een paartje erbij" of "nog een man en een vrouw erbij" → add_count 1 op het mannetje én add_count 1 op het vrouwtje. Staat er nog geen waarneming per geslacht (alleen een totaal), pas die dan aan en maak er een voor het andere geslacht bij.
 - "Groep" of "zwerm" zonder getal → count 1, telmethode 3 (gezien, niet geteld), uncertain.
 
 ## Activiteit en methode
 
-- "overvliegend", "over", "trekkend" → activiteit 6, methode 48 (gezien). Met windrichting ("naar het zuiden") de bijbehorende overvliegend-code.
+- "overvliegend", "over", "trekkend" → activiteit 6, methode 48 (gezien). Met windrichting ("naar het zuiden", "richting west", "noordwaarts") de bijbehorende overvliegend-code; ook als het woord overvliegend er niet bij staat ("buizerd richting west").
+- "dood", "dode", "kadaver", "plukresten", "plukplaats" → activiteit 17 (vondst (dood)), methode 48. "Doodgereden", "verkeersslachtoffer" → activiteit 2016. Een vermoedelijke oorzaak ("plukplaats van een havik") gaat in remarks.
 - "roepje", "roept", "roepend" → activiteit 3, methode 49 (gehoord).
 - "zingend", "zang", "zingt" → activiteit 4, methode 49.
 - "alarmerend", "alarm" → activiteit 25, methode 49.
@@ -331,6 +351,7 @@ function toAction(block: Anthropic.ToolUseBlock, context: Observation[]): Action
   const input = block.input as RawFields;
 
   if (block.name === 'undo') return { type: 'undo' };
+  if (block.name === 'add_dev_note') return { type: 'dev_note' };
 
   const fields: ObservationFields = {
     speciesId: input.species_id,
