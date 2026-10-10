@@ -9,6 +9,7 @@
     listObservations,
     listUtterances,
     retry,
+    setSkipExport,
     spokenAt,
   } from './observations';
   import {
@@ -130,7 +131,7 @@
   <ul>
     {#each shown as obs (obs.id)}
       {@const source = utteranceById.get(obs.utteranceId)}
-      <li class:uncertain={obs.uncertain}>
+      <li class:uncertain={obs.uncertain} class:skipped={obs.skipExport}>
         {#if editing === obs.id}
           <ObservationEditor observation={obs} utterance={source} onclose={() => (editing = undefined)} />
         {:else}
@@ -173,9 +174,22 @@
             {:else}
               <span class="reason">geen locatie</span>
             {/if}
-            {#if obs.uncertain}
-              <button class="confirm" onclick={() => confirmObservation(obs)}>Klopt</button>
-            {/if}
+            <span class="end">
+              {#if obs.uncertain}
+                <button class="confirm" onclick={() => confirmObservation(obs)}>Klopt</button>
+              {/if}
+              <!-- Exporteren kan alleen bij een afgelopen wandeling -->
+              {#if session.status === 'ended'}
+                <label class="export">
+                  <input
+                    type="checkbox"
+                    checked={!obs.skipExport}
+                    onchange={(event) => setSkipExport(obs.id, !event.currentTarget.checked)}
+                  />
+                  Exporteren
+                </label>
+              {/if}
+            </span>
           </div>
         {/if}
       </li>
@@ -265,8 +279,25 @@
     text-decoration: underline dotted;
   }
 
+  .end {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+  }
+
   button.confirm {
-    margin: 0 0 0 auto;
+    margin: 0;
+  }
+
+  .export {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  li.skipped .row {
+    opacity: 0.5;
   }
 
   .filter {

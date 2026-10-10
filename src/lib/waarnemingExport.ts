@@ -43,6 +43,8 @@ export interface WaarnemingExport {
   exported: Observation[];
   /** Waarnemingen zonder positie: de import weigert die, dus ze blijven eruit */
   skipped: Observation[];
+  /** Uitgevinkt in de review */
+  excluded: Observation[];
 }
 
 export async function buildExport(session: Session): Promise<WaarnemingExport> {
@@ -50,8 +52,10 @@ export async function buildExport(session: Session): Promise<WaarnemingExport> {
   const observations = (await listObservations(session.id)).sort(
     (a, b) => a.observedAt - b.observedAt || a.createdAt - b.createdAt,
   );
-  const exported = observations.filter((obs) => obs.position);
-  const skipped = observations.filter((obs) => !obs.position);
+  const excluded = observations.filter((obs) => obs.skipExport);
+  const included = observations.filter((obs) => !obs.skipExport);
+  const exported = included.filter((obs) => obs.position);
+  const skipped = included.filter((obs) => !obs.position);
   const lines = [COLUMNS.map(csvField).join(','), ...exported.map((obs) => toLine(toRow(obs)))];
   return {
     // CRLF en UTF-8 (zonder BOM, anders hoort die bij de eerste kolomnaam)
@@ -59,6 +63,7 @@ export async function buildExport(session: Session): Promise<WaarnemingExport> {
     filename: `waarneming-${isoDate(new Date(session.startedAt))}.csv`,
     exported,
     skipped,
+    excluded,
   };
 }
 

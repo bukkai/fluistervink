@@ -154,6 +154,8 @@ export interface Observation {
    * verderop in een boom"). Gaat niet mee in de export.
    */
   privateNote?: string;
+  /** Uitgevinkt in de review: niet meenemen in de export, wel bewaren */
+  skipExport?: boolean;
   /** Laatst met de hand aangepast (in de review); leeg = zoals het model hem maakte */
   editedAt?: number;
   status: 'draft' | 'reviewed' | 'exported';
