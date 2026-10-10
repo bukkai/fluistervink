@@ -63,7 +63,7 @@ Doel: valideren dat herkenning en interpretatie in het veld goed genoeg werken.
 
 ## Datamodel (eerste schets)
 
-- **Session:** id, start- en eindtijd, status
+- **Session:** id, start- en eindtijd, status, naam (gebied van waarneming.nl: bij de start dat van de startpositie, bij het stoppen dat met de meeste waarnemingen; met de hand aan te passen)
 - **Utterance:** id, sessionId, tijdstip, lat/lon/nauwkeurigheid, audio, transcript, LLM-uitvoer, verwerkingsstatus
 - **Observation:** id, sessionId, utteranceId (bron), soort-ID, aantal, telmethode, activiteit/gedrag (bv. overvliegend, ter plaatse, roepend, zingend), methode (gezien/gehoord), optioneel geslacht/leeftijd/kleed, tijdstip, lat/lon/nauwkeurigheid, `uncertain`, opmerking (voor waarneming.nl), eigen notitie (niet geëxporteerd), vlag "niet exporteren", status (concept / gereviewd / geëxporteerd)
 

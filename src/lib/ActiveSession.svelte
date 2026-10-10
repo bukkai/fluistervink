@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { nameFromStart } from './area';
   import type { PositionLookup, Session } from './db';
   import { vibrate } from './feedback';
   import { logEvent } from './log';
@@ -19,6 +20,17 @@
       // Wandeling gestopt tijdens een opname: microfoon uit, opname bewaren
       if (recorder.status === 'recording') finishRecording();
     };
+  });
+
+  // Voorlopige naam van de wandeling uit de startpositie. Niet bij voortzetten.
+  let naming = false;
+  $effect(() => {
+    if (session.place || naming) return;
+    naming = true;
+    const sessionId = session.id;
+    currentPosition().then(({ position }) => {
+      if (position) nameFromStart(sessionId, position);
+    });
   });
 
   // Naar een andere app (Merlin) of scherm uit tijdens een opname: stoppen en

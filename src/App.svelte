@@ -94,6 +94,7 @@
       <p>
         Wandeling bezig sinds {timeFormat.format(active.startedAt)}
         <span class="muted">({duration(now - active.startedAt)})</span>
+        {#if active.place}<br /><span class="muted">{active.place.name}</span>{/if}
       </p>
       <button class="stop" onclick={stop}>Stop wandeling</button>
     </section>
@@ -108,6 +109,7 @@
       {#each past as session (session.id)}
         <li>
           <a href="#wandeling/{session.id}">
+            {#if session.place}<strong>{session.place.name}</strong><br />{/if}
             {dateFormat.format(session.startedAt)},
             {timeFormat.format(session.startedAt)}
             <span class="muted">
