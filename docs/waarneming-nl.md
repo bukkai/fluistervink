@@ -18,7 +18,7 @@ Uitgezocht op 10 oktober 2026 (ingelogd). Waarneming.nl heeft een eigen **bulkim
 | `lat`, `lng` | ✔ | WGS84 | positie (6 decimalen) |
 | `accuracy` | | meters, t/m 1000; 999 = onbekend | GPS-nauwkeurigheid; boven 1000 → 999 |
 | `number` | | aantal | `count` |
-| `notes` | | vrije tekst | opmerking, plus de twijfelreden bij een onzekere waarneming |
+| `notes` | | vrije tekst | opmerking (niet de eigen notitie), plus de twijfelreden bij een onzekere waarneming |
 | `sex` | | `U`, `F`, `M` | `sex` |
 | `is certain` | | `True`/`False` | omgekeerde van `uncertain` |
 | `is escape` | | `True`/`False` | – |
