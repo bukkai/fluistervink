@@ -185,9 +185,8 @@ export interface DeletedObservation extends Observation {
   deletedBy: 'hand' | 'voice' | 'undo';
 }
 
-// De databasenaam is nog de oude appnaam. Niet hernoemen: dan begint de app met
-// een lege database en zijn alle wandelingen weg.
-export const db = new Dexie('thijsse') as Dexie & {
+// Let op: een andere databasenaam betekent een lege database.
+export const db = new Dexie('fluistervink') as Dexie & {
   sessions: EntityTable<Session, 'id'>;
   utterances: EntityTable<Utterance, 'id'>;
   observations: EntityTable<Observation, 'id'>;

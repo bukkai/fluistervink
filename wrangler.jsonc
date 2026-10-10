@@ -2,9 +2,7 @@
 // afhandelt. Zie https://developers.cloudflare.com/workers/wrangler/configuration/
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  // Oude appnaam. Hernoemen maakt een nieuwe Worker met een nieuwe URL (andere
-  // origin, dus lege IndexedDB op de telefoon) en zonder de geheimen.
-  "name": "thijsse",
+  "name": "fluistervink",
   "main": "worker/index.ts",
   "compatibility_date": "2026-09-01",
   "compatibility_flags": ["nodejs_compat"],

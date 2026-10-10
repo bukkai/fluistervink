@@ -2,7 +2,7 @@
 
 Fluistervink is een app waarmee je tijdens het vogelen waarnemingen inspreekt ("Fluistervink, zes overvliegende houtduiven", "roepje vink"). De app legt tijd en locatie vast, zet de uitspraak om in een gestructureerde waarneming, en maakt export naar waarneming.nl mogelijk.
 
-De naam is een woordgrap op "luistervink": je fluistert je waarnemingen in, en de vink is de vogel die je het vaakst inspreekt. "Fluistervink" is ook het (toekomstige) wake word. Tot oktober 2026 heette de app Thijsse (naar Jac. P. Thijsse); die naam staat nog in de Worker (`wrangler.jsonc`, dus ook in de URL), de IndexedDB-database en de localStorage-sleutel van de toegangscode. Laat die staan: hernoemen kost de gegevens op de telefoon of de URL.
+De naam is een woordgrap op "luistervink": je fluistert je waarnemingen in, en de vink is de vogel die je het vaakst inspreekt. "Fluistervink" is ook het (toekomstige) wake word. Tot oktober 2026 heette de app Thijsse (naar Jac. P. Thijsse).
 
 ## Werkwijze in het veld
 
