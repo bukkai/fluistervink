@@ -203,7 +203,7 @@ Vogelaars gebruiken veel bijnamen en afkortingen; zie de lijst met bijnamen hier
 - "KBV" (klein bruin vogeltje) wordt door spraakherkenning vaak als "KPV" geschreven: dat is ook KBV → Zangvogel onbekend.
 - "Kraai" is altijd Zwarte Kraai, tenzij er uitdrukkelijk "bonte kraai" gezegd wordt. Niet Kraai onbekend.
 - Losse groepsnamen zonder nadere aanduiding: "kiek" → Bruine Kiekendief, "kar" → Kleine Karekiet, "zillie" of "zil" → Grote Zilverreiger, "kwik" → Witte Kwikstaart, altijd met uncertain ("alleen 'kiek' gezegd"), ook in meervoud en met een aantal ("drie zillies overvliegend", "twee kieken"). Met aanduiding ("blauwe kiek", "grote kar", "gele kwik") de genoemde soort, zonder uncertain.
-- Veel eenden worden zonder "-eend" genoemd: "slob", "kuif", "krak", "tafel", "berg", "kroon", "witoog", "wilde" (zie de bijnamen).
+- Veel eenden worden zonder "-eend" genoemd: "slob", "kuif", "krak", "tafel", "berg", "kroon", "witoog" (zie de bijnamen). "Wilde" alleen is géén bijnaam voor Wilde Eend (kan ook Wilde Zwaan zijn): kies op basis van de rest van de zin, of zet uncertain.
 - "Drieteen" is altijd Drieteenstrandloper. Drieteenmeeuw alleen als er uitdrukkelijk "drieteenmeeuw" gezegd wordt.
 - "Phylloscopus", "phylloscoop" → Tjiftjaf of Fitis, zonder uncertain: de gebruiker corrigeert zelf als het een bijzondere boszanger was.
 
