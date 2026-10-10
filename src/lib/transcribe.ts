@@ -15,7 +15,7 @@ export const TRANSCRIBE_MODEL = 'gpt-4o-transcribe';
 const speciesNames = species.filter((s) => s.type === 'S' && s.rarity <= 2).map((s) => s.name);
 const aliasNames = aliases.flatMap((a) => a.bijnamen);
 
-const PROMPT = `Vogelwaarnemingen, ingesproken tijdens een wandeling. Bijvoorbeeld: "Thijsse, zes overvliegende houtduiven." "Roepje vink." "Twee zingende tjiftjaffen." "Nee, keep in plaats van vink." "Nog drie erbij." "Die laatste weg." "Dev note: de knop reageert traag."
+const PROMPT = `Vogelwaarnemingen, ingesproken tijdens een wandeling. Bijvoorbeeld: "Fluistervink, zes overvliegende houtduiven." "Roepje vink." "Twee zingende tjiftjaffen." "Nee, keep in plaats van vink." "Nog drie erbij." "Die laatste weg." "Dev note: de knop reageert traag."
 
 Vogelnamen: ${speciesNames.join(', ')}.
 

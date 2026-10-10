@@ -29,7 +29,7 @@
 
   async function exportData() {
     const date = new Date().toISOString().slice(0, 10);
-    download(await exportAllJson(), `thijsse-${date}.json`);
+    download(await exportAllJson(), `fluistervink-${date}.json`);
   }
 </script>
 

@@ -69,5 +69,5 @@ export async function devNotesMarkdown(notes: Utterance[]): Promise<string> {
       return lines.join('\n');
     }),
   );
-  return `# Dev notes Thijsse\n\n${sections.join('\n')}`;
+  return `# Dev notes Fluistervink\n\n${sections.join('\n')}`;
 }
