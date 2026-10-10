@@ -39,7 +39,7 @@ Op een nieuwe computer: `.dev.vars` aanmaken (zie README).
 
 - **A. Bevindingen verwerken:** fouten uit de import en de wandeling, aanpassingen aan prompt, bijnamen en Whisper-prompt.
 - **B. Stap 7, testset:** export van audio, transcript, LLM-uitvoer en gecorrigeerde waarneming; daarna een script dat de testset opnieuw door STT en model haalt en scoort (prompts, modellen, Web Speech API vergelijken).
-- **C. Kleine verbeteringen:** eigen notitie naast de opmerking (niet exporteren), status "geëxporteerd" per wandeling, vinkje "niet exporteren".
+- **C. Kleine verbeteringen:** eigen notitie naast de opmerking (PR #20) en vinkje "Exporteren" per waarneming (PR #21, gestapeld op #20: eerst #20 mergen, dan #21 naar `main` omzetten). Status "geëxporteerd" per wandeling zat al in PR #19.
 - **D. Flow en indeling** (`docs/ideeen-flow.md`): menu met instellingen en vorige wandelingen (opruimen), locatienaam bij start, reviewscherm na "stop wandeling".
 - **E. Kaart in de review** (Leaflet + OSM, stip verslepen): buiten de MVP, eerst overleggen.
 - **F. Geautomatiseerde tests** (Vitest, later Playwright en GitHub Actions).
