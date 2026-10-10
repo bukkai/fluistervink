@@ -51,3 +51,21 @@ export async function requestPersistentStorage(): Promise<boolean> {
   if (await navigator.storage.persisted()) return true;
   return navigator.storage.persist();
 }
+
+export interface SessionCounts {
+  utterances: number;
+  observations: number;
+}
+
+/** Aantal uitspraken en waarnemingen per wandeling, voor het overzicht */
+export async function countPerSession(): Promise<Map<string, SessionCounts>> {
+  const counts = new Map<string, SessionCounts>();
+  const get = (id: string) => {
+    if (!counts.has(id)) counts.set(id, { utterances: 0, observations: 0 });
+    return counts.get(id)!;
+  };
+  // Alleen de index lezen, niet de uitspraken zelf (die bevatten de audio)
+  for (const id of await db.utterances.orderBy('sessionId').keys()) get(id as string).utterances++;
+  for (const id of await db.observations.orderBy('sessionId').keys()) get(id as string).observations++;
+  return counts;
+}

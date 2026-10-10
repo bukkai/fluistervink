@@ -2,11 +2,13 @@
   import { liveQuery } from 'dexie';
   import { onDestroy } from 'svelte';
   import {
+    countPerSession,
     listSessions,
     requestPersistentStorage,
     startSession,
     stopSession,
   } from './lib/sessions';
+  import type { Session } from './lib/db';
   import ActiveSession from './lib/ActiveSession.svelte';
   import { processQueue } from './lib/observations';
   import DevNotes from './lib/DevNotes.svelte';
@@ -19,6 +21,7 @@
   // liveQuery draait opnieuw zodra de data in IndexedDB verandert, en is
   // direct bruikbaar als Svelte-store ($sessions).
   const sessions = liveQuery(listSessions);
+  const counts = liveQuery(countPerSession);
 
   let active = $derived($sessions?.find((s) => s.status === 'active'));
   let past = $derived($sessions?.filter((s) => s.status === 'ended') ?? []);
@@ -64,6 +67,19 @@
     const m = minutes % 60;
     return h > 0 ? `${h} u ${m} min` : `${m} min`;
   }
+
+  /** "1 u 5 min, 12 uitspraken, 15 waarnemingen, geëxporteerd" */
+  function summary(session: Session): string {
+    const c = $counts?.get(session.id);
+    return [
+      duration((session.endedAt ?? session.startedAt) - session.startedAt),
+      c && `${c.utterances} ${c.utterances === 1 ? 'uitspraak' : 'uitspraken'}`,
+      c && `${c.observations} ${c.observations === 1 ? 'waarneming' : 'waarnemingen'}`,
+      session.exportedAt && 'geëxporteerd',
+    ]
+      .filter(Boolean)
+      .join(', ');
+  }
 </script>
 
 <main>
@@ -95,9 +111,7 @@
             {dateFormat.format(session.startedAt)},
             {timeFormat.format(session.startedAt)}
             <span class="muted">
-              ({duration((session.endedAt ?? session.startedAt) - session.startedAt)}){session.exportedAt
-                ? ', geëxporteerd'
-                : ''}
+              ({summary(session)})
             </span>
           </a>
         </li>
