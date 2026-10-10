@@ -112,6 +112,27 @@
   "rarity": 1
  },
  {
+  "id": 1413,
+  "name": "Parkgans",
+  "scientific": "Anser anser f. domesticus",
+  "type": "F",
+  "rarity": 1
+ },
+ {
+  "id": 1393,
+  "name": "Zwaangans",
+  "scientific": "Anser cygnoides",
+  "type": "S",
+  "rarity": 2
+ },
+ {
+  "id": 905202,
+  "name": "Chinese Knobbelgans",
+  "scientific": "Anser cygnoides f. domesticus",
+  "type": "F",
+  "rarity": 1
+ },
+ {
   "id": 244,
   "name": "Dwerggans",
   "scientific": "Anser erythropus",
@@ -308,6 +329,13 @@
   "rarity": 1
  },
  {
+  "id": 1412,
+  "name": "Parkeend",
+  "scientific": "Anas platyrhynchos f. domesticus",
+  "type": "F",
+  "rarity": 1
+ },
+ {
   "id": 160,
   "name": "Pijlstaart",
   "scientific": "Anas acuta",
@@ -392,13 +420,6 @@
   "rarity": 2
  },
  {
-  "id": 72499,
-  "name": "Steenduif",
-  "scientific": "Columbina talpacoti",
-  "type": "S",
-  "rarity": 2
- },
- {
   "id": 342,
   "name": "Zomertortel",
   "scientific": "Streptopelia turtur",
@@ -417,6 +438,13 @@
   "name": "Houtduif",
   "scientific": "Columba palumbus",
   "type": "S",
+  "rarity": 1
+ },
+ {
+  "id": 80199,
+  "name": "Stadsduif",
+  "scientific": "Columba livia f. domestica",
+  "type": "F",
   "rarity": 1
  },
  {

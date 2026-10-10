@@ -16,9 +16,12 @@ const RARITIES = [1, 2, 3];
 // S = soort, M = verzamelsoort ("Noordse Stern of Visdief", "Kwikstaart onbekend").
 const TYPES = ['S', 'M'];
 // Niet-inheemse soorten staan in de bron vaak als "algemeen" omdat er veel
-// ontsnapte exemplaren gemeld worden. Daarom alleen deze gevestigde exoten.
+// ontsnapte exemplaren gemeld worden. Daarom alleen deze gevestigde exoten en
+// gedomesticeerde vormen (type F: Stadsduif, Parkgans = soepgans, Parkeend =
+// soepeend, Chinese Knobbelgans). Let op: "Steenduif" is in de bron een
+// Zuid-Amerikaanse grondduif, niet de stadsduif.
 const EXOTICS = [
-  'Steenduif', 'Fazant', 'Nijlgans', 'Grote Canadese Gans', 'Kleine Canadese Gans',
+  'Stadsduif', 'Parkgans', 'Parkeend', 'Zwaangans', 'Chinese Knobbelgans', 'Fazant', 'Nijlgans', 'Grote Canadese Gans', 'Kleine Canadese Gans',
   'Canadese Gans onbekend', 'Indische Gans', 'Mandarijneend', 'Carolina-eend',
   'Zwarte Zwaan', 'Halsbandparkiet', 'Grote Alexanderparkiet',
 ];
@@ -46,8 +49,8 @@ const species = all
   .filter(
     (s) =>
       EXTRA_IDS.includes(s.species) ||
-      (TYPES.includes(s.type) &&
-        ((s.native && RARITIES.includes(s.rarity)) || EXOTICS.includes(s.name))),
+      EXOTICS.includes(s.name) ||
+      (TYPES.includes(s.type) && s.native && RARITIES.includes(s.rarity)),
   )
   .sort((a, b) => a.sort_order_taxonomy - b.sort_order_taxonomy)
   .map((s) => ({
