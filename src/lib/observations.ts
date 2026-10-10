@@ -7,6 +7,7 @@ import {
   type Utterance,
 } from './db';
 import { ApiError } from './api';
+import { utteranceFeedback, vibrate } from './feedback';
 import { MODEL, interpret, promptVersion, type Action, type Interpretation } from './interpret';
 import { currentPosition } from './location.svelte';
 import { APP_VERSION, logEvent, wasHiddenSince } from './log';
@@ -122,6 +123,8 @@ export async function processQueue(): Promise<void> {
       const [next] = await db.utterances.where('status').equals('pending').sortBy('recordedAt');
       if (!next) break;
       await processUtterance(next);
+      const processed = await db.utterances.get(next.id);
+      if (processed) vibrate(utteranceFeedback(processed));
     }
   } finally {
     running = false;
