@@ -41,6 +41,7 @@ Bron: de openbare API van waarneming.nl, zonder sleutel.
 
 - `GET /api/v1/region-lists/5001/species/` geeft alle vogels van de Nederlandse lijst (regio 200 × soortgroep 1): 1610 items, inclusief ondersoorten, hybriden en exoten. Per soort: waarneming.nl-ID, Nederlandse naam, wetenschappelijke naam, zeldzaamheid, inheems ja/nee.
 - `scripts/fetch-species.mjs` maakt hiervan [`data/soorten-nl.json`](../data/soorten-nl.json): inheemse soorten van algemeen t/m zeldzaam, verzamelsoorten ("Noordse Stern of Visdief", "Kwikstaart onbekend") en een handvol gevestigde exoten en gedomesticeerde vormen (Nijlgans, Halsbandparkiet, Stadsduif, Parkgans, …). Resultaat: **350 soorten, ongeveer 2000 tokens** als `id|naam`-lijst. Dat past ruim in de systeemprompt.
+- Voor het bewerkformulier schrijft het script ook [`data/soorten-nl-alle.json`](../data/soorten-nl-alle.json): alle ±1080 Nederlandse soorten, ook zeer zeldzame dwaalgasten (Dwergaalscholver, Notenkraker), zonder ondersoorten en hybriden. Die lijst krijgt het model niet: noemt de gebruiker een soort die niet in de prompt staat, dan kiest het model de verzamelsoort met "onzeker" en de gezegde naam in de twijfelreden, en zet de gebruiker de soort thuis goed.
 - De wetenschappelijke namen volgen waarneming.nl (AviList-taxonomie), dus ze matchen bij de CSV-import.
 - Alternatieve namen ("soepgans" voor Parkgans, "bonte specht" voor Grote Bonte Specht) zitten niet in de bron. Die vullen we zelf aan als we ze in de testset tegenkomen.
 

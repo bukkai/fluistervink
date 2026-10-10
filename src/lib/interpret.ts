@@ -7,6 +7,7 @@ import {
   codeName,
   countingMethods,
   getSpecies,
+  isPromptSpecies,
   lifeStages,
   methods,
   species,
@@ -199,6 +200,8 @@ Bevat een uitspraak allebei, verdeel het dan: "zat verderop in een boom, met een
 
 Gebruik alleen een ID uit de soortenlijst hieronder; verzin nooit een ID. Spraakherkenning maakt fouten: kies de soort die het meest waarschijnlijk bedoeld is en zet dan uncertain op true met een korte reden. Algemene namen ("een meeuw", "een eend") → de verzamelsoort ("Meeuw onbekend", "Eend onbekend") als die bestaat. Is de soort echt niet te bepalen, maar is er duidelijk wel een vogel gezien, kies dan de best passende verzamelsoort met uncertain ("een vogel" → Vogel onbekend).
 
+Noemt de gebruiker duidelijk een soort die niet in de lijst staat (een zeldzame dwaalgast, bv. "dwergaalscholver"), kies dan de best passende verzamelsoort (anders Vogel onbekend) met uncertain, en zet in uncertain_reason letterlijk de genoemde naam: "Gezegd: dwergaalscholver (niet in de lijst)". Kies dan geen andere soort die er toevallig op lijkt. De gebruiker zet de soort thuis zelf goed.
+
 Vogelaars gebruiken veel bijnamen en afkortingen; zie de lijst met bijnamen hieronder. Die gelden ook in verbogen vormen en verkleinwoorden ("twee pimmetjes", "drie tova's") en als spraakherkenning ze iets anders schrijft ("robo tap", "ka be vee"). Vaste afspraken:
 - "KBV" (klein bruin vogeltje) wordt door spraakherkenning vaak als "KPV" geschreven: dat is ook KBV → Zangvogel onbekend.
 - "Kraai" is altijd Zwarte Kraai, tenzij er uitdrukkelijk "bonte kraai" gezegd wordt. Niet Kraai onbekend.
@@ -373,7 +376,7 @@ function toAction(block: Anthropic.ToolUseBlock, context: Observation[]): Action
     if (fields[key] === undefined) delete fields[key];
   }
 
-  if (fields.speciesId !== undefined && !getSpecies(fields.speciesId)) {
+  if (fields.speciesId !== undefined && !isPromptSpecies(fields.speciesId)) {
     return `${block.name}: onbekende soort-ID ${fields.speciesId}`;
   }
   if (fields.count !== undefined && fields.count < 1) {
