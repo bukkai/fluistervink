@@ -98,6 +98,19 @@ export function spokenAt(utterance: Utterance): number {
   return utterance.recordedAt + (utterance.audioDurationMs ?? 0);
 }
 
+/**
+ * Handmatige correctie in de review. De waarneming geldt daarna als
+ * nagelopen; met de stem kan hij nog steeds aangepast worden.
+ */
+export async function editObservation(id: string, patch: Partial<Observation>): Promise<void> {
+  await db.observations.update(id, { ...patch, editedAt: Date.now(), status: 'reviewed' });
+}
+
+/** Verwijdert een waarneming met de hand (niet via de stem, dus niet terug te draaien). */
+export async function deleteObservation(id: string): Promise<void> {
+  await db.observations.delete(id);
+}
+
 export async function retry(utteranceId: string): Promise<void> {
   await db.utterances.update(utteranceId, { status: 'pending', error: undefined });
   processQueue();
