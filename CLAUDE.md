@@ -97,6 +97,7 @@ Na drie à vier echte wandelingen is het grootste deel van de waarnemingen zonde
 - Offline wachtrij met sync-status
 - Upload via de API van waarneming.nl (OAuth; client-ID aanvragen bij Observation.org)
 - Eventueel: BirdNET on-device voor soortsuggesties
+- Flow en indeling: hoofdscherm, menu (instellingen, vorige wandelingen), wandeling met locatienaam, reviewscherm met kaart vóór de export. Zie `docs/ideeen-flow.md`.
 
 ## Werkafspraken
 

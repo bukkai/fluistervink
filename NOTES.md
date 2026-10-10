@@ -74,6 +74,8 @@ Typen werkt, ook met de ingebouwde spraakinvoer van Android (die is matig). Besl
 
 ## Open vragen / losse eindjes
 
+- Ideeën voor flow en indeling (menu, vorige wandelingen opruimen, locatienaam bij start, reviewscherm met kaart en eigen notities) vastgelegd in `docs/ideeen-flow.md` (10 okt). Voor later, nog niet gepland.
+
 - Tests: nu nog geen geautomatiseerde tests (bewust, 9 okt). Later: Vitest voor de logica (dev-note-herkenning, validatie van tool calls, toevoegen/aanpassen/ongedaan maken met fake-indexeddb), een paar Playwright-tests met nep-antwoorden voor `/api`, en GitHub Actions. Los daarvan de testset als eval voor prompt en model (stap 7).
 
 - Biedt de importpagina van waarneming.nl (alleen ingelogd) andere formaten dan eBird-CSV?
