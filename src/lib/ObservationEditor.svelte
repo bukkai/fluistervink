@@ -3,11 +3,11 @@
   import { deleteObservation, editObservation } from './observations';
   import {
     activities,
+    allSpecies,
     countingMethods,
     getSpecies,
     lifeStages,
     methods,
-    species,
   } from './vocab';
 
   // Formulier om één waarneming met de hand te corrigeren, in de review.
@@ -32,7 +32,7 @@
   let privateNote = $state(original.privateNote ?? '');
   let uncertain = $state(original.uncertain);
 
-  const speciesByName = new Map(species.map((s) => [s.name.toLowerCase(), s]));
+  const speciesByName = new Map(allSpecies.map((s) => [s.name.toLowerCase(), s]));
   let selectedSpecies = $derived(speciesByName.get(speciesName.trim().toLowerCase()));
   let valid = $derived(selectedSpecies !== undefined && Number.isInteger(count) && count >= 1);
 
@@ -173,7 +173,7 @@
 </form>
 
 <datalist id="soorten">
-  {#each species as s (s.id)}
+  {#each allSpecies as s (s.id)}
     <option value={s.name}></option>
   {/each}
 </datalist>

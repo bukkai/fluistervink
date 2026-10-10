@@ -45,21 +45,28 @@ const all = await get(`/region-lists/${REGION_LIST_NL_BIRDS}/species/`);
 const missing = EXOTICS.filter((name) => !all.some((s) => s.name === name));
 if (missing.length) console.warn(`Niet gevonden: ${missing.join(', ')}`);
 
-const species = all
-  .filter(
-    (s) =>
-      EXTRA_IDS.includes(s.species) ||
-      EXOTICS.includes(s.name) ||
-      (TYPES.includes(s.type) && s.native && RARITIES.includes(s.rarity)),
-  )
-  .sort((a, b) => a.sort_order_taxonomy - b.sort_order_taxonomy)
-  .map((s) => ({
-    id: s.species,
-    name: NAMES[s.species] ?? s.name,
-    scientific: s.scientific_name,
-    type: s.type,
-    rarity: s.rarity,
-  }));
+const toSpecies = (list) =>
+  list
+    .sort((a, b) => a.sort_order_taxonomy - b.sort_order_taxonomy)
+    .map((s) => ({
+      id: s.species,
+      name: NAMES[s.species] ?? s.name,
+      scientific: s.scientific_name,
+      type: s.type,
+      rarity: s.rarity,
+    }));
+
+const inPrompt = (s) =>
+  EXTRA_IDS.includes(s.species) ||
+  EXOTICS.includes(s.name) ||
+  (TYPES.includes(s.type) && s.native && RARITIES.includes(s.rarity));
+const species = toSpecies(all.filter(inPrompt));
+
+// Volledige lijst voor het bewerkformulier: ook zeer zeldzame dwaalgasten
+// (Dwergaalscholver, Kuifduiker) om een waarneming thuis goed te kunnen zetten.
+// Zonder ondersoorten (I) en hybriden (H). Het model krijgt deze lijst niet.
+const ALL_TYPES = ['S', 'M', 'F', 'Y'];
+const allSpecies = toSpecies(all.filter((s) => inPrompt(s) || ALL_TYPES.includes(s.type)));
 
 // Ook de Engelse namen: de bulkimport van waarneming.nl herkent gedrag, methode
 // en kleed alleen aan de tekst in de taal van de site (zie docs/waarneming-nl.md).
@@ -81,7 +88,12 @@ const attributes = {
 
 await mkdir('data', { recursive: true });
 await writeFile('data/soorten-nl.json', JSON.stringify(species, null, 1) + '\n');
+// Compact (één soort per regel): deze lijst gaat in z'n geheel mee in de app
+await writeFile(
+  'data/soorten-nl-alle.json',
+  '[\n' + allSpecies.map((s) => JSON.stringify(s)).join(',\n') + '\n]\n',
+);
 await writeFile('data/attributen-vogels.json', JSON.stringify(attributes, null, 1) + '\n');
 
-console.log(`${species.length} soorten, ${attributes.activity.length} activiteiten, ` +
+console.log(`${species.length} soorten (alle: ${allSpecies.length}), ${attributes.activity.length} activiteiten, ` +
   `${attributes.method.length} methodes, ${attributes.life_stage.length} kleden`);

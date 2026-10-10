@@ -1,5 +1,6 @@
 import attributes from '../../data/attributen-vogels.json';
 import aliasList from '../../data/bijnamen.json';
+import allSpeciesList from '../../data/soorten-nl-alle.json';
 import speciesList from '../../data/soorten-nl.json';
 
 // Vaste lijsten met waarneming.nl-ID's: soorten, gedrag, methode, kleed en
@@ -9,8 +10,12 @@ export interface Species {
   id: number;
   name: string;
   scientific: string;
-  /** S = soort, M = verzamelsoort ("Eend onbekend"), Y = soort die de bron apart groepeert (Bonte Kraai) */
-  type: 'S' | 'M' | 'Y';
+  /**
+   * S = soort, M = verzamelsoort ("Eend onbekend"), Y = soort die de bron apart
+   * groepeert (Bonte Kraai), F = gedomesticeerde vorm (Stadsduif, Parkgans),
+   * I = ondersoort (Vale Pijlstormvogel)
+   */
+  type: 'S' | 'M' | 'Y' | 'F' | 'I';
   rarity: number;
 }
 
@@ -21,11 +26,24 @@ export interface Code {
   en?: string;
 }
 
+/** Soorten in de prompt: het model kiest alleen hieruit */
 export const species = speciesList as Species[];
-const speciesById = new Map(species.map((s) => [s.id, s]));
+const promptSpeciesIds = new Set(species.map((s) => s.id));
+
+/**
+ * Alle Nederlandse soorten van waarneming.nl, ook zeer zeldzame dwaalgasten.
+ * Voor het bewerkformulier, zodat je zo'n waarneming thuis goed kunt zetten.
+ */
+export const allSpecies = allSpeciesList as Species[];
+const speciesById = new Map(allSpecies.map((s) => [s.id, s]));
 
 export function getSpecies(id: number): Species | undefined {
   return speciesById.get(id);
+}
+
+/** Mag het model deze soort kiezen? */
+export function isPromptSpecies(id: number): boolean {
+  return promptSpeciesIds.has(id);
 }
 
 /**
@@ -39,7 +57,7 @@ export interface Alias {
 }
 
 export const aliases = (aliasList as Alias[]).filter((a) => {
-  if (getSpecies(a.soort)) return true;
+  if (isPromptSpecies(a.soort)) return true;
   console.warn(`bijnamen.json: onbekende soort-ID ${a.soort} (${a.naam})`);
   return false;
 });
