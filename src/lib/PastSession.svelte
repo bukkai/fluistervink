@@ -2,6 +2,7 @@
   import type { Session } from './db';
   import { download } from './export';
   import { resumeSession } from './sessions';
+  import ObservationMap from './ObservationMap.svelte';
   import SessionLog from './SessionLog.svelte';
   import { IMPORT_URL, buildExport, markExported } from './waarnemingExport';
 
@@ -77,6 +78,8 @@
     Zet de site daarbij op Engels (EN, rechtsboven): gedrag en methode staan in het Engels in het bestand.
   </p>
 </section>
+
+<ObservationMap {session} />
 
 <SessionLog {session} />
 

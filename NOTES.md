@@ -41,7 +41,7 @@ Op een nieuwe computer: `.dev.vars` aanmaken (zie README).
 - **B. Stap 7, testset:** export van audio, transcript, LLM-uitvoer en gecorrigeerde waarneming; daarna een script dat de testset opnieuw door STT en model haalt en scoort (prompts, modellen, Web Speech API vergelijken).
 - **C. Kleine verbeteringen:** eigen notitie naast de opmerking (PR #20, gemerged) en vinkje "Exporteren" per waarneming (PR #21). Status "geëxporteerd" per wandeling zat al in PR #19.
 - **D. Flow en indeling** (`docs/ideeen-flow.md`): menu met instellingen en vorige wandelingen (opruimen), locatienaam bij start, reviewscherm na "stop wandeling".
-- **E. Kaart in de review** (Leaflet + OSM, stip verslepen): buiten de MVP, eerst overleggen.
+- **E. Kaart in de review:** alleen-lezen kaart (Leaflet + OSM) in PR #22 (branch `kaart`), bewust ná de testronde mergen. Stip verslepen kan later; een GPS-track is niet gewenst.
 - **F. Geautomatiseerde tests** (Vitest, later Playwright en GitHub Actions).
 - **Mijlpaal:** na 3–4 wandelingen beoordelen of de MVP geslaagd is; pas dan Capacitor, wake word en achtergrondgebruik.
 

@@ -46,6 +46,7 @@ Doel: valideren dat herkenning en interpretatie in het veld goed genoeg werken.
 - Trilfeedback
 - Overzichtslijst met eenvoudig bewerken (soort, aantal, gedrag, verwijderen)
 - CSV-export voor de bulkimport van waarneming.nl
+- Kaart in de review van een wandeling (alleen bekijken): waar is wat gezien (Leaflet + OpenStreetMap)
 - Proxy voor API-sleutels
 - Dev notes: een uitspraak die begint met "dev note" wordt geen waarneming maar een bevinding over de app (gaat niet naar het model). Los te lezen en als Markdown te kopiëren, om door te geven aan een ontwikkelsessie.
 - Testset: van elke uitspraak de audio, het transcript, de LLM-uitvoer en de uiteindelijke (gecorrigeerde) waarneming bewaren, en kunnen exporteren. Bedoeld om STT-opties, prompts en modellen objectief te vergelijken.
@@ -54,7 +55,7 @@ Doel: valideren dat herkenning en interpretatie in het veld goed genoeg werken.
 
 - Wake word en achtergrondgebruik met het scherm uit
 - Capacitor of native code
-- GPS-track en kaartweergave
+- GPS-track (ook later niet gewenst) en locaties verslepen op de kaart
 - Echte offline-ondersteuning (verwerken zodra er verbinding is, sync-status)
 - Uploaden via de API van waarneming.nl
 - Automatisch pauzeren als een andere app (zoals Merlin) de microfoon gebruikt
@@ -93,7 +94,7 @@ Na drie à vier echte wandelingen is het grootste deel van de waarnemingen zonde
 
 - Capacitor met een native Kotlin-plugin: foreground service met microfoon, wake word "Thijsse" (bv. Porcupine of openWakeWord)
 - Automatisch pauzeren en hervatten als een andere app de microfoon gebruikt (AudioRecordingCallback)
-- GPS-track tijdens de sessie en een kaart in de review om locaties te verslepen
+- Locaties verslepen op de kaart in de review
 - Offline wachtrij met sync-status
 - Upload via de API van waarneming.nl (OAuth; client-ID aanvragen bij Observation.org)
 - Eventueel: BirdNET on-device voor soortsuggesties
