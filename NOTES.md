@@ -22,16 +22,28 @@ Alle drie gemerged (9–10 okt). Daarna **#18 Gebied van waarneming.nl** bij elk
 
 **PR #19** (branch `csv-export`). Ingelogd op waarneming.nl gekeken: er is een eigen **bulkimport** (`/import/observations/`), veel beter dan eBird. Velden voor gedrag, methode, kleed, telmethode, geslacht, zekerheid, nauwkeurigheid, opmerking en `uuid` (tegen dubbel invoeren). Gedrag en methode gaan als tekst in de taal van de site: de app exporteert Engels, dus **site op Engels zetten bij het importeren**. Geen kolom voor het gebied; dat bepaalt waarneming.nl zelf. Details in `docs/waarneming-nl.md`.
 
-Nog doen: eerste echte import met een korte wandeling. Letten op verzamelsoorten ("Eend onbekend" = `Anatinae indet.`) en of gedrag en methode goed aankomen. Daarna stap 7 (testset).
+Gemerged (10 okt). Nog doen: eerste echte import, zie hieronder.
 
 ## Volgende stap
 
-0. Alles t/m PR #11 gemerged (dev notes, terugzien, meten, locatie-terugval, bijnamen). Stap 4 (opname en Whisper) in PR #12 (branch `opname`): reviewen en mergen. Daarna op de telefoon testen: inspreken (tikken of vasthouden), "dev note, …", traagheid (per uitspraak staat de duur in de lijst, gemeten vanaf het einde van de opname) en GPS-nauwkeurigheid. JSON-export (Instellingen) aan Claude geven voor analyse. Nog open uit de testronde: vrij opmerkingenveld bij een waarneming ("bij thuiskomst terugluisteren").
+Stap 1–6 gemerged (t/m PR #19, 10 okt). Nu: **testronde in het veld** (in productie), één echte wandeling, korte versie is genoeg.
 
-1. Op de telefoon controleren of de nauwkeurigheid klopt (buiten vaak 3–10 m).
-2. Op de telefoon uitproberen met eigen zinnen; opvallende fouten noteren voor de prompt.
-3. Op elke computer `.dev.vars` aanmaken (zie README).
-4. Daarna: 5 review (trilfeedback, bewerken, onzekere nalopen), 6 CSV-export, 7 testset (volgorde aangepast op 9 okt, zie `CLAUDE.md`).
+1. **Import:** CSV exporteren en importeren via de bulkimport van waarneming.nl (site op Engels). Letten op verzamelsoorten, gedrag en methode, en of `uuid` dubbel invoeren voorkomt. Fouten of schermafbeelding plus CSV aan Claude geven.
+2. **Telefoon:** trilpatronen te onderscheiden? Begin van de zin afgekapt? Snelheid per uitspraak? GPS-nauwkeurigheid (buiten vaak 3–10 m)?
+3. **Herkenning:** eigen zinnen en jargon gebruiken; opvallende fouten noteren (dev notes).
+4. Na afloop: JSON-export (Instellingen) en dev notes aan Claude geven voor analyse.
+
+Op een nieuwe computer: `.dev.vars` aanmaken (zie README).
+
+### Roadmap na de testronde
+
+- **A. Bevindingen verwerken:** fouten uit de import en de wandeling, aanpassingen aan prompt, bijnamen en Whisper-prompt.
+- **B. Stap 7, testset:** export van audio, transcript, LLM-uitvoer en gecorrigeerde waarneming; daarna een script dat de testset opnieuw door STT en model haalt en scoort (prompts, modellen, Web Speech API vergelijken).
+- **C. Kleine verbeteringen:** eigen notitie naast de opmerking (niet exporteren), status "geëxporteerd" per wandeling, vinkje "niet exporteren".
+- **D. Flow en indeling** (`docs/ideeen-flow.md`): menu met instellingen en vorige wandelingen (opruimen), locatienaam bij start, reviewscherm na "stop wandeling".
+- **E. Kaart in de review** (Leaflet + OSM, stip verslepen): buiten de MVP, eerst overleggen.
+- **F. Geautomatiseerde tests** (Vitest, later Playwright en GitHub Actions).
+- **Mijlpaal:** na 3–4 wandelingen beoordelen of de MVP geslaagd is; pas dan Capacitor, wake word en achtergrondgebruik.
 
 ## Bevindingen eerste test op de telefoon (9 okt)
 
