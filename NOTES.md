@@ -34,7 +34,8 @@ Eerste wandeling gedaan (10 okt), bevindingen hieronder bij "Eerste echte wandel
   - **#29** (bovenop #28): formulier gebruikt alle ±1080 soorten (dwaalgasten als Dwergaalscholver, Notenkraker; geen ondersoorten). Model houdt de korte lijst en zet "Gezegd: …" in de twijfelreden. Besloten: niet alle soorten in de prompt (meer valse knallers; knallers check je toch met de hand).
   - **#30** veldgedrag: tikje bij loslaten (opgenomen), opname stoppen bij wisselen van app, `vibrate_blocked` in het log. Op de telefoon testen.
   - **#31** lijst opruimen: knop "Weg" bij onzeker, prullenbak (aparte tabel `deletedObservations`, db-versie 3) met terugzetten, ▶ uit de lijst, aantal soorten.
-- Nog te doen uit A: terugknop sluit formulier; locatienaam wandeling (bij D). En de CSV-import testen.
+  - **#32** terugknop sluit het formulier (pushState/popstate). Op de telefoon testen.
+- Nog te doen uit A: locatienaam wandeling (bij D). En de CSV-import testen.
 
 Stap 1–6 gemerged (t/m PR #19, 10 okt). Daarvoor: **testronde in het veld** (in productie), één echte wandeling, korte versie is genoeg.
 
