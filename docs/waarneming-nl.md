@@ -10,7 +10,7 @@ Uitgezocht op 10 oktober 2026 (ingelogd). Waarneming.nl heeft een eigen **bulkim
 - De import draait op de achtergrond; je krijgt een e-mail. Bij een fout wordt er níets geïmporteerd en krijg je het bestand terug met een kolom `errors`.
 - Voorbeeldbestand met alle kolommen en opzoektabellen: `/import/observations/example/`.
 
-| Kolom | Verplicht | Inhoud | Thijsse |
+| Kolom | Verplicht | Inhoud | Fluistervink |
 |---|---|---|---|
 | `date` | ✔ | `YYYY-mm-dd` | lokale datum |
 | `time` | | `HH:mm` | lokale tijd |

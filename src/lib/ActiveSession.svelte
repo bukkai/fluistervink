@@ -34,7 +34,7 @@
   });
 
   // Naar een andere app (Merlin) of scherm uit tijdens een opname: stoppen en
-  // bewaren wat er is. Anders houdt Thijsse de microfoon vast zonder iets op te
+  // bewaren wat er is. Anders houdt de app de microfoon vast zonder iets op te
   // nemen, en blijft de knop op "Stop" staan.
   $effect(() => {
     function onHidden() {

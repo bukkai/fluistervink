@@ -39,8 +39,8 @@ export default defineConfig({
       },
       includeAssets: ['icon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Thijsse',
-        short_name: 'Thijsse',
+        name: 'Fluistervink',
+        short_name: 'Fluistervink',
         description: 'Spraakgestuurde vogelwaarnemingen',
         lang: 'nl',
         display: 'standalone',

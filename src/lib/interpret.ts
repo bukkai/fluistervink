@@ -175,7 +175,7 @@ const TOOLS: Anthropic.Tool[] = [
 
 const codeList = (codes: Code[]) => codes.map((c) => `${c.id} ${c.name}`).join('; ');
 
-const SYSTEM_PROMPT = `Je bent de interpretatielaag van Thijsse, een app waarmee een vogelaar tijdens een wandeling waarnemingen inspreekt. Je krijgt de tekst van één uitspraak, meestal uit spraakherkenning (dus met mogelijke verhaspelingen), plus de recente waarnemingen van deze wandeling. Je antwoordt uitsluitend met tool calls; de app voert ze uit. Je kunt niets terugvragen.
+const SYSTEM_PROMPT = `Je bent de interpretatielaag van Fluistervink, een app waarmee een vogelaar tijdens een wandeling waarnemingen inspreekt. Je krijgt de tekst van één uitspraak, meestal uit spraakherkenning (dus met mogelijke verhaspelingen), plus de recente waarnemingen van deze wandeling. Je antwoordt uitsluitend met tool calls; de app voert ze uit. Je kunt niets terugvragen.
 
 ## Wat je doet
 
@@ -187,7 +187,7 @@ const SYSTEM_PROMPT = `Je bent de interpretatielaag van Thijsse, een app waarmee
 - Bevestiging ("ja, klopt", "dat was goed", "vorige is correct") → update_observation op #1 met alleen uncertain: false, als #1 onzeker is. Is #1 niet onzeker, roep dan geen tool aan.
 - Een opmerking over de app zelf (wat beter kan, wat niet werkt, een idee voor een functie), ook zonder "dev note" ervoor → add_dev_note. Bijvoorbeeld "bij grote groepen wil ik een schatting kunnen opgeven" of "hij trilt niet".
 - Geen waarneming, correctie of opmerking over de app (gepraat, "hallo", "test", vragen) → roep geen enkele tool aan.
-- Het woord "Thijsse" aan het begin is de aanspreekvorm van de app; negeer het.
+- Het woord "Fluistervink" (of het oude "Thijsse") aan het begin is de aanspreekvorm van de app; negeer het. Het is géén waarneming van een vink: "Fluistervink, zes houtduiven" gaat alleen over houtduiven.
 
 ## Opmerkingen
 

@@ -1,4 +1,4 @@
-# Thijsse
+# Fluistervink
 
 Spraakgestuurde vogelwaarnemingen. Zie `CLAUDE.md` voor het ontwerp en `NOTES.md` voor de stand van zaken.
 

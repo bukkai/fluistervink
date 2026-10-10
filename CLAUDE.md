@@ -1,13 +1,13 @@
-# Thijsse — spraakgestuurde vogelwaarnemingen
+# Fluistervink — spraakgestuurde vogelwaarnemingen
 
-Thijsse is een app waarmee je tijdens het vogelen waarnemingen inspreekt ("Thijsse, zes overvliegende houtduiven", "roepje vink"). De app legt tijd en locatie vast, zet de uitspraak om in een gestructureerde waarneming, en maakt export naar waarneming.nl mogelijk.
+Fluistervink is een app waarmee je tijdens het vogelen waarnemingen inspreekt ("Fluistervink, zes overvliegende houtduiven", "roepje vink"). De app legt tijd en locatie vast, zet de uitspraak om in een gestructureerde waarneming, en maakt export naar waarneming.nl mogelijk.
 
-Vernoemd naar Jac. P. Thijsse. "Thijsse" is ook het (toekomstige) wake word.
+De naam is een woordgrap op "luistervink": je fluistert je waarnemingen in, en de vink is de vogel die je het vaakst inspreekt. "Fluistervink" is ook het (toekomstige) wake word. Tot oktober 2026 heette de app Thijsse (naar Jac. P. Thijsse); die naam staat nog in de Worker (`wrangler.jsonc`, dus ook in de URL), de IndexedDB-database en de localStorage-sleutel van de toegangscode. Laat die staan: hernoemen kost de gegevens op de telefoon of de URL.
 
 ## Werkwijze in het veld
 
 1. App openen → sessie (= één wandeling) start. Een duidelijke knop "stop wandeling" beëindigt de sessie.
-2. Iets gezien of gehoord → knop indrukken (MVP) of later het wake word "Thijsse" zeggen, en de waarneming inspreken.
+2. Iets gezien of gehoord → knop indrukken (MVP) of later het wake word "Fluistervink" zeggen, en de waarneming inspreken.
 3. Elke uitspraak wordt verwerkt en verschijnt in het overzicht. Bevestiging via trillen, zodat de gebruiker niet naar het scherm hoeft te kijken.
 4. Correcties kunnen in het veld met de stem: "nee, keep in plaats van vink", "nog drie erbij", "die laatste weg".
 5. Thuis: review van soort, aantal, gedrag en locatie, nalopen van onzekere waarnemingen, audio terugluisteren.
@@ -88,11 +88,11 @@ Soort, activiteit, methode, kleed en telmethode worden opgeslagen als **waarnemi
 
 ## Wanneer is de MVP geslaagd?
 
-Na drie à vier echte wandelingen is het grootste deel van de waarnemingen zonder correctie correct, en werken spraakcorrecties ("nee, keep") betrouwbaar. Pas dan investeren in de native laag (Capacitor, wake word "Thijsse", achtergrondgebruik).
+Na drie à vier echte wandelingen is het grootste deel van de waarnemingen zonder correctie correct, en werken spraakcorrecties ("nee, keep") betrouwbaar. Pas dan investeren in de native laag (Capacitor, wake word "Fluistervink", achtergrondgebruik).
 
 ## Latere roadmap
 
-- Capacitor met een native Kotlin-plugin: foreground service met microfoon, wake word "Thijsse" (bv. Porcupine of openWakeWord)
+- Capacitor met een native Kotlin-plugin: foreground service met microfoon, wake word "Fluistervink" (bv. Porcupine of openWakeWord)
 - Automatisch pauzeren en hervatten als een andere app de microfoon gebruikt (AudioRecordingCallback)
 - Locaties verslepen op de kaart in de review
 - Offline wachtrij met sync-status

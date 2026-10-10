@@ -83,7 +83,7 @@
 </script>
 
 <main>
-  <h1>Thijsse</h1>
+  <h1>Fluistervink</h1>
 
   {#if $sessions === undefined}
     <!-- Database wordt nog geladen -->

@@ -1,6 +1,7 @@
 // Client voor de proxy in worker/index.ts. De toegangscode wordt één keer
 // ingevuld en daarna in localStorage bewaard.
 
+// Oude appnaam in de sleutel; laten staan, anders moet de code opnieuw worden ingevuld.
 const ACCESS_CODE_KEY = 'thijsse.accessCode';
 
 export function getAccessCode(): string {
