@@ -85,13 +85,44 @@
     return seconds(u.metrics.finishedAt - spokenAt(u));
   }
 
-  /** Speelt de opname af, om te horen wat er gezegd werd. */
-  function play(u: Utterance) {
+  /** De opname die nu geladen is; er speelt er hooguit één tegelijk */
+  let player: { id: string; audio: HTMLAudioElement; url: string } | undefined;
+  /** Uitspraak waarvan de opname nu speelt, voor ▶ of ⏸ op de knop */
+  let playingId = $state<string>();
+  // Met U+FE0E als tekst tonen, niet als gekleurde emoji (Android)
+  const PLAY = '▶\uFE0E';
+  const PAUSE = '⏸\uFE0E';
+
+  /** Speelt de opname af, om te horen wat er gezegd werd; nog eens tikken pauzeert. */
+  function togglePlay(u: Utterance) {
+    if (player?.id === u.id) {
+      if (player.audio.paused) player.audio.play();
+      else player.audio.pause();
+      return;
+    }
+    stopPlayer();
     const url = URL.createObjectURL(u.audio!);
     const audio = new Audio(url);
-    audio.onended = () => URL.revokeObjectURL(url);
+    audio.onplay = () => (playingId = u.id);
+    audio.onpause = () => {
+      if (playingId === u.id) playingId = undefined;
+    };
+    // Afgelopen: volgende tik begint weer vooraan
+    audio.onended = stopPlayer;
+    player = { id: u.id, audio, url };
     audio.play();
   }
+
+  function stopPlayer() {
+    if (!player) return;
+    player.audio.pause();
+    URL.revokeObjectURL(player.url);
+    player = undefined;
+    playingId = undefined;
+  }
+
+  // Stoppen bij het verlaten van de wandeling
+  $effect(() => stopPlayer);
 
   function seconds(ms: number): string {
     return `${(ms / 1000).toLocaleString('nl-NL', { maximumFractionDigits: 1 })} s`;
@@ -159,7 +190,12 @@
           </button>
           <div class="actions">
             {#if source?.audio}
-              <button class="play" onclick={() => play(source)} aria-label="Opname afspelen">▶</button>
+              <button
+                class="play"
+                onclick={() => togglePlay(source)}
+                aria-label={playingId === source.id ? 'Opname pauzeren' : 'Opname afspelen'}
+                >{playingId === source.id ? PAUSE : PLAY}</button
+              >
             {/if}
             {#if obs.position}
               <a
@@ -208,7 +244,12 @@
       <li>
         <div>
           {#if u.audio}
-            <button class="play" onclick={() => play(u)} aria-label="Opname afspelen">▶</button>
+            <button
+              class="play"
+              onclick={() => togglePlay(u)}
+              aria-label={playingId === u.id ? 'Opname pauzeren' : 'Opname afspelen'}
+              >{playingId === u.id ? PAUSE : PLAY}</button
+            >
           {/if}
           {#if u.transcript !== undefined}
             “{u.transcript}”
