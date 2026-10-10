@@ -9,8 +9,8 @@ export interface Species {
   id: number;
   name: string;
   scientific: string;
-  /** S = soort, M = verzamelsoort ("Eend onbekend"), Y = soort die de bron apart groepeert (Bonte Kraai) */
-  type: 'S' | 'M' | 'Y';
+  /** S = soort, M = verzamelsoort ("Eend onbekend"), Y = soort die de bron apart groepeert (Bonte Kraai), I = ondersoort (Vale Pijlstormvogel) */
+  type: 'S' | 'M' | 'Y' | 'I';
   rarity: number;
 }
 

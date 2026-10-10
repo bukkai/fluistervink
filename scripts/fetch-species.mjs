@@ -24,9 +24,10 @@ const EXOTICS = [
 ];
 
 // Soorten die buiten de filters vallen maar die je wel inspreekt: Bonte Kraai
-// (in de bron type Y), en verzamelsoorten voor "een vogel" en "KBV" (klein
-// bruin vogeltje), die zeldzaamheid 0 hebben.
-const EXTRA_IDS = [67, 18926, 1003144];
+// (in de bron type Y), verzamelsoorten voor "een vogel" en "KBV" (klein
+// bruin vogeltje), die zeldzaamheid 0 hebben, en Vale Pijlstormvogel ("vaaltje";
+// in de bron een ondersoort, zeer zeldzaam, maar jaarlijks langs de kust).
+const EXTRA_IDS = [67, 18926, 1003144, 369];
 // Heeft in de bron geen Nederlandse naam
 const NAMES = { 1003144: 'Zangvogel onbekend' };
 
