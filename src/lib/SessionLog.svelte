@@ -1,6 +1,7 @@
 <script lang="ts">
   import { liveQuery } from 'dexie';
   import type { Observation, Session, Utterance } from './db';
+  import { fillMissingAreas } from './area';
   import { mapsUrl } from './devNotes';
   import ObservationEditor from './ObservationEditor.svelte';
   import {
@@ -28,6 +29,11 @@
   // Opnieuw opvragen als de wandeling wisselt; liveQuery volgt daarna zelf de database
   let observations = $derived(liveQuery(() => listObservations(session.id)));
   let utterances = $derived(liveQuery(() => listUtterances(session.id)));
+
+  // Gebiedsnamen die nog ontbreken (geen verbinding, oudere wandelingen) alsnog opzoeken
+  $effect(() => {
+    fillMissingAreas(session.id);
+  });
 
   let queued = $derived(
     $utterances?.filter((u) => u.status === 'pending' || u.status === 'processing').length ?? 0,
@@ -137,6 +143,9 @@
               {/if}
             </div>
             <div class="muted">{details(obs)}</div>
+            {#if obs.area}
+              <div class="muted">{obs.area.name}</div>
+            {/if}
             {#if obs.uncertain}
               <div class="reason">Onzeker{obs.uncertainReason ? `: ${obs.uncertainReason}` : ''}</div>
             {/if}

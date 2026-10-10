@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 
-// Proxy tussen de app en de API's van OpenAI (spraak naar tekst) en Anthropic
-// (interpretatie). De API-sleutels blijven hier; de app stuurt alleen een
+// Proxy tussen de app en de API's van OpenAI (spraak naar tekst), Anthropic
+// (interpretatie) en waarneming.nl (gebiedsnamen). De API-sleutels blijven hier; de app stuurt alleen een
 // toegangscode mee, zodat niet iedereen die de URL vindt ons tegoed opmaakt.
 
 interface Secrets {
@@ -33,6 +33,9 @@ export default {
     try {
       if (pathname === '/api/ping' && request.method === 'GET') {
         return json({ ok: true });
+      }
+      if (pathname === '/api/area' && request.method === 'GET') {
+        return await area(request);
       }
       if (pathname === '/api/transcribe' && request.method === 'POST') {
         return await transcribe(request, env);
@@ -108,6 +111,38 @@ async function messages(request: Request, env: WorkerEnv): Promise<Response> {
     max_tokens: Math.min(body.max_tokens ?? MAX_OUTPUT_TOKENS, MAX_OUTPUT_TOKENS),
   });
   return json(message, 200, Date.now() - start);
+}
+
+/**
+ * Het gebied van waarneming.nl ("Schoorlse Duinen") waarin een punt ligt.
+ * Hun API is openbaar maar stuurt geen CORS-headers, daarom via de proxy.
+ * Verwacht `?lat=…&lon=…`; geeft `{ area: { id, name } }` of `{ area: null }`.
+ */
+async function area(request: Request): Promise<Response> {
+  const params = new URL(request.url).searchParams;
+  const lat = parseFloat(params.get('lat') ?? '');
+  const lon = parseFloat(params.get('lon') ?? '');
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) {
+    return json({ error: 'Ongeldige coördinaten' }, 400);
+  }
+
+  const start = Date.now();
+  const response = await fetch(
+    `https://waarneming.nl/api/v1/locations/geojson/?coordinates=${lat},${lon}`,
+    { headers: { Accept: 'application/json' } },
+  );
+  if (!response.ok) return json({ error: 'Fout bij waarneming.nl' }, upstreamStatus(response.status));
+
+  // Alleen ID en naam; de omtrek van het gebied hebben we niet nodig
+  const result = (await response.json()) as {
+    features?: { properties: { id: number; title: string } }[];
+  };
+  const feature = result.features?.[0];
+  return json(
+    { area: feature ? { id: feature.properties.id, name: feature.properties.title } : null },
+    200,
+    Date.now() - start,
+  );
 }
 
 /**

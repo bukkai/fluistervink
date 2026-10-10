@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
+import type { Area } from './api';
 import type { LogEvent } from './log';
 
 // Datamodel, zie CLAUDE.md. ID's zijn UUID's (crypto.randomUUID), zodat ze
@@ -43,6 +44,11 @@ export interface Utterance {
   position?: Position;
   /** Hoe `position` gevonden werd (zonder de positie zelf) */
   positionLookup?: Omit<PositionLookup, 'position'>;
+  /**
+   * Gebied van waarneming.nl waarin de positie ligt ("Schoorlse Duinen").
+   * Leeg = nog niet opgezocht; null = opgezocht, maar geen gebied gevonden.
+   */
+  area?: Area | null;
   /** Opname bij een ingesproken uitspraak; leeg bij getypte invoer */
   audio?: Blob;
   audioDurationMs?: number;
@@ -131,6 +137,8 @@ export interface Observation {
   /** Volgorde van aanmaken, voor waarnemingen uit dezelfde uitspraak */
   createdAt: number;
   position?: Position;
+  /** Gebied van waarneming.nl, overgenomen van de uitspraak */
+  area?: Area | null;
   uncertain: boolean;
   /** Waarom het model twijfelde, om de review makkelijker te maken */
   uncertainReason?: string;

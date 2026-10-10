@@ -7,6 +7,7 @@ import {
   type Utterance,
 } from './db';
 import { ApiError } from './api';
+import { attachArea } from './area';
 import { utteranceFeedback, vibrate } from './feedback';
 import { MODEL, interpret, promptVersion, type Action, type Interpretation } from './interpret';
 import { currentPosition } from './location.svelte';
@@ -76,6 +77,7 @@ async function submit(
 /**
  * Koppelt de positie aan de uitspraak zodra die bekend is. Is de uitspraak
  * dan al verwerkt, dan krijgen de waarnemingen eruit de positie alsnog.
+ * Daarna het gebied van waarneming.nl, op dezelfde manier.
  */
 async function attachPosition(utteranceId: string, pending: Promise<PositionLookup>) {
   const { position, ...positionLookup } = await pending;
@@ -91,6 +93,7 @@ async function attachPosition(utteranceId: string, pending: Promise<PositionLook
       .filter((obs) => !obs.position)
       .modify({ position });
   });
+  await attachArea(utteranceId, position);
 }
 
 /** Einde van de uitspraak: bij een opname het einde van de opname. */
@@ -273,6 +276,7 @@ async function applyActions(utterance: Utterance, actions: Action[]): Promise<Ch
           observedAt: utterance.recordedAt,
           createdAt: order++,
           position: utterance.position,
+          area: utterance.area,
           status: 'draft',
         };
         await db.observations.add(observation);
