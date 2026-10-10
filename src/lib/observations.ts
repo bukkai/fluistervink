@@ -109,6 +109,14 @@ export async function editObservation(id: string, patch: Partial<Observation>): 
   await db.observations.update(id, { ...patch, editedAt: Date.now(), status: 'reviewed' });
 }
 
+/**
+ * Waarneming wel of niet meenemen in de export. Telt niet als correctie
+ * (geen `editedAt`), want de waarneming zelf verandert niet.
+ */
+export async function setSkipExport(id: string, skip: boolean): Promise<void> {
+  await db.observations.update(id, { skipExport: skip || undefined });
+}
+
 /** Verwijdert een waarneming met de hand (niet via de stem, dus niet terug te draaien). */
 export async function deleteObservation(id: string): Promise<void> {
   await db.observations.delete(id);

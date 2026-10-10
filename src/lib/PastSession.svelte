@@ -35,11 +35,14 @@
 
     download(result.csv, result.filename);
     await markExported(session, result.exported);
-    exportResult =
-      `${result.exported.length} waarnemingen geëxporteerd.` +
-      (result.skipped.length
-        ? ` ${result.skipped.length} zonder locatie overgeslagen; voer die met de hand in.`
-        : '');
+    exportResult = [
+      `${result.exported.length} waarnemingen geëxporteerd.`,
+      result.skipped.length &&
+        `${result.skipped.length} zonder locatie overgeslagen; voer die met de hand in.`,
+      result.excluded.length && `${result.excluded.length} uitgevinkt en niet geëxporteerd.`,
+    ]
+      .filter(Boolean)
+      .join(' ');
   }
 
   const dateFormat = new Intl.DateTimeFormat('nl-NL', { dateStyle: 'full' });
