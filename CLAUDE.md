@@ -81,7 +81,7 @@ Soort, activiteit, methode, kleed en telmethode worden opgeslagen als **waarnemi
 2. Proxy (Cloudflare Worker) voor de API-sleutels. *(klaar)*
 3. LLM-interpretatie met tools, eerst getest met tekstinvoer (zonder spraak). *(klaar)*
 4. Opname en Whisper-koppeling, met tijd en GPS bij start van de opname. *(klaar: knop tikken of vasthouden, `gpt-4o-transcribe` met soortnamen en bijnamen in de prompt)*
-5. Review: trilfeedback, afgelopen wandelingen kunnen openen, overzichtslijst met bewerken (soort, aantal, gedrag, verwijderen), onzekere waarnemingen nalopen, audio terugluisteren. *(in PR's #14–#16)*
+5. Review: trilfeedback, afgelopen wandelingen kunnen openen, overzichtslijst met bewerken (soort, aantal, gedrag, verwijderen), onzekere waarnemingen nalopen, audio terugluisteren. *(klaar, plus gebiedsnaam van waarneming.nl bij elke waarneming in PR #18)*
 6. CSV-export voor waarneming.nl.
 7. Opslaan en exporteren van de testset. Bewust na de CSV-export: de testset wordt pas nuttig na een paar wandelingen, en de gegevens ervoor (audio, transcript, LLM-uitvoer, gecorrigeerde waarneming) worden vanaf stap 4 al bewaard.
 

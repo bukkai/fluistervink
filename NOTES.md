@@ -16,7 +16,9 @@ Opgesplitst in drie PR's, elk los te reviewen en mergen:
 - **#15 Bewerken en nalopen:** tik op een waarneming → formulier (soort via lijst met suggesties, aantal, gedrag, methode, kleed, geslacht, telmethode, opmerking, onzeker, verwijderen). "Alleen onzeker"-filter en knop "Klopt". ▶ en kaartlink bij elke waarneming (locatie-idee optie 1). Nieuw veld `editedAt`.
 - **#16 Wandeling voortzetten:** knop bij de meest recente wandeling, als er geen andere loopt.
 
-Nog open voor stap 5: plaatsnaam bij een waarneming (locatie-idee optie 2 of 3) en eventueel bijnamen in het soortveld van het formulier. Daarna stap 6 (CSV-export).
+Alle drie gemerged (9–10 okt). Daarna **#18 Gebied van waarneming.nl** bij elke waarneming: openbaar adres `locations/geojson/?coordinates=lat,lon` (geen inloggen, wel via de proxy want geen CORS), ID en naam bewaard bij uitspraak en waarneming, ontbrekende gebieden worden bij het openen van een wandeling alsnog opgezocht. PDOK niet nodig. Bijnamen in het soortveld: besloten van niet (bijnamen zijn alleen voor de spraak).
+
+Daarna stap 6 (CSV-export). Nagaan of waarneming.nl bij de import `Location_id`/`Location` gebruikt; dan het gebied meegeven.
 
 ## Volgende stap
 
