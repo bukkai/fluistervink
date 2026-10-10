@@ -95,7 +95,9 @@
             {dateFormat.format(session.startedAt)},
             {timeFormat.format(session.startedAt)}
             <span class="muted">
-              ({duration((session.endedAt ?? session.startedAt) - session.startedAt)})
+              ({duration((session.endedAt ?? session.startedAt) - session.startedAt)}){session.exportedAt
+                ? ', geëxporteerd'
+                : ''}
             </span>
           </a>
         </li>

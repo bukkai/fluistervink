@@ -34,6 +34,8 @@ export interface Session {
   startedAt: number;
   endedAt?: number;
   status: 'active' | 'ended';
+  /** Laatst geëxporteerd voor waarneming.nl */
+  exportedAt?: number;
 }
 
 export interface Utterance {

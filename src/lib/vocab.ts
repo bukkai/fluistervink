@@ -17,6 +17,8 @@ export interface Species {
 export interface Code {
   id: number;
   name: string;
+  /** Engelse naam, voor de bulkimport van waarneming.nl */
+  en?: string;
 }
 
 export const species = speciesList as Species[];
@@ -56,11 +58,14 @@ export const activities = pick(attributes.activity, FIELD_ACTIVITIES);
 export const methods = pick(attributes.method, FIELD_METHODS);
 export const lifeStages = pick(attributes.life_stage, FIELD_LIFE_STAGES);
 
-/** Telmethode staat niet in de attributenlijst; codes uit de API-documentatie. */
+/**
+ * Telmethode staat niet in de attributenlijst; codes uit de API-documentatie,
+ * Engelse namen uit het voorbeeldbestand van de bulkimport.
+ */
 export const countingMethods: Code[] = [
-  { id: 2, name: 'exact aantal' },
-  { id: 6, name: 'schatting' },
-  { id: 3, name: 'gezien, niet geteld' },
+  { id: 2, name: 'exact aantal', en: 'real count' },
+  { id: 6, name: 'schatting', en: 'estimated' },
+  { id: 3, name: 'gezien, niet geteld', en: 'seen not counted' },
 ];
 
 export const DEFAULT_ACTIVITY = 1; // ter plaatse
