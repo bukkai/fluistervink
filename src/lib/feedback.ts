@@ -1,4 +1,5 @@
 import type { Utterance } from './db';
+import { logEvent } from './log';
 
 // Trilfeedback, zodat je in het veld niet naar het scherm hoeft te kijken.
 // Patronen in milliseconden: tril, pauze, tril, …
@@ -6,6 +7,12 @@ import type { Utterance } from './db';
 const PATTERNS = {
   /** Opname gestart: een heel kort tikje */
   recording: [30],
+  /**
+   * Opname gestopt en bewaard: hetzelfde tikje, zoals een portofoon (aan, uit).
+   * Komt vrijwel altijd door, want je raakt het scherm net aan; de uitkomst hieronder
+   * niet als de app intussen op de achtergrond staat.
+   */
+  recorded: [30],
   /** Opgeslagen (ook een dev note of een correctie): één korte tril */
   saved: [120],
   /** Opgeslagen maar onzeker: kort, lang */
@@ -18,9 +25,20 @@ const PATTERNS = {
 
 export type Feedback = keyof typeof PATTERNS;
 
-/** Trilt, als het apparaat dat kan. Werkt niet als de app op de achtergrond staat. */
+/**
+ * Trilt, als het apparaat dat kan. Chrome weigert als de app op de achtergrond
+ * staat of als je de pagina sinds het openen nog niet hebt aangeraakt; dat
+ * komt in het gebeurtenissenlog.
+ */
 export function vibrate(feedback: Feedback): void {
-  navigator.vibrate?.(PATTERNS[feedback]);
+  if (!navigator.vibrate) return;
+  if (!navigator.vibrate(PATTERNS[feedback])) {
+    logEvent('vibrate_blocked', {
+      feedback,
+      hidden: document.hidden,
+      userActivation: navigator.userActivation?.hasBeenActive,
+    });
+  }
 }
 
 /** Het patroon dat bij de uitkomst van een verwerkte uitspraak hoort. */
