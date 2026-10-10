@@ -102,10 +102,10 @@ function toRow(obs: Observation): Row {
   };
 }
 
+// Alleen de opmerking gaat mee. De twijfelreden is een uitleg van het model
+// voor het nalopen thuis; de twijfel zelf gaat al mee als zekerheid.
 function notes(obs: Observation): string {
-  return [obs.remarks, obs.uncertain && obs.uncertainReason && `Twijfel: ${obs.uncertainReason}`]
-    .filter(Boolean)
-    .join('. ');
+  return obs.remarks ?? '';
 }
 
 function english(codes: Code[], id: number | undefined): string {
