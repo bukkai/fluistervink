@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { PositionLookup, Session } from './db';
   import { vibrate } from './feedback';
+  import { logEvent } from './log';
   import { currentPosition, gps, startTracking, stopTracking } from './location.svelte';
   import { submitRecording, submitText } from './observations';
   import { recorder, startRecording, stopRecording } from './recorder.svelte';
@@ -18,6 +19,19 @@
       // Wandeling gestopt tijdens een opname: microfoon uit, opname bewaren
       if (recorder.status === 'recording') finishRecording();
     };
+  });
+
+  // Naar een andere app (Merlin) of scherm uit tijdens een opname: stoppen en
+  // bewaren wat er is. Anders houdt Thijsse de microfoon vast zonder iets op te
+  // nemen, en blijft de knop op "Stop" staan.
+  $effect(() => {
+    function onHidden() {
+      if (!document.hidden || recorder.status !== 'recording') return;
+      logEvent('recording_stopped_hidden', undefined, { sessionId: session.id });
+      finishRecording();
+    }
+    document.addEventListener('visibilitychange', onHidden);
+    return () => document.removeEventListener('visibilitychange', onHidden);
   });
 
   /** Langer ingedrukt dan dit = vasthouden (loslaten stopt); korter = tikken (nog eens tikken stopt). */
@@ -55,7 +69,10 @@
   async function finishRecording() {
     clearTimeout(maxTimer);
     const recording = await stopRecording();
-    if (recording && lookup) await submitRecording(session.id, recording, lookup);
+    if (!recording || !lookup) return;
+    // Niet als de opname stopte omdat de app naar de achtergrond ging
+    if (!document.hidden) vibrate('recorded');
+    await submitRecording(session.id, recording, lookup);
   }
 
   // Lopende tijd tijdens de opname
