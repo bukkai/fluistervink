@@ -49,6 +49,28 @@
   /** De waarneming die nu bewerkt wordt (één tegelijk) */
   let editing = $state<string>();
 
+  // Het formulier krijgt een eigen stap in de geschiedenis (zelfde URL), zodat
+  // de terugknop van Android het formulier sluit in plaats van de app.
+  function openEditor(id: string) {
+    // Staat er nog een stap van vóór een herstart van de app, dan die hergebruiken
+    if (editing === undefined && !history.state?.editor) history.pushState({ editor: true }, '');
+    editing = id;
+  }
+
+  /** Opslaan, Annuleren of Verwijderen: de eigen stap weer uit de geschiedenis */
+  function closeEditor() {
+    if (history.state?.editor) history.back();
+    else editing = undefined;
+  }
+
+  $effect(() => {
+    const onPopState = () => {
+      if (!history.state?.editor) editing = undefined;
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  });
+
   let onlyUncertain = $state(false);
   let uncertainCount = $derived($observations?.filter((obs) => obs.uncertain).length ?? 0);
   let shown = $derived(
@@ -185,9 +207,9 @@
       {@const source = utteranceById.get(obs.utteranceId)}
       <li class:uncertain={obs.uncertain} class:skipped={obs.skipExport}>
         {#if editing === obs.id}
-          <ObservationEditor observation={obs} utterance={source} onclose={() => (editing = undefined)} />
+          <ObservationEditor observation={obs} utterance={source} onclose={closeEditor} />
         {:else}
-          <button class="row" onclick={() => (editing = obs.id)} aria-label="Waarneming aanpassen">
+          <button class="row" onclick={() => openEditor(obs.id)} aria-label="Waarneming aanpassen">
             <div>
               <strong>{obs.count} × {getSpecies(obs.speciesId)?.name}</strong>
               <span class="muted">{timeFormat.format(obs.observedAt)}</span>
