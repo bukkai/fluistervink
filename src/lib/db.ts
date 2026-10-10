@@ -36,6 +36,20 @@ export interface Session {
   status: 'active' | 'ended';
   /** Laatst geëxporteerd voor waarneming.nl */
   exportedAt?: number;
+  /** Naam van de wandeling ("Landgoed Mariëndaal"), zie `area.ts` */
+  place?: SessionPlace;
+}
+
+export interface SessionPlace {
+  name: string;
+  /** Gebieds-ID van waarneming.nl; leeg bij een zelf ingetypte naam */
+  areaId?: number;
+  /**
+   * `start`: gebied van de startpositie (voorlopig). `walk`: gebied met de
+   * meeste waarnemingen, bepaald bij het stoppen. `hand`: zelf ingevuld; wordt
+   * nooit meer automatisch overschreven.
+   */
+  source: 'start' | 'walk' | 'hand';
 }
 
 export interface Utterance {

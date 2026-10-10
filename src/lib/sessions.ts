@@ -1,3 +1,4 @@
+import { nameFromWalk } from './area';
 import { db, type Session } from './db';
 
 /** De lopende wandeling, als die er is. */
@@ -23,6 +24,7 @@ export async function startSession(): Promise<Session> {
 
 export async function stopSession(id: string): Promise<void> {
   await db.sessions.update(id, { status: 'ended', endedAt: Date.now() });
+  await nameFromWalk(id);
 }
 
 /**

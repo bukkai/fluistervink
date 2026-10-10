@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Session } from './db';
   import { download } from './export';
+  import { renameSession } from './area';
   import { resumeSession } from './sessions';
   import ObservationMap from './ObservationMap.svelte';
   import SessionLog from './SessionLog.svelte';
@@ -12,6 +13,14 @@
   async function resume() {
     if (!confirm('Deze wandeling voortzetten?')) return;
     if (await resumeSession(session.id)) location.hash = '';
+  }
+
+  async function rename() {
+    const name = prompt(
+      'Naam van de wandeling (leeg laten = automatisch, uit het gebied met de meeste waarnemingen):',
+      session.place?.name ?? '',
+    );
+    if (name !== null) await renameSession(session.id, name);
   }
 
   /** Uitkomst van de laatste export, om onder de knop te tonen */
@@ -52,11 +61,13 @@
 
 <a href="#/">← Terug</a>
 
-<h2>Wandeling van {dateFormat.format(session.startedAt)}</h2>
+<h2>{session.place?.name ?? 'Wandeling'}</h2>
 <p class="muted">
+  {dateFormat.format(session.startedAt)},
   {timeFormat.format(session.startedAt)}–{session.endedAt
     ? timeFormat.format(session.endedAt)
     : '?'}
+  <button class="link" onclick={rename}>Naam wijzigen</button>
 </p>
 
 {#if resumable}
@@ -99,6 +110,13 @@
 
   .muted {
     color: var(--muted);
+  }
+
+  .link {
+    margin-left: 0.5rem;
+    padding: 0;
+    border: none;
+    text-decoration: underline;
   }
 
   .export {
