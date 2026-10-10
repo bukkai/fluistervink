@@ -237,13 +237,20 @@ async function processUtterance(utterance: Utterance): Promise<void> {
       changes.flatMap((c) => (c.type === 'delete' ? [] : [c.observationId])),
     );
     const uncertain = touched.some((obs) => obs?.uncertain);
+    const devNote = interpretation.actions.some((a) => a.type === 'dev_note');
 
     await db.utterances.update(utterance.id, {
       status: 'done',
       llmOutput: interpretation.response,
       metrics,
       changes,
-      result: interpretation.actions.length === 0 ? 'ignored' : uncertain ? 'uncertain' : 'saved',
+      // Het model herkende een dev note zonder "dev note" ervoor
+      ...(devNote
+        ? { kind: 'dev_note' as const, result: 'note' as const }
+        : {
+            result:
+              interpretation.actions.length === 0 ? 'ignored' : uncertain ? 'uncertain' : 'saved',
+          }),
       error: interpretation.rejected.length ? interpretation.rejected.join('; ') : undefined,
     });
   });
@@ -327,6 +334,10 @@ async function applyActions(utterance: Utterance, actions: Action[]): Promise<Ch
 
       case 'undo':
         await undoPrevious(utterance);
+        break;
+
+      case 'dev_note':
+        // Geen wijziging aan waarnemingen; de uitspraak wordt een dev note
         break;
     }
   }
