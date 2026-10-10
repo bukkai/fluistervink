@@ -25,6 +25,18 @@ export async function stopSession(id: string): Promise<void> {
   await db.sessions.update(id, { status: 'ended', endedAt: Date.now() });
 }
 
+/**
+ * Zet een (per ongeluk) gestopte wandeling voort. Doet niets als er al een
+ * andere wandeling loopt.
+ */
+export async function resumeSession(id: string): Promise<boolean> {
+  return db.transaction('rw', db.sessions, async () => {
+    if (await getActiveSession()) return false;
+    await db.sessions.update(id, { status: 'active', endedAt: undefined });
+    return true;
+  });
+}
+
 /** Alle wandelingen, nieuwste eerst. */
 export function listSessions(): Promise<Session[]> {
   return db.sessions.orderBy('startedAt').reverse().toArray();

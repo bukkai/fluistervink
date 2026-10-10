@@ -72,7 +72,7 @@
   {#if $sessions === undefined}
     <!-- Database wordt nog geladen -->
   {:else if opened}
-    <PastSession session={opened} />
+    <PastSession session={opened} resumable={!active && opened === past[0]} />
   {:else if active}
     <section class="active">
       <p>
