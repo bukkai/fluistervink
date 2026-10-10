@@ -105,3 +105,17 @@ export async function createMessage<T = unknown>(
     body: JSON.stringify(params),
   });
 }
+
+export interface Area {
+  /** Gebieds-ID van waarneming.nl */
+  id: number;
+  name: string;
+}
+
+/** Het gebied van waarneming.nl waarin een punt ligt, of null als er geen is. */
+export async function fetchArea(lat: number, lon: number): Promise<Area | null> {
+  const { area } = await request<{ area: Area | null }>(
+    `/api/area?lat=${lat.toFixed(6)}&lon=${lon.toFixed(6)}`,
+  );
+  return area;
+}
