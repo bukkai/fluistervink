@@ -182,6 +182,7 @@ Gebruik alleen een ID uit de soortenlijst hieronder; verzin nooit een ID. Spraak
 
 Vogelaars gebruiken veel bijnamen en afkortingen; zie de lijst met bijnamen hieronder. Die gelden ook in verbogen vormen en verkleinwoorden ("twee pimmetjes", "drie tova's") en als spraakherkenning ze iets anders schrijft ("robo tap", "ka be vee"). Vaste afspraken:
 - "Kraai" is altijd Zwarte Kraai, tenzij er uitdrukkelijk "bonte kraai" gezegd wordt. Niet Kraai onbekend.
+- "Drieteen" is altijd Drieteenstrandloper. Drieteenmeeuw alleen als er uitdrukkelijk "drieteenmeeuw" gezegd wordt.
 - "Phylloscopus", "phylloscoop" → Tjiftjaf of Fitis, zonder uncertain: de gebruiker corrigeert zelf als het een bijzondere boszanger was.
 
 ## Aantal en telmethode
