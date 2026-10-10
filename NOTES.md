@@ -26,7 +26,9 @@ Gemerged (10 okt). Nog doen: eerste echte import, zie hieronder.
 
 ## Volgende stap
 
-Stap 1–6 gemerged (t/m PR #19, 10 okt). Nu: **testronde in het veld** (in productie), één echte wandeling, korte versie is genoeg.
+Eerste wandeling gedaan (10 okt), bevindingen hieronder bij "Eerste echte wandeling". Volgende: roadmap A (bevindingen verwerken) en de CSV-import testen.
+
+Stap 1–6 gemerged (t/m PR #19, 10 okt). Daarvoor: **testronde in het veld** (in productie), één echte wandeling, korte versie is genoeg.
 
 1. **Import:** CSV exporteren en importeren via de bulkimport van waarneming.nl (site op Engels). Letten op verzamelsoorten, gedrag en methode, en of `uuid` dubbel invoeren voorkomt. Fouten of schermafbeelding plus CSV aan Claude geven.
 2. **Telefoon:** trilpatronen te onderscheiden? Begin van de zin afgekapt? Snelheid per uitspraak? GPS-nauwkeurigheid (buiten vaak 3–10 m)?
@@ -44,6 +46,42 @@ Op een nieuwe computer: `.dev.vars` aanmaken (zie README).
 - **E. Kaart in de review:** alleen-lezen kaart (Leaflet + OSM) in PR #22 (branch `kaart`), bewust ná de testronde mergen. Stip verslepen kan later; een GPS-track is niet gewenst.
 - **F. Geautomatiseerde tests** (Vitest, later Playwright en GitHub Actions).
 - **Mijlpaal:** na 3–4 wandelingen beoordelen of de MVP geslaagd is; pas dan Capacitor, wake word en achtergrondgebruik.
+
+## Eerste echte wandeling (10 okt, Arnhem, versie 6e80882)
+
+Export `thijsse-2026-10-10.json` geanalyseerd. 14:39–16:12, 55 uitspraken: 33 waarnemingen/correcties, 19 dev notes, 3 genegeerd. 30 waarnemingen over.
+
+**Wat goed ging**
+- Snelheid: na het loslaten ±1 s spraakherkenning + 2–4 s model (één keer 8 s). Geen wachtrij. De 1–2 minuten van 9 okt zijn weg.
+- Spraakherkenning vrijwel foutloos, ook "grobo", "blako", "KBV'tje". Uitzonderingen: "kpv'tje" (KBV'tje) → Koperwiek onzeker; "roofbouwt" (ruigpoot).
+- Correcties werkten: "nee, twee", "nee correctie drie zwarte kraaien", "nog een paartje erbij", "die boomkruiper mag weg", "die laatste is een KBV'tje", "die buizerd een hele tijd terug was een ruigpoot" (ref 7).
+- Vliegtuigmodus: 3 uitspraken netjes bewaard, verwerkt na "Opnieuw". App afsluiten en telefoon herstarten: alles bewaard, wandeling liep door.
+- GPS buiten meestal 3–20 m, een paar verse metingen 55–75 m. Gebied van waarneming.nl klopt (Lombok, Mariëndaal, Klingelbeek).
+- Knop indrukken bevalt; wake word misschien niet eens nodig.
+
+**Fouten en verklaringen**
+- *Niet trillen:* `navigator.vibrate` doet niets als de pagina verborgen is (scherm uit, andere app). 58× hidden in het log; de eerste uitspraken werden verwerkt terwijl de app op de achtergrond stond. Op de voorgrond wel testen. Echte oplossing pas met Capacitor; tot die tijd misschien trillen bij het loslaten van de knop (dan is de app zeker zichtbaar) als "opgenomen".
+- *Buizerd → "twee" ruigpootbuizerds:* geen fout. De eerdere uitspraak was "Buizerd overvliegend... Nee, twee." → 2 buizerds; de update veranderde alleen de soort.
+- *Toevoegen + verwijderen in één zin:* "Buizerd hoog boven de velden richting west. En die eerdere roofbouwt buizerds, die mogen er wel uit" → alleen verwijderd, de nieuwe buizerd ontbrak. Prompt: elke genoemde nieuwe vogel is een add, ook naast een correctie. Ook: "richting west" → overvliegend west (14), "cirkelend" niet als ter plaatse, "ten westen van hier" niet als notitie.
+- *Vijf + nog twee houtduiven* in één zin → 7, onzeker. Prima, maar zonder onzeker.
+- *Wilde eenden:* "2 vrouwtjes, 3 mannetjes" als opmerking i.p.v. gesplitst per geslacht (op 9 okt wél gesplitst). Na "nog een paartje" klopt de opmerking niet meer. Keuze maken: splitsen.
+- *Gedomesticeerde bankivahoen:* staat niet in de soortenlijst → Vogel onbekend, onzeker. Exoten/gedomesticeerde vormen toevoegen? (Kip = verwilderd/gedomesticeerd op waarneming.nl.)
+- *App-opmerkingen zonder "dev note"* (schatting bij grote groepen; geen statistiek in de app) → genegeerd en daardoor niet in de dev notes. Vangnet `add_dev_note` voor het model (stond al in het plan).
+- *Microfoon en andere apps:* opnemen en dan naar Merlin/Collins schakelen → Thijsse houdt de microfoon, maar neemt niets op; de knop blijft "aan". Andersom (Merlin aan, naar Thijsse) werkt wel. Klein: opname stoppen bij `visibilitychange` → hidden.
+- 14× `app_start` tijdens de wandeling (Android sluit de PWA op de achtergrond, terugknop sluit de app). Niets kwijt, maar wel opvallend.
+
+**Wensen uit de dev notes**
+1. Terugknop sluit het formulier i.p.v. de app (history-state).
+2. Activiteit "vondst (dood)" (17) toestaan, plus "dood", "dode" in de prompt.
+3. "Vijfhonderd schatting" / "schatting vijfhonderd" → telmethode 6 (prompt: woord "schatting").
+4. Onzekere waarneming snel weg kunnen doen in de lijst (naast "Klopt"), en verwijderde waarnemingen in een apart bakje bij de review (zachte verwijdering; de gegevens staan nu alleen nog in `changes` van de uitspraak).
+5. ▶-knop in de lijst weg (alleen voor ontwikkeling; verplaatsen naar het formulier of een dev-weergave).
+6. Aantal soorten van de wandeling tonen. Verder geen statistiek/lijsten (bewust: dat is voor waarneming.nl).
+7. Locatie(naam) van de wandeling, aan het eind aan te passen (sluit aan bij `docs/ideeen-flow.md`).
+8. Later: foto koppelen aan een waarneming via tijd en locatie; vinkje "afgeschermd" (of aan waarneming.nl overlaten).
+9. Bijnamen: "kpv" → KBV (Whisper-prompt of bijnamenlijst).
+
+Nog niet gedaan: CSV-import op waarneming.nl testen.
 
 ## Bevindingen eerste test op de telefoon (9 okt)
 
