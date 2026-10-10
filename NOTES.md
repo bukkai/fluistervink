@@ -18,7 +18,11 @@ Opgesplitst in drie PR's, elk los te reviewen en mergen:
 
 Alle drie gemerged (9–10 okt). Daarna **#18 Gebied van waarneming.nl** bij elke waarneming: openbaar adres `locations/geojson/?coordinates=lat,lon` (geen inloggen, wel via de proxy want geen CORS), ID en naam bewaard bij uitspraak en waarneming, ontbrekende gebieden worden bij het openen van een wandeling alsnog opgezocht. PDOK niet nodig. Bijnamen in het soortveld: besloten van niet (bijnamen zijn alleen voor de spraak).
 
-Daarna stap 6 (CSV-export). Nagaan of waarneming.nl bij de import `Location_id`/`Location` gebruikt; dan het gebied meegeven.
+## Stap 6 (CSV-export), 10 okt
+
+**PR #19** (branch `csv-export`). Ingelogd op waarneming.nl gekeken: er is een eigen **bulkimport** (`/import/observations/`), veel beter dan eBird. Velden voor gedrag, methode, kleed, telmethode, geslacht, zekerheid, nauwkeurigheid, opmerking en `uuid` (tegen dubbel invoeren). Gedrag en methode gaan als tekst in de taal van de site: de app exporteert Engels, dus **site op Engels zetten bij het importeren**. Geen kolom voor het gebied; dat bepaalt waarneming.nl zelf. Details in `docs/waarneming-nl.md`.
+
+Nog doen: eerste echte import met een korte wandeling. Letten op verzamelsoorten ("Eend onbekend" = `Anatinae indet.`) en of gedrag en methode goed aankomen. Daarna stap 7 (testset).
 
 ## Volgende stap
 
