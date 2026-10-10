@@ -45,7 +45,7 @@ Doel: valideren dat herkenning en interpretatie in het veld goed genoeg werken.
 - Local-first opslag en sequentiële verwerking in IndexedDB
 - Trilfeedback
 - Overzichtslijst met eenvoudig bewerken (soort, aantal, gedrag, verwijderen)
-- CSV-export in het importformaat van waarneming.nl
+- CSV-export voor de bulkimport van waarneming.nl
 - Proxy voor API-sleutels
 - Dev notes: een uitspraak die begint met "dev note" wordt geen waarneming maar een bevinding over de app (gaat niet naar het model). Los te lezen en als Markdown te kopiëren, om door te geven aan een ontwikkelsessie.
 - Testset: van elke uitspraak de audio, het transcript, de LLM-uitvoer en de uiteindelijke (gecorrigeerde) waarneming bewaren, en kunnen exporteren. Bedoeld om STT-opties, prompts en modellen objectief te vergelijken.
@@ -66,11 +66,11 @@ Doel: valideren dat herkenning en interpretatie in het veld goed genoeg werken.
 - **Utterance:** id, sessionId, tijdstip, lat/lon/nauwkeurigheid, audio, transcript, LLM-uitvoer, verwerkingsstatus
 - **Observation:** id, sessionId, utteranceId (bron), soort-ID, aantal, telmethode, activiteit/gedrag (bv. overvliegend, ter plaatse, roepend, zingend), methode (gezien/gehoord), optioneel geslacht/leeftijd/kleed, tijdstip, lat/lon/nauwkeurigheid, `uncertain`, status (concept / gereviewd / geëxporteerd)
 
-Soort, activiteit, methode, kleed en telmethode worden opgeslagen als **waarneming.nl-ID's** (zie `data/` en `docs/waarneming-nl.md`). Die werken direct met de latere API; voor de CSV-export zet de app ze om naar wetenschappelijke naam en tekst.
+Soort, activiteit, methode, kleed en telmethode worden opgeslagen als **waarneming.nl-ID's** (zie `data/` en `docs/waarneming-nl.md`). Die werken direct met de latere API; voor de CSV-export zet de app ze om naar wetenschappelijke naam en Engelse tekst.
 
 ## Openstaande punten
 
-- **Importformaat van waarneming.nl:** grotendeels uitgezocht, zie `docs/waarneming-nl.md`. De CSV-import gebruikt het eBird-formaat (23 kolommen, soort via wetenschappelijke naam) en heeft geen velden voor activiteit, methode of kleed; die gaan als tekst in `Species Comments`. Nog nagaan: biedt de importpagina (alleen ingelogd) andere formaten?
+- **Importformaat van waarneming.nl:** opgelost, zie `docs/waarneming-nl.md`. Waarneming.nl heeft een eigen bulkimport (CSV) met velden voor activiteit, methode, kleed, telmethode, geslacht, zekerheid en een uuid tegen dubbel invoeren. Gedrag en methode gaan als tekst in de taal van de site; de app exporteert Engels.
 - **Soortenlijst:** opgelost. `scripts/fetch-species.mjs` haalt de lijst op bij de openbare API van waarneming.nl → `data/soorten-nl.json` (343 soorten met waarneming.nl-ID's). Bijnamen en afkortingen uit vogelaarsjargon ("tova", "robotap", "KBV") staan in `data/bijnamen.json` (bijnaam → soort-ID) en gaan mee in de systeemprompt; vrij aan te vullen.
 - **STT-keuze:** Whisper tegenover Web Speech API, beslissen op basis van de testset.
 - **Mapping van gesproken termen naar velden:** eerste voorstel in `docs/waarneming-nl.md`, verfijnen met de testset.
@@ -82,7 +82,7 @@ Soort, activiteit, methode, kleed en telmethode worden opgeslagen als **waarnemi
 3. LLM-interpretatie met tools, eerst getest met tekstinvoer (zonder spraak). *(klaar)*
 4. Opname en Whisper-koppeling, met tijd en GPS bij start van de opname. *(klaar: knop tikken of vasthouden, `gpt-4o-transcribe` met soortnamen en bijnamen in de prompt)*
 5. Review: trilfeedback, afgelopen wandelingen kunnen openen, overzichtslijst met bewerken (soort, aantal, gedrag, verwijderen), onzekere waarnemingen nalopen, audio terugluisteren. *(klaar, plus gebiedsnaam van waarneming.nl bij elke waarneming in PR #18)*
-6. CSV-export voor waarneming.nl.
+6. CSV-export voor waarneming.nl. *(bulkimport van waarneming.nl, PR volgt)*
 7. Opslaan en exporteren van de testset. Bewust na de CSV-export: de testset wordt pas nuttig na een paar wandelingen, en de gegevens ervoor (audio, transcript, LLM-uitvoer, gecorrigeerde waarneming) worden vanaf stap 4 al bewaard.
 
 ## Wanneer is de MVP geslaagd?

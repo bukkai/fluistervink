@@ -2,26 +2,38 @@
 
 Stand van zaken 6 oktober 2026.
 
-## 1. Importformaat (CSV)
+## 1. Importformaat: bulkimport
 
-Waarneming.nl heeft geen eigen CSV-importformaat. Wel kan het **eBird-exportformaat** geïmporteerd worden (`https://waarneming.nl/exports/import/` als je bent ingelogd). Volgens de [uitleg op het forum](https://forum.waarneming.nl/index.php?topic=452489.0) is die import ook bedoeld voor gegevens uit andere programma's.
+Uitgezocht op 10 oktober 2026 (ingelogd). Waarneming.nl heeft een eigen **bulkimport**: `https://waarneming.nl/import/observations/` (het oude adres `/exports/import/` verwijst ernaartoe). Daarnaast zet dezelfde pagina exports van Ornitho, iNaturalist en eBird om; het eBird-formaat hebben we dus niet nodig.
 
-Eisen:
+- `.csv` (UTF-8) of `.xlsx`, tot 5000 waarnemingen. Volgorde van de kolommen maakt niet uit; onbekende kolommen worden genegeerd.
+- De import draait op de achtergrond; je krijgt een e-mail. Bij een fout wordt er níets geïmporteerd en krijg je het bestand terug met een kolom `errors`.
+- Voorbeeldbestand met alle kolommen en opzoektabellen: `/import/observations/example/`.
 
-- Precies 23 kolommen, scheidingsteken komma, kolomkoppen in deze volgorde:
-  `Submission ID, Common Name, Scientific Name, Taxonomic Order, Count, State/Province, County, Location_id, Location, Latitude, Longitude, Date, Time, Protocol, Duration (Min), All Obs Reported, Distance Traveled (km), Area Covered (ha), Number of Observers, Breeding Code, Observation Details, Species Comments, Checklist Comments`
-- Verplicht: `Scientific Name`, `Count`, `Latitude`, `Longitude`, `Date`, `Time`.
-- De soort wordt herkend aan de **wetenschappelijke naam**, niet aan een ID.
-- `Date` als `mm-dd-yyyy`, `Time` als `hh:mm AM`/`PM` (Amerikaans).
-- Coördinaten decimaal (`52.0181171`).
-- Maximaal ~5000 waarnemingen per upload. Open het bestand niet in Excel: dat verandert de datum- en tijdnotatie.
+| Kolom | Verplicht | Inhoud | Thijsse |
+|---|---|---|---|
+| `date` | ✔ | `YYYY-mm-dd` | lokale datum |
+| `time` | | `HH:mm` | lokale tijd |
+| `scientific name` | ✔ | wetenschappelijke naam (hoofdletterongevoelig) | uit `data/soorten-nl.json` |
+| `lat`, `lng` | ✔ | WGS84 | positie (6 decimalen) |
+| `accuracy` | | meters, t/m 1000; 999 = onbekend | GPS-nauwkeurigheid; boven 1000 → 999 |
+| `number` | | aantal | `count` |
+| `notes` | | vrije tekst | opmerking, plus de twijfelreden bij een onzekere waarneming |
+| `sex` | | `U`, `F`, `M` | `sex` |
+| `is certain` | | `True`/`False` | omgekeerde van `uncertain` |
+| `is escape` | | `True`/`False` | – |
+| `activity`, `life stage`, `method`, `counting method` | | **tekst in de taal van de site** ("flying over", "seen and heard", "real count") | Engelse naam van het ID |
+| `uuid` | | UUIDv4/v7; een uuid die al bestaat → import geweigerd | ID van de waarneming |
+| `related species`, `external reference`, `obscurity`, `embargo date`, `id` | | – | – |
 
-**Beperking:** er zijn geen kolommen voor activiteit (overvliegend, zingend), methode (gezien/gehoord), geslacht of kleed. `Breeding Code` accepteert alleen eBird-broedcodes. Dat betekent:
+Gevolgen:
 
-- Bij de CSV-import gaat het gedrag verloren. We kunnen het als tekst in `Species Comments` meegeven ("overvliegend, gehoord"), maar dan moet je het op de site handmatig nog in de juiste velden zetten.
-- Alleen met de API (op de roadmap, buiten de MVP) komen activiteit, methode en kleed netjes in de juiste velden.
-
-**Nog te controleren:** of de importpagina naast eBird nog andere formaten aanbiedt. Die pagina is alleen zichtbaar als je bent ingelogd.
+- Gedrag, methode, kleed en telmethode komen netjes in de juiste velden, niet meer als tekst in een opmerking.
+- Die velden gaan op tekst, niet op ID, en in de taal waarop de site staat. De app exporteert Engels (`en` in `data/attributen-vogels.json`, opgehaald met `Accept-Language: en`; telmethode staat in `vocab.ts`). De site moet bij het importeren dus op Engels staan. De Engelse API-namen zijn gelijk aan die in de opzoektabel van het voorbeeldbestand.
+- Dankzij `uuid` kan dezelfde waarneming niet twee keer worden ingevoerd: de hele import wordt dan geweigerd.
+- Waarnemingen zonder positie kunnen niet mee (`lat`/`lng` verplicht).
+- `Location`/gebied is geen kolom: waarneming.nl bepaalt het gebied zelf uit de coördinaten.
+- Nog na te gaan bij de eerste echte import: of verzamelsoorten als `Anatinae indet.` ("Eend onbekend") worden herkend.
 
 ## 2. Soortenlijst
 

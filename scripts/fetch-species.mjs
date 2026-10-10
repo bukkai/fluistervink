@@ -30,9 +30,9 @@ const EXTRA_IDS = [67, 18926, 1003144];
 // Heeft in de bron geen Nederlandse naam
 const NAMES = { 1003144: 'Zangvogel onbekend' };
 
-async function get(path) {
+async function get(path, language = 'nl') {
   const res = await fetch(`${API}${path}`, {
-    headers: { Accept: 'application/json', 'Accept-Language': 'nl' },
+    headers: { Accept: 'application/json', 'Accept-Language': language },
   });
   if (!res.ok) throw new Error(`${path}: HTTP ${res.status}`);
   return res.json();
@@ -58,14 +58,22 @@ const species = all
     rarity: s.rarity,
   }));
 
+// Ook de Engelse namen: de bulkimport van waarneming.nl herkent gedrag, methode
+// en kleed alleen aan de tekst in de taal van de site (zie docs/waarneming-nl.md).
 const attrs = await get(`/species-groups/${BIRDS}/attributes/`);
-const pick = (list) =>
-  list.filter((x) => x.is_active !== false).map(({ id, text, name }) => ({ id, name: text ?? name }));
+const attrsEn = await get(`/species-groups/${BIRDS}/attributes/`, 'en');
+const pick = (list, listEn) =>
+  list
+    .filter((x) => x.is_active !== false)
+    .map(({ id, text, name }) => {
+      const en = listEn.find((y) => y.id === id);
+      return { id, name: text ?? name, en: en?.text ?? en?.name };
+    });
 
 const attributes = {
-  activity: pick(attrs.activity),
-  method: pick(attrs.method),
-  life_stage: pick(attrs.life_stage),
+  activity: pick(attrs.activity, attrsEn.activity),
+  method: pick(attrs.method, attrsEn.method),
+  life_stage: pick(attrs.life_stage, attrsEn.life_stage),
 };
 
 await mkdir('data', { recursive: true });
