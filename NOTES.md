@@ -36,6 +36,7 @@ Eerste wandeling gedaan (10 okt), bevindingen hieronder bij "Eerste echte wandel
   - **#31** lijst opruimen: knop "Weg" bij onzeker, prullenbak (aparte tabel `deletedObservations`, db-versie 3) met terugzetten, ▶ uit de lijst, aantal soorten.
   - **#32** terugknop sluit het formulier (pushState/popstate). Op de telefoon testen.
   - **#34** naam van de wandeling: bij start het waarneming.nl-gebied van de startpositie, bij stoppen het gebied met de meeste waarnemingen, met de hand aan te passen. Vergeleken met OpenStreetMap (natuurreservaat Mariëndaal, zelfde uitkomst), maar Overpass was onbetrouwbaar; eventueel later als verfijning. Naam bij het starten nog op de telefoon testen.
+- **#35** app hernoemd naar **Fluistervink** (woordgrap op luistervink, ook het toekomstige wake word). Database, toegangscode-sleutel en Worker/URL houden bewust de naam `thijsse`. Repo en map hernoemen: zelf doen, daarna Workers Builds controleren.
 - Nog te doen uit A: de CSV-import testen.
 
 Stap 1–6 gemerged (t/m PR #19, 10 okt). Daarvoor: **testronde in het veld** (in productie), één echte wandeling, korte versie is genoeg.
