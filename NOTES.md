@@ -33,8 +33,15 @@ Gemerged t/m **#48**: #46 kaart ↔ lijst in de review, #47 opruimen (alles/lege
 - **PR #50** `npm run testset -- <export.json>`: haalt uitspraken opnieuw door het model (en met `--stt …` door een andere spraakherkenning) en scoort tegen de nagelopen waarnemingen. `--model origineel` = nulmeting zonder API. Exports en resultaten in `testset/` (gitignored); onbruikbare labels in `testset/uitsluiten.txt`. Uitleg bovenin `scripts/testset.mjs` en in de PR.
 - Eerste run op de export van 10 okt (zonder opnames): destijds 41/44, nu 36/44, waarvan 5 ruis door oude labels (staan in `uitsluiten.txt`). Aandachtspunten prompt: "cirkelend ten westen van hier" ≠ overvliegend west; "klinkt als een winterkoning, even in Merlin checken" wordt een waarneming. Het model is niet bij elke run gelijk.
 - **#50** (testset-script) en **#51** (prompt: plek ≠ vliegrichting, vermoeden = onzekere waarneming) gemerged.
-- **Open: PR #52** soortnaam bij elk soort-ID: model schrijft eerst `species_name`, dan `species_id`; hoort het ID niet bij de naam, dan geldt de naam (log: `species_id_fixed`, testset telt ze). Oorzaak: Boomklever (70) en Boomkruiper (71) werden verwisseld. Testset 37/38 (enige fout is ruis).
+- **PR #52** (gemerged) soortnaam bij elk soort-ID: model schrijft eerst `species_name`, dan `species_id`; hoort het ID niet bij de naam, dan geldt de naam (log: `species_id_fixed`, testset telt ze). Oorzaak: Boomklever (70) en Boomkruiper (71) werden verwisseld. Testset 37/38 (enige fout is ruis).
 - STT met de macOS-stem: `gpt-4o-mini-transcribe` verstond "keep" als "geen"; `gpt-4o-transcribe` goed en sneller.
+
+**Testers (11 okt, avond) — gemerged:**
+- **#53** een eigen toegangscode per tester: geheim `ACCESS_CODES` (JSON, naam → code) naast `ACCESS_CODE` (= "eigenaar"). Proxy logt de tester per verzoek (Workers Logs); naam in Instellingen, JSON-export (`tester`) en dev notes ("Van: …"). Uitnodigingslink `https://fluistervink.stephanmullernl.workers.dev/#code=…`. Beheer: `npm run tester -- add/remove/list/push/url`; codes in `.testers.json` (niet in git, **alleen op de computer waar je het draait**: meekopiëren of in de wachtwoordmanager). Het script zet `ACCESS_CODES` in productie én in de Previews Base (previews erven geen geheimen).
+- **#54** na de link naar het hoofdscherm met "Welkom, …" (of een melding als de code niet werkt); productie-adres standaard in het script.
+- **#55** bijnaam "ekkie" → Ekster (voor de eerste tester).
+- Eerste tester uitgenodigd. Nog niet gedaan: harde uitgavenlimieten in de consoles van OpenAI en Anthropic. GitHub-mails per Cloudflare-build: uitzetten in Cloudflare (Settings → Build, reacties op GitHub) of in GitHub Notifications, afhankelijk van de reden onderaan de mail.
+- Volgende onderwerp: dev notes en feedback van testers (hoe krijgt een tester dev notes en export bij mij?).
 
 Daarna:
 
@@ -70,7 +77,7 @@ Stap 1–6 gemerged (t/m PR #19, 10 okt). Daarvoor: **testronde in het veld** (i
 3. **Herkenning:** eigen zinnen en jargon gebruiken; opvallende fouten noteren (dev notes).
 4. Na afloop: JSON-export (Instellingen) en dev notes aan Claude geven voor analyse.
 
-Op een nieuwe computer: `.dev.vars` aanmaken (zie README).
+Op een nieuwe computer: `.dev.vars` aanmaken (zie README), en `.testers.json` meekopiëren als je testers wilt beheren.
 
 ### Roadmap na de testronde
 
