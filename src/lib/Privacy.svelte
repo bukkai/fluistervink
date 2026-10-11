@@ -41,10 +41,9 @@
   <div class="card-body">
     <h3>Wat de app verstuurt</h3>
     <p>
-      Alles loopt via een eigen tussenstation (een Cloudflare Worker), zodat de sleutels van
-      OpenAI en Anthropic niet in de app staan. Het bewaart niets, behalve wat je deelt
-      (hieronder). In het logboek van Cloudflare staat alleen welke tester welk soort verzoek deed,
-      plus eventuele foutmeldingen, een paar dagen lang.
+      Alles gaat eerst langs de eigen server van Fluistervink. Die bewaart niets, behalve wat je
+      deelt (hieronder). Wel houdt hij een paar dagen bij wanneer je de app gebruikte en of er iets
+      misging.
     </p>
     <dl>
       <dt>OpenAI</dt>
@@ -60,8 +59,8 @@
       </dd>
       <dt>Waarneming.nl</dt>
       <dd>
-        De coördinaten van een waarneming, om de naam van het gebied op te zoeken. Gaat via het
-        tussenstation, dus zonder je IP-adres of naam.
+        De coördinaten van een waarneming, om de naam van het gebied op te zoeken. Gaat via de
+        server van Fluistervink, dus zonder je IP-adres of naam.
       </dd>
       <dt>OpenStreetMap</dt>
       <dd>
