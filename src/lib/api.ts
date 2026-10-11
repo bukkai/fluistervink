@@ -29,7 +29,9 @@ const INVITE_KEY = 'fluistervink.invite';
  * niet in logs terecht.
  */
 export function acceptInviteLink(): void {
-  const code = /^#code=([^&]+)/.exec(location.hash)?.[1];
+  // Ook als er iets vóór staat, zoals "#instellingen/#code=…" (met de hand
+  // aan een gekopieerd adres geplakt).
+  const code = /(?:^|[#/&])code=([^&#/]+)/.exec(location.hash)?.[1];
   if (!code) return;
   setAccessCode(decodeURIComponent(code));
   sessionStorage.setItem(INVITE_KEY, '1');
