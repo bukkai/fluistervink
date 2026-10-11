@@ -172,6 +172,12 @@ Typen werkt, ook met de ingebouwde spraakinvoer van Android (die is matig). Besl
   - Waar: de proxy (`worker/index.ts`) ziet elke `/api/messages`-aanroep al en kan soort-ID's uit de tool calls tellen (Workers Analytics Engine of D1). Correcties gebeuren in de app; die zou de app los moeten melden.
   - Privacy: alleen geaggregeerde tellingen, geen locaties, tijden of audio; gebruikers hierover informeren.
   - Tot die tijd geeft de JSON-export van de eigen wandelingen hetzelfde beeld voor één gebruiker (past bij de testset, stap 7).
+- Idee eigenaar (11 okt): uitleggen en benadrukken waarom gemakkelijk invoeren goed is voor citizen science. Kernpunten:
+  - Meer en vollediger gegevens: veel vogelaars noteren alleen de opvallende soorten, omdat alles intypen in het veld te veel moeite is. Inspreken kost seconden, dus ook algemene soorten (merel, houtduif, vink) komen erin. Juist die tellingen zijn nodig om trends te zien.
+  - Minder vertekening: wat makkelijk in te voeren is, wordt vaker ingevoerd. Zeldzaamheden worden nu meer gemeld dan algemene soorten, en dat vertekent het beeld.
+  - Betere gegevens: tijd en GPS worden op het moment zelf vastgelegd, in plaats van achteraf uit het geheugen ingevuld of op één punt voor de hele wandeling gezet.
+  - Meer mensen doen mee: ook beginners en vogelaars die niet graag op een scherm tikken. Blijven kijken in plaats van typen houdt het leuk.
+  - Waar: korte tekst in de README of een "Over"-scherm in het menu. Later in een eventuele presentatie aan waarneming.nl of Observation.org (bijvoorbeeld bij het aanvragen van API-toegang).
 
 ## Overstappen tussen computers
 
