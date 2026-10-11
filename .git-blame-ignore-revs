@@ -1,0 +1,5 @@
+# Commits met alleen opmaak, voor git blame (GitHub doet dit vanzelf;
+# lokaal: git config blame.ignoreRevsFile .git-blame-ignore-revs)
+
+# Alles opmaken met Prettier
+84d865da61c5255eebd81a29ba8b4386e88b2a1c
