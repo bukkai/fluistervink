@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { devNoteText } from '../src/lib/devNotePrefix';
 
 // Proxy tussen de app en de API's van OpenAI (spraak naar tekst), Anthropic
 // (interpretatie) en waarneming.nl (gebiedsnamen). De API-sleutels blijven hier; de app stuurt alleen een
@@ -38,6 +39,10 @@ const MAX_SESSION_BYTES = 5 * 1024 * 1024;
 
 /** KV-sleutel (in TESTERS) met alle uitgenodigde testers. */
 const INVITED_KEY = 'invited';
+/** KV-sleutel (in TESTERS) met de id's van feedback die de eigenaar verwerkt heeft. */
+const PROCESSED_KEY = 'processed-notes';
+/** Zoveel id's tegelijk als verwerkt markeren; ruim genoeg voor "alles". */
+const MAX_PROCESSED_IDS = 1000;
 /** Zelfde regel als bij het wissen van gedeelde gegevens (/api/feedback). */
 const TESTER_NAME = /^[\w-]{1,32}$/;
 
@@ -159,6 +164,8 @@ async function messages(request: Request, env: WorkerEnv): Promise<Response> {
  * - PUT /api/feedback/audio/<id>     opname
  * - GET /api/feedback/list?cursor=…  sleutels met metadata (eigenaar)
  * - GET /api/feedback/file?key=…     één bestand (eigenaar)
+ * - GET /api/feedback/notes          alle feedback, met of hij verwerkt is (eigenaar)
+ * - POST /api/feedback/processed { ids, processed }  feedback (niet) verwerkt (eigenaar)
  * - DELETE /api/feedback/tester?name=…  alles van één tester wissen (eigenaar)
  */
 async function feedback(request: Request, env: WorkerEnv, tester: string): Promise<Response> {
@@ -187,6 +194,24 @@ async function feedback(request: Request, env: WorkerEnv, tester: string): Promi
       cursor: result.list_complete ? undefined : result.cursor,
     });
   }
+  if (request.method === 'GET' && kind === 'notes') {
+    return json({ notes: await sharedNotes(env) });
+  }
+  if (request.method === 'POST' && kind === 'processed') {
+    const { ids, processed } = (await request.json()) as { ids?: unknown; processed?: unknown };
+    const valid =
+      Array.isArray(ids) &&
+      ids.length <= MAX_PROCESSED_IDS &&
+      ids.every((id) => typeof id === 'string' && /^[\w-]{1,64}$/.test(id));
+    if (!valid || typeof processed !== 'boolean') return json({ error: 'Ongeldig verzoek' }, 400);
+    const done = await processedNotes(env);
+    for (const id of ids) {
+      if (processed) done.add(id);
+      else done.delete(id);
+    }
+    await env.TESTERS.put(PROCESSED_KEY, JSON.stringify([...done]));
+    return json({ ok: true });
+  }
   if (request.method === 'DELETE' && kind === 'tester') {
     const name = url.searchParams.get('name') ?? '';
     if (!/^[\w-]+$/.test(name)) return json({ error: 'Ongeldige naam' }, 400);
@@ -211,6 +236,69 @@ async function feedback(request: Request, env: WorkerEnv, tester: string): Promi
     });
   }
   return json({ error: 'Niet gevonden' }, 404);
+}
+
+export interface SharedNote {
+  id: string;
+  tester: string;
+  recordedAt: number;
+  /** Zonder "feedback" of "dev note" ervoor */
+  text: string;
+  appVersion?: string;
+  /** Naam van de wandeling; leeg bij losse feedback */
+  sessionName?: string;
+  processed: boolean;
+}
+
+/**
+ * Alle feedback uit de gedeelde wandelingen, nieuwste eerst. Leest elke
+ * gedeelde wandeling (zonder opnames); bij een handvol testers is dat genoeg.
+ */
+async function sharedNotes(env: WorkerEnv): Promise<SharedNote[]> {
+  const keys: string[] = [];
+  let cursor: string | undefined;
+  do {
+    const page = await env.FEEDBACK.list({ cursor });
+    keys.push(...page.keys.map((k) => k.name).filter((name) => name.includes('/sessions/')));
+    cursor = page.list_complete ? undefined : page.cursor;
+  } while (cursor);
+
+  const done = await processedNotes(env);
+  const notes = await Promise.all(
+    keys.map(async (key) => {
+      const data = await env.FEEDBACK.get<SharedSession>(key, 'json').catch(() => null);
+      const tester = key.split('/')[0];
+      return (data?.utterances ?? [])
+        .filter((u) => u.kind === 'dev_note')
+        .map((u) => ({
+          id: u.id,
+          tester,
+          recordedAt: u.recordedAt,
+          text: devNoteText(u.transcript ?? '') || (u.transcript ?? ''),
+          appVersion: u.metrics?.appVersion ?? data?.appVersion,
+          sessionName: data?.sessions?.[0]?.name,
+          processed: done.has(u.id),
+        }));
+    }),
+  );
+  return notes.flat().sort((a, b) => b.recordedAt - a.recordedAt);
+}
+
+/** Wat de app deelt (src/lib/share.ts), voor zover de proxy het leest. */
+interface SharedSession {
+  appVersion?: string;
+  sessions?: { name?: string }[];
+  utterances?: {
+    id: string;
+    recordedAt: number;
+    kind?: string;
+    transcript?: string;
+    metrics?: { appVersion?: string };
+  }[];
+}
+
+async function processedNotes(env: WorkerEnv): Promise<Set<string>> {
+  return new Set((await env.TESTERS.get<string[]>(PROCESSED_KEY, 'json')) ?? []);
 }
 
 /**

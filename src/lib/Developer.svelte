@@ -1,8 +1,17 @@
 <script lang="ts">
-  // Alleen voor de eigenaar (menu en route in App.svelte): testers uitnodigen,
-  // exporteren voor de testset en importeren. Afgeschermd in de interface; de
+  // Alleen voor de eigenaar (menu en route in App.svelte): feedback van testers
+  // lezen, testers uitnodigen, exporteren voor de testset en importeren. Afgeschermd in de interface; de
   // proxy staat het beheer van testers ook alleen de eigenaar toe.
-  import { addTester, inviteLink, listTesters, removeTester, type Tester } from './api';
+  import {
+    addTester,
+    inviteLink,
+    listSharedNotes,
+    listTesters,
+    markNotesProcessed,
+    removeTester,
+    type SharedNote,
+    type Tester,
+  } from './api';
   import { download, exportAllJson, importJson } from './export';
 
   let testers = $state<Tester[]>();
@@ -17,6 +26,43 @@
     }
   }
   loadTesters();
+
+  // Feedback van alle testers, zoals de proxy hem heeft. Komt pas binnen als de
+  // app van de tester deelt (na het stoppen van een wandeling). Verwerkt = in
+  // een ontwikkelsessie bekeken; de gegevens zelf blijven staan (testset).
+  let notes = $state<SharedNote[]>();
+  let notesError = $state('');
+  let showProcessed = $state(false);
+  const newNotes = $derived(notes?.filter((n) => !n.processed) ?? []);
+  const processedCount = $derived((notes?.length ?? 0) - newNotes.length);
+  const shownNotes = $derived(showProcessed ? (notes ?? []) : newNotes);
+
+  async function loadNotes() {
+    try {
+      notes = await listSharedNotes();
+      notesError = '';
+    } catch (error) {
+      notesError = `Feedback ophalen mislukt: ${error instanceof Error ? error.message : error}`;
+    }
+  }
+  loadNotes();
+
+  async function setProcessed(ids: string[], processed: boolean) {
+    try {
+      await markNotesProcessed(ids, processed);
+      const changed = new Set(ids);
+      notes = notes?.map((n) => (changed.has(n.id) ? { ...n, processed } : n));
+    } catch (error) {
+      notesError = `Opslaan mislukt: ${error instanceof Error ? error.message : error}`;
+    }
+  }
+
+  const noteDateFormat = new Intl.DateTimeFormat('nl-NL', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
   let name = $state('');
   let email = $state('');
@@ -124,6 +170,61 @@
 
 <a class="back" href="#/">Terug</a>
 <h2 class="page-title">Developer</h2>
+
+<section class="card">
+  <div class="card-head"><h2>Feedback van testers</h2></div>
+  <div class="card-body stack">
+    {#if notesError}
+      <p class="message error">{notesError}</p>
+    {/if}
+    {#if notes}
+      {#if shownNotes.length === 0}
+        <p class="hint">Geen nieuwe feedback.</p>
+      {:else}
+        <ul class="notes">
+          {#each shownNotes as note (note.id)}
+            <li class:processed={note.processed}>
+              <div class="note-meta muted">
+                <span>
+                  {note.tester} · {noteDateFormat.format(note.recordedAt)}{note.sessionName
+                    ? ` · ${note.sessionName}`
+                    : ''}
+                </span>
+                <button class="link" onclick={() => setProcessed([note.id], !note.processed)}>
+                  {note.processed ? 'Terugzetten' : 'Verwerkt'}
+                </button>
+              </div>
+              <p class="note-text">{note.text || '(leeg)'}</p>
+            </li>
+          {/each}
+        </ul>
+      {/if}
+      <div class="note-actions">
+        {#if newNotes.length > 1}
+          <button
+            class="btn secondary"
+            onclick={() =>
+              setProcessed(
+                newNotes.map((n) => n.id),
+                true,
+              )}>Alles verwerkt</button
+          >
+        {/if}
+        {#if processedCount > 0}
+          <button class="link" onclick={() => (showProcessed = !showProcessed)}>
+            {showProcessed ? 'Verwerkte verbergen' : `Verwerkte tonen (${processedCount})`}
+          </button>
+        {/if}
+      </div>
+    {:else if !notesError}
+      <p class="hint">Bezig met ophalen…</p>
+    {/if}
+    <p class="hint">
+      Feedback komt binnen zodra de app van een tester deelt, na het stoppen van een wandeling.
+      Verwerkt verbergt hem alleen; de gedeelde wandelingen blijven bewaard.
+    </p>
+  </div>
+</section>
 
 <section class="card">
   <div class="card-head"><h2>Tester uitnodigen</h2></div>
@@ -259,6 +360,42 @@
 
   .error {
     color: var(--red);
+  }
+
+  .notes {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .notes li.processed {
+    opacity: 0.6;
+  }
+
+  .note-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    font-size: 0.85rem;
+  }
+
+  .note-text {
+    margin: 0.15rem 0 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .note-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .note-actions:empty {
+    display: none;
   }
 
   .check {
