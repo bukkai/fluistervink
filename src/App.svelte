@@ -214,9 +214,9 @@
       <button class="backdrop" aria-label="Menu sluiten" onclick={() => (menuOpen = false)}></button>
       <nav>
         <a href="#wandelingen">Vorige wandelingen</a>
+        <a href="#uitleg">Hoe werkt het?</a>
         <a href="#feedback">Feedback{unsentNotes ? ` (${unsentNotes})` : ''}</a>
         <a href="#instellingen">Instellingen</a>
-        <a href="#uitleg">Hoe werkt het?</a>
         <a href="#privacy">Privacy</a>
         {#if isOwner}
           <a href="#developer">Developer</a>
