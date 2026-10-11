@@ -29,9 +29,11 @@ Gemerged (10 okt). Nog doen: eerste echte import, zie hieronder.
 Gemerged t/m **#48**: #46 kaart ↔ lijst in de review, #47 opruimen (alles/lege aanvinken), #48 woordenlijst (alle codes in het formulier; afkortingen leeftijd/kleed, nocmig in de prompt; kleed en geslacht verplicht met `null`).
 
 **Stap 7, testset — open:**
-- **PR #49** JSON-export met opnames (vinkje bij Instellingen); import zet ze terug.
+- **PR #49** JSON-export met opnames: gemerged.
 - **PR #50** `npm run testset -- <export.json>`: haalt uitspraken opnieuw door het model (en met `--stt …` door een andere spraakherkenning) en scoort tegen de nagelopen waarnemingen. `--model origineel` = nulmeting zonder API. Exports en resultaten in `testset/` (gitignored); onbruikbare labels in `testset/uitsluiten.txt`. Uitleg bovenin `scripts/testset.mjs` en in de PR.
 - Eerste run op de export van 10 okt (zonder opnames): destijds 41/44, nu 36/44, waarvan 5 ruis door oude labels (staan in `uitsluiten.txt`). Aandachtspunten prompt: "cirkelend ten westen van hier" ≠ overvliegend west; "klinkt als een winterkoning, even in Merlin checken" wordt een waarneming. Het model is niet bij elke run gelijk.
+- **PR #51** (gestapeld op #50): prompt — plek ("ten westen van hier") is geen vliegrichting, cirkelen/bidden = ter plaatse; een vermoeden ("klinkt als een winterkoning") wordt bewust een onzekere waarneming. Testset 36/38.
+- **Gevonden: ID-verwisseling.** "Roepende boomkruiper" → Boomklever, in elke run: ID 70 (Boomklever) en 71 (Boomkruiper) staan naast elkaar en het model pakt het verkeerde ID. Voorstel: model geeft ook de soortnaam mee, de app controleert naam ↔ ID.
 - STT met de macOS-stem: `gpt-4o-mini-transcribe` verstond "keep" als "geen"; `gpt-4o-transcribe` goed en sneller.
 
 Daarna:
