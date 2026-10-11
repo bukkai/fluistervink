@@ -71,3 +71,11 @@ export async function countPerSession(): Promise<Map<string, SessionCounts>> {
   for (const id of await db.observations.orderBy('sessionId').keys()) get(id as string).observations++;
   return counts;
 }
+
+/** "1 u 5 min" of "12 min" */
+export function formatDuration(ms: number): string {
+  const minutes = Math.floor(ms / 60_000);
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return h > 0 ? `${h} u ${m} min` : `${m} min`;
+}
