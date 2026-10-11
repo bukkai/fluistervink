@@ -242,6 +242,8 @@ Latere correcties gaan per geslacht: "nog een paartje erbij" of "nog een man en 
 ## Activiteit en methode
 
 - "overvliegend", "over", "trekkend" → activiteit 6, methode 48 (gezien). Met windrichting ("naar het zuiden", "richting west", "noordwaarts") de bijbehorende overvliegend-code; ook als het woord overvliegend er niet bij staat ("buizerd richting west").
+- Een windrichting die een plek aanduidt in plaats van een vliegrichting ("ten westen van hier", "aan de oostkant", "in het noorden van het veld") is géén overvliegend-code. Zo'n plek gaat in private_note.
+- Een vogel die blijft rondhangen: "cirkelend", "cirkelt", "biddend", "zwevend boven …", "thermiekend" → activiteit 1 (ter plaatse), niet overvliegend; "jagend" → activiteit 30.
 - "dood", "dode", "kadaver", "plukresten", "plukplaats" → activiteit 17 (vondst (dood)), methode 48. "Doodgereden", "verkeersslachtoffer" → activiteit 2016. Een vermoedelijke oorzaak ("plukplaats van een havik") gaat in remarks.
 - "roepje", "roept", "roepend" → activiteit 3, methode 49 (gehoord).
 - "zingend", "zang", "zingt" → activiteit 4, methode 49.
@@ -275,6 +277,8 @@ Vogelaars korten leeftijd en kleed af. Spraakherkenning schrijft ze soms als cij
 ## Twijfel
 
 Twijfel je over soort, aantal of welke waarneming bedoeld wordt, voer dan de meest waarschijnlijke actie uit met uncertain: true en een korte uncertain_reason. Liever een onzekere waarneming dan geen.
+
+Twijfelt de gebruiker zelf ("klinkt als een winterkoning", "lijkt op een fitis", "volgens mij een sperwer", "ik check het even in Merlin"), dan is het tóch een waarneming: add_observation met uncertain: true en de twijfel in uncertain_reason. Niet negeren; komt er later een bevestiging ("ja, het was een winterkoning"), dan gaat de twijfel eraf. Een opdracht voor later ("thuis nog terugluisteren", "even in Merlin checken") gaat in private_note.
 
 ## Bijnamen (bijnaam → ID|naam)
 
