@@ -1,5 +1,6 @@
 <script lang="ts">
   import { liveQuery } from 'dexie';
+  import { tick, untrack } from 'svelte';
   import type { Observation, Session, Utterance } from './db';
   import { fillMissingAreas } from './area';
   import { mapsUrl } from './devNotes';
@@ -30,7 +31,20 @@
   // Waarnemingen en uitspraken van één wandeling; gebruikt voor de lopende
   // wandeling en voor eerdere wandelingen.
 
-  let { session }: { session: Session } = $props();
+  /**
+   * Bij de review staat er een kaart boven de lijst:
+   * `focus`: waarnemingen die op de kaart zijn aangetikt, om op te laten lichten.
+   * `onshowonmap`: een waarneming op de kaart laten zien (in plaats van de kaarten-app).
+   */
+  let {
+    session,
+    focus,
+    onshowonmap,
+  }: {
+    session: Session;
+    focus?: { ids: string[] };
+    onshowonmap?: (id: string) => void;
+  } = $props();
 
   // Opnieuw opvragen als de wandeling wisselt; liveQuery volgt daarna zelf de database
   let observations = $derived(liveQuery(() => listObservations(session.id)));
@@ -82,6 +96,24 @@
   );
 
   let speciesCount = $derived(countSpecies($observations ?? []));
+
+  /** Waarnemingen die even oplichten, na een tik op de kaart */
+  let flashing = $state<string[]>([]);
+
+  $effect(() => {
+    if (!focus) return;
+    const ids = focus.ids;
+    // Verborgen door het filter "Alleen onzeker"? Dan het filter uit.
+    untrack(() => {
+      if (ids.some((id) => !shown.some((obs) => obs.id === id))) onlyUncertain = false;
+    });
+    flashing = ids;
+    tick().then(() =>
+      document.getElementById(`obs-${ids[0]}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+    );
+    const timer = setTimeout(() => (flashing = []), 2500);
+    return () => clearTimeout(timer);
+  });
 
   const deletedByLabel = { hand: 'met de hand', voice: 'met de stem', undo: 'ongedaan gemaakt' };
 
@@ -233,7 +265,12 @@
       {#each shown as obs (obs.id)}
         {@const source = utteranceById.get(obs.utteranceId)}
         {@const species = getSpecies(obs.speciesId)}
-        <li class:uncertain={obs.uncertain} class:skipped={obs.skipExport}>
+        <li
+          id="obs-{obs.id}"
+          class:uncertain={obs.uncertain}
+          class:skipped={obs.skipExport}
+          class:flash={flashing.includes(obs.id)}
+        >
           {#if editing === obs.id}
             <ObservationEditor observation={obs} utterance={source} onclose={closeEditor} />
           {:else}
@@ -266,12 +303,18 @@
             </button>
             {#if showActions(obs)}
             <div class="actions">
-              {#if obs.position}
+              {#if obs.position && onshowonmap}
+                <button class="to-map" onclick={() => onshowonmap(obs.id)} aria-label="Op de kaart laten zien"
+                  >±{Math.round(obs.position.accuracy)} m</button
+                >
+              {:else if obs.position}
                 <a
                   href={mapsUrl(obs.position.lat, obs.position.lon)}
                   target="_blank"
                   rel="noopener">±{Math.round(obs.position.accuracy)} m</a
                 >
+              {/if}
+              {#if obs.position}
                 {#if positionAge(obs)}
                   <span class="reason">{positionAge(obs)}</span>
                 {/if}
@@ -490,9 +533,29 @@
     color: var(--muted);
   }
 
-  .actions a {
+  .actions a,
+  .actions .to-map {
     color: inherit;
     text-decoration: underline dotted;
+  }
+
+  .actions .to-map {
+    padding: 0;
+    border: none;
+    font: inherit;
+    background: none;
+  }
+
+  /* Na een tik op de kaart: even oplichten */
+  .obs-list > li.flash {
+    animation: flash 2.5s ease-out;
+  }
+
+  @keyframes flash {
+    0%,
+    40% {
+      background-color: color-mix(in srgb, var(--brand) 22%, transparent);
+    }
   }
 
   .end {

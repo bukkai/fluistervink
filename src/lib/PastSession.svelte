@@ -25,6 +25,11 @@
   let observations = $derived(liveQuery(() => listObservations(session.id)));
   let uncertainCount = $derived($observations?.filter((obs) => obs.uncertain).length ?? 0);
 
+  // Kaart en lijst aan elkaar gekoppeld: een nieuw object bij elke tik, zodat
+  // ook nog eens dezelfde waarneming kiezen opnieuw werkt.
+  let mapFocus = $state<{ id: string }>();
+  let listFocus = $state<{ ids: string[] }>();
+
   async function resume() {
     if (!confirm('Deze wandeling voortzetten?')) return;
     if (await resumeSession(session.id)) location.hash = '';
@@ -121,9 +126,9 @@
   </dl>
 {/if}
 
-<ObservationMap {session} />
+<ObservationMap {session} focus={mapFocus} onselect={(ids) => (listFocus = { ids })} />
 
-<SessionLog {session} />
+<SessionLog {session} focus={listFocus} onshowonmap={(id) => (mapFocus = { id })} />
 
 <section class="card export">
   <div class="card-head">
