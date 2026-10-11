@@ -143,6 +143,18 @@ export async function createMessage<T = unknown>(
   });
 }
 
+/**
+ * Deelt een bestand met de ontwikkelaar (zie share.ts): `sessions/<id>` of
+ * `audio/<id>`. De proxy bewaart het onder de naam van de tester.
+ */
+export async function putShared(path: string, body: Blob): Promise<void> {
+  await request(`/api/feedback/${path}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': body.type || 'application/octet-stream' },
+    body,
+  });
+}
+
 export interface Area {
   /** Gebieds-ID van waarneming.nl */
   id: number;

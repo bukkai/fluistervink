@@ -3,6 +3,8 @@ import Anthropic from '@anthropic-ai/sdk';
 // Proxy tussen de app en de API's van OpenAI (spraak naar tekst), Anthropic
 // (interpretatie) en waarneming.nl (gebiedsnamen). De API-sleutels blijven hier; de app stuurt alleen een
 // toegangscode mee, zodat niet iedereen die de URL vindt ons tegoed opmaakt.
+// Daarnaast bewaart de proxy wat testers delen (wandelingen, feedback,
+// eventueel opnames) in KV, zodat de eigenaar het kan ophalen (/api/feedback).
 //
 // Toegangscodes: ACCESS_CODE is die van de eigenaar; ACCESS_CODES bevat er één
 // per tester als JSON, `{"anna": "…", "piet": "…"}`. Zo kun je één tester
@@ -17,6 +19,9 @@ interface Secrets {
 
 type WorkerEnv = Env & Secrets;
 
+/** Naam van de eigenaar (ACCESS_CODE); alleen die mag gedeelde gegevens ophalen. */
+const OWNER = 'eigenaar';
+
 // Alleen deze modellen mogen via de proxy worden aangeroepen. Meerdere, zodat
 // we ze met de testset kunnen vergelijken.
 const TRANSCRIBE_MODELS = ['gpt-4o-transcribe', 'gpt-4o-mini-transcribe', 'whisper-1'];
@@ -26,6 +31,8 @@ const CLAUDE_MODELS = ['claude-haiku-5-5', 'claude-sonnet-5-5', 'claude-opus-5-5
 const MAX_OUTPUT_TOKENS = 4096;
 /** Een uitspraak duurt seconden; 10 MB is ruim en voorkomt misbruik. */
 const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
+/** Een gedeelde wandeling zonder opnames is hooguit een paar honderd kB. */
+const MAX_SESSION_BYTES = 5 * 1024 * 1024;
 
 export default {
   async fetch(request, env): Promise<Response> {
@@ -50,6 +57,9 @@ export default {
       }
       if (pathname === '/api/messages' && request.method === 'POST') {
         return await messages(request, env);
+      }
+      if (pathname.startsWith('/api/feedback/')) {
+        return await feedback(request, env, tester);
       }
       return json({ error: 'Niet gevonden' }, 404);
     } catch (error) {
@@ -122,6 +132,56 @@ async function messages(request: Request, env: WorkerEnv): Promise<Response> {
 }
 
 /**
+ * Gedeelde gegevens van testers, in KV onder `<tester>/sessions/<id>` (JSON)
+ * en `<tester>/audio/<id>` (opname van een uitspraak). Een tester kan alleen
+ * schrijven, en alleen onder zijn eigen naam; de eigenaar kan ook lezen
+ * (scripts/feedback.mjs).
+ *
+ * - PUT /api/feedback/sessions/<id>  wandeling als JSON
+ * - PUT /api/feedback/audio/<id>     opname
+ * - GET /api/feedback/list?cursor=…  sleutels met metadata (eigenaar)
+ * - GET /api/feedback/file?key=…     één bestand (eigenaar)
+ */
+async function feedback(request: Request, env: WorkerEnv, tester: string): Promise<Response> {
+  const url = new URL(request.url);
+  const [, , , kind, id] = url.pathname.split('/');
+
+  if (request.method === 'PUT' && (kind === 'sessions' || kind === 'audio')) {
+    if (!id || !/^[\w-]{1,64}$/.test(id)) return json({ error: 'Ongeldige id' }, 400);
+    const limit = kind === 'sessions' ? MAX_SESSION_BYTES : MAX_AUDIO_BYTES;
+    const body = await request.arrayBuffer();
+    if (body.byteLength === 0) return json({ error: 'Leeg' }, 400);
+    if (body.byteLength > limit) return json({ error: 'Te groot' }, 413);
+    const contentType = request.headers.get('Content-Type') ?? 'application/octet-stream';
+    await env.FEEDBACK.put(`${tester}/${kind}/${id}`, body, {
+      metadata: { contentType, uploadedAt: Date.now(), bytes: body.byteLength },
+    });
+    return json({ ok: true });
+  }
+
+  if (tester !== OWNER) return json({ error: 'Alleen voor de eigenaar' }, 403);
+
+  if (request.method === 'GET' && kind === 'list') {
+    const result = await env.FEEDBACK.list({ cursor: url.searchParams.get('cursor') ?? undefined });
+    return json({
+      keys: result.keys.map((k) => ({ key: k.name, ...(k.metadata as object) })),
+      cursor: result.list_complete ? undefined : result.cursor,
+    });
+  }
+  if (request.method === 'GET' && kind === 'file') {
+    const { value, metadata } = await env.FEEDBACK.getWithMetadata<{ contentType?: string }>(
+      url.searchParams.get('key') ?? '',
+      'arrayBuffer',
+    );
+    if (!value) return json({ error: 'Niet gevonden' }, 404);
+    return new Response(value, {
+      headers: { 'Content-Type': metadata?.contentType ?? 'application/octet-stream' },
+    });
+  }
+  return json({ error: 'Niet gevonden' }, 404);
+}
+
+/**
  * Het gebied van waarneming.nl ("Schoorlse Duinen") waarin een punt ligt.
  * Hun API is openbaar maar stuurt geen CORS-headers, daarom via de proxy.
  * Verwacht `?lat=…&lon=…`; geeft `{ area: { id, name } }` of `{ area: null }`.
@@ -156,12 +216,13 @@ async function area(request: Request): Promise<Response> {
 /** Naam per toegangscode, uit ACCESS_CODE (de eigenaar) en ACCESS_CODES. */
 function accessCodes(env: WorkerEnv): [name: string, code: string][] {
   const codes: [string, string][] = [];
-  if (env.ACCESS_CODE) codes.push(['eigenaar', env.ACCESS_CODE]);
+  if (env.ACCESS_CODE) codes.push([OWNER, env.ACCESS_CODE]);
   if (env.ACCESS_CODES) {
     try {
       const testers = JSON.parse(env.ACCESS_CODES) as Record<string, unknown>;
       for (const [name, code] of Object.entries(testers)) {
-        if (typeof code === 'string' && code) codes.push([name, code]);
+        // Een tester mag nooit als eigenaar binnenkomen
+        if (typeof code === 'string' && code && name !== OWNER) codes.push([name, code]);
       }
     } catch {
       console.error('ACCESS_CODES is geen geldige JSON');

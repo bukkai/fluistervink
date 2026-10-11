@@ -14,8 +14,8 @@
   let exportedIds = $derived(sessions.filter((s) => s.exportedAt).map((s) => s.id));
 
   /**
-   * Leeg: geen waarnemingen en geen dev notes. Een wandeling met alleen dev
-   * notes telt niet als leeg, want die gaan mee als de wandeling weg is.
+   * Leeg: geen waarnemingen en geen feedback. Een wandeling met alleen
+   * feedback telt niet als leeg, want die gaan mee als de wandeling weg is.
    */
   let emptyIds = $derived(
     $counts
@@ -55,7 +55,7 @@
       notExported > 0 &&
         `${notExported === 1 ? 'Eén daarvan is' : `${notExported} daarvan zijn`} nog niet geëxporteerd.`,
       devNotes > 0 &&
-        `${devNotes === 1 ? '1 dev note gaat' : `${devNotes} dev notes gaan`} ook weg.`,
+        `${devNotes === 1 ? '1 feedbackbericht gaat' : `${devNotes} feedbackberichten gaan`} ook weg.`,
     ]
       .filter(Boolean)
       .join('\n\n');
@@ -78,7 +78,7 @@
       formatDuration((session.endedAt ?? session.startedAt) - session.startedAt),
       c && `${c.utterances} ${c.utterances === 1 ? 'uitspraak' : 'uitspraken'}`,
       c && `${c.observations} ${c.observations === 1 ? 'waarneming' : 'waarnemingen'}`,
-      c?.devNotes && `${c.devNotes} ${c.devNotes === 1 ? 'dev note' : 'dev notes'}`,
+      c?.devNotes && `${c.devNotes} ${c.devNotes === 1 ? 'feedbackbericht' : 'feedbackberichten'}`,
     ]
       .filter(Boolean)
       .join(' · ');

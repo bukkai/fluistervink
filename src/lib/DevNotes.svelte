@@ -23,7 +23,7 @@
 
 <a class="back" href="#/">Terug</a>
 <div class="title">
-  <h2 class="page-title">Dev notes</h2>
+  <h2 class="page-title">Feedback</h2>
   {#if $notes?.length}
     <button class="btn secondary" onclick={copy}>{copied ? 'Gekopieerd ✓' : 'Kopieer als Markdown'}</button>
   {/if}
@@ -47,8 +47,14 @@
     {/each}
   </ul>
 {:else if $notes}
-  <p class="muted">Nog geen dev notes. Begin een uitspraak met "dev note" om er een in te spreken.</p>
+  <p class="muted">Nog geen feedback.</p>
 {/if}
+
+<p class="muted">
+  Iets gemerkt tijdens het vogelen? Begin een uitspraak met <em>"feedback"</em>, bijvoorbeeld
+  <em>"feedback, hij trilde niet"</em>. Feedback gaat na de wandeling mee naar de ontwikkelaar
+  (zie <a href="#instellingen">Instellingen</a>).
+</p>
 
 <style>
   .title {

@@ -216,7 +216,7 @@
   }
 
   function statusLabel(u: Utterance): string {
-    if (u.kind === 'dev_note') return 'dev note';
+    if (u.kind === 'dev_note') return 'feedback';
     if (u.undone) return 'teruggedraaid';
     switch (u.status) {
       case 'pending':

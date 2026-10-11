@@ -13,6 +13,10 @@
     "not_found_handling": "single-page-application"
   },
   "observability": { "enabled": true },
+  // Wat testers delen (wandelingen, feedback, opnames), zie /api/feedback in
+  // worker/index.ts. Aangemaakt met `npx wrangler kv namespace create FEEDBACK`.
+  // Lokaal (npm run dev) een eigen, lege KV: testen komt niet in productie.
+  "kv_namespaces": [{ "binding": "FEEDBACK", "id": "e7c6372ecd0f402fb1fe455a62d73f11" }],
   // Previews: een eigen versie per branch (Workers Builds draait daarvoor
   // `wrangler preview`). Leeg, want app en assets gebruiken de instellingen
   // hierboven. Previews erven géén geheimen van productie: die staan apart in
