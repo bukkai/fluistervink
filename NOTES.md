@@ -24,7 +24,24 @@ Alle drie gemerged (9–10 okt). Daarna **#18 Gebied van waarneming.nl** bij elk
 
 Gemerged (10 okt). Nog doen: eerste echte import, zie hieronder.
 
-## Volgende stap
+## Volgende stap (11 okt)
+
+Alles t/m **PR #43** is gemerged (prompt #25–#26, soortenlijst #28–#29/#33, veldgedrag #30, opruimen #31, terugknop #32, naam wandeling #34, Fluistervink #35–#36, hoofdscherm/review/opruimen #37–#39, JSON-import #40, redesign #41–#42, icoon #43). Geen open PR's.
+
+**CSV-import op waarneming.nl getest (11 okt): werkte heel goed.** Stap 6 is daarmee af.
+
+Nu: **tweede echte wandeling** (11 okt). Na afloop JSON-export en dev notes aan Claude geven. Op de telefoon ook letten op: tikje bij loslaten en opname stoppen bij wisselen van app (#30), terugknop (#32, #43), naam van de wandeling bij het starten (#34), nieuw icoon.
+
+Daarna, in volgorde:
+
+1. Eventueel vóór de demo (13 okt): kaart en lijst koppelen (stip ↔ waarneming).
+2. Bevindingen van wandeling 2 verwerken (prompt, bijnamen, Whisper-prompt).
+3. **Stap 7, testset** (roadmap B).
+4. Klein: "Alle lege / alles aanvinken" bij Opruimen; afkortingen leeftijd/kleed in de prompt; meer gedragingen en methoden.
+5. F. Vitest. Mijlpaal na 3–4 wandelingen.
+
+### Eerder (10 okt)
+
 
 Eerste wandeling gedaan (10 okt), bevindingen hieronder bij "Eerste echte wandeling". Roadmap A (bevindingen verwerken) loopt:
 
@@ -42,7 +59,7 @@ Eerste wandeling gedaan (10 okt), bevindingen hieronder bij "Eerste echte wandel
   - **#38** reviewscherm: na "Stop wandeling" meteen naar de wandeling; tegels duur/soorten/waarnemingen (+ onzeker), kaart, lijst, "Klaar met nalopen?" met exportknop.
   - **#39** opruimen: label geëxporteerd per wandeling, wandelingen aanvinken en verwijderen (ook "alle geëxporteerde"), verwijderen vanaf een wandeling. Echt verwijderen, geen prullenbak.
   - Nog niet: kaart en lijst aan elkaar koppelen (stip ↔ waarneming).
-- Nog te doen uit A: de CSV-import testen.
+- Uit A: de CSV-import is getest (11 okt), werkt.
 
 Stap 1–6 gemerged (t/m PR #19, 10 okt). Daarvoor: **testronde in het veld** (in productie), één echte wandeling, korte versie is genoeg.
 
@@ -97,7 +114,7 @@ Export `thijsse-2026-10-10.json` geanalyseerd. 14:39–16:12, 55 uitspraken: 33 
 8. Later: foto koppelen aan een waarneming via tijd en locatie; vinkje "afgeschermd" (of aan waarneming.nl overlaten).
 9. Bijnamen: "kpv" → KBV (Whisper-prompt of bijnamenlijst).
 
-Nog niet gedaan: CSV-import op waarneming.nl testen.
+CSV-import op waarneming.nl getest op 11 okt: werkt.
 
 ## Bevindingen eerste test op de telefoon (9 okt)
 

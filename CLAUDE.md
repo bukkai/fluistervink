@@ -72,7 +72,7 @@ Soort, activiteit, methode, kleed en telmethode worden opgeslagen als **waarnemi
 
 ## Openstaande punten
 
-- **Importformaat van waarneming.nl:** opgelost, zie `docs/waarneming-nl.md`. Waarneming.nl heeft een eigen bulkimport (CSV) met velden voor activiteit, methode, kleed, telmethode, geslacht, zekerheid en een uuid tegen dubbel invoeren. Gedrag en methode gaan als tekst in de taal van de site; de app exporteert Engels.
+- **Importformaat van waarneming.nl:** opgelost en getest (11 okt), zie `docs/waarneming-nl.md`. Waarneming.nl heeft een eigen bulkimport (CSV) met velden voor activiteit, methode, kleed, telmethode, geslacht, zekerheid en een uuid tegen dubbel invoeren. Gedrag en methode gaan als tekst in de taal van de site; de app exporteert Engels.
 - **Soortenlijst:** opgelost. `scripts/fetch-species.mjs` haalt de lijst op bij de openbare API van waarneming.nl → `data/soorten-nl.json` (350 soorten met waarneming.nl-ID's). Bijnamen en afkortingen uit vogelaarsjargon ("tova", "robotap", "KBV") staan in `data/bijnamen.json` (bijnaam → soort-ID) en gaan mee in de systeemprompt; vrij aan te vullen.
 - **STT-keuze:** Whisper tegenover Web Speech API, beslissen op basis van de testset.
 - **Mapping van gesproken termen naar velden:** eerste voorstel in `docs/waarneming-nl.md`, verfijnen met de testset.
@@ -84,7 +84,7 @@ Soort, activiteit, methode, kleed en telmethode worden opgeslagen als **waarnemi
 3. LLM-interpretatie met tools, eerst getest met tekstinvoer (zonder spraak). *(klaar)*
 4. Opname en Whisper-koppeling, met tijd en GPS bij start van de opname. *(klaar: knop tikken of vasthouden, `gpt-4o-transcribe` met soortnamen en bijnamen in de prompt)*
 5. Review: trilfeedback, afgelopen wandelingen kunnen openen, overzichtslijst met bewerken (soort, aantal, gedrag, verwijderen), onzekere waarnemingen nalopen, audio terugluisteren. *(klaar, plus gebiedsnaam van waarneming.nl bij elke waarneming in PR #18)*
-6. CSV-export voor waarneming.nl. *(klaar: bulkimport van waarneming.nl in PR #19; eerste echte import nog testen)*
+6. CSV-export voor waarneming.nl. *(klaar: bulkimport van waarneming.nl in PR #19; echte import getest op 11 okt, werkt)*
 7. Opslaan en exporteren van de testset. Bewust na de CSV-export: de testset wordt pas nuttig na een paar wandelingen, en de gegevens ervoor (audio, transcript, LLM-uitvoer, gecorrigeerde waarneming) worden vanaf stap 4 al bewaard.
 
 ## Wanneer is de MVP geslaagd?
