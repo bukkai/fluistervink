@@ -53,7 +53,7 @@
 
 <p class="muted">
   Iets gemerkt tijdens het vogelen? Begin een uitspraak met <em>"feedback"</em>, bijvoorbeeld
-  <em>"feedback, hij trilde niet"</em>. Feedback gaat na de wandeling mee naar de ontwikkelaar,
+  <em>"feedback, hij herkende blako niet, terwijl dat toch echt bladkoning betekent"</em>. Feedback gaat na de wandeling mee naar de ontwikkelaar,
   als delen aanstaat.
 </p>
 

@@ -2,6 +2,9 @@
   // Uitleg voor testers en andere geïnteresseerden: hoe je de app gebruikt en
   // wat AI er wel en niet in doet. Kort en zonder technische termen. Houd de
   // trilpatronen gelijk met feedback.ts.
+
+  /** Trillen werkt nu niet op de telefoon (11 okt); blok weer tonen als dat is opgelost. */
+  const SHOW_VIBRATION = false;
 </script>
 
 <a class="back" href="#/">Terug</a>
@@ -38,6 +41,7 @@
   </div>
 </section>
 
+{#if SHOW_VIBRATION}
 <section class="card">
   <div class="card-body">
     <h3>Trillen</h3>
@@ -57,6 +61,7 @@
     </dl>
   </div>
 </section>
+{/if}
 
 <section class="card">
   <div class="card-body">
@@ -72,7 +77,8 @@
   <div class="card-body">
     <h3>Feedback geven</h3>
     <p>
-      Begin een uitspraak met <em>"feedback"</em>, bijvoorbeeld <em>"feedback, hij trilde niet"</em>.
+      Begin een uitspraak met <em>"feedback"</em>, bijvoorbeeld
+      <em>"feedback, hij herkende blako niet, terwijl dat toch echt bladkoning betekent"</em>.
       Dat wordt geen waarneming, maar een opmerking voor de ontwikkelaar. Terug te lezen bij
       <a href="#feedback">Feedback</a>.
     </p>

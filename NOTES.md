@@ -45,6 +45,7 @@ Gemerged t/m **#48**: #46 kaart ↔ lijst in de review, #47 opruimen (alles/lege
 - **#58** melding "Wandeling opgeslagen" in saliegroen.
 - **Privacy (branch `privacy`):** pagina `#privacy` in het menu; delen pas na toestemming (vraag op het hoofdscherm, ook voor wie de app al had: tot die tijd deelt de app niets); Workers Logs zonder invocation logs (coördinaten van `/api/area` stonden in de URL); `npm run feedback -- wipe <tester>`. Na het mergen: eerste tester even laten weten dat de vraag komt.
 - **#60** delen naar het Feedback-scherm, JSON-export/import naar scherm Developer (alleen eigenaar). **Hoe werkt het?** (branch `hoe-werkt-het`): pagina `#uitleg`.
+- **Trillen werkt niet** op de telefoon (11 okt, gemeld door eigenaar). Uitzoeken (log: `vibrate_blocked`? instelling van Android?). Tot dan is het blok Trillen op `#uitleg` verborgen (`SHOW_VIBRATION` in `src/lib/HowItWorks.svelte`).
 - Nog open voor testers: feedback typen en verwijderen op het Feedback-scherm, uitgavenlimieten bij OpenAI en Anthropic (handmatig). Twee exemplaren tegelijk is al opgelost (`src/lib/instance.svelte.ts`).
 
 Daarna:
