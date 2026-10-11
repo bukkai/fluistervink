@@ -46,9 +46,13 @@
     }
   }
 
+  /** Met opnames: voor de testset, of om terug te kunnen luisteren na importeren */
+  let withAudio = $state(false);
+
   async function exportData() {
     const date = new Date().toISOString().slice(0, 10);
-    download(await exportAllJson(), `fluistervink-${date}.json`);
+    const suffix = withAudio ? '-met-opnames' : '';
+    download(await exportAllJson({ withAudio }), `fluistervink-${date}${suffix}.json`);
   }
 </script>
 
@@ -72,6 +76,10 @@
 <section class="card">
   <div class="card-head"><h2>Gegevens</h2></div>
   <div class="card-body stack">
+    <label class="check">
+      <input type="checkbox" bind:checked={withAudio} />
+      Met opnames (groter bestand; nodig voor de testset)
+    </label>
     <button class="btn secondary block" onclick={exportData}>Alle gegevens exporteren (JSON)</button>
     <label class="btn secondary block file">
       Wandelingen importeren (JSON)
@@ -81,8 +89,8 @@
       <p class="message">{importMessage}</p>
     {/if}
     <p class="hint">
-      Importeren leest een eerdere export weer in. Alleen wandelingen die er nog niet zijn; opnames
-      zitten niet in de export.
+      Importeren leest een eerdere export weer in. Alleen wandelingen die er nog niet zijn;
+      opnames alleen als ze in de export zitten.
     </p>
   </div>
 </section>
@@ -106,6 +114,15 @@
 
   label input {
     font-weight: 400;
+  }
+
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: var(--fg);
   }
 
   .file {

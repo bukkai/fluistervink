@@ -2,10 +2,28 @@ import { db, type DeletedObservation, type Observation, type Session, type Utter
 import { APP_VERSION, logEvent } from './log';
 
 // Ruwe export van alle gegevens, als vangnet tijdens de ontwikkeling, en het
-// terugzetten ervan. Audio gaat niet mee (een Blob past niet in JSON); alleen
-// de grootte.
+// terugzetten ervan. Standaard zonder audio, alleen de grootte; met
+// `withAudio` gaat elke opname mee als data-URL (`audioData`), voor de testset
+// (zie scripts/testset.mjs). Dat maakt het bestand een stuk groter.
 
-export async function exportAllJson(): Promise<Blob> {
+/** Opname als data-URL ("data:audio/webm;codecs=opus;base64,…"), met het formaat erin */
+function toDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+/** Terug naar een opname, met precies het formaat van de data-URL */
+function fromDataUrl(url: string): Blob {
+  const [head, data] = url.split(',');
+  const type = head.replace(/^data:/, '').replace(/;base64$/, '');
+  return new Blob([Uint8Array.from(atob(data), (c) => c.charCodeAt(0))], { type });
+}
+
+export async function exportAllJson({ withAudio = false } = {}): Promise<Blob> {
   const [sessions, utterances, observations, deletedObservations, events] = await Promise.all([
     db.sessions.toArray(),
     db.utterances.toArray(),
@@ -17,7 +35,13 @@ export async function exportAllJson(): Promise<Blob> {
     exportedAt: new Date().toISOString(),
     appVersion: APP_VERSION,
     sessions,
-    utterances: utterances.map(({ audio, ...u }) => ({ ...u, audioBytes: audio?.size })),
+    utterances: await Promise.all(
+      utterances.map(async ({ audio, ...u }) => ({
+        ...u,
+        audioBytes: audio?.size,
+        audioData: withAudio && audio ? await toDataUrl(audio) : undefined,
+      })),
+    ),
     observations,
     deletedObservations,
     events,
@@ -45,8 +69,7 @@ export interface ImportResult {
 /**
  * Leest een JSON-export (van `exportAllJson`) terug in. Alleen wandelingen die
  * er nog niet zijn, met hun uitspraken, waarnemingen en prullenbak; het
- * gebeurtenissenlog niet. Opnames zitten niet in de export, dus terugluisteren
- * kan niet bij geïmporteerde wandelingen.
+ * gebeurtenissenlog niet. Opnames alleen als de export ze bevat.
  */
 export async function importJson(file: File): Promise<ImportResult> {
   const data = JSON.parse(await file.text());
@@ -54,7 +77,12 @@ export async function importJson(file: File): Promise<ImportResult> {
     throw new Error('Dit is geen export van Fluistervink.');
   }
   const sessions: Session[] = data.sessions;
-  const utterances: (Utterance & { audioBytes?: number })[] = data.utterances;
+  type ExportedUtterance = Omit<Utterance, 'audio'> & { audioBytes?: number; audioData?: string };
+  const exported: ExportedUtterance[] = data.utterances;
+  const utterances: Utterance[] = exported.map(({ audioBytes: _, audioData, ...u }) => ({
+    ...u,
+    audio: audioData ? fromDataUrl(audioData) : undefined,
+  }));
   const observations: Observation[] = data.observations ?? [];
   const deleted: DeletedObservation[] = data.deletedObservations ?? [];
 
@@ -77,10 +105,14 @@ export async function importJson(file: File): Promise<ImportResult> {
     await db.utterances.bulkAdd(
       utterances
         .filter((u) => ids.has(u.sessionId))
-        .map(({ audioBytes: _, ...u }) =>
-          // Zonder opname valt er niets meer te verwerken; niet in de wachtrij zetten
+        .map((u) =>
+          // Niet in de wachtrij zetten; met een opname kan "Opnieuw" nog
           u.status === 'pending' || u.status === 'processing'
-            ? { ...u, status: 'failed' as const, error: 'Geïmporteerd zonder opname' }
+            ? {
+                ...u,
+                status: 'failed' as const,
+                error: u.audio ? 'Geïmporteerd voordat hij verwerkt was' : 'Geïmporteerd zonder opname',
+              }
             : u,
         ),
     );
