@@ -178,8 +178,8 @@
     margin-top: 0.75rem;
     padding: 0.85rem 1rem;
     border-radius: var(--radius);
-    background: var(--brand);
-    color: var(--on-brand);
+    background: var(--success);
+    color: white;
   }
 
   .saved strong {

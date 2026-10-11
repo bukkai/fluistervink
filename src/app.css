@@ -16,6 +16,8 @@
   --green: var(--brand);
   /* Tekst, randen en kleine knoppen voor verwijderen en stoppen */
   --red: #9c5f37;
+  /* Gelukt (bv. "Wandeling opgeslagen"): saliegroen, witte tekst 5,3:1 */
+  --success: #55734f;
   /* Onzeker: goudgeel, duidelijk anders dan het oranje van verwijderen */
   --amber: #7d6210;
   --amber-soft: #f8f0d8;
