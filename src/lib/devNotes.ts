@@ -10,6 +10,36 @@ import { devNoteText } from './observations';
 /** Zoveel eerdere uitspraken gaan als context mee in de export. */
 const CONTEXT_SIZE = 3;
 
+/**
+ * `sessionId` van feedback die buiten een wandeling getypt is ("losse
+ * feedback"). Gaat apart mee bij het delen (share.ts), zodat een tester ook
+ * iets kan melden als een wandeling starten niet eens lukt.
+ */
+export const NO_SESSION = '';
+
+/**
+ * Getypte feedback, op het Feedback-scherm. Hoort bij de lopende wandeling
+ * als die er is, anders is het losse feedback. Gaat niet langs het model.
+ */
+export async function addTypedNote(text: string, sessionId = NO_SESSION): Promise<void> {
+  const now = Date.now();
+  await db.utterances.add({
+    id: crypto.randomUUID(),
+    sessionId,
+    recordedAt: now,
+    savedAt: now,
+    transcript: text.trim(),
+    status: 'done',
+    kind: 'dev_note',
+    result: 'note',
+  });
+}
+
+/** Feedback weghalen, met de opname als die er is. Echt weg, geen prullenbak. */
+export async function deleteNote(id: string): Promise<void> {
+  await db.utterances.delete(id);
+}
+
 /** Alle feedback, nieuwste eerst. */
 export async function listDevNotes(): Promise<Utterance[]> {
   const all = await db.utterances.orderBy('recordedAt').reverse().toArray();
@@ -58,11 +88,12 @@ export async function devNotesMarkdown(notes: Utterance[]): Promise<string> {
         );
       }
 
-      const before = (
-        await db.utterances.where('sessionId').equals(note.sessionId).sortBy('recordedAt')
-      )
-        .filter((u) => u.recordedAt < note.recordedAt)
-        .slice(-CONTEXT_SIZE);
+      const before =
+        note.sessionId === NO_SESSION
+          ? []
+          : (await db.utterances.where('sessionId').equals(note.sessionId).sortBy('recordedAt'))
+              .filter((u) => u.recordedAt < note.recordedAt)
+              .slice(-CONTEXT_SIZE);
       if (before.length) {
         lines.push('Uitspraken ervoor:');
         for (const u of before) lines.push(`- "${u.transcript ?? "(opname, nog niet verstaan)"}" → ${resultLabel(u)}`);
