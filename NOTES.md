@@ -26,25 +26,19 @@ Gemerged (10 okt). Nog doen: eerste echte import, zie hieronder.
 
 ## Volgende stap (11 okt, avond)
 
-Alles t/m **PR #45** is gemerged: #44 (één exemplaar van de app tegelijk via Web Locks, melding bij een tweede venster, meer metingen per stap; zie "Tweede wandeling") en #45 (nieuw logo, app-icoon, laadscherm, kleuren op het logo afgestemd).
+Gemerged t/m **#48**: #46 kaart ↔ lijst in de review, #47 opruimen (alles/lege aanvinken), #48 woordenlijst (alle codes in het formulier; afkortingen leeftijd/kleed, nocmig in de prompt; kleed en geslacht verplicht met `null`).
 
-**Open: PR #46** kaart en lijst gekoppeld in de review (branch `kaart-en-lijst`). Tik op een waarneming in het popup-venster → lijst scrolt ernaartoe en hij licht op; "±35 m" in de review → stip op de kaart met popup (kaarten-app-link staat nu in het popup-venster). Getest in de browser; op de telefoon nalopen, mergen vóór de demo (13 okt).
+**Stap 7, testset — open:**
+- **PR #49** JSON-export met opnames (vinkje bij Instellingen); import zet ze terug.
+- **PR #50** `npm run testset -- <export.json>`: haalt uitspraken opnieuw door het model (en met `--stt …` door een andere spraakherkenning) en scoort tegen de nagelopen waarnemingen. `--model origineel` = nulmeting zonder API. Exports en resultaten in `testset/` (gitignored); onbruikbare labels in `testset/uitsluiten.txt`. Uitleg bovenin `scripts/testset.mjs` en in de PR.
+- Eerste run op de export van 10 okt (zonder opnames): destijds 41/44, nu 36/44, waarvan 5 ruis door oude labels (staan in `uitsluiten.txt`). Aandachtspunten prompt: "cirkelend ten westen van hier" ≠ overvliegend west; "klinkt als een winterkoning, even in Merlin checken" wordt een waarneming. Het model is niet bij elke run gelijk.
+- STT met de macOS-stem: `gpt-4o-mini-transcribe` verstond "keep" als "geen"; `gpt-4o-transcribe` goed en sneller.
 
-**Open: PR #47** Opruimen: "Alles/Niets aanvinken" en "Alle lege" (leeg = geen waarnemingen én geen dev notes); aantal dev notes per wandeling en in de bevestiging.
+Daarna:
 
-**Open: PR #48** woordenlijst: formulier, weergave en export kennen alle codes van waarneming.nl (gedrag/methode/kleed, veldcodes bovenaan, rest onder "Meer"). Prompt: afkortingen leeftijd/kleed (1kj, 2w, juv, eclips, …), nestbouw, voer, bezet nest, pas uitgevlogen, gewond, slaapplaats, nocmig → op geluidsrecorder. Kleed en geslacht verplicht met `null` (anders liet het model ze weg). 18 testzinnen met het echte model goed.
-
-De drie PR's mergen samen zonder conflict (nagegaan). Prompt testen zonder telefoon: script dat de echte `interpret()` via Vite in Node laadt en de lokale proxy aanroept (zie PR #48); een goede basis voor stap 7.
-
-Daarna, in volgorde (de kleine punten van stap 4 hieronder zijn klaar in #47 en #48):
-
-1. **Derde wandeling** met de versie van #44: is de vertraging weg? Na afloop JSON-export (nu met tijden per stap en id per exemplaar) aan Claude geven.
-2. Bevindingen van wandeling 2/3 verwerken (prompt, bijnamen, Whisper-prompt; bv. "tortelduif").
-3. **Stap 7, testset** (roadmap B).
-4. ~~Klein: alle lege / alles aanvinken; afkortingen leeftijd/kleed; meer gedragingen en methoden~~ (#47, #48).
-5. F. Vitest. Mijlpaal na 3–4 wandelingen.
-
-Tip: draait er in een andere Claude-sessie al een dev-server op 5173, dan tijdelijk een tweede configuratie op 5174 in `.claude/launch.json`.
+1. **Derde wandeling**, daarna exporteren **met opnames** en `npm run testset` draaien: per run met `--stt gpt-4o-transcribe` en `gpt-4o-mini-transcribe` (en `whisper-1`), en eventueel `--model claude-sonnet-5-5`. Ook nagaan of de vertraging van #44 weg is.
+2. Prompt verbeteren met wat de testset laat zien (punten hierboven, "tortelduif"), telkens nagaan met de testset.
+3. F. Vitest. Mijlpaal na 3–4 wandelingen.
 
 ### Eerder (10 okt)
 
