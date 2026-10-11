@@ -4,7 +4,7 @@
   import { download } from './export';
   import { renameSession } from './area';
   import { countSpecies, listObservations } from './observations';
-  import { formatDuration, resumeSession } from './sessions';
+  import { deleteSessions, formatDuration, resumeSession } from './sessions';
   import ObservationMap from './ObservationMap.svelte';
   import SessionLog from './SessionLog.svelte';
   import { IMPORT_URL, buildExport, markExported } from './waarnemingExport';
@@ -21,6 +21,13 @@
   async function resume() {
     if (!confirm('Deze wandeling voortzetten?')) return;
     if (await resumeSession(session.id)) location.hash = '';
+  }
+
+  async function remove() {
+    const warning = session.exportedAt ? '' : '\n\nDeze wandeling is nog niet geëxporteerd.';
+    if (!confirm(`Wandeling voorgoed verwijderen, met alle waarnemingen en opnames?${warning}`)) return;
+    await deleteSessions([session.id]);
+    location.hash = 'wandelingen';
   }
 
   async function rename() {
@@ -127,11 +134,13 @@
   </p>
 </section>
 
-{#if resumable}
-  <p class="resume muted">
+<p class="footer muted">
+  {#if resumable}
     Per ongeluk gestopt? <button class="link" onclick={resume}>Wandeling voortzetten</button>
-  </p>
-{/if}
+    <br />
+  {/if}
+  <button class="link danger" onclick={remove}>Wandeling verwijderen</button>
+</p>
 
 <style>
   a {
@@ -222,7 +231,12 @@
     color: white;
   }
 
-  .resume {
+  .footer {
     font-size: 0.9rem;
+    line-height: 2;
+  }
+
+  .danger {
+    color: var(--red);
   }
 </style>
