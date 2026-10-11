@@ -256,6 +256,11 @@ Typen werkt, ook met de ingebouwde spraakinvoer van Android (die is matig). Besl
   - **Per omgeving apart:** geheimen (`ACCESS_CODE`, `ACCESS_CODES`, API-sleutels; aparte sleutels maken de kosten per omgeving zichtbaar), KV-namespace `FEEDBACK`, en de scripts `npm run tester` / `npm run feedback` met een keuze voor de omgeving.
   - **Gegevens zijn per adres:** IndexedDB en de geïnstalleerde PWA horen bij het domein. Wandelingen op beta staan niet op prod; overzetten via JSON-export/-import (#40). Wel nagaan dat prod een export van een nieuwere beta (hogere db-versie) netjes weigert of aankan.
   - **Herkenbaar maken:** op beta een duidelijk label "Beta" en een andere naam/kleur in het manifest ("Fluistervink beta"), zodat je ze op het startscherm niet verwart. Versie of commit in Instellingen staat er al.
+- Idee eigenaar (11 okt): actief een nieuwe versie ophalen, zonder opnieuw installeren. Nu: `registerType: 'autoUpdate'` zonder eigen registratiecode (`virtual:pwa-register` wordt nergens gebruikt). De nieuwe service worker neemt het wel direct over, maar de browser zoekt alleen naar een update bij het laden van de app, en de pagina herlaadt niet. Een PWA die Android in het geheugen houdt, blijft dus op de oude versie tot je hem echt afsluit (vermoedelijk de ervaring van de eigenaar; nog nagaan op de telefoon). Voorstel:
+  - Zelf registreren via `virtual:pwa-register` (Svelte: `registerSW`), en actief controleren: elk uur `registration.update()` en bij terugkeer naar de app (`visibilitychange`).
+  - Nieuwe versie gevonden: niet zomaar herladen. Tijdens een opname of met een volle wachtrij wachten. Op een rustig moment (geen opname, wachtrij leeg) vanzelf herladen, of een balkje "Nieuwe versie – vernieuwen". Gegevens staan in IndexedDB, dus herladen verliest niets behalve een lopende opname.
+  - Na het herladen kort melden "Bijgewerkt naar versie …", eventueel met wat er nieuw is (sluit aan bij de beta-/prodsplitsing en de feedback van testers).
+  - Optioneel: `/api/ping` geeft de versie van de server terug. Wijkt die af van de app, dan meteen controleren op een update; zo blijven app en proxy niet lang uit de pas lopen.
 
 ## Overstappen tussen computers
 
