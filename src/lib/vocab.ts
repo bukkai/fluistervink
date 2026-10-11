@@ -41,6 +41,13 @@ export function getSpecies(id: number): Species | undefined {
   return speciesById.get(id);
 }
 
+const promptSpeciesByName = new Map(species.map((s) => [s.name.toLowerCase(), s]));
+
+/** Soort uit de lijst in de prompt, op naam (hoofdletters maken niet uit) */
+export function findPromptSpecies(name: string): Species | undefined {
+  return promptSpeciesByName.get(name.trim().toLowerCase());
+}
+
 /** Mag het model deze soort kiezen? */
 export function isPromptSpecies(id: number): boolean {
   return promptSpeciesIds.has(id);

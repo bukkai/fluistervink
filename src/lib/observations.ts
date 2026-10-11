@@ -250,6 +250,9 @@ async function processUtterance(utterance: Utterance): Promise<void> {
     const recent = await listObservations(utterance.sessionId);
     contextMs = Date.now() - contextStart;
     interpretation = await interpret(transcript, recent);
+    if (interpretation.warnings.length) {
+      logEvent('species_id_fixed', { warnings: interpretation.warnings }, ids);
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     // In de log, want een volgende poging overschrijft de fout bij de uitspraak

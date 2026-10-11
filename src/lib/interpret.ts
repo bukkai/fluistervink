@@ -10,6 +10,7 @@ import {
   codeName,
   countingMethods,
   getSpecies,
+  findPromptSpecies,
   isPromptSpecies,
   lifeStages,
   methods,
@@ -55,6 +56,8 @@ export interface Interpretation {
   actions: Action[];
   /** Tool calls die niet geldig waren (onbekende soort, verkeerde verwijzing) */
   rejected: string[];
+  /** Wat de app herstelde, zoals een soort-ID dat niet bij de naam hoorde */
+  warnings: string[];
   /** Volledige respons van de API, bewaard voor de testset */
   response: Anthropic.Message;
   /** De recente waarnemingen zoals het model ze kreeg */
@@ -71,6 +74,12 @@ const enumOf = (codes: Code[]) => codes.map((c) => c.id);
 
 /** Velden die zowel bij toevoegen als bij aanpassen kunnen. */
 const fieldProperties = {
+  // Eerst de naam, dan het ID: met de naam vlak ervoor kiest het model minder
+  // vaak het ID van een soort die erop lijkt (Boomklever 70, Boomkruiper 71)
+  species_name: {
+    type: 'string',
+    description: 'Naam van de soort, precies zoals in de soortenlijst ("Boomkruiper"). Altijd samen met species_id.',
+  },
   species_id: {
     type: 'integer',
     description: 'ID uit de soortenlijst in de systeemprompt.',
@@ -125,6 +134,7 @@ const TOOLS: Anthropic.Tool[] = [
       // Gedrag, methode, kleed en geslacht verplicht: optionele velden laat het
       // model te snel weg. Kleed en geslacht zijn null als ze niet genoemd worden.
       required: [
+        'species_name',
         'species_id',
         'count',
         'counting_method_id',
@@ -213,7 +223,7 @@ Bevat een uitspraak allebei, verdeel het dan: "zat verderop in een boom, met een
 
 ## Soorten
 
-Gebruik alleen een ID uit de soortenlijst hieronder; verzin nooit een ID. Spraakherkenning maakt fouten: kies de soort die het meest waarschijnlijk bedoeld is en zet dan uncertain op true met een korte reden. Algemene namen ("een meeuw", "een eend") → de verzamelsoort ("Meeuw onbekend", "Eend onbekend") als die bestaat. Is de soort echt niet te bepalen, maar is er duidelijk wel een vogel gezien, kies dan de best passende verzamelsoort met uncertain ("een vogel" → Vogel onbekend).
+Gebruik alleen een ID uit de soortenlijst hieronder; verzin nooit een ID. Schrijf bij elke soort eerst species_name, de naam precies zoals hij in de soortenlijst staat, en dan het species_id dat in de lijst bij díe naam staat. Let op soorten met namen die op elkaar lijken (Boomkruiper en Boomklever). Spraakherkenning maakt fouten: kies de soort die het meest waarschijnlijk bedoeld is en zet dan uncertain op true met een korte reden. Algemene namen ("een meeuw", "een eend") → de verzamelsoort ("Meeuw onbekend", "Eend onbekend") als die bestaat. Is de soort echt niet te bepalen, maar is er duidelijk wel een vogel gezien, kies dan de best passende verzamelsoort met uncertain ("een vogel" → Vogel onbekend).
 
 Noemt de gebruiker duidelijk een soort die niet in de lijst staat (een zeldzame dwaalgast, bv. "dwergaalscholver"), kies dan de best passende verzamelsoort (anders Vogel onbekend) met uncertain, en zet in uncertain_reason letterlijk de genoemde naam: "Gezegd: dwergaalscholver (niet in de lijst)". Kies dan geen andere soort die er toevallig op lijkt. De gebruiker zet de soort thuis zelf goed.
 
@@ -325,16 +335,17 @@ function describe(obs: Observation): string {
 export function parseResponse(
   response: Anthropic.Message,
   context: Observation[],
-): { actions: Action[]; rejected: string[] } {
+): { actions: Action[]; rejected: string[]; warnings: string[] } {
   const actions: Action[] = [];
   const rejected: string[] = [];
+  const warnings: string[] = [];
   for (const block of response.content) {
     if (block.type !== 'tool_use') continue;
-    const result = toAction(block, context);
+    const result = toAction(block, context, warnings);
     if (typeof result === 'string') rejected.push(result);
     else actions.push(result);
   }
-  return { actions, rejected };
+  return { actions, rejected, warnings };
 }
 
 /**
@@ -376,10 +387,11 @@ export async function interpret(
     throw new Error('Het model weigerde de uitspraak te verwerken');
   }
 
-  const { actions, rejected } = parseResponse(response, context);
+  const { actions, rejected, warnings } = parseResponse(response, context);
   return {
     actions,
     rejected,
+    warnings,
     response,
     context: contextText,
     contextIds: context.map((obs) => obs.id),
@@ -392,6 +404,7 @@ export async function interpret(
 
 interface RawFields {
   ref?: number;
+  species_name?: string;
   species_id?: number;
   count?: number;
   add_count?: number;
@@ -409,8 +422,15 @@ interface RawFields {
 const validCode = (codes: Code[], id: number | undefined) =>
   id === undefined || codes.some((c) => c.id === id);
 
-/** Geeft een actie terug, of een omschrijving van wat er mis was. */
-function toAction(block: Anthropic.ToolUseBlock, context: Observation[]): Action | string {
+/**
+ * Geeft een actie terug, of een omschrijving van wat er mis was. Wat de app
+ * zelf herstelde (soortnaam en ID die niet bij elkaar horen) komt in `warnings`.
+ */
+function toAction(
+  block: Anthropic.ToolUseBlock,
+  context: Observation[],
+  warnings: string[],
+): Action | string {
   const input = block.input as RawFields;
 
   if (block.name === 'undo') return { type: 'undo' };
@@ -432,6 +452,21 @@ function toAction(block: Anthropic.ToolUseBlock, context: Observation[]): Action
   // Weglaten wat het model niet meegaf, zodat een update alleen wijzigt wat bedoeld is
   for (const key of Object.keys(fields) as (keyof ObservationFields)[]) {
     if (fields[key] === undefined) delete fields[key];
+  }
+
+  // Naam en ID horen bij elkaar; zo niet, dan geldt de naam (het model kiest
+  // soms het ID van een soort die erop lijkt)
+  if (input.species_name) {
+    const named = findPromptSpecies(input.species_name);
+    if (!named) {
+      warnings.push(`${block.name}: naam "${input.species_name}" staat niet in de lijst; ID ${fields.speciesId} aangehouden`);
+    } else if (fields.speciesId !== named.id) {
+      if (fields.speciesId !== undefined) {
+        const other = getSpecies(fields.speciesId)?.name ?? 'onbekend';
+        warnings.push(`${block.name}: ID ${fields.speciesId} (${other}) hoort niet bij "${named.name}"; ${named.id} gebruikt`);
+      }
+      fields.speciesId = named.id;
+    }
   }
 
   if (fields.speciesId !== undefined && !isPromptSpecies(fields.speciesId)) {
