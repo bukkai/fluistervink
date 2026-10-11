@@ -16,6 +16,9 @@ import { INSTANCE_ID } from './instance.svelte';
 import { APP_VERSION, logEvent, wasHiddenSince } from './log';
 import type { Recording } from './recorder.svelte';
 import { TRANSCRIBE_MODEL, transcribe, transcribePromptVersion } from './transcribe';
+import { devNoteText } from './devNotePrefix';
+
+export { devNoteText };
 import { DEFAULT_ACTIVITY, DEFAULT_COUNTING_METHOD, DEFAULT_METHOD, getSpecies } from './vocab';
 
 // Local-first verwerking: elke uitspraak wordt eerst opgeslagen (status
@@ -214,16 +217,6 @@ function isCurrentAttempt(latest: Utterance | undefined, attempts: number): late
   return latest?.status === 'processing' && latest.attempts === attempts;
 }
 
-/**
- * "Dev note, …" aan het begin van een uitspraak, ook zoals spraakherkenning
- * het vaak verstaat ("def note", "devnoot", "Dev. Note:"). Geeft de tekst
- * erna terug, of undefined als het geen dev note is.
- */
-export function devNoteText(transcript: string): string | undefined {
-  const match = /^\s*(dev|def|deaf)\W*(notes?|noot|nood)\b[\s,:;.!-]*/i.exec(transcript);
-  return match ? transcript.slice(match[0].length).trim() : undefined;
-}
-
 async function processUtterance(utterance: Utterance): Promise<void> {
   const startedAt = Date.now();
   const attempts = (utterance.attempts ?? 0) + 1;
@@ -288,6 +281,7 @@ async function processUtterance(utterance: Utterance): Promise<void> {
     model: MODEL,
     promptVersion: await promptVersion,
     context: interpretation.context,
+    contextIds: interpretation.contextIds,
     instance: INSTANCE_ID,
     startedAt,
     finishedAt: Date.now(),

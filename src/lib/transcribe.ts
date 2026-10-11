@@ -30,7 +30,11 @@ export const transcribePromptVersion: Promise<string> = crypto.subtle
     [...new Uint8Array(hash).slice(0, 4)].map((b) => b.toString(16).padStart(2, '0')).join(''),
   );
 
-export async function transcribe(audio: Blob): Promise<{ text: string; timing: Timing }> {
-  const { data, timing } = await transcribeAudio(audio, { model: TRANSCRIBE_MODEL, prompt: PROMPT });
+/** `model`: alleen anders voor de testset (scripts/testset.mjs) */
+export async function transcribe(
+  audio: Blob,
+  model = TRANSCRIBE_MODEL,
+): Promise<{ text: string; timing: Timing }> {
+  const { data, timing } = await transcribeAudio(audio, { model, prompt: PROMPT });
   return { text: data.text.trim(), timing };
 }
