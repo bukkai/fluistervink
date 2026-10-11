@@ -109,4 +109,5 @@ Na drie à vier echte wandelingen is het grootste deel van de waarnemingen zonde
 - Werk in kleine stappen: één feature per branch en pull request, met een duidelijke beschrijving.
 - De eigenaar programmeert zelf weinig maar heeft een front-end-achtergrond (JavaScript): leg keuzes kort uit in de PR-beschrijving.
 - Houd dit bestand actueel wanneer ontwerpkeuzes veranderen.
+- Tests: `npm test` (Vitest, `src/**/*.test.ts`), met een database in het geheugen (fake-indexeddb) en een nagebootst model; nooit echte API-aanroepen. Bij elke PR draaien `check`, de tests en een proefbuild in GitHub Actions (`.github/workflows/check.yml`). Nieuwe logica in de wachtrij, de validatie van het model of de export krijgt een test.
 - `NOTES.md` is het werklog om tussen computers te schakelen: lees het aan het begin van een sessie, werk het bij aan het eind. Kleine notitie- en documentatiewijzigingen zoals deze mogen direct op `main`, zonder branch of PR.
