@@ -11,6 +11,7 @@
   import ActiveSession from './lib/ActiveSession.svelte';
   import { getAccessCode } from './lib/api';
   import { listDevNotes } from './lib/devNotes';
+  import { vibrate } from './lib/feedback';
   import { processQueue } from './lib/observations';
   import DevNotes from './lib/DevNotes.svelte';
   import PastSession from './lib/PastSession.svelte';
@@ -35,6 +36,8 @@
   let route = $derived(hash.replace(/^#\/?/, ''));
   const onHashChange = () => {
     hash = location.hash;
+    // De bevestiging na het stoppen alleen tonen tot je dat scherm verlaat
+    if (justStopped && !hash.endsWith(justStopped)) justStopped = undefined;
     menuOpen = false;
     window.scrollTo(0, 0);
   };
@@ -65,11 +68,16 @@
     requestPersistentStorage();
   }
 
+  /** Net gestopte wandeling, voor de bevestiging "opgeslagen" */
+  let justStopped = $state<string>();
+
   /** Na het stoppen meteen naar het nalopen van de wandeling */
   async function stop() {
     if (!active || !confirm('Wandeling stoppen?')) return;
     const id = active.id;
     await stopSession(id);
+    justStopped = id;
+    vibrate('saved');
     location.hash = `wandeling/${id}`;
   }
 
@@ -108,7 +116,11 @@
   {:else if route === 'wandelingen'}
     <PastSessions sessions={past} />
   {:else if opened}
-    <PastSession session={opened} resumable={!active && opened === past[0]} />
+    <PastSession
+      session={opened}
+      resumable={!active && opened === past[0]}
+      justSaved={opened.id === justStopped}
+    />
   {:else if route === 'instellingen'}
     <Settings />
   {:else if route === 'devnotes'}

@@ -12,8 +12,15 @@
   // Een afgelopen wandeling nalopen en exporteren. Hier kom je ook meteen
   // na "Stop wandeling".
 
-  /** `resumable`: de meest recente wandeling, en er loopt geen andere */
-  let { session, resumable }: { session: Session; resumable: boolean } = $props();
+  /**
+   * `resumable`: de meest recente wandeling, en er loopt geen andere.
+   * `justSaved`: net gestopt; dan een bevestiging bovenaan.
+   */
+  let {
+    session,
+    resumable,
+    justSaved = false,
+  }: { session: Session; resumable: boolean; justSaved?: boolean } = $props();
 
   let observations = $derived(liveQuery(() => listObservations(session.id)));
   let uncertainCount = $derived($observations?.filter((obs) => obs.uncertain).length ?? 0);
@@ -68,6 +75,13 @@
 </script>
 
 <a class="back" href="#wandelingen">← Wandelingen</a>
+
+{#if justSaved}
+  <div class="saved" role="status">
+    <strong>✓ Wandeling opgeslagen</strong>
+    <p>Alles staat veilig op je telefoon. Loop de waarnemingen na en exporteer ze naar waarneming.nl.</p>
+  </div>
+{/if}
 
 <header>
   <h2>{session.place?.name ?? 'Wandeling'}</h2>
@@ -136,6 +150,23 @@
 <style>
   a {
     color: var(--green);
+  }
+
+  .saved {
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    background: var(--green);
+    color: white;
+  }
+
+  .saved strong {
+    font-size: 1.1rem;
+  }
+
+  .saved p {
+    margin: 0.25rem 0 0;
+    font-size: 0.9rem;
   }
 
   header h2 {
