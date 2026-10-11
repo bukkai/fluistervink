@@ -235,6 +235,14 @@ Typen werkt, ook met de ingebouwde spraakinvoer van Android (die is matig). Besl
   - **Alleen op eigen initiatief:** CSV naar waarneming.nl (geen audio), JSON-export, kaartlinks naar Google Maps/OSM.
   - **Controle:** wandelingen verwijderen (echt weg, met audio), prullenbak voor waarnemingen, export van alles. Mogelijke uitbreidingen: alleen audio wissen en transcripten bewaren, audio automatisch wissen na X dagen of na export, alles wissen met één knop, en "audio niet bewaren" als instelling (raakt aan de testset, stap 7).
   - Hangt samen met het feedbackidee (inzenden met audio en locaties) en met de soortenstatistieken: die pagina moet ook dat uitleggen zodra het er is. Bij echte betatesters is zo'n pagina eigenlijk verplicht (AVG: audio en locatie zijn persoonsgegevens).
+- Idee eigenaar (11 okt): pagina "Hoe werkt het" in het menu, voor de geïnteresseerde leek die ChatGPT of Claude wel eens heeft gebruikt. Doel: uitleg over het gebruik én open zijn over het gebruik van AI. Kort, geen technisch verhaal. Opzet:
+  - **Gebruik:** knop tikken of vasthouden en inspreken. Voorbeelden: "zes overvliegende houtduiven", "roepje vink", "schatting 500 spreeuwen", "nee, keep in plaats van vink", "nog drie erbij", "verwijder die laatste", "mogelijk woudaap" (wordt onzeker). Jargon en bijnamen werken ("tova", "KBV"). Trillen: één keer = opgeslagen, twee keer = niet begrepen, afwijkend = onzeker. "Dev note …" (later "feedback") = opmerking over de app. Thuis: nalopen, onzekere waarnemingen bekijken, exporteren naar waarneming.nl.
+  - **Wat er onder de motorkap gebeurt**, in drie stappen:
+    1. *Spraak naar tekst:* een spraakherkenningsmodel van OpenAI (familie van Whisper) maakt tekst van je opname. Het krijgt een lijst vogelnamen mee, zodat "tjiftjaf" niet "tsjif tsjaf" wordt.
+    2. *Tekst naar waarneming:* een taalmodel (Claude van Anthropic, net als in de chat-app, maar een klein en snel model) leest de zin en kiest een actie: toevoegen, aanpassen, verwijderen. Het mag alleen kiezen uit een vaste lijst Nederlandse soorten, dus het kan geen soorten verzinnen. Weet het iets niet zeker, dan zet het een vlag in plaats van te gokken.
+    3. *De app zelf* (geen AI): tijd en GPS bij het begin van de opname, controleren, opslaan, gebiedsnaam van waarneming.nl, export.
+  - **Grenzen, eerlijk benoemd:** AI maakt fouten (verkeerd verstaan, verkeerde soort, aantallen). Daarom: altijd zelf nalopen voor je inzendt; jij blijft verantwoordelijk voor wat er op waarneming.nl komt. Geen soortherkenning op geluid (dat doen apps als Merlin of BirdNET); Fluistervink verwerkt alleen wat jíj zegt.
+  - Verwijst naar de privacypagina voor wat er met opnames gebeurt; eventueel worden het twee kopjes op één pagina. Sluit aan bij het citizen-science-idee (waarom makkelijk invoeren telt).
 
 ## Overstappen tussen computers
 
