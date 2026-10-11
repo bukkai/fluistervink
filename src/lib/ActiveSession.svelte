@@ -122,6 +122,7 @@
 </script>
 
 <p class="gps {gps.status}">
+  <span class="dot"></span>
   {#if gps.status === 'ok' && gps.latest}
     Locatie ±{Math.round(gps.latest.accuracy)} m
   {:else}
@@ -137,7 +138,23 @@
   onpointerup={release}
   oncontextmenu={(event) => event.preventDefault()}
 >
-  {recorder.status === 'recording' ? `Stop · ${Math.floor(elapsed / 1000)} s` : 'Inspreken'}
+  <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true">
+    {#if recorder.status === 'recording'}
+      <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
+    {:else}
+      <rect x="9" y="2.5" width="6" height="12" rx="3" fill="currentColor" />
+      <path
+        d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+      />
+    {/if}
+  </svg>
+  <span>
+    {recorder.status === 'recording' ? `Stop · ${Math.floor(elapsed / 1000)} s` : 'Inspreken'}
+  </span>
 </button>
 <p class="mic {recorder.status}">
   {micLabels[recorder.status]}
@@ -147,19 +164,57 @@
   <input
     bind:value={text}
     placeholder="Of typ: zes overvliegende houtduiven"
+    aria-label="Uitspraak typen"
     autocomplete="off"
     enterkeyhint="send"
   />
-  <button>Verwerk</button>
+  <button aria-label="Verwerk">
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+      <path
+        d="M5 12h13M13 6l6 6-6 6"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.25"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  </button>
 </form>
 
 <SessionLog {session} />
 
 <style>
   .gps {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
     margin: 0.75rem 0 0;
-    font-size: 0.9rem;
+    padding: 0.2rem 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: 2rem;
+    font-size: 0.85rem;
     color: var(--muted);
+    background: var(--surface);
+  }
+
+  .gps.off {
+    display: none;
+  }
+
+  .dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--muted);
+  }
+
+  .gps.ok .dot {
+    background: var(--rarity-1);
+  }
+
+  .gps.searching .dot {
+    background: var(--rarity-3);
   }
 
   .gps.denied,
@@ -169,23 +224,71 @@
     color: var(--red);
   }
 
+  .gps.denied .dot,
+  .gps.unavailable .dot {
+    background: var(--red);
+  }
+
   .talk {
-    display: block;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
     width: 100%;
-    margin-top: 1rem;
-    padding: 2.5rem 1rem;
-    border-radius: 1rem;
-    font-size: 1.5rem;
-    font-weight: 600;
+    min-height: 10rem;
+    margin-top: 0.75rem;
+    border: none;
+    border-radius: 1.25rem;
+    font: inherit;
+    font-size: 1.4rem;
+    font-weight: 650;
+    color: var(--on-brand);
+    background: var(--brand);
+    box-shadow: 0 2px 0 var(--brand-strong), 0 6px 16px rgb(40 60 80 / 0.2);
+    transition:
+      transform 80ms,
+      background 150ms;
     /* Geen tekstselectie of contextmenu bij lang indrukken op Android */
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
     touch-action: none;
+  }
+
+  .talk:active {
+    transform: translateY(1px) scale(0.995);
   }
 
   .talk.recording {
     background: var(--red);
+    box-shadow: 0 2px 0 var(--breast-strong);
+    animation: pulse 1.4s ease-out infinite;
+  }
+
+  .talk span {
+    font-variant-numeric: tabular-nums;
+  }
+
+  @keyframes pulse {
+    0% {
+      box-shadow:
+        0 2px 0 var(--breast-strong),
+        0 0 0 0 color-mix(in srgb, var(--breast) 45%, transparent);
+    }
+    100% {
+      box-shadow:
+        0 2px 0 var(--breast-strong),
+        0 0 0 14px transparent;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .talk.recording {
+      animation: none;
+    }
   }
 
   .talk:disabled {
@@ -202,27 +305,34 @@
 
   form {
     display: flex;
-    gap: 0.5rem;
-    margin: 1rem 0;
+    margin: 0.75rem 0 1.25rem;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  form:focus-within {
+    border-color: var(--brand);
   }
 
   input {
     flex: 1;
     min-width: 0;
-    padding: 0.75rem;
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
+    padding: 0.75rem 0.9rem;
+    border: none;
+    outline: none;
     font: inherit;
-    background: var(--bg);
+    background: transparent;
     color: var(--fg);
   }
 
-  button {
-    padding: 0.75rem 1rem;
+  form button {
+    display: grid;
+    place-items: center;
+    width: 3rem;
     border: none;
-    border-radius: 0.5rem;
-    font: inherit;
-    background: var(--green);
-    color: white;
+    color: var(--on-brand);
+    background: var(--brand);
   }
 </style>

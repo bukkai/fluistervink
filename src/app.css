@@ -1,11 +1,28 @@
 :root {
-  --bg: #f7f5ef;
-  --fg: #1d2a1f;
-  --muted: #5f6b60;
-  --border: #d9d6cc;
-  --green: #2f6b3a;
-  --red: #b3372f;
+  /* Kleuren van de mannetjesvink: blauwgrijze kop (hoofdkleur), roze-oranje
+     borst (accent, ook voor opnemen en stoppen), lichte buik als achtergrond */
+  --bg: #f4f1ed;
+  --surface: #ffffff;
+  --fg: #22292f;
+  --muted: #65707a;
+  --border: #e2ddd6;
+  --brand: #4b6a84;
+  --brand-strong: #3a5469;
+  --on-brand: #ffffff;
+  --breast: #c45e42;
+  --breast-strong: #9e4430;
+  --green: var(--brand);
+  --red: var(--breast);
   --amber: #a5670c;
+  --amber-soft: #fbf1e1;
+
+  /* Zeldzaamheid, kleuren van waarneming.nl */
+  --rarity-1: #7ab648;
+  --rarity-2: #3ec1d3;
+  --rarity-3: #f2c12e;
+  --rarity-4: #e5493a;
+
+  --radius: 0.75rem;
 
   color-scheme: light dark;
   font-family: system-ui, sans-serif;
@@ -14,13 +31,17 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #141a15;
-    --fg: #e8ebe4;
-    --muted: #9aa69b;
-    --border: #2c352d;
-    --green: #3d8a4b;
-    --red: #c4473e;
-    --amber: #d9a03f;
+    --bg: #14181c;
+    --surface: #1d2329;
+    --fg: #e6e9ec;
+    --muted: #98a3ad;
+    --border: #2e3740;
+    --brand: #4b6a84;
+    --brand-strong: #7d9cb5;
+    --breast: #d9714f;
+    --breast-strong: #a8503a;
+    --amber: #e0a845;
+    --amber-soft: #2b2416;
   }
 }
 
