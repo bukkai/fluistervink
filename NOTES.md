@@ -30,12 +30,18 @@ Alles t/m **PR #45** is gemerged: #44 (één exemplaar van de app tegelijk via W
 
 **Open: PR #46** kaart en lijst gekoppeld in de review (branch `kaart-en-lijst`). Tik op een waarneming in het popup-venster → lijst scrolt ernaartoe en hij licht op; "±35 m" in de review → stip op de kaart met popup (kaarten-app-link staat nu in het popup-venster). Getest in de browser; op de telefoon nalopen, mergen vóór de demo (13 okt).
 
-Daarna, in volgorde:
+**Open: PR #47** Opruimen: "Alles/Niets aanvinken" en "Alle lege" (leeg = geen waarnemingen én geen dev notes); aantal dev notes per wandeling en in de bevestiging.
+
+**Open: PR #48** woordenlijst: formulier, weergave en export kennen alle codes van waarneming.nl (gedrag/methode/kleed, veldcodes bovenaan, rest onder "Meer"). Prompt: afkortingen leeftijd/kleed (1kj, 2w, juv, eclips, …), nestbouw, voer, bezet nest, pas uitgevlogen, gewond, slaapplaats, nocmig → op geluidsrecorder. Kleed en geslacht verplicht met `null` (anders liet het model ze weg). 18 testzinnen met het echte model goed.
+
+De drie PR's mergen samen zonder conflict (nagegaan). Prompt testen zonder telefoon: script dat de echte `interpret()` via Vite in Node laadt en de lokale proxy aanroept (zie PR #48); een goede basis voor stap 7.
+
+Daarna, in volgorde (de kleine punten van stap 4 hieronder zijn klaar in #47 en #48):
 
 1. **Derde wandeling** met de versie van #44: is de vertraging weg? Na afloop JSON-export (nu met tijden per stap en id per exemplaar) aan Claude geven.
 2. Bevindingen van wandeling 2/3 verwerken (prompt, bijnamen, Whisper-prompt; bv. "tortelduif").
 3. **Stap 7, testset** (roadmap B).
-4. Klein: "Alle lege / alles aanvinken" bij Opruimen; afkortingen leeftijd/kleed in de prompt; meer gedragingen en methoden.
+4. ~~Klein: alle lege / alles aanvinken; afkortingen leeftijd/kleed; meer gedragingen en methoden~~ (#47, #48).
 5. F. Vitest. Mijlpaal na 3–4 wandelingen.
 
 Tip: draait er in een andere Claude-sessie al een dev-server op 5173, dan tijdelijk een tweede configuratie op 5174 in `.claude/launch.json`.
