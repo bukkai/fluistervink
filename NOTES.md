@@ -216,6 +216,8 @@ Typen werkt, ook met de ingebouwde spraakinvoer van Android (die is matig). Besl
 
 ## Open vragen / losse eindjes
 
+- Later checken (12 okt): tester uitnodigen vanuit het scherm Developer opende geen mail. Eigenaar vermoedt de mail-app. Andere mogelijke oorzaak in de code (`src/lib/Developer.svelte`, `invite`): de `mailto:` wordt pas geopend ná het wachten op `addTester`. Chrome (vooral op Android) opent externe apps soms alleen direct na een tik, en die "tik-toestemming" kan dan al verlopen zijn. Testen: op welk toestel? Gebeurt er niets, of een foutmelding? Werkt de link "Opnieuw openen"/kopiëren wel? Oplossing als het daaraan ligt: na het aanmaken een knop "Mail openen" tonen (een gewone `<a href="mailto:…">`), zodat de tik zelf de mail opent.
+
 - Ideeën voor flow en indeling (menu, vorige wandelingen opruimen, locatienaam bij start, reviewscherm met kaart en eigen notities) vastgelegd in `docs/ideeen-flow.md` (10 okt). Voor later, nog niet gepland.
 
 - Tests: nu nog geen geautomatiseerde tests (bewust, 9 okt). Later: Vitest voor de logica (dev-note-herkenning, validatie van tool calls, toevoegen/aanpassen/ongedaan maken met fake-indexeddb), een paar Playwright-tests met nep-antwoorden voor `/api`, en GitHub Actions. Los daarvan de testset als eval voor prompt en model (stap 7).
