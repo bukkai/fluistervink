@@ -99,7 +99,7 @@
         Een wandeling verwijderen, met alle opnames: bij <a href="#wandelingen">Vorige wandelingen</a>.
         Dat is echt weg.
       </li>
-      <li>Alles exporteren als bestand: <a href="#instellingen">Instellingen</a>.</li>
+      <li>Een kopie van al je gegevens: vraag het aan wie je heeft uitgenodigd.</li>
       <li>
         Alles wissen: de app verwijderen, of in Chrome de sitegegevens van Fluistervink wissen.
       </li>
