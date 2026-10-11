@@ -6,7 +6,7 @@
 //   npm run tester -- add anna       code maken, naar Cloudflare, link tonen
 //   npm run tester -- remove anna    tester afsluiten
 //   npm run tester -- list           testers met hun uitnodigingslink
-//   npm run tester -- push           de lijst opnieuw naar Cloudflare sturen
+//   npm run tester -- push           de lijst opnieuw naar Cloudflare sturen (productie en previews)
 //   npm run tester -- url <url>      adres van de app (voor de links)
 
 import { spawnSync } from 'node:child_process';
@@ -36,16 +36,28 @@ function link(data, code) {
   return `${(data.appUrl ?? '<app-url>').replace(/\/$/, '')}/#code=${code}`;
 }
 
-/** Zet de testers als geheim ACCESS_CODES in Cloudflare (via stdin, niet als argument). */
+/**
+ * Zet de testers als geheim ACCESS_CODES in Cloudflare (via stdin, niet als
+ * argument): in productie én in de Previews Base, want previews erven geen
+ * geheimen van productie. Een preview krijgt de nieuwe lijst bij zijn
+ * volgende deploy.
+ */
 function push(data) {
-  const result = spawnSync('npx', ['wrangler', 'secret', 'put', 'ACCESS_CODES'], {
-    input: JSON.stringify(data.testers),
-    stdio: ['pipe', 'inherit', 'inherit'],
-  });
-  if (result.status !== 0) {
+  const put = (args) =>
+    spawnSync('npx', ['wrangler', ...args, 'secret', 'put', 'ACCESS_CODES'], {
+      input: JSON.stringify(data.testers),
+      stdio: ['pipe', 'inherit', 'inherit'],
+    }).status === 0;
+
+  if (!put([])) {
     console.error('\nNaar Cloudflare sturen mislukt. Ingelogd? Probeer `npx wrangler login`,');
     console.error('daarna `npm run tester -- push`. De lijst in .testers.json is wel bijgewerkt.');
     process.exit(1);
+  }
+  // Previews zijn open beta in wrangler; mislukt dit, dan werkt productie wel
+  if (!put(['preview', 'base-config'])) {
+    console.error('\nLet op: productie is bijgewerkt, de previews niet. Opnieuw: `npm run tester -- push`,');
+    console.error('of met de hand in het dashboard onder Variables and Secrets → Previews Base.');
   }
 }
 
