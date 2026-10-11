@@ -1,20 +1,24 @@
 :root {
-  /* Kleuren van de mannetjesvink: blauwgrijze kop (hoofdkleur), roze-oranje
-     borst (accent, ook voor opnemen en stoppen), lichte buik als achtergrond */
+  /* Kleuren uit het logo: grijsblauwe kruin (hoofdkleur), warm oranje wang
+     (accent: opnemen), donkerder oranje voor tekst en verwijderen, lichte
+     achtergrond als in het app-icoon. Alle tekstkleuren halen minstens 4,5:1. */
   --bg: #f4f1ed;
   --surface: #ffffff;
-  --fg: #22292f;
-  --muted: #65707a;
+  --fg: #24221f;
+  --muted: #6b6760;
   --border: #e2ddd6;
-  --brand: #4b6a84;
-  --brand-strong: #3a5469;
+  --brand: #6f7587;
+  --brand-strong: #545a6b;
   --on-brand: #ffffff;
-  --breast: #c45e42;
-  --breast-strong: #9e4430;
+  /* Wang: alleen voor grote vlakken (witte tekst haalt hier 3,6:1) */
+  --breast: #b67a50;
+  --breast-strong: #8f5530;
   --green: var(--brand);
-  --red: var(--breast);
-  --amber: #a5670c;
-  --amber-soft: #fbf1e1;
+  /* Tekst, randen en kleine knoppen voor verwijderen en stoppen */
+  --red: #9c5f37;
+  /* Onzeker: goudgeel, duidelijk anders dan het oranje van verwijderen */
+  --amber: #7d6210;
+  --amber-soft: #f8f0d8;
 
   /* Zeldzaamheid, kleuren van waarneming.nl */
   --rarity-1: #7ab648;
@@ -31,17 +35,18 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #14181c;
-    --surface: #1d2329;
-    --fg: #e6e9ec;
-    --muted: #98a3ad;
-    --border: #2e3740;
-    --brand: #4b6a84;
-    --brand-strong: #7d9cb5;
-    --breast: #d9714f;
-    --breast-strong: #a8503a;
-    --amber: #e0a845;
-    --amber-soft: #2b2416;
+    --bg: #171615;
+    --surface: #22201e;
+    --fg: #ece8e3;
+    --muted: #a39d95;
+    --border: #34312d;
+    --brand: #6f7587;
+    --brand-strong: #a3aabb;
+    --breast: #b67a50;
+    --breast-strong: #8f5530;
+    --red: #d08a5e;
+    --amber: #d9b04a;
+    --amber-soft: #2c2614;
   }
 }
 
@@ -175,7 +180,7 @@ h2 {
 
 .btn.danger {
   color: white;
-  background: var(--breast);
+  background: var(--red);
 }
 
 .btn.block {
@@ -200,7 +205,7 @@ h2 {
 }
 
 .link.danger {
-  color: var(--breast);
+  color: var(--red);
 }
 
 .muted {
