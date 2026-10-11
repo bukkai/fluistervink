@@ -165,6 +165,17 @@ export async function retry(utteranceId: string): Promise<void> {
 
 let running = false;
 
+const QUEUE_LOCK = 'fluistervink-queue';
+
+/**
+ * Zo lang mag een zichtbaar exemplaar op het slot wachten voordat het dat
+ * afpakt. Ruim langer dan een normale verwerking (spraak + model ±5 s).
+ */
+export const STEAL_AFTER_MS = 10_000;
+
+/** Wachten op het slot of de database vanaf zoveel ms in de log */
+const SLOW_MS = 1000;
+
 /**
  * Verwerkt alle wachtende uitspraken op volgorde. Wordt na elke nieuwe
  * uitspraak aangeroepen; een tweede aanroep terwijl hij loopt doet niets.
@@ -179,7 +190,7 @@ export async function processQueue({ takeOver = false } = {}): Promise<void> {
   running = true;
   try {
     if (navigator.locks) {
-      await navigator.locks.request('fluistervink-queue', { steal: takeOver }, runQueue);
+      await withQueueLock(takeOver);
     } else {
       await runQueue();
     }
@@ -191,10 +202,66 @@ export async function processQueue({ takeOver = false } = {}): Promise<void> {
   }
 }
 
+/**
+ * Verwerkt met het slot in handen. Houdt een ander exemplaar het slot langer
+ * dan `STEAL_AFTER_MS` vast terwijl dit exemplaar zichtbaar is, dan pakt dit
+ * het af: het andere staat dan vrijwel zeker bevroren op de achtergrond
+ * (wachtrij 3 minuten stil na een herstart, 11 okt). Dubbel opslaan kan niet:
+ * een poging van het andere exemplaar telt dan niet meer (`isCurrentAttempt`).
+ */
+async function withQueueLock(takeOver: boolean): Promise<void> {
+  const requestedAt = Date.now();
+  let granted = false;
+  const run = async (stolen: boolean) => {
+    granted = true;
+    const waitedMs = Date.now() - requestedAt;
+    if (waitedMs >= SLOW_MS) logEvent('queue_lock_waited', { waitedMs, stolen });
+    await runQueue();
+  };
+  if (takeOver) {
+    await navigator.locks.request(QUEUE_LOCK, { steal: true }, () => run(false));
+    return;
+  }
+
+  const waiting = new AbortController();
+  let checking = false;
+  const watchdog = setInterval(async () => {
+    if (granted || checking || document.hidden) return;
+    checking = true;
+    // Wie houdt het slot vast? Om in de log te zien hoe het zat
+    const { held = [], pending = [] }: LockManagerSnapshot = await navigator.locks
+      .query()
+      .catch(() => ({}));
+    checking = false;
+    if (granted) return;
+    clearInterval(watchdog);
+    logEvent('queue_lock_stolen', {
+      waitedMs: Date.now() - requestedAt,
+      held: held.filter((lock) => lock.name === QUEUE_LOCK).map((lock) => lock.clientId),
+      pending: pending.filter((lock) => lock.name === QUEUE_LOCK).length,
+    });
+    waiting.abort();
+  }, STEAL_AFTER_MS);
+
+  try {
+    await navigator.locks.request(QUEUE_LOCK, { signal: waiting.signal }, () => run(false));
+  } catch (error) {
+    if (!waiting.signal.aborted || granted) throw error;
+    await navigator.locks.request(QUEUE_LOCK, { steal: true }, () => run(true));
+  } finally {
+    clearInterval(watchdog);
+  }
+}
+
 async function runQueue(): Promise<void> {
   // Uitspraken die bleven hangen (app afgesloten tijdens verwerken) opnieuw.
   // Kan veilig: wie het slot heeft, is de enige die verwerkt.
+  // Hoe lang de eerste databasestap duurt: houdt een ander exemplaar de
+  // database vast, dan wacht deze (zie instance.svelte.ts)
+  const dbStart = Date.now();
   const stuck = await db.utterances.where('status').equals('processing').toArray();
+  const dbMs = Date.now() - dbStart;
+  if (dbMs >= SLOW_MS) logEvent('queue_db_slow', { dbMs });
   for (const u of stuck)
     logEvent('requeued', undefined, { sessionId: u.sessionId, utteranceId: u.id });
   await db.utterances.where('status').equals('processing').modify({ status: 'pending' });

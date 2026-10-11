@@ -1,9 +1,9 @@
 import type Anthropic from '@anthropic-ai/sdk';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { HOUTDUIF, KEEP, VINK, toolResponse } from '../test-helpers';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { FakeLockManager, HOUTDUIF, KEEP, VINK, toolResponse } from '../test-helpers';
 import { db, type Observation, type Utterance } from './db';
 import { interpret } from './interpret';
-import { listObservations, processQueue, retry } from './observations';
+import { STEAL_AFTER_MS, listObservations, processQueue, retry } from './observations';
 
 // De wachtrij van begin tot eind, met een nagebootst model: wat het model
 // teruggeeft gaat door de echte validatie (parseResponse) en wordt echt in de
@@ -211,6 +211,70 @@ describe('wachtrij', () => {
     const id = await queue('vink');
     await db.utterances.update(id, { status: 'processing' });
     await processQueue();
+    expect((await db.utterances.get(id))?.status).toBe('done');
+  });
+});
+
+describe('slot van de wachtrij', () => {
+  let locks: FakeLockManager;
+
+  beforeEach(() => {
+    locks = new FakeLockManager();
+    Object.defineProperty(navigator, 'locks', { value: locks, configurable: true });
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    model.respond = () => toolResponse(['add_observation', { species_id: VINK, count: 1 }]);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    Object.defineProperty(navigator, 'locks', { value: undefined, configurable: true });
+    Object.defineProperty(document, 'hidden', { value: false, configurable: true });
+  });
+
+  const events = async (type: string) => (await db.events.toArray()).filter((e) => e.type === type);
+
+  it('verwerkt gewoon als niemand het slot heeft', async () => {
+    const id = await queue('vink');
+    await processQueue();
+    expect((await db.utterances.get(id))?.status).toBe('done');
+    expect(await events('queue_lock_stolen')).toEqual([]);
+  });
+
+  it('pakt het slot af van een bevroren exemplaar als de app zichtbaar is', async () => {
+    locks.holdForever('fluistervink-queue');
+    const id = await queue('vink');
+    const done = processQueue();
+    await vi.advanceTimersByTimeAsync(STEAL_AFTER_MS - 1);
+    expect((await db.utterances.get(id))?.status).toBe('pending');
+
+    await vi.advanceTimersByTimeAsync(1);
+    await done;
+    expect((await db.utterances.get(id))?.status).toBe('done');
+    await vi.waitFor(async () =>
+      expect(await events('queue_lock_stolen')).toMatchObject([
+        { data: { held: ['bevroren'], pending: 1 } },
+      ]),
+    );
+  });
+
+  it('wacht zolang de app op de achtergrond staat', async () => {
+    Object.defineProperty(document, 'hidden', { value: true, configurable: true });
+    locks.holdForever('fluistervink-queue');
+    const id = await queue('vink');
+    const done = processQueue();
+    await vi.advanceTimersByTimeAsync(3 * STEAL_AFTER_MS);
+    expect((await db.utterances.get(id))?.status).toBe('pending');
+
+    Object.defineProperty(document, 'hidden', { value: false, configurable: true });
+    await vi.advanceTimersByTimeAsync(STEAL_AFTER_MS);
+    await done;
+    expect((await db.utterances.get(id))?.status).toBe('done');
+  });
+
+  it('bij het opstarten meteen afpakken', async () => {
+    locks.holdForever('fluistervink-queue');
+    const id = await queue('vink');
+    await processQueue({ takeOver: true });
     expect((await db.utterances.get(id))?.status).toBe('done');
   });
 });
