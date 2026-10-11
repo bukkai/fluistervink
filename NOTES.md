@@ -219,6 +219,13 @@ Typen werkt, ook met de ingebouwde spraakinvoer van Android (die is matig). Besl
   - **Opslag:** de Worker krijgt een route `/api/feedback`; JSON in D1 of R2, audio in R2. Zonder accounts: per tester een eigen toegangscode, zodat je ziet van wie iets komt en één tester kunt uitsluiten. Het developerscherm achter een aparte beheercode.
   - **Kleiner begin:** "Inzenden" maakt alleen een bestand (Markdown + JSON) dat de tester deelt via het Android-deelmenu (mail, WhatsApp). Geen serveropslag nodig; de developer importeert het met de bestaande JSON-import.
 - Idee eigenaar (11 okt), klein: bij "Vorige wandelingen → Opruimen" (`src/lib/PastSessions.svelte`) naast "Alle geëxporteerde aanvinken" ook "Alle lege aanvinken" en "Alles aanvinken" (eigenlijk een schakelaar: alles aan/uit). "Leeg" = 0 waarnemingen (`countPerSession`). Let op: dev notes zijn uitspraken en gaan mee als een wandeling wordt verwijderd. Een wandeling met alleen dev notes dus niet als leeg tellen, of in de bevestiging melden hoeveel dev notes er mee weggaan.
+- Idee eigenaar (11 okt): privacypagina (in het menu, en een link bij de eerste start) die precies uitlegt wat er met opnames en locaties gebeurt en welke controle de gebruiker heeft. Huidige stand, uit de code:
+  - **Op het toestel:** audio, transcript, tijd, GPS, waarnemingen en het gebeurtenissenlog staan in IndexedDB in de browser. Geen accounts, geen GPS-track, geen analytics.
+  - **Naar buiten, via de eigen proxy (`worker/index.ts`):** audio → OpenAI (`/api/transcribe`, voor de tekst); transcript plus de laatste waarnemingen van de wandeling → Anthropic (`/api/messages`); coördinaten → waarneming.nl (`/api/area`, voor de gebiedsnaam). De proxy bewaart zelf niets. Nagaan: logt Cloudflare verzoeken (Workers Logs / observability in `wrangler.jsonc`)?
+  - **Bij de API-aanbieders:** nagaan en met bron vermelden hoe lang OpenAI en Anthropic API-gegevens bewaren en dat ze die standaard niet gebruiken om modellen te trainen. Niet uit het hoofd opschrijven; beleid verandert.
+  - **Alleen op eigen initiatief:** CSV naar waarneming.nl (geen audio), JSON-export, kaartlinks naar Google Maps/OSM.
+  - **Controle:** wandelingen verwijderen (echt weg, met audio), prullenbak voor waarnemingen, export van alles. Mogelijke uitbreidingen: alleen audio wissen en transcripten bewaren, audio automatisch wissen na X dagen of na export, alles wissen met één knop, en "audio niet bewaren" als instelling (raakt aan de testset, stap 7).
+  - Hangt samen met het feedbackidee (inzenden met audio en locaties) en met de soortenstatistieken: die pagina moet ook dat uitleggen zodra het er is. Bij echte betatesters is zo'n pagina eigenlijk verplicht (AVG: audio en locatie zijn persoonsgegevens).
 
 ## Overstappen tussen computers
 
