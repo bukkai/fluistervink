@@ -43,7 +43,8 @@ Gemerged t/m **#48**: #46 kaart ↔ lijst in de review, #47 opruimen (alles/lege
 - Eerste tester uitgenodigd. Nog niet gedaan: harde uitgavenlimieten in de consoles van OpenAI en Anthropic. GitHub-mails per Cloudflare-build: uitzetten in Cloudflare (Settings → Build, reacties op GitHub) of in GitHub Notifications, afhankelijk van de reden onderaan de mail.
 - **#57** delen met de ontwikkelaar: gestopte wandelingen (en feedback, log) gaan automatisch per tester naar KV (`/api/feedback`), opnieuw na wijziging; opnames alleen als de tester dat aanzet. Ophalen: `npm run feedback -- pull` (→ `testset/feedback/<tester>.json`) en `npm run feedback -- notes`. "Dev note" heet nu "feedback" (oud voorvoegsel werkt nog).
 - **#58** melding "Wandeling opgeslagen" in saliegroen.
-- Nog open voor testers: privacypagina (delen staat standaard áán, tester ziet dat alleen bij Instellingen), pagina "Hoe werkt het", feedback typen en verwijderen op het Feedback-scherm, Web Locks tegen twee exemplaren (tweede wandeling), uitgavenlimieten bij OpenAI en Anthropic (handmatig).
+- **Privacy (branch `privacy`):** pagina `#privacy` in het menu; delen pas na toestemming (vraag op het hoofdscherm, ook voor wie de app al had: tot die tijd deelt de app niets); Workers Logs zonder invocation logs (coördinaten van `/api/area` stonden in de URL); `npm run feedback -- wipe <tester>`. Na het mergen: eerste tester even laten weten dat de vraag komt.
+- Nog open voor testers: pagina "Hoe werkt het", feedback typen en verwijderen op het Feedback-scherm, uitgavenlimieten bij OpenAI en Anthropic (handmatig). Twee exemplaren tegelijk is al opgelost (`src/lib/instance.svelte.ts`).
 
 Daarna:
 

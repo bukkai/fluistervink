@@ -14,10 +14,11 @@
   import { vibrate } from './lib/feedback';
   import { instance } from './lib/instance.svelte';
   import { processQueue } from './lib/observations';
-  import { scheduleShare } from './lib/share';
+  import { scheduleShare, setShareEnabled, shareChoiceMade } from './lib/share';
   import DevNotes from './lib/DevNotes.svelte';
   import PastSession from './lib/PastSession.svelte';
   import PastSessions from './lib/PastSessions.svelte';
+  import Privacy from './lib/Privacy.svelte';
   import Settings from './lib/Settings.svelte';
 
   // Uitspraken die bij het afsluiten nog niet verwerkt waren, alsnog verwerken.
@@ -83,6 +84,14 @@
   }
   checkInvite();
 
+  // Delen met de ontwikkelaar pas na toestemming (share.ts). Zolang er niet
+  // gekozen is, vraagt het hoofdscherm het; ook aan wie de app al had.
+  let askShare = $state(!shareChoiceMade());
+  function chooseShare(on: boolean) {
+    setShareEnabled(on);
+    askShare = false;
+  }
+
   // Klok voor de looptijd van de lopende wandeling
   let now = $state(Date.now());
   const timer = setInterval(() => (now = Date.now()), 1000);
@@ -137,6 +146,7 @@
         <a href="#wandelingen">Vorige wandelingen</a>
         <a href="#feedback">Feedback{$devNotes?.length ? ` (${$devNotes.length})` : ''}</a>
         <a href="#instellingen">Instellingen</a>
+        <a href="#privacy">Privacy</a>
       </nav>
     {/if}
   </div>
@@ -162,6 +172,8 @@
     />
   {:else if route === 'instellingen'}
     <Settings />
+  {:else if route === 'privacy'}
+    <Privacy />
   {:else if route === 'feedback' || route === 'devnotes'}
     <DevNotes />
   {:else if active}
@@ -188,8 +200,6 @@
         <p class="welcome">
           Welkom{welcome.tester ? `, ${welcome.tester}` : ''}! Je toegang is ingesteld. Tip: zet de
           app op je startscherm via het menu van Chrome → <em>Toevoegen aan startscherm</em>.
-          Je wandelingen en feedback worden gedeeld met de ontwikkelaar; zie
-          <a href="#instellingen">Instellingen</a>.
           <button class="link" onclick={() => (welcome = undefined)}>Oké</button>
         </p>
       {:else if welcome}
@@ -201,6 +211,22 @@
         <p class="notice">
           Vul eerst de toegangscode in bij <a href="#instellingen">Instellingen</a>.
         </p>
+      {/if}
+      {#if hasAccessCode && askShare}
+        <div class="consent card">
+          <strong>Delen met de ontwikkelaar?</strong>
+          <p>
+            Fluistervink is nog in ontwikkeling. Mag de app na elke wandeling je uitspraken (als
+            tekst), wat de app ervan maakte, je correcties en feedback, en de locaties van je
+            waarnemingen naar de ontwikkelaar sturen? Opnames niet, tenzij je dat bij Instellingen
+            aanzet. Alleen de ontwikkelaar kan het lezen; je kunt het altijd weer uitzetten.
+            <a href="#privacy">Meer over privacy</a>
+          </p>
+          <div class="consent-buttons">
+            <button class="btn" onclick={() => chooseShare(true)}>Ja, delen</button>
+            <button class="btn secondary" onclick={() => chooseShare(false)}>Liever niet</button>
+          </div>
+        </div>
       {/if}
       <button class="start" onclick={start}>Start wandeling</button>
       {#if past[0]}
@@ -350,6 +376,28 @@
     border-radius: var(--radius);
     border: 1px solid var(--border);
     background: var(--surface);
+  }
+
+  .consent {
+    display: grid;
+    gap: 0.5rem;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0.9rem 1rem;
+    text-align: left;
+  }
+
+  .consent p {
+    margin: 0;
+  }
+
+  .consent a {
+    color: inherit;
+  }
+
+  .consent-buttons {
+    display: flex;
+    gap: 0.5rem;
   }
 
   .last {

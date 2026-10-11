@@ -65,6 +65,7 @@ De app deelt gestopte wandelingen (met feedback, correcties en het log) automati
 ```bash
 npm run feedback -- pull    # nieuwe en gewijzigde wandelingen ophalen → testset/feedback/
 npm run feedback -- notes   # alle feedback van testers als Markdown
+npm run feedback -- wipe anna   # alles van één tester wissen (online en lokaal), op verzoek
 npm run testset -- testset/feedback/anna.json
 ```
 
