@@ -3,6 +3,7 @@ import './app.css'
 import App from './App.svelte'
 import { acceptInviteLink } from './lib/api'
 import { startLogging } from './lib/log'
+import './lib/update'
 
 startLogging()
 // Vóór het mounten, zodat de router "#code=…" nooit als scherm ziet. Ook bij
