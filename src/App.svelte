@@ -65,8 +65,12 @@
     requestPersistentStorage();
   }
 
+  /** Na het stoppen meteen naar het nalopen van de wandeling */
   async function stop() {
-    if (active && confirm('Wandeling stoppen?')) await stopSession(active.id);
+    if (!active || !confirm('Wandeling stoppen?')) return;
+    const id = active.id;
+    await stopSession(id);
+    location.hash = `wandeling/${id}`;
   }
 
   const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });

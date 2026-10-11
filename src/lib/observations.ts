@@ -15,7 +15,7 @@ import { currentPosition } from './location.svelte';
 import { APP_VERSION, logEvent, wasHiddenSince } from './log';
 import type { Recording } from './recorder.svelte';
 import { TRANSCRIBE_MODEL, transcribe, transcribePromptVersion } from './transcribe';
-import { DEFAULT_ACTIVITY, DEFAULT_COUNTING_METHOD, DEFAULT_METHOD } from './vocab';
+import { DEFAULT_ACTIVITY, DEFAULT_COUNTING_METHOD, DEFAULT_METHOD, getSpecies } from './vocab';
 
 // Local-first verwerking: elke uitspraak wordt eerst opgeslagen (status
 // `pending`) en daarna één voor één, op volgorde, door het model gehaald.
@@ -396,4 +396,13 @@ async function undoPrevious(utterance: Utterance): Promise<void> {
     }
   }
   await db.utterances.update(previous.id, { undone: true });
+}
+
+/** Aantal soorten, zonder verzamelsoorten ("Eend onbekend") */
+export function countSpecies(observations: Observation[]): number {
+  return new Set(
+    observations
+      .filter((obs) => getSpecies(obs.speciesId)?.type !== 'M')
+      .map((obs) => obs.speciesId),
+  ).size;
 }

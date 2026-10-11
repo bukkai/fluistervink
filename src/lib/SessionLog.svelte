@@ -5,6 +5,7 @@
   import { mapsUrl } from './devNotes';
   import ObservationEditor from './ObservationEditor.svelte';
   import {
+    countSpecies,
     deleteObservation,
     editObservation,
     listDeleted,
@@ -77,14 +78,7 @@
     ($observations ?? []).filter((obs) => !onlyUncertain || obs.uncertain || obs.id === editing),
   );
 
-  /** Aantal soorten, zonder verzamelsoorten ("Eend onbekend") */
-  let speciesCount = $derived(
-    new Set(
-      ($observations ?? [])
-        .filter((obs) => getSpecies(obs.speciesId)?.type !== 'M')
-        .map((obs) => obs.speciesId),
-    ).size,
-  );
+  let speciesCount = $derived(countSpecies($observations ?? []));
 
   const deletedByLabel = { hand: 'met de hand', voice: 'met de stem', undo: 'ongedaan gemaakt' };
 
