@@ -23,9 +23,57 @@ export async function startSession(): Promise<Session> {
   });
 }
 
-export async function stopSession(id: string): Promise<void> {
-  await db.sessions.update(id, { status: 'ended', endedAt: Date.now() });
+/** Stopt een wandeling. `endedAt` alleen anders dan nu als hij vergeten is. */
+export async function stopSession(id: string, endedAt = Date.now()): Promise<void> {
+  await db.sessions.update(id, { status: 'ended', endedAt });
   await nameFromWalk(id);
+}
+
+/** Antwoord "ja, loopt nog" op de vraag hieronder: telt als voortzetten. */
+export async function keepSession(id: string): Promise<void> {
+  await db.sessions.update(id, { resumedAt: Date.now() });
+}
+
+/** Zo lang niets ingesproken: bij het openen van de app vragen of de wandeling nog loopt. */
+export const ASK_AFTER_MS = 60 * 60_000;
+/** Zo lang niets ingesproken: de wandeling is vergeten en stopt vanzelf. */
+export const AUTO_STOP_AFTER_MS = 8 * 60 * 60_000;
+
+/**
+ * Laatste teken van leven van een wandeling: de laatste uitspraak, of anders
+ * de start of het voortzetten.
+ */
+export async function lastActivityAt(session: Session): Promise<number> {
+  // Van nieuw naar oud: de uitspraken van de lopende wandeling zijn de
+  // nieuwste, dus dit stopt meteen (en leest geen oude audio)
+  const last = await db.utterances
+    .orderBy('recordedAt')
+    .reverse()
+    .filter((u) => u.sessionId === session.id)
+    .first();
+  return Math.max(session.startedAt, session.resumedAt ?? 0, last?.recordedAt ?? 0);
+}
+
+export type StaleCheck =
+  | { kind: 'stopped'; session: Session }
+  | { kind: 'ask'; session: Session; lastActivityAt: number };
+
+/**
+ * Vergeten wandeling (telefoon uitgevallen, niet op Stop gedrukt)? Na 8 uur
+ * zonder uitspraken stopt hij vanzelf, met als eindtijd de laatste uitspraak.
+ * Na een uur vraagt de app het. Anders deelt de app hem nooit (alleen
+ * gestopte wandelingen gaan naar de ontwikkelaar) en loopt de klok door.
+ */
+export async function checkStaleSession(now = Date.now()): Promise<StaleCheck | undefined> {
+  const session = await getActiveSession();
+  if (!session) return;
+  const last = await lastActivityAt(session);
+  if (now - last >= AUTO_STOP_AFTER_MS) {
+    await stopSession(session.id, last);
+    logEvent('session_auto_stopped', { lastActivityAt: last }, { sessionId: session.id });
+    return { kind: 'stopped', session };
+  }
+  if (now - last >= ASK_AFTER_MS) return { kind: 'ask', session, lastActivityAt: last };
 }
 
 /**
@@ -35,7 +83,7 @@ export async function stopSession(id: string): Promise<void> {
 export async function resumeSession(id: string): Promise<boolean> {
   return db.transaction('rw', db.sessions, async () => {
     if (await getActiveSession()) return false;
-    await db.sessions.update(id, { status: 'active', endedAt: undefined });
+    await db.sessions.update(id, { status: 'active', endedAt: undefined, resumedAt: Date.now() });
     return true;
   });
 }
