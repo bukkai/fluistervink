@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json && tsc -p tsconfig.worker.json",
+    "test": "vitest run",
     "deploy": "npm run build && wrangler deploy",
     "types": "wrangler types worker/worker-configuration.d.ts",
     "testset": "node scripts/testset.mjs",
@@ -20,11 +21,14 @@
     "@tsconfig/svelte": "^5.0.8",
     "@types/leaflet": "^1.9.22",
     "@types/node": "^24.13.3",
+    "fake-indexeddb": "^6.2.5",
+    "happy-dom": "^20.14.6",
     "svelte": "^5.57.0",
     "svelte-check": "^4.7.6",
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
     "vite-plugin-pwa": "^2.0.0",
+    "vitest": "^5.0.3",
     "wrangler": "^4.149.0"
   },
   "dependencies": {
