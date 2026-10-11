@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Testers beheren: maakt toegangscodes, houdt ze bij in .testers.json (niet in
 // git) en zet ze als geheim ACCESS_CODES in Cloudflare. Zie "Testers
-// uitnodigen" in de README.
+// uitnodigen" in de README. Testers die je vanuit de app uitnodigt (scherm
+// Developer) staan apart, in KV, en niet in deze lijst.
 //
 //   npm run tester -- add anna       code maken, naar Cloudflare, link tonen
 //   npm run tester -- remove anna    tester afsluiten
