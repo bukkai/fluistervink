@@ -20,18 +20,27 @@ export function getTester(): string | undefined {
   return localStorage.getItem(TESTER_KEY) ?? undefined;
 }
 
+const INVITE_KEY = 'fluistervink.invite';
+
 /**
- * Uitnodigingslink: `https://…/#code=abc123`. Bewaart de code en haalt hem
- * uit de adresbalk. Na het `#` gaat de code niet mee naar de server en komt hij
- * niet in logs terecht. Geeft true als er een code in de link stond.
+ * Uitnodigingslink: `https://…/#code=abc123`. Bewaart de code, haalt hem uit
+ * de adresbalk en gaat naar het hoofdscherm, dat een welkom toont (zie
+ * takeInvite). Na het `#` gaat de code niet mee naar de server en komt hij
+ * niet in logs terecht.
  */
-export function acceptInviteLink(): boolean {
+export function acceptInviteLink(): void {
   const code = /^#code=([^&]+)/.exec(location.hash)?.[1];
-  if (!code) return false;
+  if (!code) return;
   setAccessCode(decodeURIComponent(code));
-  // Door naar de instellingen, die meteen laten zien of de code werkt
-  history.replaceState(null, '', `${location.pathname}${location.search}#instellingen`);
-  return true;
+  sessionStorage.setItem(INVITE_KEY, '1');
+  history.replaceState(null, '', `${location.pathname}${location.search}`);
+}
+
+/** True (één keer) als de app net via een uitnodigingslink is geopend. */
+export function takeInvite(): boolean {
+  const invited = sessionStorage.getItem(INVITE_KEY) === '1';
+  sessionStorage.removeItem(INVITE_KEY);
+  return invited;
 }
 
 export class ApiError extends Error {

@@ -9,7 +9,7 @@
     stopSession,
   } from './lib/sessions';
   import ActiveSession from './lib/ActiveSession.svelte';
-  import { getAccessCode } from './lib/api';
+  import { getAccessCode, ping, takeInvite } from './lib/api';
   import { listDevNotes } from './lib/devNotes';
   import { vibrate } from './lib/feedback';
   import { instance } from './lib/instance.svelte';
@@ -38,6 +38,7 @@
   let route = $derived(hash.replace(/^#\/?/, ''));
   const onHashChange = () => {
     hash = location.hash;
+    checkInvite();
     // De bevestiging na het stoppen alleen tonen tot je dat scherm verlaat
     if (justStopped && !hash.endsWith(justStopped)) justStopped = undefined;
     menuOpen = false;
@@ -57,8 +58,23 @@
   // state), dus opnieuw lezen bij elke schermwissel.
   let hasAccessCode = $derived.by(() => {
     void route;
+    void welcome;
     return !!getAccessCode();
   });
+
+  // Net geopend via een uitnodigingslink: meteen testen of de code werkt en
+  // welkom heten op het hoofdscherm. Ook bij hashchange, voor als de app al
+  // open stond (main.ts heeft de code dan net bewaard).
+  let welcome = $state<{ ok: boolean; tester?: string }>();
+  async function checkInvite() {
+    if (!takeInvite()) return;
+    try {
+      welcome = { ok: true, tester: await ping() };
+    } catch {
+      welcome = { ok: false };
+    }
+  }
+  checkInvite();
 
   // Klok voor de looptijd van de lopende wandeling
   let now = $state(Date.now());
@@ -163,7 +179,18 @@
         Druk tijdens de wandeling op de knop en zeg wat je ziet of hoort, bijvoorbeeld
         <em>"zes overvliegende houtduiven"</em> of <em>"roepje vink"</em>.
       </p>
-      {#if !hasAccessCode}
+      {#if welcome?.ok}
+        <p class="welcome">
+          Welkom{welcome.tester ? `, ${welcome.tester}` : ''}! Je toegang is ingesteld. Tip: zet de
+          app op je startscherm via het menu van Chrome → <em>Toevoegen aan startscherm</em>.
+          <button class="link" onclick={() => (welcome = undefined)}>Oké</button>
+        </p>
+      {:else if welcome}
+        <p class="notice">
+          De code uit de uitnodigingslink werkt niet (of er is geen verbinding). Kijk bij
+          <a href="#instellingen">Instellingen</a>.
+        </p>
+      {:else if !hasAccessCode}
         <p class="notice">
           Vul eerst de toegangscode in bij <a href="#instellingen">Instellingen</a>.
         </p>
@@ -308,6 +335,14 @@
   .notice a {
     color: inherit;
     font-weight: 600;
+  }
+
+  .welcome {
+    margin: 0;
+    padding: 0.5rem 0.9rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface);
   }
 
   .last {
