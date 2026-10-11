@@ -43,7 +43,9 @@ Handmatig deployen kan ook: `npm run deploy`.
 
 ## Testers uitnodigen
 
-Elke tester krijgt een eigen toegangscode. Dat gaat met één commando:
+Elke tester krijgt een eigen toegangscode. Het makkelijkst vanuit de app: scherm **Developer** (menu, alleen voor de eigenaar) → naam en e-mailadres invullen → **Uitnodigen en mailen**. De proxy maakt een code (bewaard in KV, binding `TESTERS`) en je mail-app opent met een kant-en-klaar bericht met de link; je verstuurt het zelf, vanaf je eigen adres. Het e-mailadres wordt nergens bewaard. Op hetzelfde scherm staan alle testers, met de link opnieuw te kopiëren en een knop om iemand af te sluiten. Een nieuwe of afgesloten code werkt binnen een minuut overal (KV wordt even gecachet).
+
+Of met één commando vanaf de computer:
 
 ```bash
 npm run tester -- add anna                # code maken, naar Cloudflare, link tonen
@@ -55,6 +57,8 @@ npm run tester -- url https://…           # ander adres in de links (standaard
 Het script houdt de codes bij in `.testers.json` (niet in git) en zet ze als geheim `ACCESS_CODES` in Cloudflare, via `wrangler` (eenmalig `npx wrangler login`): in productie én in de Previews Base, want previews erven geen geheimen van productie. Een bestaande preview krijgt de nieuwe lijst pas bij zijn volgende deploy. Werk je op een andere computer, kopieer `.testers.json` dan mee (of bewaar hem in de wachtwoordmanager); anders begint de lijst daar leeg en overschrijft `add` de testers die er al waren.
 
 Stuur de tester de link. Op Android: de link in Chrome openen (de app bewaart de code en heet de tester welkom op het hoofdscherm), daarna pas "Toevoegen aan startscherm". Jouw eigen `ACCESS_CODE` blijft gewoon werken, als tester "eigenaar". In Workers Logs staat bij elk verzoek welke tester het deed.
+
+Testers uit het script staan ook in de lijst in de app, maar zijn daar niet af te sluiten; testers uit de app staan niet in `.testers.json`. Gebruik niet dezelfde naam in beide.
 
 Met de hand kan ook: `ACCESS_CODES` is JSON, `{"anna": "code", "piet": "code"}`, in te stellen in het dashboard onder Variables and Secrets.
 

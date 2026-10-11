@@ -9,6 +9,8 @@ import Anthropic from '@anthropic-ai/sdk';
 // Toegangscodes: ACCESS_CODE is die van de eigenaar; ACCESS_CODES bevat er één
 // per tester als JSON, `{"anna": "…", "piet": "…"}`. Zo kun je één tester
 // afsluiten zonder de anderen, en zie je in de logs wie wat gebruikt.
+// Testers die de eigenaar vanuit de app uitnodigt (scherm Developer) staan in
+// KV (TESTERS), zie /api/testers; die werken op dezelfde manier.
 
 interface Secrets {
   ACCESS_CODE?: string;
@@ -33,6 +35,16 @@ const MAX_OUTPUT_TOKENS = 4096;
 const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
 /** Een gedeelde wandeling zonder opnames is hooguit een paar honderd kB. */
 const MAX_SESSION_BYTES = 5 * 1024 * 1024;
+
+/** KV-sleutel (in TESTERS) met alle uitgenodigde testers. */
+const INVITED_KEY = 'invited';
+/** Zelfde regel als bij het wissen van gedeelde gegevens (/api/feedback). */
+const TESTER_NAME = /^[\w-]{1,32}$/;
+
+interface InvitedTester {
+  code: string;
+  invitedAt: number;
+}
 
 export default {
   async fetch(request, env): Promise<Response> {
@@ -60,6 +72,9 @@ export default {
       }
       if (pathname.startsWith('/api/feedback/')) {
         return await feedback(request, env, tester);
+      }
+      if (pathname === '/api/testers') {
+        return await testers(request, env, tester);
       }
       return json({ error: 'Niet gevonden' }, 404);
     } catch (error) {
@@ -196,6 +211,62 @@ async function feedback(request: Request, env: WorkerEnv, tester: string): Promi
 }
 
 /**
+ * Testers beheren vanuit de app (alleen de eigenaar). Uitgenodigde testers
+ * staan als één JSON-object in KV: `{ "anna": { code, invitedAt } }`. Testers
+ * uit het geheim ACCESS_CODES (scripts/tester.mjs) komen ook in de lijst, maar
+ * zijn hier niet te wijzigen.
+ *
+ * - GET /api/testers               alle testers
+ * - POST /api/testers  { name }    nieuwe tester; geeft de code terug
+ * - DELETE /api/testers?name=…     uitgenodigde tester afsluiten
+ */
+async function testers(request: Request, env: WorkerEnv, tester: string): Promise<Response> {
+  if (tester !== OWNER) return json({ error: 'Alleen voor de eigenaar' }, 403);
+  const invited = await invitedTesters(env);
+
+  if (request.method === 'GET') {
+    const fromSecret = secretCodes(env)
+      .filter(([name]) => name !== OWNER)
+      .map(([name]) => ({ name, source: 'secret' as const }));
+    const fromApp = Object.entries(invited).map(([name, { code, invitedAt }]) => ({
+      name,
+      source: 'app' as const,
+      code,
+      invitedAt,
+    }));
+    return json({ testers: [...fromSecret, ...fromApp] });
+  }
+  if (request.method === 'POST') {
+    const { name } = (await request.json()) as { name?: unknown };
+    if (typeof name !== 'string' || !TESTER_NAME.test(name)) {
+      return json({ error: 'Naam zonder spaties of accenten, hooguit 32 tekens' }, 400);
+    }
+    const taken = name === OWNER || name in invited || secretCodes(env).some(([n]) => n === name);
+    if (taken) return json({ error: `${name} bestaat al` }, 409);
+    // 24 tekens, veilig in een URL; zelfde als scripts/tester.mjs
+    const bytes = crypto.getRandomValues(new Uint8Array(18));
+    const code = btoa(String.fromCharCode(...bytes))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_');
+    invited[name] = { code, invitedAt: Date.now() };
+    await env.TESTERS.put(INVITED_KEY, JSON.stringify(invited));
+    return json({ name, code });
+  }
+  if (request.method === 'DELETE') {
+    const name = new URL(request.url).searchParams.get('name') ?? '';
+    if (!(name in invited)) return json({ error: 'Niet gevonden' }, 404);
+    delete invited[name];
+    await env.TESTERS.put(INVITED_KEY, JSON.stringify(invited));
+    return json({ ok: true });
+  }
+  return json({ error: 'Niet gevonden' }, 404);
+}
+
+async function invitedTesters(env: WorkerEnv): Promise<Record<string, InvitedTester>> {
+  return (await env.TESTERS.get<Record<string, InvitedTester>>(INVITED_KEY, 'json')) ?? {};
+}
+
+/**
  * Het gebied van waarneming.nl ("Schoorlse Duinen") waarin een punt ligt.
  * Hun API is openbaar maar stuurt geen CORS-headers, daarom via de proxy.
  * Verwacht `?lat=…&lon=…`; geeft `{ area: { id, name } }` of `{ area: null }`.
@@ -227,8 +298,22 @@ async function area(request: Request): Promise<Response> {
   );
 }
 
+/** Naam per toegangscode, uit de geheimen en de uitgenodigde testers in KV. */
+async function accessCodes(env: WorkerEnv): Promise<[name: string, code: string][]> {
+  const codes = secretCodes(env);
+  try {
+    for (const [name, { code }] of Object.entries(await invitedTesters(env))) {
+      if (code && name !== OWNER) codes.push([name, code]);
+    }
+  } catch (error) {
+    // Dan werken de geheimen nog wel
+    console.error('Testers uit KV niet te lezen', error);
+  }
+  return codes;
+}
+
 /** Naam per toegangscode, uit ACCESS_CODE (de eigenaar) en ACCESS_CODES. */
-function accessCodes(env: WorkerEnv): [name: string, code: string][] {
+function secretCodes(env: WorkerEnv): [name: string, code: string][] {
   const codes: [string, string][] = [];
   if (env.ACCESS_CODE) codes.push([OWNER, env.ACCESS_CODE]);
   if (env.ACCESS_CODES) {
@@ -259,7 +344,7 @@ async function authorize(request: Request, env: WorkerEnv): Promise<string | nul
   const hash = (text: string) => crypto.subtle.digest('SHA-256', encoder.encode(text));
   const given = await hash(code);
   let match: string | null = null;
-  for (const [name, expected] of accessCodes(env)) {
+  for (const [name, expected] of await accessCodes(env)) {
     if (crypto.subtle.timingSafeEqual(given, await hash(expected))) match ??= name;
   }
   return match;

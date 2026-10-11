@@ -170,3 +170,38 @@ export async function fetchArea(lat: number, lon: number): Promise<Area | null> 
   );
   return area;
 }
+
+/**
+ * Tester in de proxy: uitgenodigd vanuit de app (`app`, met code) of via
+ * `npm run tester` in het geheim ACCESS_CODES (`secret`, alleen de naam).
+ */
+export interface Tester {
+  name: string;
+  source: 'app' | 'secret';
+  code?: string;
+  invitedAt?: number;
+}
+
+/** Alle testers (alleen voor de eigenaar). */
+export async function listTesters(): Promise<Tester[]> {
+  return (await request<{ testers: Tester[] }>('/api/testers')).testers;
+}
+
+/** Nieuwe tester met een eigen toegangscode (alleen voor de eigenaar). */
+export async function addTester(name: string): Promise<{ name: string; code: string }> {
+  return request('/api/testers', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+}
+
+/** Uitgenodigde tester afsluiten: de code werkt daarna niet meer. */
+export async function removeTester(name: string): Promise<void> {
+  await request(`/api/testers?name=${encodeURIComponent(name)}`, { method: 'DELETE' });
+}
+
+/** Uitnodigingslink voor een code, op het adres waar de app nu draait. */
+export function inviteLink(code: string): string {
+  return `${location.origin}/#code=${code}`;
+}
