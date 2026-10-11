@@ -3,9 +3,14 @@ import Anthropic from '@anthropic-ai/sdk';
 // Proxy tussen de app en de API's van OpenAI (spraak naar tekst), Anthropic
 // (interpretatie) en waarneming.nl (gebiedsnamen). De API-sleutels blijven hier; de app stuurt alleen een
 // toegangscode mee, zodat niet iedereen die de URL vindt ons tegoed opmaakt.
+//
+// Toegangscodes: ACCESS_CODE is die van de eigenaar; ACCESS_CODES bevat er één
+// per tester als JSON, `{"anna": "…", "piet": "…"}`. Zo kun je één tester
+// afsluiten zonder de anderen, en zie je in de logs wie wat gebruikt.
 
 interface Secrets {
-  ACCESS_CODE: string;
+  ACCESS_CODE?: string;
+  ACCESS_CODES?: string;
   OPENAI_API_KEY: string;
   ANTHROPIC_API_KEY: string;
 }
@@ -26,13 +31,16 @@ export default {
   async fetch(request, env): Promise<Response> {
     const { pathname } = new URL(request.url);
 
-    if (!(await isAuthorized(request, env))) {
+    const tester = await authorize(request, env);
+    if (!tester) {
       return json({ error: 'Ongeldige of ontbrekende toegangscode' }, 401);
     }
+    // In Workers Logs (observability), om gebruik per tester te kunnen zien
+    console.log({ tester, path: pathname });
 
     try {
       if (pathname === '/api/ping' && request.method === 'GET') {
-        return json({ ok: true });
+        return json({ ok: true, tester });
       }
       if (pathname === '/api/area' && request.method === 'GET') {
         return await area(request);
@@ -145,21 +153,41 @@ async function area(request: Request): Promise<Response> {
   );
 }
 
+/** Naam per toegangscode, uit ACCESS_CODE (de eigenaar) en ACCESS_CODES. */
+function accessCodes(env: WorkerEnv): [name: string, code: string][] {
+  const codes: [string, string][] = [];
+  if (env.ACCESS_CODE) codes.push(['eigenaar', env.ACCESS_CODE]);
+  if (env.ACCESS_CODES) {
+    try {
+      const testers = JSON.parse(env.ACCESS_CODES) as Record<string, unknown>;
+      for (const [name, code] of Object.entries(testers)) {
+        if (typeof code === 'string' && code) codes.push([name, code]);
+      }
+    } catch {
+      console.error('ACCESS_CODES is geen geldige JSON');
+    }
+  }
+  return codes;
+}
+
 /**
- * Vergelijkt de toegangscode in constante tijd (via SHA-256-hashes van gelijke
- * lengte), zodat de code niet via responstijden te raden is.
+ * Geeft de naam van de tester bij de toegangscode, of null. Vergelijkt in
+ * constante tijd (via SHA-256-hashes van gelijke lengte) en loopt altijd alle
+ * codes langs, zodat een code niet via responstijden te raden is.
  */
-async function isAuthorized(request: Request, env: WorkerEnv): Promise<boolean> {
+async function authorize(request: Request, env: WorkerEnv): Promise<string | null> {
   const header = request.headers.get('Authorization') ?? '';
   const code = header.startsWith('Bearer ') ? header.slice(7) : '';
-  if (!code || !env.ACCESS_CODE) return false;
+  if (!code) return null;
 
   const encoder = new TextEncoder();
-  const [given, expected] = await Promise.all([
-    crypto.subtle.digest('SHA-256', encoder.encode(code)),
-    crypto.subtle.digest('SHA-256', encoder.encode(env.ACCESS_CODE)),
-  ]);
-  return crypto.subtle.timingSafeEqual(given, expected);
+  const hash = (text: string) => crypto.subtle.digest('SHA-256', encoder.encode(text));
+  const given = await hash(code);
+  let match: string | null = null;
+  for (const [name, expected] of accessCodes(env)) {
+    if (crypto.subtle.timingSafeEqual(given, await hash(expected))) match ??= name;
+  }
+  return match;
 }
 
 /**

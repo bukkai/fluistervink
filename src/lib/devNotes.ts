@@ -1,3 +1,4 @@
+import { getTester } from './api';
 import { db, type Utterance } from './db';
 import { devNoteText } from './observations';
 
@@ -69,5 +70,7 @@ export async function devNotesMarkdown(notes: Utterance[]): Promise<string> {
       return lines.join('\n');
     }),
   );
-  return `# Dev notes Fluistervink\n\n${sections.join('\n')}`;
+  const tester = getTester();
+  const header = tester ? `Van: ${tester}\n\n` : '';
+  return `# Dev notes Fluistervink\n\n${header}${sections.join('\n')}`;
 }

@@ -10,3 +10,6 @@ Thumbs.db
 
 # Testset: exports met opnames en resultaten (persoonlijke gegevens)
 testset/
+
+# Toegangscodes van testers (scripts/tester.mjs)
+.testers.json

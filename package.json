@@ -10,7 +10,8 @@
     "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json && tsc -p tsconfig.worker.json",
     "deploy": "npm run build && wrangler deploy",
     "types": "wrangler types worker/worker-configuration.d.ts",
-    "testset": "node scripts/testset.mjs"
+    "testset": "node scripts/testset.mjs",
+    "tester": "node scripts/tester.mjs"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.63.1",

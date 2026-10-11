@@ -1,7 +1,9 @@
 // Client voor de proxy in worker/index.ts. De toegangscode wordt één keer
-// ingevuld en daarna in localStorage bewaard.
+// ingevuld (of via een uitnodigingslink meegegeven) en daarna in localStorage
+// bewaard, samen met de naam van de tester die de proxy erbij teruggeeft.
 
 const ACCESS_CODE_KEY = 'fluistervink.accessCode';
+const TESTER_KEY = 'fluistervink.tester';
 
 export function getAccessCode(): string {
   return localStorage.getItem(ACCESS_CODE_KEY) ?? '';
@@ -9,6 +11,27 @@ export function getAccessCode(): string {
 
 export function setAccessCode(code: string): void {
   localStorage.setItem(ACCESS_CODE_KEY, code.trim());
+  // Hoort bij de vorige code; ping() vult hem opnieuw
+  localStorage.removeItem(TESTER_KEY);
+}
+
+/** Naam van de tester bij de toegangscode ("eigenaar", "anna"), als bekend. */
+export function getTester(): string | undefined {
+  return localStorage.getItem(TESTER_KEY) ?? undefined;
+}
+
+/**
+ * Uitnodigingslink: `https://…/#code=abc123`. Bewaart de code en haalt hem
+ * uit de adresbalk. Na het `#` gaat de code niet mee naar de server en komt hij
+ * niet in logs terecht. Geeft true als er een code in de link stond.
+ */
+export function acceptInviteLink(): boolean {
+  const code = /^#code=([^&]+)/.exec(location.hash)?.[1];
+  if (!code) return false;
+  setAccessCode(decodeURIComponent(code));
+  // Door naar de instellingen, die meteen laten zien of de code werkt
+  history.replaceState(null, '', `${location.pathname}${location.search}#instellingen`);
+  return true;
 }
 
 export class ApiError extends Error {
@@ -71,9 +94,14 @@ function upstreamDuration(response: Response): number | undefined {
   return match ? Math.round(Number(match[1])) : undefined;
 }
 
-/** Controleert of de proxy bereikbaar is en de toegangscode klopt. */
-export async function ping(): Promise<void> {
-  await request('/api/ping');
+/**
+ * Controleert of de proxy bereikbaar is en de toegangscode klopt, en bewaart
+ * de naam van de tester. Geeft die naam terug.
+ */
+export async function ping(): Promise<string | undefined> {
+  const { tester } = await request<{ tester?: string }>('/api/ping');
+  if (tester) localStorage.setItem(TESTER_KEY, tester);
+  return tester;
 }
 
 export interface TranscribeOptions {

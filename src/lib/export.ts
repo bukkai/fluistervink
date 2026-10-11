@@ -1,4 +1,5 @@
 import { db, type DeletedObservation, type Observation, type Session, type Utterance } from './db';
+import { getTester } from './api';
 import { APP_VERSION, logEvent } from './log';
 
 // Ruwe export van alle gegevens, als vangnet tijdens de ontwikkeling, en het
@@ -34,6 +35,7 @@ export async function exportAllJson({ withAudio = false } = {}): Promise<Blob> {
   const data = {
     exportedAt: new Date().toISOString(),
     appVersion: APP_VERSION,
+    tester: getTester(),
     sessions,
     utterances: await Promise.all(
       utterances.map(async ({ audio, ...u }) => ({

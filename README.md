@@ -7,6 +7,7 @@ Spraakgestuurde vogelwaarnemingen. Zie `CLAUDE.md` voor het ontwerp en `NOTES.md
 Vereist Node 22 (zie `.node-version`). Kopieer eerst `.dev.vars.example` naar `.dev.vars` en vul in:
 
 - `ACCESS_CODE`: alleen voor de lokale Worker; kies iets simpels, mag per computer verschillen.
+- `ACCESS_CODES` (optioneel): codes voor testers, zie "Testers uitnodigen".
 - `OPENAI_API_KEY` en `ANTHROPIC_API_KEY`: maak per computer een nieuwe sleutel aan (ze worden maar één keer getoond), zodat je ze los kunt intrekken.
 
 ```bash
@@ -39,3 +40,20 @@ Eenmalig instellen in het Cloudflare-dashboard:
 3. Geheimen instellen (Settings → Variables and Secrets, type *Secret*): `ACCESS_CODE`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`. Of vanaf de terminal: `npx wrangler secret put ACCESS_CODE`. De productie-`ACCESS_CODE` lang en willekeurig kiezen en in de wachtwoordmanager bewaren: Cloudflare toont geheimen niet meer na opslaan. Kwijt? Gewoon een nieuwe instellen en opnieuw invullen in de app.
 
 Handmatig deployen kan ook: `npm run deploy`.
+
+## Testers uitnodigen
+
+Elke tester krijgt een eigen toegangscode. Dat gaat met één commando:
+
+```bash
+npm run tester -- url https://<app-url>   # eenmalig: adres van de app, voor de links
+npm run tester -- add anna                # code maken, naar Cloudflare, link tonen
+npm run tester -- list                    # alle testers met hun uitnodigingslink
+npm run tester -- remove anna             # tester afsluiten
+```
+
+Het script houdt de codes bij in `.testers.json` (niet in git) en zet ze als geheim `ACCESS_CODES` in Cloudflare, via `wrangler` (eenmalig `npx wrangler login`): in productie én in de Previews Base, want previews erven geen geheimen van productie. Een bestaande preview krijgt de nieuwe lijst pas bij zijn volgende deploy. Werk je op een andere computer, kopieer `.testers.json` dan mee (of bewaar hem in de wachtwoordmanager); anders begint de lijst daar leeg en overschrijft `add` de testers die er al waren.
+
+Stuur de tester de link. Op Android: de link in Chrome openen (de app bewaart de code en laat "Verbonden als anna" zien), daarna pas "Toevoegen aan startscherm". Jouw eigen `ACCESS_CODE` blijft gewoon werken, als tester "eigenaar". In Workers Logs staat bij elk verzoek welke tester het deed.
+
+Met de hand kan ook: `ACCESS_CODES` is JSON, `{"anna": "code", "piet": "code"}`, in te stellen in het dashboard onder Variables and Secrets.
