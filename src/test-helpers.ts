@@ -42,3 +42,79 @@ export function toolResponse(...calls: [name: string, input: object][]): Anthrop
     usage: { input_tokens: 0, output_tokens: 0 },
   } as unknown as Anthropic.Message;
 }
+
+/**
+ * Nagebootste Web Locks (`navigator.locks`), genoeg voor de wachtrij:
+ * wachten, afpakken (`steal`), opgeven (`signal`) en `query`. happy-dom heeft
+ * ze niet.
+ */
+export class FakeLockManager {
+  private holder?: { name: string; clientId: string; stolen: () => void };
+  private waiting: { name: string; clientId: string; grant: () => void }[] = [];
+
+  /** Een ander exemplaar dat het slot pakt en nooit meer loslaat (bevroren). */
+  holdForever(name: string): void {
+    this.request(name, {}, () => new Promise(() => {}), 'bevroren').catch(() => {});
+  }
+
+  request<T>(
+    name: string,
+    options: LockOptions,
+    callback: () => Promise<T>,
+    clientId = 'dit',
+  ): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      const grant = () => {
+        let current = true;
+        this.holder = {
+          name,
+          clientId,
+          stolen: () => {
+            current = false;
+            reject(new DOMException('Slot afgepakt', 'AbortError'));
+          },
+        };
+        callback().then(
+          (value) => {
+            if (!current) return;
+            this.holder = undefined;
+            resolve(value);
+            this.waiting.shift()?.grant();
+          },
+          (error) => {
+            if (!current) return;
+            this.holder = undefined;
+            reject(error);
+            this.waiting.shift()?.grant();
+          },
+        );
+      };
+      if (options.steal) {
+        this.holder?.stolen();
+        grant();
+      } else if (!this.holder) {
+        grant();
+      } else {
+        const entry = { name, clientId, grant };
+        this.waiting.push(entry);
+        options.signal?.addEventListener('abort', () => {
+          if (!this.waiting.includes(entry)) return;
+          this.waiting = this.waiting.filter((w) => w !== entry);
+          reject(new DOMException('Opgegeven', 'AbortError'));
+        });
+      }
+    });
+  }
+
+  async query(): Promise<LockManagerSnapshot> {
+    const info = ({ name, clientId }: { name: string; clientId: string }) => ({
+      name,
+      clientId,
+      mode: 'exclusive' as const,
+    });
+    return {
+      held: this.holder ? [info(this.holder)] : [],
+      pending: this.waiting.map(info),
+    };
+  }
+}
