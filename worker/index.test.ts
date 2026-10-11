@@ -27,8 +27,16 @@ function memoryKv() {
   const store = new Map<string, { value: ArrayBuffer; metadata: unknown }>();
   return {
     store,
-    async put(key: string, value: ArrayBuffer, options?: { metadata?: unknown }) {
-      store.set(key, { value, metadata: options?.metadata });
+    async put(key: string, value: ArrayBuffer | string, options?: { metadata?: unknown }) {
+      const bytes =
+        typeof value === 'string' ? (new TextEncoder().encode(value).buffer as ArrayBuffer) : value;
+      store.set(key, { value: bytes, metadata: options?.metadata });
+    },
+    async get(key: string, type?: string) {
+      const entry = store.get(key);
+      if (!entry) return null;
+      const text = new TextDecoder().decode(entry.value);
+      return type === 'json' ? JSON.parse(text) : text;
     },
     async getWithMetadata(key: string) {
       const entry = store.get(key);
@@ -47,18 +55,21 @@ function memoryKv() {
 }
 
 let kv: ReturnType<typeof memoryKv>;
+let testersKv: ReturnType<typeof memoryKv>;
 let env: Record<string, unknown>;
 /** Nagebootste fetch: alle verzoeken naar buiten komen hier binnen */
 let upstream: ReturnType<typeof vi.fn<(url: string, init?: RequestInit) => Promise<Response>>>;
 
 beforeEach(() => {
   kv = memoryKv();
+  testersKv = memoryKv();
   env = {
     ACCESS_CODE: OWNER_CODE,
     ACCESS_CODES: JSON.stringify({ anna: ANNA_CODE }),
     OPENAI_API_KEY: 'sk-openai-geheim',
     ANTHROPIC_API_KEY: 'sk-ant-geheim',
     FEEDBACK: kv,
+    TESTERS: testersKv,
   };
   upstream = vi.fn(async () => {
     throw new Error('onverwacht verzoek naar buiten');
@@ -320,5 +331,77 @@ describe('/api/feedback (gedeelde gegevens)', () => {
       method: 'DELETE',
     });
     expect(response.status).toBe(400);
+  });
+});
+
+describe('/api/feedback/notes (feedback inzien)', () => {
+  function share(id: string, data: object, code = ANNA_CODE) {
+    return call(`/api/feedback/sessions/${id}`, {
+      code,
+      method: 'PUT',
+      body: JSON.stringify(data),
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  async function notes(): Promise<{ processed: boolean }[]> {
+    const response = await call('/api/feedback/notes', { code: OWNER_CODE });
+    return ((await response.json()) as { notes: { processed: boolean }[] }).notes;
+  }
+
+  function markProcessed(ids: string[], processed: boolean, code = OWNER_CODE) {
+    return call('/api/feedback/processed', {
+      code,
+      method: 'POST',
+      body: JSON.stringify({ ids, processed }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  beforeEach(async () => {
+    await share('w1', {
+      appVersion: 'abc123',
+      sessions: [{ name: 'Mariëndaal' }],
+      utterances: [
+        { id: 'u1', recordedAt: 1000, transcript: 'Twee houtduiven' },
+        { id: 'n1', recordedAt: 2000, kind: 'dev_note', transcript: 'Feedback: de kaart is traag' },
+      ],
+    });
+    await share('losse-feedback', {
+      sessions: [],
+      utterances: [{ id: 'n2', recordedAt: 3000, kind: 'dev_note', transcript: 'Getypt' }],
+    });
+  });
+
+  it('geeft alle feedback, nieuwste eerst, zonder voorvoegsel', async () => {
+    expect(await notes()).toEqual([
+      { id: 'n2', tester: 'anna', recordedAt: 3000, text: 'Getypt', processed: false },
+      {
+        id: 'n1',
+        tester: 'anna',
+        recordedAt: 2000,
+        text: 'de kaart is traag',
+        appVersion: 'abc123',
+        sessionName: 'Mariëndaal',
+        processed: false,
+      },
+    ]);
+  });
+
+  it('onthoudt welke feedback verwerkt is, en kan dat terugdraaien', async () => {
+    expect((await markProcessed(['n1', 'n2'], true)).status).toBe(200);
+    expect((await notes()).map((n) => n.processed)).toEqual([true, true]);
+    await markProcessed(['n2'], false);
+    expect((await notes()).map((n) => n.processed)).toEqual([false, true]);
+  });
+
+  it('is alleen voor de eigenaar', async () => {
+    expect((await call('/api/feedback/notes')).status).toBe(403);
+    expect((await markProcessed(['n1'], true, ANNA_CODE)).status).toBe(403);
+  });
+
+  it("weigert ongeldige id's", async () => {
+    expect((await markProcessed([42 as unknown as string], true)).status).toBe(400);
+    expect((await markProcessed(['../x'], true)).status).toBe(400);
   });
 });

@@ -3,7 +3,8 @@
 // /api/feedback in worker/index.ts) en zet het in testset/feedback/.
 //
 //   npm run feedback -- pull     nieuwe en gewijzigde wandelingen en opnames ophalen
-//   npm run feedback -- notes    alle feedback als Markdown, nieuwste eerst
+//   npm run feedback -- notes    nieuwe feedback als Markdown, nieuwste eerst (--alle: ook verwerkte)
+//   npm run feedback -- verwerkt   wat `notes` net toonde als verwerkt markeren
 //   npm run feedback -- wipe <tester>   alles van een tester wissen, online en hier
 //
 // Na `pull` staat er per tester een export in testset/feedback/<tester>.json,
@@ -24,6 +25,8 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CONFIG = join(ROOT, '.testers.json');
 const OUT = join(ROOT, 'testset', 'feedback');
 const MANIFEST = join(OUT, 'manifest.json');
+/** Id's van de feedback die `notes` het laatst toonde, voor `verwerkt`. */
+const SHOWN = join(OUT, 'notes-getoond.json');
 const DEFAULT_URL = 'https://fluistervink.stephanmullernl.workers.dev';
 
 const readJson = (file, fallback) =>
@@ -52,7 +55,7 @@ async function client() {
   const api = async (path, init = {}) => {
     const response = await fetch(`${base}${path}`, {
       ...init,
-      headers: { Authorization: `Bearer ${code}` },
+      headers: { ...init.headers, Authorization: `Bearer ${code}` },
     });
     if (response.status === 401 || response.status === 403) {
       console.error(
@@ -149,33 +152,47 @@ function combine() {
   return summary;
 }
 
-function notes() {
-  const items = [];
-  if (existsSync(OUT)) {
-    for (const file of readdirSync(OUT).filter(
-      (f) => f.endsWith('.json') && f !== 'manifest.json',
-    )) {
-      const data = JSON.parse(readFileSync(join(OUT, file), 'utf8'));
-      for (const u of data.utterances ?? []) {
-        if (u.kind === 'dev_note')
-          items.push({
-            tester: data.tester,
-            at: u.recordedAt,
-            text: u.transcript ?? '',
-            appVersion: u.metrics?.appVersion,
-          });
-      }
-    }
-  }
-  if (!items.length) {
-    console.log('Geen feedback gevonden. Eerst `npm run feedback -- pull`?');
+/**
+ * Feedback van alle testers, zoals de proxy hem heeft (ook de getypte en wat
+ * nog niet met `pull` is opgehaald). Standaard alleen wat nog niet verwerkt is;
+ * dezelfde lijst als op het scherm Developer van de app.
+ */
+async function notes(all) {
+  const { api } = await client();
+  const { notes: items } = await (await api('/api/feedback/notes')).json();
+  const shown = all ? items : items.filter((n) => !n.processed);
+  writeJson(
+    SHOWN,
+    shown.filter((n) => !n.processed).map((n) => n.id),
+  );
+  if (!shown.length) {
+    console.log(all ? 'Nog geen feedback.' : 'Geen nieuwe feedback.');
     return;
   }
   const format = new Intl.DateTimeFormat('nl-NL', { dateStyle: 'medium', timeStyle: 'short' });
-  console.log('# Feedback van testers\n');
-  for (const item of items.sort((a, b) => b.at - a.at)) {
-    console.log(`- **${item.tester}**, ${format.format(item.at)}: ${item.text}`);
+  console.log(all ? '# Feedback van testers\n' : '# Nieuwe feedback van testers\n');
+  for (const n of shown) {
+    const where = n.sessionName ? `, ${n.sessionName}` : '';
+    const done = n.processed ? ' *(verwerkt)*' : '';
+    console.log(`- **${n.tester}**, ${format.format(n.recordedAt)}${where}: ${n.text}${done}`);
   }
+}
+
+/** Markeert wat `notes` het laatst toonde als verwerkt, niet wat er sindsdien bij kwam. */
+async function processed() {
+  const ids = readJson(SHOWN, []);
+  if (!ids.length) {
+    console.log('Niets te markeren. Eerst `npm run feedback -- notes`.');
+    return;
+  }
+  const { api } = await client();
+  await api('/api/feedback/processed', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids, processed: true }),
+  });
+  writeJson(SHOWN, []);
+  console.log(`${ids.length} feedback als verwerkt gemarkeerd.`);
 }
 
 /**
@@ -212,13 +229,14 @@ async function wipe(tester) {
 
 const command = process.argv[2];
 if (command === 'pull') await pull();
-else if (command === 'notes') notes();
+else if (command === 'notes') await notes(process.argv.includes('--alle'));
+else if (command === 'verwerkt') await processed();
 else if (command === 'wipe') await wipe(process.argv[3]);
 else
   console.log(
     readFileSync(fileURLToPath(import.meta.url), 'utf8')
       .split('\n')
-      .slice(4, 7)
+      .slice(4, 8)
       .join('\n')
       .replace(/^\/\/ ?/gm, ''),
   );

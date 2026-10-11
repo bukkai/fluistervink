@@ -201,6 +201,31 @@ export async function removeTester(name: string): Promise<void> {
   await request(`/api/testers?name=${encodeURIComponent(name)}`, { method: 'DELETE' });
 }
 
+/** Feedback van alle testers, zoals de proxy hem heeft (alleen voor de eigenaar). */
+export interface SharedNote {
+  id: string;
+  tester: string;
+  recordedAt: number;
+  text: string;
+  appVersion?: string;
+  sessionName?: string;
+  processed: boolean;
+}
+
+/** Alle gedeelde feedback, nieuwste eerst (alleen voor de eigenaar). */
+export async function listSharedNotes(): Promise<SharedNote[]> {
+  return (await request<{ notes: SharedNote[] }>('/api/feedback/notes')).notes;
+}
+
+/** Feedback als (niet) verwerkt markeren (alleen voor de eigenaar). */
+export async function markNotesProcessed(ids: string[], processed: boolean): Promise<void> {
+  await request('/api/feedback/processed', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids, processed }),
+  });
+}
+
 /** Uitnodigingslink voor een code, op het adres waar de app nu draait. */
 export function inviteLink(code: string): string {
   return `${location.origin}/#code=${code}`;
