@@ -273,6 +273,7 @@ async function run(item) {
     ...result,
     actions: r.actions,
     rejected: r.rejected,
+    warnings: r.warnings,
     llmMs: r.timing.requestMs,
     usage: r.response.usage,
   };
@@ -452,6 +453,7 @@ const sp = results.reduce((s, r) => ({ e: s.e + r.species.expected, f: s.f + r.s
 console.log('');
 line('Soorten gevonden', sp.f, sp.e);
 console.log(`  ${'Soorten extra'.padEnd(30)} ${String(sp.x).padStart(3)}`);
+console.log(`  ${'Soort-ID hersteld via naam'.padEnd(30)} ${String(results.reduce((s, r) => s + (r.warnings?.length ?? 0), 0)).padStart(3)}`);
 console.log(`  ${'Onzeker gemarkeerd'.padEnd(30)} ${String(results.reduce((s, r) => s + (r.uncertain ?? 0), 0)).padStart(3)}`);
 console.log('\nVelden bij de goede soort:');
 for (const f of FIELDS.slice(1)) {
@@ -463,6 +465,9 @@ if (replay) {
 }
 
 if (!opts.stil) {
+  const fixed = results.filter((r) => r.warnings?.length);
+  if (fixed.length) console.log(`\nHersteld door de app (${fixed.length}):`);
+  for (const r of fixed) console.log(`  "${r.transcript}"\n${r.warnings.map((w) => `    - ${w}`).join('\n')}`);
   const wrong = results.filter((r) => !r.ok);
   if (wrong.length) console.log(`\nFout (${wrong.length}):`);
   for (const r of wrong) {
