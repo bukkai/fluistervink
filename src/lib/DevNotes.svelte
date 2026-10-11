@@ -1,6 +1,7 @@
 <script lang="ts">
   import { liveQuery } from 'dexie';
   import { devNotesMarkdown, listDevNotes, mapsUrl, noteText } from './devNotes';
+  import ShareSettings from './ShareSettings.svelte';
 
   const notes = liveQuery(listDevNotes);
 
@@ -52,9 +53,11 @@
 
 <p class="muted">
   Iets gemerkt tijdens het vogelen? Begin een uitspraak met <em>"feedback"</em>, bijvoorbeeld
-  <em>"feedback, hij trilde niet"</em>. Feedback gaat na de wandeling mee naar de ontwikkelaar
-  (zie <a href="#instellingen">Instellingen</a>).
+  <em>"feedback, hij trilde niet"</em>. Feedback gaat na de wandeling mee naar de ontwikkelaar,
+  als delen aanstaat.
 </p>
+
+<ShareSettings />
 
 <style>
   .title {
@@ -67,6 +70,10 @@
   .title .btn {
     padding: 0.45rem 0.8rem;
     font-size: 0.85rem;
+  }
+
+  .muted {
+    margin-bottom: 1rem;
   }
 
   ul {

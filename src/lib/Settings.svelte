@@ -1,16 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { ApiError, getAccessCode, getTester, ping, setAccessCode } from './api';
-  import { download, exportAllJson, importJson } from './export';
   import { APP_VERSION } from './log';
-  import {
-    lastSharedAt,
-    setShareAudio,
-    setShareEnabled,
-    shareAudio,
-    shareEnabled,
-    shareNow,
-  } from './share';
+  import { shareAudio, shareEnabled } from './share';
 
   let code = $state(getAccessCode());
   let status = $state<'idle' | 'busy' | 'ok' | 'error'>('idle');
@@ -45,65 +37,8 @@
     }
   }
 
-  let sharing = $state(shareEnabled());
-  let sharingAudio = $state(shareAudio());
-  let sharedAt = $state(lastSharedAt());
-  let shareStatus = $state<'idle' | 'busy' | 'error'>('idle');
-  let shareMessage = $state('');
-
-  async function shareManually() {
-    shareStatus = 'busy';
-    try {
-      const { sessions, audio } = await shareNow();
-      shareStatus = 'idle';
-      sharedAt = lastSharedAt();
-      shareMessage =
-        sessions || audio
-          ? [
-              sessions && `${sessions === 1 ? '1 wandeling' : `${sessions} wandelingen`}`,
-              audio && `${audio === 1 ? '1 opname' : `${audio} opnames`}`,
-            ]
-              .filter(Boolean)
-              .join(' en ') + ' verstuurd.'
-          : 'Alles was al verstuurd.';
-    } catch (error) {
-      shareStatus = 'error';
-      shareMessage = `Versturen mislukt: ${error instanceof Error ? error.message : error}`;
-    }
-  }
-
-  const sharedAtFormat = new Intl.DateTimeFormat('nl-NL', { dateStyle: 'medium', timeStyle: 'short' });
-
-  let importMessage = $state('');
-
-  async function importData(event: Event) {
-    const input = event.currentTarget as HTMLInputElement;
-    const file = input.files?.[0];
-    input.value = '';
-    if (!file) return;
-    try {
-      const { added, skipped } = await importJson(file);
-      importMessage = [
-        added === 0
-          ? 'Geen nieuwe wandelingen gevonden.'
-          : `${added === 1 ? '1 wandeling' : `${added} wandelingen`} geïmporteerd, te vinden bij Vorige wandelingen.`,
-        skipped > 0 && `${skipped} stond${skipped === 1 ? '' : 'en'} er al.`,
-      ]
-        .filter(Boolean)
-        .join(' ');
-    } catch (error) {
-      importMessage = `Importeren mislukt: ${error instanceof Error ? error.message : error}`;
-    }
-  }
-
-  /** Met opnames: voor de testset, of om terug te kunnen luisteren na importeren */
-  let withAudio = $state(false);
-
-  async function exportData() {
-    const date = new Date().toISOString().slice(0, 10);
-    const suffix = withAudio ? '-met-opnames' : '';
-    download(await exportAllJson({ withAudio }), `fluistervink-${date}${suffix}.json`);
-  }
+  const sharing = shareEnabled();
+  const sharingAudio = shareAudio();
 </script>
 
 <a class="back" href="#/">Terug</a>
@@ -130,53 +65,8 @@
   <div class="card-head"><h2>Delen met de ontwikkelaar</h2></div>
   <div class="card-body stack">
     <p class="hint">
-      Na elke wandeling gaan de uitspraken, wat de app ervan maakte, je correcties bij het nalopen
-      en je feedback naar de ontwikkelaar, om de herkenning te verbeteren. Ook de locaties van je
-      waarnemingen. Zie <a href="#privacy">Privacy</a>.
-    </p>
-    <label class="check">
-      <input type="checkbox" bind:checked={sharing} onchange={() => setShareEnabled(sharing)} />
-      Wandelingen en feedback delen
-    </label>
-    <label class="check">
-      <input
-        type="checkbox"
-        bind:checked={sharingAudio}
-        disabled={!sharing}
-        onchange={() => setShareAudio(sharingAudio)}
-      />
-      Ook de opnames (helpt om de spraakherkenning te vergelijken)
-    </label>
-    {#if sharing}
-      <button class="btn secondary block" disabled={shareStatus === 'busy'} onclick={shareManually}>
-        {shareStatus === 'busy' ? 'Bezig…' : 'Nu versturen'}
-      </button>
-      <p class="hint">
-        {shareMessage ||
-          (sharedAt ? `Laatst verstuurd: ${sharedAtFormat.format(sharedAt)}.` : 'Nog niets verstuurd.')}
-      </p>
-    {/if}
-  </div>
-</section>
-
-<section class="card">
-  <div class="card-head"><h2>Gegevens</h2></div>
-  <div class="card-body stack">
-    <label class="check">
-      <input type="checkbox" bind:checked={withAudio} />
-      Met opnames (groter bestand; nodig voor de testset)
-    </label>
-    <button class="btn secondary block" onclick={exportData}>Alle gegevens exporteren (JSON)</button>
-    <label class="btn secondary block file">
-      Wandelingen importeren (JSON)
-      <input type="file" accept="application/json,.json" onchange={importData} />
-    </label>
-    {#if importMessage}
-      <p class="message">{importMessage}</p>
-    {/if}
-    <p class="hint">
-      Importeren leest een eerdere export weer in. Alleen wandelingen die er nog niet zijn;
-      opnames alleen als ze in de export zitten.
+      {sharing ? 'Staat aan' : 'Staat uit'}{sharing && sharingAudio ? ', met opnames' : ''}. Aan- of
+      uitzetten bij <a href="#feedback">Feedback</a>; zie ook <a href="#privacy">Privacy</a>.
     </p>
   </div>
 </section>
@@ -209,16 +99,6 @@
     font-size: 0.95rem;
     font-weight: 400;
     color: var(--fg);
-  }
-
-  .file {
-    display: flex;
-    font-size: 1rem;
-    color: var(--fg);
-  }
-
-  .file input {
-    display: none;
   }
 
   .message {

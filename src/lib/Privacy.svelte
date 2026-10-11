@@ -41,10 +41,9 @@
   <div class="card-body">
     <h3>Wat de app verstuurt</h3>
     <p>
-      Alles loopt via een eigen tussenstation (een Cloudflare Worker), zodat de sleutels van
-      OpenAI en Anthropic niet in de app staan. Het bewaart niets, behalve wat je deelt
-      (hieronder). In het logboek van Cloudflare staat alleen welke tester welk soort verzoek deed,
-      plus eventuele foutmeldingen, een paar dagen lang.
+      Alles gaat eerst langs de eigen server van Fluistervink. Die bewaart niets, behalve wat je
+      deelt (hieronder). Wel houdt hij een paar dagen bij wanneer je de app gebruikte en of er iets
+      misging.
     </p>
     <dl>
       <dt>OpenAI</dt>
@@ -60,8 +59,8 @@
       </dd>
       <dt>Waarneming.nl</dt>
       <dd>
-        De coördinaten van een waarneming, om de naam van het gebied op te zoeken. Gaat via het
-        tussenstation, dus zonder je IP-adres of naam.
+        De coördinaten van een waarneming, om de naam van het gebied op te zoeken. Gaat via de
+        server van Fluistervink, dus zonder je IP-adres of naam.
       </dd>
       <dt>OpenStreetMap</dt>
       <dd>
@@ -79,7 +78,7 @@
       Fluistervink is nog in ontwikkeling. Zeg je ja tegen delen, dan gaan na elke wandeling je
       uitspraken als tekst, wat de app ervan maakte, je correcties bij het nalopen, je feedback,
       het logboek van die wandeling en de locaties van je waarnemingen naar de ontwikkelaar.
-      Opnames alleen als je dat bij <a href="#instellingen">Instellingen</a> aanzet.
+      Opnames alleen als je dat bij <a href="#feedback">Feedback</a> aanzet.
     </p>
     <p>
       Het staat bij Cloudflare onder je testernaam. Alleen de ontwikkelaar kan het lezen, en
@@ -94,12 +93,12 @@
   <div class="card-body">
     <h3>Wat je zelf kunt doen</h3>
     <ul>
-      <li>Delen aan- of uitzetten, met of zonder opnames: <a href="#instellingen">Instellingen</a>.</li>
+      <li>Delen aan- of uitzetten, met of zonder opnames: <a href="#feedback">Feedback</a>.</li>
       <li>
         Een wandeling verwijderen, met alle opnames: bij <a href="#wandelingen">Vorige wandelingen</a>.
         Dat is echt weg.
       </li>
-      <li>Alles exporteren als bestand: <a href="#instellingen">Instellingen</a>.</li>
+      <li>Een kopie van al je gegevens: vraag het aan wie je heeft uitgenodigd.</li>
       <li>
         Alles wissen: de app verwijderen, of in Chrome de sitegegevens van Fluistervink wissen.
       </li>

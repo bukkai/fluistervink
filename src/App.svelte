@@ -9,13 +9,14 @@
     stopSession,
   } from './lib/sessions';
   import ActiveSession from './lib/ActiveSession.svelte';
-  import { getAccessCode, ping, takeInvite } from './lib/api';
+  import { getAccessCode, getTester, ping, takeInvite } from './lib/api';
   import { listDevNotes } from './lib/devNotes';
   import { vibrate } from './lib/feedback';
   import { instance } from './lib/instance.svelte';
   import { processQueue } from './lib/observations';
   import { scheduleShare, setShareEnabled, shareChoiceMade } from './lib/share';
   import DevNotes from './lib/DevNotes.svelte';
+  import Developer from './lib/Developer.svelte';
   import PastSession from './lib/PastSession.svelte';
   import PastSessions from './lib/PastSessions.svelte';
   import Privacy from './lib/Privacy.svelte';
@@ -68,6 +69,14 @@
     void route;
     void welcome;
     return !!getAccessCode();
+  });
+
+  // Het scherm Developer (export, import) alleen voor de eigenaar. De naam komt
+  // van de proxy (ping), net als hasAccessCode opnieuw lezen per scherm.
+  let isOwner = $derived.by(() => {
+    void route;
+    void welcome;
+    return getTester() === 'eigenaar';
   });
 
   // Net geopend via een uitnodigingslink: meteen testen of de code werkt en
@@ -147,6 +156,9 @@
         <a href="#feedback">Feedback{$devNotes?.length ? ` (${$devNotes.length})` : ''}</a>
         <a href="#instellingen">Instellingen</a>
         <a href="#privacy">Privacy</a>
+        {#if isOwner}
+          <a href="#developer">Developer</a>
+        {/if}
       </nav>
     {/if}
   </div>
@@ -174,6 +186,8 @@
     <Settings />
   {:else if route === 'privacy'}
     <Privacy />
+  {:else if route === 'developer' && isOwner}
+    <Developer />
   {:else if route === 'feedback' || route === 'devnotes'}
     <DevNotes />
   {:else if active}
@@ -218,7 +232,7 @@
           <p>
             Fluistervink is nog in ontwikkeling. Mag de app na elke wandeling je uitspraken (als
             tekst), wat de app ervan maakte, je correcties en feedback, en de locaties van je
-            waarnemingen naar de ontwikkelaar sturen? Opnames niet, tenzij je dat bij Instellingen
+            waarnemingen naar de ontwikkelaar sturen? Opnames niet, tenzij je dat bij Feedback
             aanzet. Alleen de ontwikkelaar kan het lezen; je kunt het altijd weer uitzetten.
             <a href="#privacy">Meer over privacy</a>
           </p>
