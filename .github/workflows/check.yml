@@ -1,5 +1,5 @@
-# Bij elke pull request (en elke push naar main): typecheck, tests en een
-# proefbuild. Het deployen zelf doet Cloudflare (Workers Builds).
+# Bij elke pull request (en elke push naar main): opmaak, typecheck, tests en
+# een proefbuild. Het deployen zelf doet Cloudflare (Workers Builds).
 name: Check
 
 on:
@@ -17,6 +17,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run format:check
       - run: npm run check
       - run: npm test
       - run: npm run build

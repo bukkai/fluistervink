@@ -1,0 +1,8 @@
+# Gegevens, gegenereerde bestanden en tekst: niet opmaken
+data/
+testset/
+dist/
+public/
+*.md
+package-lock.json
+worker/worker-configuration.d.ts
