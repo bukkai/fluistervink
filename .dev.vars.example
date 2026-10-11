@@ -1,4 +1,6 @@
 # Kopieer naar .dev.vars en vul in. .dev.vars staat niet in git.
 ACCESS_CODE=kies-een-lange-geheime-code
+# Optioneel: codes voor testers, als JSON (naam → code)
+# ACCESS_CODES={"anna":"code-van-anna"}
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...

@@ -7,6 +7,7 @@ Spraakgestuurde vogelwaarnemingen. Zie `CLAUDE.md` voor het ontwerp en `NOTES.md
 Vereist Node 22 (zie `.node-version`). Kopieer eerst `.dev.vars.example` naar `.dev.vars` en vul in:
 
 - `ACCESS_CODE`: alleen voor de lokale Worker; kies iets simpels, mag per computer verschillen.
+- `ACCESS_CODES` (optioneel): codes voor testers, zie "Testers uitnodigen".
 - `OPENAI_API_KEY` en `ANTHROPIC_API_KEY`: maak per computer een nieuwe sleutel aan (ze worden maar één keer getoond), zodat je ze los kunt intrekken.
 
 ```bash
@@ -39,3 +40,15 @@ Eenmalig instellen in het Cloudflare-dashboard:
 3. Geheimen instellen (Settings → Variables and Secrets, type *Secret*): `ACCESS_CODE`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`. Of vanaf de terminal: `npx wrangler secret put ACCESS_CODE`. De productie-`ACCESS_CODE` lang en willekeurig kiezen en in de wachtwoordmanager bewaren: Cloudflare toont geheimen niet meer na opslaan. Kwijt? Gewoon een nieuwe instellen en opnieuw invullen in de app.
 
 Handmatig deployen kan ook: `npm run deploy`.
+
+## Testers uitnodigen
+
+Elke tester krijgt een eigen code in het geheim `ACCESS_CODES`, als JSON:
+
+```json
+{"anna": "lange-willekeurige-code", "piet": "nog-een-andere-code"}
+```
+
+Instellen in het dashboard (Variables and Secrets) of met `npx wrangler secret put ACCESS_CODES` (plak de hele JSON). Een willekeurige code maken: `openssl rand -base64 18 | tr '+/' '-_'`. Toevoegen of afsluiten = de hele JSON opnieuw instellen; Cloudflare toont hem niet terug, dus bewaar hem in de wachtwoordmanager.
+
+Stuur de tester dan de uitnodigingslink `https://<app-url>/#code=<code>`. Op Android: de link in Chrome openen (de app bewaart de code en laat "Verbonden als anna" zien), daarna pas "Toevoegen aan startscherm". Jouw eigen `ACCESS_CODE` blijft gewoon werken, als tester "eigenaar". In Workers Logs staat bij elk verzoek welke tester het deed.

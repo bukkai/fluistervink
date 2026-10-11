@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { ApiError, getAccessCode, ping, setAccessCode } from './api';
+  import { onMount } from 'svelte';
+  import { ApiError, getAccessCode, getTester, ping, setAccessCode } from './api';
   import { download, exportAllJson, importJson } from './export';
   import { APP_VERSION } from './log';
 
@@ -7,14 +8,26 @@
   let status = $state<'idle' | 'busy' | 'ok' | 'error'>('idle');
   let message = $state('');
 
+  let tester = $state(getTester());
+
   async function save(event: SubmitEvent) {
     event.preventDefault();
     setAccessCode(code);
+    tester = undefined;
+    await test();
+  }
+
+  // Meteen laten zien of de code werkt, ook na het openen van een uitnodigingslink
+  onMount(() => {
+    if (code) test();
+  });
+
+  async function test() {
     status = 'busy';
     try {
-      await ping();
+      tester = await ping();
       status = 'ok';
-      message = 'Verbonden met de proxy.';
+      message = tester ? `Verbonden als ${tester}.` : 'Verbonden met de proxy.';
     } catch (error) {
       status = 'error';
       message =
@@ -66,6 +79,9 @@
       Toegangscode
       <input type="password" bind:value={code} autocomplete="off" required />
     </label>
+    {#if !code}
+      <p class="hint">Gekregen via een uitnodigingslink? Open die link dan in Chrome.</p>
+    {/if}
     <button class="btn" disabled={status === 'busy'}>Opslaan en testen</button>
     {#if message}
       <p class="message {status}">{message}</p>

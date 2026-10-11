@@ -30,7 +30,7 @@ De naam is een woordgrap op "luistervink": je fluistert je waarnemingen in, en d
 - **Feedback:** trilpatronen. Eén korte tril = opgeslagen; twee = niet begrepen; een afwijkend patroon = opgeslagen maar onzeker.
 - **API-sleutels:** nooit in de client. Een kleine proxy (`worker/index.ts`) praat met de STT- en LLM-API's: `/api/transcribe` (OpenAI) en `/api/messages` (Anthropic, doorgeefluik met een lijst toegestane modellen). De app stelt prompt en tools zelf samen.
 - **Meten in de ontwikkelfase:** bij elke uitspraak worden appversie (commit), model, promptversie (hash), de meegestuurde context en de tijden per stap bewaard (wachtrij, verzoek, tijd bij Anthropic), plus of de app op de achtergrond stond. Een gebeurtenissenlog (tabel `events`) bewaart fouten, mislukte pogingen, voor-/achtergrond, online/offline en GPS. Alles blijft lokaal en gaat mee in de JSON-export.
-- **Toegang:** de proxy eist een geheime toegangscode (`ACCESS_CODE`), die de gebruiker één keer in de app invult. Geen accounts.
+- **Toegang:** de proxy eist een geheime toegangscode. `ACCESS_CODE` is die van de eigenaar; testers krijgen elk een eigen code in `ACCESS_CODES` (JSON, naam → code), zodat je er één kunt afsluiten en per tester het gebruik ziet (Workers Logs). De code komt binnen via een uitnodigingslink (`https://…/#code=…`; na het `#`, dus niet naar de server of in logs) of wordt bij Instellingen ingevuld, en staat daarna in localStorage. De naam van de tester gaat mee in de JSON-export en de dev notes. Geen accounts.
 - **Hosting:** één Cloudflare Worker met static assets: serveert de app én de `/api`-routes (één project, één URL; HTTPS is vereist voor microfoon en GPS). Automatisch deployen vanuit GitHub via Workers Builds.
 
 ## MVP-scope
