@@ -1,11 +1,25 @@
 :root {
-  --bg: #f7f5ef;
-  --fg: #1d2a1f;
-  --muted: #5f6b60;
-  --border: #d9d6cc;
-  --green: #2f6b3a;
-  --red: #b3372f;
+  --bg: #f1f3f0;
+  --surface: #ffffff;
+  --fg: #1c2620;
+  --muted: #5d6a62;
+  --border: #dde2dc;
+  /* Saliegroen van de kopbalk en de hoofdknoppen */
+  --brand: #4e7d6d;
+  --brand-strong: #3d6658;
+  --on-brand: #ffffff;
+  --green: var(--brand);
+  --red: #c0392b;
   --amber: #a5670c;
+  --amber-soft: #fdf4e3;
+
+  /* Zeldzaamheid, kleuren van waarneming.nl */
+  --rarity-1: #7ab648;
+  --rarity-2: #3ec1d3;
+  --rarity-3: #f2c12e;
+  --rarity-4: #e5493a;
+
+  --radius: 0.75rem;
 
   color-scheme: light dark;
   font-family: system-ui, sans-serif;
@@ -14,13 +28,16 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #141a15;
-    --fg: #e8ebe4;
-    --muted: #9aa69b;
-    --border: #2c352d;
-    --green: #3d8a4b;
-    --red: #c4473e;
-    --amber: #d9a03f;
+    --bg: #121714;
+    --surface: #1b221e;
+    --fg: #e6ebe7;
+    --muted: #97a59c;
+    --border: #2c3630;
+    --brand: #4e7d6d;
+    --brand-strong: #6a9a89;
+    --red: #d9534a;
+    --amber: #e0a845;
+    --amber-soft: #2b2416;
   }
 }
 
