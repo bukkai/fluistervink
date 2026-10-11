@@ -63,18 +63,30 @@ export const aliases = (aliasList as Alias[]).filter((a) => {
 });
 
 // Uit de volledige lijsten van waarneming.nl alleen de codes die je tijdens
-// een wandeling uitspreekt. Het model mag alleen hieruit kiezen.
-const FIELD_ACTIVITIES = [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 25, 26, 30, 31, 77, 2016];
-const FIELD_METHODS = [48, 49, 51];
-const FIELD_LIFE_STAGES = [2, 3, 4, 5, 14, 15, 1101, 1102];
+// een wandeling uitspreekt. Het model mag alleen hieruit kiezen: meer opties
+// in de prompt geeft meer kans op een verkeerde keuze.
+const FIELD_ACTIVITIES = [
+  1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 25, 26, 30, 31, 77, 2016,
+  78, 3051, 3116, 3119, 3121, 3144,
+];
+const FIELD_METHODS = [48, 49, 51, 588];
+const FIELD_LIFE_STAGES = [
+  2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 62, 72, 1175, 1009, 1101, 1102,
+];
 
 function pick(codes: Code[], ids: number[]): Code[] {
   return ids.map((id) => codes.find((c) => c.id === id)!);
 }
 
-export const activities = pick(attributes.activity, FIELD_ACTIVITIES);
-export const methods = pick(attributes.method, FIELD_METHODS);
-export const lifeStages = pick(attributes.life_stage, FIELD_LIFE_STAGES);
+/** Alle codes van waarneming.nl: voor het formulier, de weergave en de export */
+export const allActivities: Code[] = attributes.activity;
+export const allMethods: Code[] = attributes.method;
+export const allLifeStages: Code[] = attributes.life_stage;
+
+/** Codes in de prompt */
+export const activities = pick(allActivities, FIELD_ACTIVITIES);
+export const methods = pick(allMethods, FIELD_METHODS);
+export const lifeStages = pick(allLifeStages, FIELD_LIFE_STAGES);
 
 /**
  * Telmethode staat niet in de attributenlijst; codes uit de API-documentatie,

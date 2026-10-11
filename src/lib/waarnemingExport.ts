@@ -1,11 +1,11 @@
 import { db, type Observation, type Session } from './db';
 import { listObservations } from './observations';
 import {
-  activities,
+  allActivities,
+  allLifeStages,
+  allMethods,
   countingMethods,
   getSpecies,
-  lifeStages,
-  methods,
   type Code,
 } from './vocab';
 
@@ -92,9 +92,9 @@ function toRow(obs: Observation): Row {
     notes: notes(obs),
     sex: obs.sex === 'male' ? 'M' : obs.sex === 'female' ? 'F' : 'U',
     'is certain': obs.uncertain ? 'False' : 'True',
-    activity: english(activities, obs.activityId),
-    'life stage': english(lifeStages, obs.lifeStageId),
-    method: english(methods, obs.methodId),
+    activity: english(allActivities, obs.activityId),
+    'life stage': english(allLifeStages, obs.lifeStageId),
+    method: english(allMethods, obs.methodId),
     'counting method': english(countingMethods, obs.countingMethodId),
     // Waarneming.nl weigert een import met een uuid die al bestaat: zo kan
     // dezelfde waarneming niet twee keer worden ingevoerd

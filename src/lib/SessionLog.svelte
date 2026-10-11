@@ -20,12 +20,12 @@
   } from './observations';
   import {
     DEFAULT_COUNTING_METHOD,
-    activities,
+    allActivities,
+    allLifeStages,
+    allMethods,
     codeName,
     countingMethods,
     getSpecies,
-    lifeStages,
-    methods,
   } from './vocab';
 
   // Waarnemingen en uitspraken van één wandeling; gebruikt voor de lopende
@@ -138,9 +138,9 @@
       obs.countingMethodId !== DEFAULT_COUNTING_METHOD
         ? codeName(countingMethods, obs.countingMethodId)
         : undefined,
-      codeName(activities, obs.activityId),
-      codeName(methods, obs.methodId),
-      codeName(lifeStages, obs.lifeStageId),
+      codeName(allActivities, obs.activityId),
+      codeName(allMethods, obs.methodId),
+      codeName(allLifeStages, obs.lifeStageId),
       obs.sex === 'male' ? 'man' : obs.sex === 'female' ? 'vrouw' : undefined,
     ].filter(Boolean);
   }
