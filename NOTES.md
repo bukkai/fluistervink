@@ -32,8 +32,8 @@ Gemerged t/m **#48**: #46 kaart ↔ lijst in de review, #47 opruimen (alles/lege
 - **PR #49** JSON-export met opnames: gemerged.
 - **PR #50** `npm run testset -- <export.json>`: haalt uitspraken opnieuw door het model (en met `--stt …` door een andere spraakherkenning) en scoort tegen de nagelopen waarnemingen. `--model origineel` = nulmeting zonder API. Exports en resultaten in `testset/` (gitignored); onbruikbare labels in `testset/uitsluiten.txt`. Uitleg bovenin `scripts/testset.mjs` en in de PR.
 - Eerste run op de export van 10 okt (zonder opnames): destijds 41/44, nu 36/44, waarvan 5 ruis door oude labels (staan in `uitsluiten.txt`). Aandachtspunten prompt: "cirkelend ten westen van hier" ≠ overvliegend west; "klinkt als een winterkoning, even in Merlin checken" wordt een waarneming. Het model is niet bij elke run gelijk.
-- **PR #51** (gestapeld op #50): prompt — plek ("ten westen van hier") is geen vliegrichting, cirkelen/bidden = ter plaatse; een vermoeden ("klinkt als een winterkoning") wordt bewust een onzekere waarneming. Testset 36/38.
-- **Gevonden: ID-verwisseling.** "Roepende boomkruiper" → Boomklever, in elke run: ID 70 (Boomklever) en 71 (Boomkruiper) staan naast elkaar en het model pakt het verkeerde ID. Voorstel: model geeft ook de soortnaam mee, de app controleert naam ↔ ID.
+- **#50** (testset-script) en **#51** (prompt: plek ≠ vliegrichting, vermoeden = onzekere waarneming) gemerged.
+- **Open: PR #52** soortnaam bij elk soort-ID: model schrijft eerst `species_name`, dan `species_id`; hoort het ID niet bij de naam, dan geldt de naam (log: `species_id_fixed`, testset telt ze). Oorzaak: Boomklever (70) en Boomkruiper (71) werden verwisseld. Testset 37/38 (enige fout is ruis).
 - STT met de macOS-stem: `gpt-4o-mini-transcribe` verstond "keep" als "geen"; `gpt-4o-transcribe` goed en sneller.
 
 Daarna:
