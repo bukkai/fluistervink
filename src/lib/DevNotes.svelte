@@ -21,16 +21,20 @@
   });
 </script>
 
-<a class="back" href="#/">← Terug</a>
-<h2>Dev notes</h2>
+<a class="back" href="#/">‹ Terug</a>
+<div class="title">
+  <h2 class="page-title">Dev notes</h2>
+  {#if $notes?.length}
+    <button class="btn secondary" onclick={copy}>{copied ? 'Gekopieerd ✓' : 'Kopieer als Markdown'}</button>
+  {/if}
+</div>
 
 {#if $notes?.length}
-  <button onclick={copy}>{copied ? 'Gekopieerd' : 'Kopieer als Markdown'}</button>
-  <ul>
+  <ul class="card">
     {#each $notes as note (note.id)}
       <li>
         <div>{noteText(note)}</div>
-        <div class="muted">
+        <div class="meta">
           {dateTimeFormat.format(note.recordedAt)}
           {#if note.position}
             ·
@@ -47,32 +51,36 @@
 {/if}
 
 <style>
-  .back {
-    color: var(--green);
+  .title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
   }
 
-  button {
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
-    font: inherit;
-    background: var(--bg);
-    color: var(--fg);
+  .title .btn {
+    padding: 0.45rem 0.8rem;
+    font-size: 0.85rem;
   }
 
   ul {
+    margin: 0;
     padding: 0;
     list-style: none;
   }
 
   li {
-    padding: 0.5rem 0;
-    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1rem;
   }
 
-  .muted {
+  li + li {
+    border-top: 1px solid var(--border);
+  }
+
+  .meta {
+    margin-top: 0.15rem;
+    font-size: 0.85rem;
     color: var(--muted);
-    font-size: 0.9rem;
   }
 
   a {

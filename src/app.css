@@ -50,3 +50,138 @@ body {
   background: var(--bg);
   color: var(--fg);
 }
+
+/* Gedeelde bouwstenen voor alle schermen */
+
+input:not([type='checkbox'], [type='radio'], [type='file']),
+select,
+textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  font: inherit;
+  color: var(--fg);
+  background: var(--surface);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid color-mix(in srgb, var(--brand) 35%, transparent);
+  border-color: var(--brand);
+}
+
+input[type='checkbox'] {
+  accent-color: var(--brand);
+}
+
+h2 {
+  letter-spacing: -0.01em;
+}
+
+/* Kop van een scherm: terug-link en titel */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.page-title {
+  margin: 0.25rem 0 0.75rem;
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+.card {
+  margin-top: 1rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.card-body {
+  padding: 1rem;
+}
+
+.card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.card-head h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  box-sizing: border-box;
+  padding: 0.7rem 1.1rem;
+  border: none;
+  border-radius: 0.6rem;
+  font: inherit;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  color: var(--on-brand);
+  background: var(--brand);
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+}
+
+.btn.secondary {
+  color: var(--fg);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.btn.danger {
+  color: white;
+  background: var(--breast);
+}
+
+.btn.block {
+  width: 100%;
+}
+
+.btn.large {
+  padding: 1rem;
+  font-size: 1.1rem;
+}
+
+/* Knop die eruitziet als een link */
+.link {
+  padding: 0;
+  border: none;
+  font: inherit;
+  color: var(--brand-strong);
+  background: none;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+}
+
+.link.danger {
+  color: var(--breast);
+}
+
+.muted {
+  color: var(--muted);
+}

@@ -52,39 +52,46 @@
   }
 </script>
 
-<a class="back" href="#/">← Terug</a>
-<h2>Instellingen</h2>
+<a class="back" href="#/">‹ Terug</a>
+<h2 class="page-title">Instellingen</h2>
 
-<form onsubmit={save}>
-  <label>
-    Toegangscode
-    <input type="password" bind:value={code} autocomplete="off" required />
-  </label>
-  <button disabled={status === 'busy'}>Opslaan en testen</button>
-  {#if message}
-    <p class={status}>{message}</p>
-  {/if}
-</form>
-<button class="secondary" onclick={exportData}>Alle gegevens exporteren (JSON)</button>
-<label class="secondary file">
-  Wandelingen importeren (JSON)
-  <input type="file" accept="application/json,.json" onchange={importData} />
-</label>
-{#if importMessage}
-  <p class="import-message">{importMessage}</p>
-{/if}
-<p class="hint">
-  Leest een eerdere export weer in. Alleen wandelingen die er nog niet zijn; opnames zitten niet in
-  de export.
-</p>
-<p class="version">Versie {APP_VERSION}</p>
+<section class="card">
+  <div class="card-head"><h2>Toegang</h2></div>
+  <form class="card-body" onsubmit={save}>
+    <label>
+      Toegangscode
+      <input type="password" bind:value={code} autocomplete="off" required />
+    </label>
+    <button class="btn" disabled={status === 'busy'}>Opslaan en testen</button>
+    {#if message}
+      <p class="message {status}">{message}</p>
+    {/if}
+  </form>
+</section>
+
+<section class="card">
+  <div class="card-head"><h2>Gegevens</h2></div>
+  <div class="card-body stack">
+    <button class="btn secondary block" onclick={exportData}>Alle gegevens exporteren (JSON)</button>
+    <label class="btn secondary block file">
+      Wandelingen importeren (JSON)
+      <input type="file" accept="application/json,.json" onchange={importData} />
+    </label>
+    {#if importMessage}
+      <p class="message">{importMessage}</p>
+    {/if}
+    <p class="hint">
+      Importeren leest een eerdere export weer in. Alleen wandelingen die er nog niet zijn; opnames
+      zitten niet in de export.
+    </p>
+  </div>
+</section>
+
+<p class="version">Fluistervink · versie {APP_VERSION}</p>
 
 <style>
-  .back {
-    color: var(--green);
-  }
-
-  form {
+  form,
+  .stack {
     display: grid;
     gap: 0.75rem;
   }
@@ -92,64 +99,44 @@
   label {
     display: grid;
     gap: 0.25rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
   }
 
-  input {
-    padding: 0.75rem;
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
-    font: inherit;
-    background: var(--bg);
-    color: var(--fg);
-  }
-
-  button {
-    padding: 0.75rem;
-    border: none;
-    border-radius: 0.5rem;
-    font: inherit;
-    background: var(--green);
-    color: white;
-  }
-
-  .secondary {
-    width: 100%;
-    margin-top: 1.5rem;
-    border: 1px solid var(--border);
-    background: var(--bg);
-    color: var(--fg);
+  label input {
+    font-weight: 400;
   }
 
   .file {
-    display: block;
-    box-sizing: border-box;
-    margin-top: 0.75rem;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    text-align: center;
-    cursor: pointer;
+    display: flex;
+    font-size: 1rem;
+    color: var(--fg);
   }
 
   .file input {
     display: none;
   }
 
-  .import-message {
-    margin-bottom: 0;
+  .message {
+    margin: 0;
   }
 
   .hint {
+    margin: 0;
     font-size: 0.85rem;
     color: var(--muted);
   }
 
   .version {
+    margin: 1.5rem 0 1rem;
     font-size: 0.8rem;
+    text-align: center;
     color: var(--muted);
   }
 
   .ok {
-    color: var(--green);
+    color: var(--brand-strong);
   }
 
   .error {

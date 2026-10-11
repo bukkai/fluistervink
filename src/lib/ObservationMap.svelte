@@ -149,8 +149,9 @@
 
   .map {
     height: 22rem;
+    overflow: hidden;
     border: 1px solid var(--border);
-    border-radius: 0.5rem;
+    border-radius: var(--radius);
     /* Leaflet-panelen boven de rest van de pagina, maar onder dialogen */
     z-index: 0;
     position: relative;
@@ -174,7 +175,7 @@
   }
 
   .map :global(.accuracy) {
-    color: #5f6b60;
+    color: #65707a;
     font-size: 0.85rem;
   }
 </style>
