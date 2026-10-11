@@ -4,6 +4,9 @@ import type { Observation } from './db';
 import {
   activities,
   aliases,
+  allActivities,
+  allLifeStages,
+  allMethods,
   codeName,
   countingMethods,
   getSpecies,
@@ -74,8 +77,15 @@ const fieldProperties = {
   counting_method_id: { type: 'integer', enum: enumOf(countingMethods) },
   activity_id: { type: 'integer', enum: enumOf(activities) },
   method_id: { type: 'integer', enum: enumOf(methods) },
-  life_stage_id: { type: 'integer', enum: enumOf(lifeStages) },
-  sex: { type: 'string', enum: ['male', 'female'] },
+  life_stage_id: {
+    anyOf: [{ type: 'integer', enum: enumOf(lifeStages) }, { type: 'null' }],
+    description:
+      'Kleed of leeftijd als die genoemd wordt ("1kj", "juveniele", "eclips", "zomerkleed"), anders null. Zie "Kleed en leeftijd".',
+  },
+  sex: {
+    anyOf: [{ type: 'string', enum: ['male', 'female'] }, { type: 'null' }],
+    description: 'Geslacht als dat genoemd wordt ("mannetje", "vrouw"), anders null.',
+  },
   uncertain: {
     type: 'boolean',
     description: 'True als je twijfelt aan soort, aantal of interpretatie.',
@@ -110,13 +120,16 @@ const TOOLS: Anthropic.Tool[] = [
     input_schema: {
       type: 'object',
       properties: fieldProperties,
-      // Gedrag en methode verplicht: optionele velden laat het model te snel weg
+      // Gedrag, methode, kleed en geslacht verplicht: optionele velden laat het
+      // model te snel weg. Kleed en geslacht zijn null als ze niet genoemd worden.
       required: [
         'species_id',
         'count',
         'counting_method_id',
         'activity_id',
         'method_id',
+        'life_stage_id',
+        'sex',
         'uncertain',
       ],
       additionalProperties: false,
@@ -233,6 +246,9 @@ Latere correcties gaan per geslacht: "nog een paartje erbij" of "nog een man en 
 - "alarmerend", "alarm" → activiteit 25, methode 49.
 - "foeragerend", "zoekt voedsel" → activiteit 2, methode 48.
 - "gezien en gehoord" → methode 51.
+- "nestbouw", "met nestmateriaal" → activiteit 3119. "Met voer", "voert jongen", "met voedsel in de snavel" → activiteit 3116. "Op het nest", "bezet nest" → activiteit 3051. "Pas uitgevlogen jong(en)" → activiteit 3121 en kleed 5 (juveniel).
+- "ziek", "gewond" → activiteit 3144. "Slaapplaats" → activiteit 78.
+- "nocmig", "op de recorder", "op de geluidsopname" → methode 588 (op geluidsrecorder), activiteit zoals gezegd (meestal 6, overvliegend).
 - Niets genoemd → activiteit 1 (ter plaatse), methode 48 (gezien).
 - Let ook op bijvoeglijke vormen: "zes overvliegende houtduiven" = activiteit 6, "een zingende merel" = activiteit 4.
 
@@ -242,6 +258,17 @@ Codes:
 - Kleed/leeftijd: ${codeList(lifeStages)}
 - Telmethode: ${codeList(countingMethods)}
 - Geslacht: "man", "mannetje" → male; "vrouw", "vrouwtje" → female.
+
+## Kleed en leeftijd
+
+Vogelaars korten leeftijd en kleed af. Spraakherkenning schrijft ze soms als cijfers en letters ("1kj"), soms uit ("eerste kalenderjaar", "een-kaa-jee"). Wordt een leeftijd of kleed genoemd, ook als bijvoeglijk naamwoord ("drie juveniele spreeuwen", "een eclips mannetje"), vul dan altijd life_stage_id in. Wordt er niets over gezegd, laat het dan weg.
+- "1kj", "eerste kalenderjaar" → 14; "2kj" → 15; "3kj" → 16; "4kj" → 72; "5kj" → 1175.
+- "1w", "eerste winter", "eerstewinter" → 8; "2w", "tweede winter" → 10; "3w", "derde winter" → 62.
+- "1z", "eerste zomer" → 9; "2z", "tweede zomer" → 11; "eerste najaar" → 7.
+- "juv", "juveniel", "juveniele" → 5. "Ad", "adult", "adulte", "volwassen" → 2; "adult zomerkleed" → 3; "adult winterkleed" → 4. Alleen "zomerkleed" → 1101, alleen "winterkleed" → 1102.
+- "subad", "subadult", "imm", "immatuur", "onvolwassen" → 6. "Pull", "pullus", "nestjong", "kuiken" → 1009. "Eclips" → 12.
+- Samen met een geslacht ("een 1kj-mannetje") → life_stage_id én sex.
+- Verschillende leeftijden van één soort in één uitspraak ("twee adulte en een 1kj zilvermeeuw") → één add_observation per leeftijd, zoals bij geslacht.
 
 ## Twijfel
 
@@ -273,9 +300,9 @@ const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
 function describe(obs: Observation): string {
   const parts = [
     `${obs.count} × ${getSpecies(obs.speciesId)?.name ?? `soort ${obs.speciesId}`}`,
-    codeName(activities, obs.activityId),
-    codeName(methods, obs.methodId),
-    codeName(lifeStages, obs.lifeStageId),
+    codeName(allActivities, obs.activityId),
+    codeName(allMethods, obs.methodId),
+    codeName(allLifeStages, obs.lifeStageId),
     obs.sex === 'male' ? 'man' : obs.sex === 'female' ? 'vrouw' : undefined,
     obs.uncertain ? 'onzeker' : undefined,
     obs.remarks ? `opmerking: "${obs.remarks}"` : undefined,
@@ -340,8 +367,8 @@ interface RawFields {
   counting_method_id?: number;
   activity_id?: number;
   method_id?: number;
-  life_stage_id?: number;
-  sex?: 'male' | 'female';
+  life_stage_id?: number | null;
+  sex?: 'male' | 'female' | null;
   uncertain?: boolean;
   uncertain_reason?: string;
   remarks?: string;
@@ -364,8 +391,8 @@ function toAction(block: Anthropic.ToolUseBlock, context: Observation[]): Action
     countingMethodId: input.counting_method_id,
     activityId: input.activity_id,
     methodId: input.method_id,
-    lifeStageId: input.life_stage_id,
-    sex: input.sex,
+    lifeStageId: input.life_stage_id ?? undefined,
+    sex: input.sex ?? undefined,
     uncertain: input.uncertain,
     uncertainReason: input.uncertain ? input.uncertain_reason : undefined,
     remarks: input.remarks?.trim() || undefined,

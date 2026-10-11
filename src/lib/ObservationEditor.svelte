@@ -1,8 +1,12 @@
 <script lang="ts">
   import type { Observation, Utterance } from './db';
   import { deleteObservation, editObservation } from './observations';
+  import type { Code } from './vocab';
   import {
     activities,
+    allActivities,
+    allLifeStages,
+    allMethods,
     allSpecies,
     countingMethods,
     getSpecies,
@@ -105,18 +109,14 @@
       Gedrag
       <select bind:value={activityId}>
         <option value={undefined}>—</option>
-        {#each activities as code (code.id)}
-          <option value={code.id}>{code.name}</option>
-        {/each}
+        {@render options(activities, allActivities)}
       </select>
     </label>
     <label>
       Methode
       <select bind:value={methodId}>
         <option value={undefined}>—</option>
-        {#each methods as code (code.id)}
-          <option value={code.id}>{code.name}</option>
-        {/each}
+        {@render options(methods, allMethods)}
       </select>
     </label>
   </div>
@@ -126,9 +126,7 @@
       Kleed/leeftijd
       <select bind:value={lifeStageId}>
         <option value={undefined}>—</option>
-        {#each lifeStages as code (code.id)}
-          <option value={code.id}>{code.name}</option>
-        {/each}
+        {@render options(lifeStages, allLifeStages)}
       </select>
     </label>
     <label>
@@ -177,6 +175,18 @@
     <option value={s.name}></option>
   {/each}
 </datalist>
+
+<!-- Wat je in het veld zegt bovenaan, de rest van waarneming.nl eronder -->
+{#snippet options(field: Code[], all: Code[])}
+  {#each field as code (code.id)}
+    <option value={code.id}>{code.name}</option>
+  {/each}
+  <optgroup label="Meer">
+    {#each all.filter((code) => !field.includes(code)) as code (code.id)}
+      <option value={code.id}>{code.name}</option>
+    {/each}
+  </optgroup>
+{/snippet}
 
 <style>
   form {

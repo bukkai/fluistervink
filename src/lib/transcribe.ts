@@ -19,7 +19,9 @@ const PROMPT = `Vogelwaarnemingen, ingesproken tijdens een wandeling. Bijvoorbee
 
 Vogelnamen: ${speciesNames.join(', ')}.
 
-Bijnamen: ${aliasNames.join(', ')}.`;
+Bijnamen: ${aliasNames.join(', ')}.
+
+Leeftijd en kleed: 1kj, 2kj, 3kj, 1w, 2w, 1z, juv, ad, subad, imm, pullus, eclips, zomerkleed, winterkleed. Nocmig.`;
 
 /** Korte hash van model en prompt, zoals bij de interpretatie. */
 export const transcribePromptVersion: Promise<string> = crypto.subtle
