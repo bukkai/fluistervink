@@ -12,6 +12,7 @@ import { attachArea } from './area';
 import { utteranceFeedback, vibrate } from './feedback';
 import { MODEL, interpret, promptVersion, type Action, type Interpretation } from './interpret';
 import { currentPosition } from './location.svelte';
+import { INSTANCE_ID } from './instance.svelte';
 import { APP_VERSION, logEvent, wasHiddenSince } from './log';
 import type { Recording } from './recorder.svelte';
 import { TRANSCRIBE_MODEL, transcribe, transcribePromptVersion } from './transcribe';
@@ -70,7 +71,7 @@ async function submit(
   lookup: Promise<PositionLookup>,
 ): Promise<void> {
   const id = crypto.randomUUID();
-  await db.utterances.add({ id, ...fields, status: 'pending' });
+  await db.utterances.add({ id, ...fields, savedAt: Date.now(), status: 'pending' });
   processQueue();
   attachPosition(id, lookup);
 }
@@ -164,27 +165,53 @@ let running = false;
 /**
  * Verwerkt alle wachtende uitspraken op volgorde. Wordt na elke nieuwe
  * uitspraak aangeroepen; een tweede aanroep terwijl hij loopt doet niets.
+ *
+ * Het slot (Web Locks) zorgt dat maar één exemplaar van de app tegelijk
+ * verwerkt, ook als hij in een tabblad én als geïnstalleerde app openstaat.
+ * Bij het opstarten (`takeOver`) pakt dit exemplaar het slot af: het andere
+ * kan bevroren op de achtergrond staan en het anders nooit loslaten.
  */
-export async function processQueue(): Promise<void> {
+export async function processQueue({ takeOver = false } = {}): Promise<void> {
   if (running) return;
   running = true;
   try {
-    // Uitspraken die bleven hangen (app afgesloten tijdens verwerken) opnieuw
-    const stuck = await db.utterances.where('status').equals('processing').toArray();
-    for (const u of stuck)
-      logEvent('requeued', undefined, { sessionId: u.sessionId, utteranceId: u.id });
-    await db.utterances.where('status').equals('processing').modify({ status: 'pending' });
-
-    while (true) {
-      const [next] = await db.utterances.where('status').equals('pending').sortBy('recordedAt');
-      if (!next) break;
-      await processUtterance(next);
-      const processed = await db.utterances.get(next.id);
-      if (processed) vibrate(utteranceFeedback(processed));
+    if (navigator.locks) {
+      await navigator.locks.request('fluistervink-queue', { steal: takeOver }, runQueue);
+    } else {
+      await runQueue();
     }
+  } catch (error) {
+    // Slot afgepakt door een ander exemplaar (dat dan zelf verder verwerkt)
+    if (!(error instanceof DOMException && error.name === 'AbortError')) throw error;
   } finally {
     running = false;
   }
+}
+
+async function runQueue(): Promise<void> {
+  // Uitspraken die bleven hangen (app afgesloten tijdens verwerken) opnieuw.
+  // Kan veilig: wie het slot heeft, is de enige die verwerkt.
+  const stuck = await db.utterances.where('status').equals('processing').toArray();
+  for (const u of stuck)
+    logEvent('requeued', undefined, { sessionId: u.sessionId, utteranceId: u.id });
+  await db.utterances.where('status').equals('processing').modify({ status: 'pending' });
+
+  while (true) {
+    const [next] = await db.utterances.where('status').equals('pending').sortBy('recordedAt');
+    if (!next) break;
+    await processUtterance(next);
+    const processed = await db.utterances.get(next.id);
+    if (processed) vibrate(utteranceFeedback(processed));
+  }
+}
+
+/**
+ * Is deze verwerkingspoging nog de geldige? Een exemplaar dat bevroren was
+ * en weer ontdooit, kan een poging afmaken die een ander intussen opnieuw
+ * deed; dan het resultaat weggooien in plaats van dubbel opslaan.
+ */
+function isCurrentAttempt(latest: Utterance | undefined, attempts: number): latest is Utterance {
+  return latest?.status === 'processing' && latest.attempts === attempts;
 }
 
 /**
@@ -205,6 +232,7 @@ async function processUtterance(utterance: Utterance): Promise<void> {
 
   let step: 'transcribe' | 'interpret' = 'transcribe';
   let interpretation: Interpretation;
+  let contextMs: number | undefined;
   try {
     // Opname: eerst spraak naar tekst. Na een fout bij de interpretatie blijft
     // het transcript bewaard, zodat "Opnieuw" alleen die stap herhaalt.
@@ -215,17 +243,19 @@ async function processUtterance(utterance: Utterance): Promise<void> {
 
     // Dev notes gaan niet naar het model: snel, gratis en altijd goed herkend
     if (devNoteText(transcript) !== undefined) {
-      await db.utterances.update(utterance.id, { status: 'done', kind: 'dev_note', result: 'note' });
+      await finishWithout(utterance.id, attempts, { kind: 'dev_note', result: 'note' });
       return;
     }
     // Niets verstaan (wind, per ongeluk ingedrukt): niet naar het model
     if (!transcript) {
-      await db.utterances.update(utterance.id, { status: 'done', result: 'ignored' });
+      await finishWithout(utterance.id, attempts, { result: 'ignored' });
       return;
     }
 
     step = 'interpret';
+    const contextStart = Date.now();
     const recent = await listObservations(utterance.sessionId);
+    contextMs = Date.now() - contextStart;
     interpretation = await interpret(transcript, recent);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -245,7 +275,11 @@ async function processUtterance(utterance: Utterance): Promise<void> {
       ids,
     );
     const prefix = step === 'transcribe' ? 'Spraakherkenning: ' : '';
-    await db.utterances.update(utterance.id, { status: 'failed', error: prefix + message });
+    await db.transaction('rw', db.utterances, async () => {
+      const latest = await db.utterances.get(utterance.id);
+      if (isCurrentAttempt(latest, attempts))
+        await db.utterances.update(utterance.id, { status: 'failed', error: prefix + message });
+    });
     return;
   }
 
@@ -254,16 +288,23 @@ async function processUtterance(utterance: Utterance): Promise<void> {
     model: MODEL,
     promptVersion: await promptVersion,
     context: interpretation.context,
+    instance: INSTANCE_ID,
     startedAt,
     finishedAt: Date.now(),
     ...interpretation.timing,
+    contextMs,
     wasHidden: wasHiddenSince(utterance.recordedAt),
     online: navigator.onLine,
   };
 
+  const saveStart = Date.now();
   await db.transaction('rw', db.observations, db.deletedObservations, db.utterances, async () => {
     // Opnieuw ophalen: de positie kan intussen binnengekomen zijn
-    const latest = (await db.utterances.get(utterance.id)) ?? utterance;
+    const latest = await db.utterances.get(utterance.id);
+    if (!isCurrentAttempt(latest, attempts)) {
+      logEvent('stale_result', { attempt: attempts }, ids);
+      return;
+    }
     const changes = await applyActions(latest, interpretation.actions);
     const touched = await db.observations.bulkGet(
       changes.flatMap((c) => (c.type === 'delete' ? [] : [c.observationId])),
@@ -274,7 +315,7 @@ async function processUtterance(utterance: Utterance): Promise<void> {
     await db.utterances.update(utterance.id, {
       status: 'done',
       llmOutput: interpretation.response,
-      metrics,
+      metrics: { ...metrics, saveMs: Date.now() - saveStart },
       changes,
       // Het model herkende een dev note zonder "dev note" ervoor
       ...(devNote
@@ -285,6 +326,19 @@ async function processUtterance(utterance: Utterance): Promise<void> {
           }),
       error: interpretation.rejected.length ? interpretation.rejected.join('; ') : undefined,
     });
+  });
+}
+
+/** Afronden zonder model (dev note, niets verstaan), als de poging nog geldt. */
+async function finishWithout(
+  utteranceId: string,
+  attempts: number,
+  fields: Pick<Utterance, 'kind' | 'result'>,
+): Promise<void> {
+  await db.transaction('rw', db.utterances, async () => {
+    const latest = await db.utterances.get(utteranceId);
+    if (isCurrentAttempt(latest, attempts))
+      await db.utterances.update(utteranceId, { status: 'done', ...fields });
   });
 }
 

@@ -76,6 +76,11 @@ export interface Utterance {
   llmOutput?: unknown;
   status: 'pending' | 'processing' | 'done' | 'failed';
   /**
+   * Moment waarop de uitspraak in de database stond (na het afronden van de
+   * opname). Begin verwerking min dit = tijd in de wachtrij.
+   */
+  savedAt?: number;
+  /**
    * `dev_note`: een bevinding over de app ("dev note, …") in plaats van een
    * waarneming. Gaat niet naar het model. Leeg = gewone uitspraak.
    */
@@ -124,6 +129,12 @@ export interface ProcessingMetrics {
   /** Duur van het verzoek aan de proxy, en daarvan de tijd bij Anthropic */
   requestMs?: number;
   upstreamMs?: number;
+  /** Ophalen van de recente waarnemingen (database), vóór het model */
+  contextMs?: number;
+  /** Wegschrijven van het resultaat (database) */
+  saveMs?: number;
+  /** Welk exemplaar van de app (tabblad of geïnstalleerde app) verwerkte */
+  instance?: string;
   /** De app was tussen uitspraak en eind verwerking (even) op de achtergrond */
   wasHidden: boolean;
   online: boolean;

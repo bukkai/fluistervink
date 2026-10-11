@@ -1,4 +1,5 @@
 import { db } from './db';
+import { INSTANCE_ID, claimInstance } from './instance.svelte';
 
 // Gebeurtenissenlog voor de ontwikkelfase: alles wat helpt om later te
 // begrijpen wat er gebeurde (fouten, app op de achtergrond, geen netwerk,
@@ -10,6 +11,8 @@ export interface LogEvent {
   id?: number;
   at: number;
   type: string;
+  /** Welk exemplaar van de app (tabblad of geïnstalleerde app) dit logde */
+  instance?: string;
   sessionId?: string;
   utteranceId?: string;
   data?: unknown;
@@ -21,7 +24,7 @@ export function logEvent(
   data?: unknown,
   ids: { sessionId?: string; utteranceId?: string } = {},
 ): void {
-  db.events.add({ at: Date.now(), type, ...ids, data }).catch(() => {});
+  db.events.add({ at: Date.now(), type, instance: INSTANCE_ID, ...ids, data }).catch(() => {});
 }
 
 /** Laatste moment waarop de app naar de achtergrond ging. */
@@ -43,6 +46,7 @@ export function startLogging(): void {
     online: navigator.onLine,
     standalone: matchMedia('(display-mode: standalone)').matches,
   });
+  claimInstance();
 
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) lastHiddenAt = Date.now();
