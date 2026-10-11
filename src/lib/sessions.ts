@@ -79,18 +79,23 @@ export async function requestPersistentStorage(): Promise<boolean> {
 export interface SessionCounts {
   utterances: number;
   observations: number;
+  devNotes: number;
 }
 
-/** Aantal uitspraken en waarnemingen per wandeling, voor het overzicht */
+/** Aantal uitspraken, waarnemingen en dev notes per wandeling, voor het overzicht */
 export async function countPerSession(): Promise<Map<string, SessionCounts>> {
   const counts = new Map<string, SessionCounts>();
   const get = (id: string) => {
-    if (!counts.has(id)) counts.set(id, { utterances: 0, observations: 0 });
+    if (!counts.has(id)) counts.set(id, { utterances: 0, observations: 0, devNotes: 0 });
     return counts.get(id)!;
   };
   // Alleen de index lezen, niet de uitspraken zelf (die bevatten de audio)
   for (const id of await db.utterances.orderBy('sessionId').keys()) get(id as string).utterances++;
   for (const id of await db.observations.orderBy('sessionId').keys()) get(id as string).observations++;
+  // `kind` heeft geen index; de audio wordt pas gelezen als iemand hem afspeelt
+  await db.utterances
+    .filter((u) => u.kind === 'dev_note')
+    .each((u) => get(u.sessionId).devNotes++);
   return counts;
 }
 

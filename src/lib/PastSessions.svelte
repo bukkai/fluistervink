@@ -13,6 +13,27 @@
 
   let exportedIds = $derived(sessions.filter((s) => s.exportedAt).map((s) => s.id));
 
+  /**
+   * Leeg: geen waarnemingen en geen dev notes. Een wandeling met alleen dev
+   * notes telt niet als leeg, want die gaan mee als de wandeling weg is.
+   */
+  let emptyIds = $derived(
+    $counts
+      ? sessions
+          .filter((s) => {
+            const c = $counts.get(s.id);
+            return !c || (c.observations === 0 && c.devNotes === 0);
+          })
+          .map((s) => s.id)
+      : [],
+  );
+
+  let allSelected = $derived(sessions.length > 0 && selected.size === sessions.length);
+
+  function toggleAll() {
+    selected = allSelected ? new Set() : new Set(sessions.map((s) => s.id));
+  }
+
   function toggle(id: string) {
     const next = new Set(selected);
     if (next.has(id)) next.delete(id);
@@ -28,10 +49,13 @@
   async function removeSelected() {
     const n = selected.size;
     const notExported = sessions.filter((s) => selected.has(s.id) && !s.exportedAt).length;
+    const devNotes = [...selected].reduce((sum, id) => sum + ($counts?.get(id)?.devNotes ?? 0), 0);
     const message = [
       `${n === 1 ? '1 wandeling' : `${n} wandelingen`} voorgoed verwijderen, met alle waarnemingen en opnames?`,
       notExported > 0 &&
         `${notExported === 1 ? 'Eén daarvan is' : `${notExported} daarvan zijn`} nog niet geëxporteerd.`,
+      devNotes > 0 &&
+        `${devNotes === 1 ? '1 dev note gaat' : `${devNotes} dev notes gaan`} ook weg.`,
     ]
       .filter(Boolean)
       .join('\n\n');
@@ -54,6 +78,7 @@
       formatDuration((session.endedAt ?? session.startedAt) - session.startedAt),
       c && `${c.utterances} ${c.utterances === 1 ? 'uitspraak' : 'uitspraken'}`,
       c && `${c.observations} ${c.observations === 1 ? 'waarneming' : 'waarnemingen'}`,
+      c?.devNotes && `${c.devNotes} ${c.devNotes === 1 ? 'dev note' : 'dev notes'}`,
     ]
       .filter(Boolean)
       .join(' · ');
@@ -76,11 +101,17 @@
   <p class="muted">Nog geen wandelingen.</p>
 {:else}
   {#if selecting}
-    <p class="muted hint">
-      Vink de wandelingen aan die weg mogen.
+    <p class="muted hint">Vink de wandelingen aan die weg mogen.</p>
+    <p class="quick">
+      <button class="link" onclick={toggleAll}>{allSelected ? 'Niets' : 'Alles'} aanvinken</button>
       {#if exportedIds.length > 0}
         <button class="link" onclick={() => (selected = new Set(exportedIds))}>
-          Alle geëxporteerde aanvinken
+          Alle geëxporteerde
+        </button>
+      {/if}
+      {#if emptyIds.length > 0}
+        <button class="link" onclick={() => (selected = new Set(emptyIds))}>
+          Alle lege ({emptyIds.length})
         </button>
       {/if}
     </p>
@@ -143,7 +174,14 @@
   }
 
   .hint {
-    margin-top: 0;
+    margin: 0 0 0.25rem;
+  }
+
+  .quick {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.25rem;
+    margin: 0 0 0.75rem;
   }
 
   ul {
