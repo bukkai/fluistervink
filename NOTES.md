@@ -50,12 +50,13 @@ Gemerged t/m **#48**: #46 kaart ↔ lijst in de review, #47 opruimen (alles/lege
 - Uitgaven: bij OpenAI en Anthropic vooraf betaald tegoed met auto-reload uit, dat is de harde grens (11 okt). Twee exemplaren tegelijk is al opgelost (`src/lib/instance.svelte.ts`).
 - **#64** vergeten wandeling: na een uur zonder uitspraken vraagt de app bij het openen of de wandeling nog loopt; na 8 uur stopt hij vanzelf (eindtijd = laatste uitspraak), zodat hij ook gedeeld wordt.
 - **#65** nieuwe versie pas laden als er geen wandeling loopt (`src/lib/update.ts`, `registerType: 'prompt'`). In de ingebouwde browser niet na te bootsen; op de telefoon nalopen (`update_deferred` / `update_applied` in het log).
+- **#66** tests (Vitest, 45 stuks: wachtrij met nagebootst model, validatie, CSV, feedback-voorvoegsel, vergeten wandeling) en GitHub Actions bij elke PR (check, test, build). Nog doen: in GitHub een branch-regel op `main` met verplichte check. Niet getest: schermen en proxy.
 
 Daarna:
 
 1. **Derde wandeling**, daarna exporteren **met opnames** en `npm run testset` draaien: per run met `--stt gpt-4o-transcribe` en `gpt-4o-mini-transcribe` (en `whisper-1`), en eventueel `--model claude-sonnet-5-5`. Ook nagaan of de vertraging van #44 weg is.
 2. Prompt verbeteren met wat de testset laat zien (punten hierboven, "tortelduif"), telkens nagaan met de testset.
-3. F. Vitest. Mijlpaal na 3–4 wandelingen.
+3. Mijlpaal na 3–4 wandelingen. (Vitest: #66.)
 4. Later: kostenoverzicht per wandeling in het testset-script (uit het `usage`-blok van Anthropic, plus minuten audio voor OpenAI). Stand 11 okt: $0,36 deze maand bij Anthropic, 97% uit de cache, ruwweg een tiende cent per uitspraak; tegoed zonder auto-reload is de harde grens.
 
 ### Eerder (10 okt)
