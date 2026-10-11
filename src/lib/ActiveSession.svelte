@@ -246,7 +246,7 @@
     font-weight: 650;
     color: var(--on-brand);
     background: var(--brand);
-    box-shadow: 0 2px 0 var(--brand-strong), 0 6px 16px rgb(40 60 80 / 0.2);
+    box-shadow: 0 2px 0 var(--brand-strong), 0 6px 16px rgb(60 55 50 / 0.18);
     transition:
       transform 80ms,
       background 150ms;
@@ -263,7 +263,7 @@
   }
 
   .talk.recording {
-    background: var(--red);
+    background: var(--breast);
     box-shadow: 0 2px 0 var(--breast-strong);
     animation: pulse 1.4s ease-out infinite;
   }
