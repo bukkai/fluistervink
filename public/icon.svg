@@ -1,22 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Mannetjesvink: roze-oranje lijf, blauwgrijze kruin, donkere vleugel met witte streep -->
+  <!-- Kop van een mannetjesvink: blauwgrijze kruin en nek, oranje wang en
+       borst, zwart bandje boven de snavel. Groot en eenvoudig, zodat hij ook
+       klein herkenbaar blijft. Binnen de veilige zone voor maskable icons. -->
   <defs>
-    <clipPath id="kop"><circle cx="330" cy="215" r="48"/></clipPath>
+    <clipPath id="kop">
+      <path d="M90 512 C95 420 70 360 85 290 C100 170 180 110 260 110 C340 110 395 170 395 250 C395 330 370 380 390 512 Z"/>
+    </clipPath>
   </defs>
   <rect width="512" height="512" fill="#4b6a84"/>
-  <!-- Staart en pootjes -->
-  <path d="M160 270 L100 230 L150 310 Z" fill="#2b2522"/>
-  <rect x="235" y="355" width="10" height="45" fill="#f4f1ed"/>
-  <rect x="270" y="355" width="10" height="45" fill="#f4f1ed"/>
-  <!-- Lijf en kop -->
-  <ellipse cx="250" cy="290" rx="105" ry="75" fill="#d9876a"/>
-  <circle cx="330" cy="215" r="48" fill="#d9876a"/>
-  <!-- Blauwgrijze kruin en nek -->
-  <path d="M270 250 C295 228 320 206 380 204 L380 150 L270 150 Z" fill="#a9bdcd" clip-path="url(#kop)"/>
-  <!-- Vleugel met witte vleugelstreep -->
-  <path d="M165 262 C200 225 270 228 300 262 C270 300 205 310 165 262 Z" fill="#2b2522"/>
-  <path d="M196 252 C225 238 262 240 284 258" fill="none" stroke="#f4f1ed" stroke-width="12" stroke-linecap="round"/>
-  <!-- Snavel en oog -->
-  <path d="M372 205 L410 218 L372 230 Z" fill="#a9bdcd"/>
-  <circle cx="343" cy="210" r="7" fill="#22292f"/>
+  <g clip-path="url(#kop)">
+    <!-- Wang, keel en borst -->
+    <rect width="512" height="512" fill="#d9875a"/>
+    <!-- Kruin en nek -->
+    <path d="M0 0 H512 V196 C420 186 330 192 290 205 C230 225 190 300 175 380 C165 440 150 480 140 512 H0 Z" fill="#a3b4d0"/>
+  </g>
+  <!-- Zwart bandje op het voorhoofd -->
+  <path d="M350 192 C364 194 376 202 385 213 L379 224 C370 214 359 208 346 205 Z" fill="#1f2328"/>
+  <!-- Snavel -->
+  <path d="M378 212 C405 218 432 230 452 246 C432 260 405 270 380 274 C386 254 386 232 378 212 Z" fill="#8a97ad"/>
+  <path d="M452 246 C430 248 405 248 382 246" stroke="#5f6b80" stroke-width="5" fill="none"/>
+  <!-- Oog -->
+  <circle cx="318" cy="236" r="22" fill="#1f2328"/>
+  <circle cx="326" cy="228" r="6" fill="#ffffff"/>
 </svg>

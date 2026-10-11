@@ -21,7 +21,7 @@
   });
 </script>
 
-<a class="back" href="#/">‹ Terug</a>
+<a class="back" href="#/">Terug</a>
 <div class="title">
   <h2 class="page-title">Dev notes</h2>
   {#if $notes?.length}
