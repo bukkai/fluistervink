@@ -1,5 +1,6 @@
 import { nameFromWalk } from './area';
 import { db, type Session } from './db';
+import { logEvent } from './log';
 
 /** De lopende wandeling, als die er is. */
 export function getActiveSession(): Promise<Session | undefined> {
@@ -37,6 +38,27 @@ export async function resumeSession(id: string): Promise<boolean> {
     await db.sessions.update(id, { status: 'active', endedAt: undefined });
     return true;
   });
+}
+
+/**
+ * Verwijdert wandelingen voorgoed, met hun uitspraken (en audio), waarnemingen
+ * en prullenbak. Het gebeurtenissenlog blijft staan. Een lopende wandeling
+ * wordt overgeslagen.
+ */
+export async function deleteSessions(ids: string[]): Promise<void> {
+  const tables = [db.sessions, db.utterances, db.observations, db.deletedObservations];
+  const deleted = await db.transaction('rw', tables, async () => {
+    const ended = (await db.sessions.bulkGet(ids))
+      .filter((s) => s?.status === 'ended')
+      .map((s) => s!.id);
+    await db.utterances.where('sessionId').anyOf(ended).delete();
+    await db.observations.where('sessionId').anyOf(ended).delete();
+    await db.deletedObservations.where('sessionId').anyOf(ended).delete();
+    await db.sessions.bulkDelete(ended);
+    return ended;
+  });
+  // Buiten de transactie: het log staat in een andere tabel
+  logEvent('sessions_deleted', { ids: deleted });
 }
 
 /** Alle wandelingen, nieuwste eerst. */
