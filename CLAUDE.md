@@ -52,7 +52,7 @@ Doel: valideren dat herkenning en interpretatie in het veld goed genoeg werken.
 - CSV-export voor de bulkimport van waarneming.nl
 - Kaart in de review van een wandeling (alleen bekijken): waar is wat gezien (Leaflet + OpenStreetMap)
 - Proxy voor API-sleutels
-- Feedback (vroeger "dev notes"): een uitspraak die begint met "feedback" (of nog steeds "dev note") wordt geen waarneming maar een bevinding over de app (gaat niet naar het model). Als vangnet herkent het model opmerkingen over de app ook zonder dat voorvoegsel (tool `add_dev_note`; intern heet het nog `dev_note`). Los te lezen, als Markdown te kopiëren, en gaat mee bij het delen met de ontwikkelaar.
+- Feedback (vroeger "dev notes"): een uitspraak die begint met "feedback" (of nog steeds "dev note") wordt geen waarneming maar een bevinding over de app (gaat niet naar het model). Als vangnet herkent het model opmerkingen over de app ook zonder dat voorvoegsel (tool `add_dev_note`; intern heet het nog `dev_note`). Op het Feedback-scherm ook te typen en te verwijderen; getypt buiten een wandeling is het "losse feedback" (`sessionId` leeg), die apart gedeeld wordt (`sessions/losse-feedback`, met het log van het half uur ervoor). Los te lezen, als Markdown te kopiëren, en gaat mee bij het delen met de ontwikkelaar.
 - Testset: van elke uitspraak de audio, het transcript, de LLM-uitvoer en de uiteindelijke (gecorrigeerde) waarneming bewaren, en kunnen exporteren. Bedoeld om STT-opties, prompts en modellen objectief te vergelijken.
 
 **Bewust níet in de MVP (niet toevoegen zonder overleg):**

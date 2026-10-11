@@ -1,5 +1,6 @@
 import { getTester, putShared } from './api';
 import { db, type Utterance } from './db';
+import { NO_SESSION } from './devNotes';
 import { APP_VERSION, logEvent } from './log';
 
 // Delen met de ontwikkelaar: gestopte wandelingen (uitspraken, transcripten,
@@ -99,6 +100,33 @@ async function snapshot(sessionId: string) {
   };
 }
 
+/** Zo ver terug gaat het log mee bij losse feedback, om te zien wat eraan voorafging. */
+const LOOSE_EVENTS_MS = 30 * 60_000;
+
+/** Id waaronder losse feedback (buiten een wandeling) gedeeld wordt. */
+const LOOSE_ID = 'losse-feedback';
+
+/**
+ * Feedback die buiten een wandeling getypt is (devNotes.ts), met het log van
+ * het half uur ervoor. Zelfde vorm als een wandeling, zonder wandeling.
+ */
+async function looseSnapshot() {
+  const notes = await db.utterances.where('sessionId').equals(NO_SESSION).sortBy('recordedAt');
+  const events = (
+    await Promise.all(
+      notes.map((n) => db.events.where('at').between(n.recordedAt - LOOSE_EVENTS_MS, n.recordedAt, true, true).toArray()),
+    )
+  ).flat();
+  const unique = [...new Map(events.map((e) => [e.id, e])).values()].sort((a, b) => a.at - b.at);
+  return {
+    sessions: [],
+    utterances: notes.map(({ audio: _audio, ...u }: Utterance) => u),
+    observations: [],
+    deletedObservations: [],
+    events: unique,
+  };
+}
+
 async function hash(text: string): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
   return Array.from(new Uint8Array(digest.slice(0, 12)), (b) => b.toString(16).padStart(2, '0')).join('');
@@ -162,6 +190,23 @@ async function run(): Promise<ShareResult> {
         result.audio++;
       }
     }
+    // Losse feedback: ook versturen als hij leeg is geworden (alles verwijderd),
+    // zodat de verwijdering doorkomt
+    const loose = await looseSnapshot();
+    const looseVersion = await hash(JSON.stringify(loose));
+    if (sent.sessions[LOOSE_ID] !== looseVersion && (loose.utterances.length || sent.sessions[LOOSE_ID])) {
+      await putShared(
+        `sessions/${LOOSE_ID}`,
+        new Blob(
+          [JSON.stringify({ sharedAt: new Date().toISOString(), appVersion: APP_VERSION, tester: getTester(), ...loose })],
+          { type: 'application/json' },
+        ),
+      );
+      sent.sessions[LOOSE_ID] = looseVersion;
+      write(SENT_KEY, sent);
+      result.sessions++;
+    }
+
     write(SENT_AT_KEY, Date.now());
     if (result.sessions || result.audio) logEvent('shared', result);
   } catch (error) {
