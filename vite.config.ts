@@ -32,7 +32,9 @@ export default defineConfig({
     // Maakt het manifest en een service worker (Workbox) die de app-bestanden
     // cachet, zodat de app installeerbaar is en ook zonder netwerk opent.
     VitePWA({
-      registerType: 'autoUpdate',
+      // Niet vanzelf herladen bij een nieuwe versie: src/lib/update.ts wacht
+      // tot er geen wandeling loopt
+      registerType: 'prompt',
       workbox: {
         // API-verzoeken nooit via de cache of de index.html-fallback laten lopen
         navigateFallbackDenylist: [/^\/api\//],
