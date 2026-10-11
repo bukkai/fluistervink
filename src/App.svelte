@@ -17,6 +17,7 @@
   import { scheduleShare, setShareEnabled, shareChoiceMade } from './lib/share';
   import DevNotes from './lib/DevNotes.svelte';
   import Developer from './lib/Developer.svelte';
+  import HowItWorks from './lib/HowItWorks.svelte';
   import PastSession from './lib/PastSession.svelte';
   import PastSessions from './lib/PastSessions.svelte';
   import Privacy from './lib/Privacy.svelte';
@@ -155,6 +156,7 @@
         <a href="#wandelingen">Vorige wandelingen</a>
         <a href="#feedback">Feedback{$devNotes?.length ? ` (${$devNotes.length})` : ''}</a>
         <a href="#instellingen">Instellingen</a>
+        <a href="#uitleg">Hoe werkt het?</a>
         <a href="#privacy">Privacy</a>
         {#if isOwner}
           <a href="#developer">Developer</a>
@@ -184,6 +186,8 @@
     />
   {:else if route === 'instellingen'}
     <Settings />
+  {:else if route === 'uitleg'}
+    <HowItWorks />
   {:else if route === 'privacy'}
     <Privacy />
   {:else if route === 'developer' && isOwner}
@@ -214,6 +218,7 @@
         <p class="welcome">
           Welkom{welcome.tester ? `, ${welcome.tester}` : ''}! Je toegang is ingesteld. Tip: zet de
           app op je startscherm via het menu van Chrome → <em>Toevoegen aan startscherm</em>.
+          Lees ook even <a href="#uitleg">hoe het werkt</a>.
           <button class="link" onclick={() => (welcome = undefined)}>Oké</button>
         </p>
       {:else if welcome}
