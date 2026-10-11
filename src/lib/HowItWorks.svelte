@@ -20,7 +20,7 @@
     </p>
     <p>
       Maar alles achteraf met de hand invoeren is saai en kost veel tijd, dus blijft het vaak
-      liggen. Met Fluistervink zeg je onderweg gewoon wat je ziet of hoort, en een vogelbuddy schrijft
+      liggen. Met Fluistervink zeg je onderweg gewoon wat je ziet of hoort, en een vogelmaatje schrijft
       mee. Jij blijft kijken en luisteren; thuis staat je lijst klaar.
     </p>
   </div>
