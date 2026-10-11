@@ -45,7 +45,8 @@ Gemerged t/m **#48**: #46 kaart ↔ lijst in de review, #47 opruimen (alles/lege
 - **#58** melding "Wandeling opgeslagen" in saliegroen.
 - **Privacy (branch `privacy`):** pagina `#privacy` in het menu; delen pas na toestemming (vraag op het hoofdscherm, ook voor wie de app al had: tot die tijd deelt de app niets); Workers Logs zonder invocation logs (coördinaten van `/api/area` stonden in de URL); `npm run feedback -- wipe <tester>`. Na het mergen: eerste tester even laten weten dat de vraag komt.
 - **#60** delen naar het Feedback-scherm, JSON-export/import naar scherm Developer (alleen eigenaar). **Hoe werkt het?** (branch `hoe-werkt-het`): pagina `#uitleg`.
-- **Trillen werkt niet** op de telefoon (11 okt, gemeld door eigenaar). Uitzoeken (log: `vibrate_blocked`? instelling van Android?). Tot dan is het blok Trillen op `#uitleg` verborgen (`SHOW_VIBRATION` in `src/lib/HowItWorks.svelte`).
+- **Trillen:** opgelost, zie "Proefwandeling 11 okt, avond". Chrome valt onder *Touch feedback* van Android; staat dat uit, dan trilt de app nooit (terwijl `navigator.vibrate` gewoon `true` geeft). Blok Trillen op `#uitleg` weer aan, met die tip (branch `trillen-uitleg`).
+- **Wachtrij blijft hangen** na een herstart van de app, zie dezelfde sectie. Meten en vangnet op branch `wachtrij-slot`.
 - **#61** pagina Hoe werkt het (`#uitleg`). **Feedback typen en verwijderen** (branch `feedback-typen`).
 - Uitgaven: bij OpenAI en Anthropic vooraf betaald tegoed met auto-reload uit, dat is de harde grens (11 okt). Twee exemplaren tegelijk is al opgelost (`src/lib/instance.svelte.ts`).
 - **#64** vergeten wandeling: na een uur zonder uitspraken vraagt de app bij het openen of de wandeling nog loopt; na 8 uur stopt hij vanzelf (eindtijd = laatste uitspraak), zodat hij ook gedeeld wordt.
@@ -99,6 +100,14 @@ Op een nieuwe computer: `.dev.vars` aanmaken (zie README), en `.testers.json` me
 - **E. Kaart in de review:** alleen-lezen kaart (Leaflet + OSM) in PR #22 (branch `kaart`), bewust ná de testronde mergen. Stip verslepen kan later; een GPS-track is niet gewenst.
 - **F. Geautomatiseerde tests** (Vitest, later Playwright en GitHub Actions).
 - **Mijlpaal:** na 3–4 wandelingen beoordelen of de MVP geslaagd is; pas dan Capacitor, wake word en achtergrondgebruik.
+
+## Proefwandeling 11 okt, avond (versie e4fe837)
+
+Korte proef thuis (21:30–21:37 UTC), 5 uitspraken. Opgehaald met `npm run feedback -- pull`.
+
+**Trillen.** Op 11 okt middag 4× `vibrate_blocked` (2× app verborgen, 2× na een herstart nog niet aangeraakt), maar de andere keren gaf `navigator.vibrate` gewoon `true`, en toch geen tril. Oorzaak: Android rekent het trillen van Chrome tot **Touch feedback** (Sound and vibration → Vibration and haptics). Media vibration aan helpt niet. Met Touch feedback aan: tikje bij opnemen, "opgeslagen" en "niet begrepen" goed te voelen. De app kan niet zien of er echt getrild wordt. Wie Touch feedback uit wil: later een melding met trilpatroon (service worker, valt onder meldingen, werkt ook op de achtergrond) of Capacitor.
+
+**Wachtrij 3 minuten stil.** 21:31:19 app verborgen (exemplaar `c51be175`, daarna niets meer in de log: bevroren?), 21:32:30 app opnieuw gestart (`d689443a`), 21:32:39 en 21:32:48 twee uitspraken bewaard maar nooit opgepakt (geen poging, geen `attempt_failed`), 21:35:13 weer een start (`aa6fe05c`), 21:35:50 pas verwerkt, in 4 s. Niet door feedback zonder voorvoegsel (beide feedbackzinnen begonnen met "Feedback"). Past bij de middag (2 min wachten bij korte zinnen). Vermoeden: het bevroren exemplaar houdt het slot van de wachtrij of de database vast; de melding "neem over" (BroadcastChannel) komt bij een bevroren exemplaar niet aan. Op branch `wachtrij-slot`: wachttijd op het slot loggen (met `navigator.locks.query()`) en een vangnet dat het slot afpakt als een uitspraak te lang blijft liggen terwijl de app zichtbaar is.
 
 ## Tweede wandeling (11 okt, Arnhem, versie 97084fc)
 
