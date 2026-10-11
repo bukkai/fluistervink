@@ -2,9 +2,6 @@
   // Uitleg voor testers en andere geïnteresseerden: hoe je de app gebruikt en
   // wat AI er wel en niet in doet. Kort en zonder technische termen. Houd de
   // trilpatronen gelijk met feedback.ts.
-
-  /** Trillen werkt nu niet op de telefoon (11 okt); blok weer tonen als dat is opgelost. */
-  const SHOW_VIBRATION = false;
 </script>
 
 <a class="back" href="#/">Terug</a>
@@ -57,11 +54,13 @@
   </div>
 </section>
 
-{#if SHOW_VIBRATION}
 <section class="card">
   <div class="card-body">
     <h3>Trillen</h3>
-    <p>Zo hoef je onderweg niet op je scherm te kijken.</p>
+    <p>
+      Zo hoef je onderweg niet op je scherm te kijken. Bij het begin en eind van een opname voel je
+      een heel kort tikje, daarna hoor je via een tril of het gelukt is:
+    </p>
     <dl>
       <dt>Eén korte tril</dt>
       <dd>Opgeslagen.</dd>
@@ -75,9 +74,13 @@
         op "Opnieuw".
       </dd>
     </dl>
+    <p>
+      Voel je niets? Zet dan in de instellingen van je telefoon trillen bij aanraken aan (bij een
+      Engelse telefoon: Sound and vibration → Vibration and haptics → Touch feedback). De app trilt
+      alleen als hij op je scherm staat, niet met het scherm uit of als je een andere app open hebt.
+    </p>
   </div>
 </section>
-{/if}
 
 <section class="card">
   <div class="card-body">
