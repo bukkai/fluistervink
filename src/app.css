@@ -81,19 +81,40 @@ h2 {
   letter-spacing: -0.01em;
 }
 
-/* Kop van een scherm: terug-link en titel */
+/* Kop van een scherm: terug-link en titel. De terugknop staat duidelijk los
+   van de kopbalk en is groot genoeg om te raken, zodat je niet per ongeluk op
+   het logo (naar het hoofdscherm) tikt. */
 .back {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  margin-top: 0.75rem;
-  font-size: 0.95rem;
-  color: var(--muted);
+  gap: 0.3rem;
+  box-sizing: border-box;
+  min-height: 2.75rem;
+  margin-top: 1.25rem;
+  padding: 0 1rem 0 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 2rem;
+  font-weight: 600;
+  color: var(--fg);
+  background: var(--surface);
   text-decoration: none;
 }
 
+.back::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  border-bottom: 2px solid currentColor;
+  border-left: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.back:active {
+  background: var(--border);
+}
+
 .page-title {
-  margin: 0.25rem 0 0.75rem;
+  margin: 0.75rem 0 0.75rem;
   font-size: 1.5rem;
   line-height: 1.2;
 }

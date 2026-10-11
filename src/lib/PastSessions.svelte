@@ -60,7 +60,7 @@
   }
 </script>
 
-<a class="back" href="#/">‹ Terug</a>
+<a class="back" href="#/">Terug</a>
 <div class="title">
   <h2 class="page-title">Vorige wandelingen</h2>
   {#if sessions.length > 0}

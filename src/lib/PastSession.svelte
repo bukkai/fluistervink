@@ -81,7 +81,7 @@
   const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
 </script>
 
-<a class="back" href="#wandelingen">‹ Wandelingen</a>
+<a class="back" href="#wandelingen">Wandelingen</a>
 
 {#if justSaved}
   <div class="saved" role="status">

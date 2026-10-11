@@ -52,7 +52,7 @@
   }
 </script>
 
-<a class="back" href="#/">‹ Terug</a>
+<a class="back" href="#/">Terug</a>
 <h2 class="page-title">Instellingen</h2>
 
 <section class="card">
