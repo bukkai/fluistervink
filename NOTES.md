@@ -178,6 +178,11 @@ Typen werkt, ook met de ingebouwde spraakinvoer van Android (die is matig). Besl
   - Betere gegevens: tijd en GPS worden op het moment zelf vastgelegd, in plaats van achteraf uit het geheugen ingevuld of op één punt voor de hele wandeling gezet.
   - Meer mensen doen mee: ook beginners en vogelaars die niet graag op een scherm tikken. Blijven kijken in plaats van typen houdt het leuk.
   - Waar: korte tekst in de README of een "Over"-scherm in het menu. Later in een eventuele presentatie aan waarneming.nl of Observation.org (bijvoorbeeld bij het aanvragen van API-toegang).
+- Idee eigenaar (11 okt): feedback van betatesters. Raakt aan "geen multi-user" uit de MVP-scope, dus pas na overleg en na de mijlpaal (3–4 wandelingen).
+  - **Tester:** het scherm "Dev notes" wordt "Feedback". Bekijken, verwijderen, nieuwe toevoegen (typen of inspreken) bestaat deels al (`#devnotes`); verwijderen en typen erbij. Knop "Inzenden": feedback plus een complete datadump (zelfde JSON als de export in Instellingen, met audio) naar de server. Vooraf tonen wat er meegaat (audio en locaties zijn persoonlijk) en om toestemming vragen.
+  - **Developer:** een scherm met alle inzendingen (per tester, datum, appversie, aantal feedbackpunten), met per inzending: feedback lezen, de dump in de eigen app laden (de JSON-import van #40 bestaat al) en exporteren naar Claude: feedback als Markdown plus de JSON, zodat een ontwikkelsessie ze samen kan analyseren.
+  - **Opslag:** de Worker krijgt een route `/api/feedback`; JSON in D1 of R2, audio in R2. Zonder accounts: per tester een eigen toegangscode, zodat je ziet van wie iets komt en één tester kunt uitsluiten. Het developerscherm achter een aparte beheercode.
+  - **Kleiner begin:** "Inzenden" maakt alleen een bestand (Markdown + JSON) dat de tester deelt via het Android-deelmenu (mail, WhatsApp). Geen serveropslag nodig; de developer importeert het met de bestaande JSON-import.
 
 ## Overstappen tussen computers
 
