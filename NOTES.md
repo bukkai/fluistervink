@@ -138,6 +138,16 @@ Typen werkt, ook met de ingebouwde spraakinvoer van Android (die is matig). Besl
 - Nog niet getest met een echte microfoon (kan niet in de browser van Claude). Op de telefoon letten op: wordt het begin van de zin afgekapt (de microfoon gaat pas aan bij het indrukken), wind, en of de toestemmingsvraag één keer komt.
 - Whisper-prompt: soortnamen (zeldzaamheid 1–2, ±270) en alle bijnamen. Zeldzame soorten staan er niet in; als die slecht verstaan worden, de lijst uitbreiden.
 
+## Dev notes voor later (11 okt)
+
+- **Alle methoden en gedragingen van waarneming.nl overnemen.** Nu gebruikt de app een deel (`FIELD_ACTIVITIES`, `FIELD_METHODS`, `FIELD_LIFE_STAGES` in `src/lib/vocab.ts`): 20 van de 49 gedragingen, 3 van de 18 methoden, 8 van de 25 kleden/leeftijden. De volledige lijsten staan al in `data/attributen-vogels.json`. Afwegen: alles in het formulier, en in de prompt alleen wat je in het veld zegt (meer opties in de prompt = meer kans op verkeerde keuzes).
+- **Afkortingen voor leeftijd en kleed** in de prompt (en eventueel de Whisper-prompt), zoals bij de bijnamen. Voorstel, met de ID's van waarneming.nl:
+  - 1kj / eerste kalenderjaar → 14, 2kj → 15, 3kj → 16, 4kj → 72, 5kj → 1175
+  - 1w / eerste winter → 8, 2w / tweede winter → 10, 3w / derde winter → 62
+  - 1z / eerste zomer → 9, 2z / tweede zomer → 11, eerste najaar → 7
+  - juv / juveniel → 5, ad / adult → 2, subad / imm → 6, pull / pullus → 1009, eclips → 12
+  - Nagaan hoe vogelaars het uitspreken ("eenkaa-jee", "eerstejaars", "eerste-winter") en dat met de testset controleren.
+
 ## Open vragen / losse eindjes
 
 - Ideeën voor flow en indeling (menu, vorige wandelingen opruimen, locatienaam bij start, reviewscherm met kaart en eigen notities) vastgelegd in `docs/ideeen-flow.md` (10 okt). Voor later, nog niet gepland.
