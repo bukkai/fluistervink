@@ -43,12 +43,17 @@ Handmatig deployen kan ook: `npm run deploy`.
 
 ## Testers uitnodigen
 
-Elke tester krijgt een eigen code in het geheim `ACCESS_CODES`, als JSON:
+Elke tester krijgt een eigen toegangscode. Dat gaat met één commando:
 
-```json
-{"anna": "lange-willekeurige-code", "piet": "nog-een-andere-code"}
+```bash
+npm run tester -- url https://<app-url>   # eenmalig: adres van de app, voor de links
+npm run tester -- add anna                # code maken, naar Cloudflare, link tonen
+npm run tester -- list                    # alle testers met hun uitnodigingslink
+npm run tester -- remove anna             # tester afsluiten
 ```
 
-Instellen in het dashboard (Variables and Secrets) of met `npx wrangler secret put ACCESS_CODES` (plak de hele JSON). Een willekeurige code maken: `openssl rand -base64 18 | tr '+/' '-_'`. Toevoegen of afsluiten = de hele JSON opnieuw instellen; Cloudflare toont hem niet terug, dus bewaar hem in de wachtwoordmanager.
+Het script houdt de codes bij in `.testers.json` (niet in git) en zet ze als geheim `ACCESS_CODES` in Cloudflare, via `wrangler` (eenmalig `npx wrangler login`). Werk je op een andere computer, kopieer `.testers.json` dan mee (of bewaar hem in de wachtwoordmanager); anders begint de lijst daar leeg en overschrijft `add` de testers die er al waren.
 
-Stuur de tester dan de uitnodigingslink `https://<app-url>/#code=<code>`. Op Android: de link in Chrome openen (de app bewaart de code en laat "Verbonden als anna" zien), daarna pas "Toevoegen aan startscherm". Jouw eigen `ACCESS_CODE` blijft gewoon werken, als tester "eigenaar". In Workers Logs staat bij elk verzoek welke tester het deed.
+Stuur de tester de link. Op Android: de link in Chrome openen (de app bewaart de code en laat "Verbonden als anna" zien), daarna pas "Toevoegen aan startscherm". Jouw eigen `ACCESS_CODE` blijft gewoon werken, als tester "eigenaar". In Workers Logs staat bij elk verzoek welke tester het deed.
+
+Met de hand kan ook: `ACCESS_CODES` is JSON, `{"anna": "code", "piet": "code"}`, in te stellen in het dashboard onder Variables and Secrets.
