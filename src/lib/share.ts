@@ -23,6 +23,31 @@ interface Sent {
   sessions: Record<string, string>;
   /** Uitspraken waarvan de opname al verstuurd is */
   audio: string[];
+  /** Feedback die verstuurd is (voor het Feedback-scherm) */
+  notes?: string[];
+}
+
+/** Gaat af na een ronde en bij aan/uit, zodat schermen opnieuw kunnen lezen. */
+export const SHARE_CHANGED = 'fluistervink:share-changed';
+
+function changed(): void {
+  window.dispatchEvent(new Event(SHARE_CHANGED));
+}
+
+/** Ids van feedback die al bij de ontwikkelaar is. */
+export function sentNoteIds(): Set<string> {
+  return new Set(read<Sent>(SENT_KEY, { sessions: {}, audio: [] }).notes ?? []);
+}
+
+/**
+ * Feedback in een verstuurde (of al eerder verstuurde, zelfde hash) versie
+ * van een wandeling als verstuurd noteren.
+ */
+function markNotes(sent: Sent, utterances: Pick<Utterance, 'id' | 'kind'>[]): void {
+  const ids = new Set(sent.notes);
+  const before = ids.size;
+  for (const u of utterances) if (u.kind === 'dev_note') ids.add(u.id);
+  if (ids.size !== before) sent.notes = [...ids];
 }
 
 function read<T>(key: string, fallback: T): T {
@@ -57,6 +82,7 @@ export function shareChoiceMade(): boolean {
 
 export function setShareEnabled(on: boolean): void {
   write(ENABLED_KEY, on);
+  changed();
   if (on) scheduleShare();
 }
 
@@ -173,9 +199,10 @@ async function run(): Promise<ShareResult> {
           ),
         );
         sent.sessions[id] = version;
-        write(SENT_KEY, sent);
         result.sessions++;
       }
+      markNotes(sent, data.utterances);
+      write(SENT_KEY, sent);
 
       if (!withAudio) continue;
       // Opnames los, één voor één: ze veranderen nooit, dus maar één keer
@@ -203,15 +230,18 @@ async function run(): Promise<ShareResult> {
         ),
       );
       sent.sessions[LOOSE_ID] = looseVersion;
-      write(SENT_KEY, sent);
       result.sessions++;
     }
+    if (sent.sessions[LOOSE_ID] === looseVersion) markNotes(sent, loose.utterances);
+    write(SENT_KEY, sent);
 
     write(SENT_AT_KEY, Date.now());
     if (result.sessions || result.audio) logEvent('shared', result);
   } catch (error) {
     logEvent('share_failed', { message: error instanceof Error ? error.message : String(error), ...result });
     throw error;
+  } finally {
+    changed();
   }
   return result;
 }

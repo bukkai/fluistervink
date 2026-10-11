@@ -9,9 +9,25 @@
     noteText,
   } from './devNotes';
   import { db, type Utterance } from './db';
+  import { onDestroy } from 'svelte';
+  import { SHARE_CHANGED, sentNoteIds, shareEnabled } from './share';
   import ShareSettings from './ShareSettings.svelte';
 
   const notes = liveQuery(listDevNotes);
+
+  // Wat al verstuurd is (share.ts), opnieuw lezen na elke ronde en bij aan/uit
+  let sharing = $state(shareEnabled());
+  let sent = $state(sentNoteIds());
+  const onShareChanged = () => {
+    sharing = shareEnabled();
+    sent = sentNoteIds();
+  };
+  window.addEventListener(SHARE_CHANGED, onShareChanged);
+  onDestroy(() => window.removeEventListener(SHARE_CHANGED, onShareChanged));
+
+  // Met delen aan: nieuwe feedback bovenaan, verstuurde ingeklapt
+  let fresh = $derived(sharing ? ($notes ?? []).filter((n) => !sent.has(n.id)) : ($notes ?? []));
+  let earlier = $derived(sharing ? ($notes ?? []).filter((n) => sent.has(n.id)) : []);
 
   // Getypte feedback hoort bij de lopende wandeling, als die er is
   const active = liveQuery(() => db.sessions.where('status').equals('active').first());
@@ -66,9 +82,9 @@
   <button class="btn" disabled={!text.trim()}>Toevoegen</button>
 </form>
 
-{#if $notes?.length}
+{#snippet list(items: Utterance[], isSent: boolean)}
   <ul class="card">
-    {#each $notes as note (note.id)}
+    {#each items as note (note.id)}
       <li>
         <div>{noteText(note)}</div>
         <div class="meta">
@@ -80,21 +96,45 @@
                 locatie
               </a>
             {/if}
+            {#if sharing}
+              ·
+              {#if isSent}
+                verstuurd ✓
+              {:else if note.sessionId && note.sessionId === $active?.id}
+                gaat mee na de wandeling
+              {:else}
+                nog niet verstuurd
+              {/if}
+            {/if}
           </span>
           <button class="link danger" onclick={() => remove(note)}>Weg</button>
         </div>
       </li>
     {/each}
   </ul>
-{:else if $notes}
+{/snippet}
+
+{#if fresh.length}
+  {@render list(fresh, false)}
+{:else if $notes && !earlier.length}
   <p class="muted">Nog geen feedback.</p>
+{:else if $notes}
+  <p class="muted">Alle feedback is verstuurd.</p>
+{/if}
+
+{#if earlier.length}
+  <details class="earlier">
+    <summary>Eerder verstuurd ({earlier.length})</summary>
+    {@render list(earlier, true)}
+  </details>
 {/if}
 
 <p class="muted">
   Typ hierboven, of spreek het in tijdens het vogelen: begin een uitspraak met
   <em>"feedback"</em>, bijvoorbeeld
-  <em>"feedback, hij herkende blako niet, terwijl dat toch echt bladkoning betekent"</em>. Feedback gaat na de wandeling mee naar de ontwikkelaar,
-  als delen aanstaat.
+  <em>"feedback, hij herkende blako niet, terwijl dat toch echt bladkoning betekent"</em>.
+  Feedback gaat na de wandeling mee naar de ontwikkelaar, als delen aanstaat. Verstuurde feedback
+  blijft hier staan; weghalen kan altijd.
 </p>
 
 <ShareSettings />
@@ -139,6 +179,16 @@
 
   .add .btn {
     justify-self: end;
+  }
+
+  .earlier {
+    margin: 0.75rem 0 1rem;
+  }
+
+  .earlier summary {
+    margin-bottom: 0.5rem;
+    color: var(--muted);
+    cursor: pointer;
   }
 
   .meta {
