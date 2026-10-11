@@ -8,7 +8,11 @@ const HOUR = 60 * 60_000;
 const now = Date.parse('2026-10-11T20:00:00');
 
 async function walk(startedHoursAgo: number, lastUtteranceHoursAgo?: number): Promise<Session> {
-  const session: Session = { id: 'wandeling', startedAt: now - startedHoursAgo * HOUR, status: 'active' };
+  const session: Session = {
+    id: 'wandeling',
+    startedAt: now - startedHoursAgo * HOUR,
+    status: 'active',
+  };
   await db.sessions.add(session);
   if (lastUtteranceHoursAgo !== undefined) {
     await db.utterances.add({

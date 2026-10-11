@@ -37,7 +37,8 @@
 
   async function remove() {
     const warning = session.exportedAt ? '' : '\n\nDeze wandeling is nog niet geëxporteerd.';
-    if (!confirm(`Wandeling voorgoed verwijderen, met alle waarnemingen en opnames?${warning}`)) return;
+    if (!confirm(`Wandeling voorgoed verwijderen, met alle waarnemingen en opnames?${warning}`))
+      return;
     await deleteSessions([session.id]);
     location.hash = 'wandelingen';
   }
@@ -91,7 +92,9 @@
 {#if justSaved}
   <div class="saved" role="status">
     <strong>✓ Wandeling opgeslagen</strong>
-    <p>Alles staat veilig op je telefoon. Loop de waarnemingen na en exporteer ze naar waarneming.nl.</p>
+    <p>
+      Alles staat veilig op je telefoon. Loop de waarnemingen na en exporteer ze naar waarneming.nl.
+    </p>
   </div>
 {/if}
 
@@ -140,11 +143,15 @@
   <div class="card-body">
     {#if uncertainCount > 0}
       <p class="warning">
-        Nog {uncertainCount === 1 ? '1 onzekere waarneming' : `${uncertainCount} onzekere waarnemingen`}.
-        Tik erop om aan te passen, of gebruik "Klopt" of "Weg".
+        Nog {uncertainCount === 1
+          ? '1 onzekere waarneming'
+          : `${uncertainCount} onzekere waarnemingen`}. Tik erop om aan te passen, of gebruik
+        "Klopt" of "Weg".
       </p>
     {/if}
-    <button class="btn block large" onclick={exportForWaarneming}>Exporteren voor waarneming.nl</button>
+    <button class="btn block large" onclick={exportForWaarneming}
+      >Exporteren voor waarneming.nl</button
+    >
     {#if exportResult}
       <p>{exportResult}</p>
     {:else if session.exportedAt}
@@ -154,9 +161,9 @@
       </p>
     {/if}
     <p class="muted">
-      Importeer het bestand bij <a href={IMPORT_URL} target="_blank" rel="noopener">waarneming.nl</a>.
-      Zet de site daarbij op Engels (EN, rechtsboven): gedrag en methode staan in het Engels in het
-      bestand.
+      Importeer het bestand bij <a href={IMPORT_URL} target="_blank" rel="noopener">waarneming.nl</a
+      >. Zet de site daarbij op Engels (EN, rechtsboven): gedrag en methode staan in het Engels in
+      het bestand.
     </p>
   </div>
 </section>

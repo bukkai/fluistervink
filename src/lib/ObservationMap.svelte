@@ -172,7 +172,8 @@
     <div class="map" bind:this={container}></div>
     {#if withoutPosition > 0}
       <p class="muted">
-        {withoutPosition} {withoutPosition === 1 ? 'waarneming' : 'waarnemingen'} zonder locatie
+        {withoutPosition}
+        {withoutPosition === 1 ? 'waarneming' : 'waarnemingen'} zonder locatie
         {withoutPosition === 1 ? 'staat' : 'staan'} niet op de kaart.
       </p>
     {/if}

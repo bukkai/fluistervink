@@ -1,21 +1,21 @@
-import { execSync } from 'node:child_process'
-import { cloudflare } from '@cloudflare/vite-plugin'
-import { svelte } from '@sveltejs/vite-plugin-svelte'
-import { defineConfig } from 'vite'
-import { VitePWA } from 'vite-plugin-pwa'
+import { execSync } from 'node:child_process';
+import { cloudflare } from '@cloudflare/vite-plugin';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
+import { defineConfig } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 // Welke code draait er? Bij elke uitspraak bewaard, zodat fouten later bij
 // een versie te zoeken zijn. Workers Builds geeft de commit mee; lokaal
 // vragen we het git zelf.
 function appVersion(): string {
-  const sha = process.env.WORKERS_CI_COMMIT_SHA?.slice(0, 7)
-  if (sha) return sha
+  const sha = process.env.WORKERS_CI_COMMIT_SHA?.slice(0, 7);
+  if (sha) return sha;
   try {
-    const local = execSync('git rev-parse --short HEAD').toString().trim()
-    const dirty = execSync('git status --porcelain').toString().trim() ? '+' : ''
-    return `${local}${dirty}`
+    const local = execSync('git rev-parse --short HEAD').toString().trim();
+    const dirty = execSync('git status --porcelain').toString().trim() ? '+' : '';
+    return `${local}${dirty}`;
   } catch {
-    return 'onbekend'
+    return 'onbekend';
   }
 }
 
@@ -58,4 +58,4 @@ export default defineConfig({
       },
     }),
   ],
-})
+});

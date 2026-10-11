@@ -73,8 +73,8 @@ export const aliases = (aliasList as Alias[]).filter((a) => {
 // een wandeling uitspreekt. Het model mag alleen hieruit kiezen: meer opties
 // in de prompt geeft meer kans op een verkeerde keuze.
 const FIELD_ACTIVITIES = [
-  1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 25, 26, 30, 31, 77, 2016,
-  78, 3051, 3116, 3119, 3121, 3144,
+  1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 25, 26, 30, 31, 77, 2016, 78, 3051, 3116, 3119,
+  3121, 3144,
 ];
 const FIELD_METHODS = [48, 49, 51, 588];
 const FIELD_LIFE_STAGES = [

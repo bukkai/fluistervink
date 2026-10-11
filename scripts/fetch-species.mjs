@@ -21,9 +21,22 @@ const TYPES = ['S', 'M'];
 // soepeend, Chinese Knobbelgans). Let op: "Steenduif" is in de bron een
 // Zuid-Amerikaanse grondduif, niet de stadsduif.
 const EXOTICS = [
-  'Stadsduif', 'Parkgans', 'Parkeend', 'Zwaangans', 'Chinese Knobbelgans', 'Fazant', 'Nijlgans', 'Grote Canadese Gans', 'Kleine Canadese Gans',
-  'Canadese Gans onbekend', 'Indische Gans', 'Mandarijneend', 'Carolina-eend',
-  'Zwarte Zwaan', 'Halsbandparkiet', 'Grote Alexanderparkiet',
+  'Stadsduif',
+  'Parkgans',
+  'Parkeend',
+  'Zwaangans',
+  'Chinese Knobbelgans',
+  'Fazant',
+  'Nijlgans',
+  'Grote Canadese Gans',
+  'Kleine Canadese Gans',
+  'Canadese Gans onbekend',
+  'Indische Gans',
+  'Mandarijneend',
+  'Carolina-eend',
+  'Zwarte Zwaan',
+  'Halsbandparkiet',
+  'Grote Alexanderparkiet',
 ];
 
 // Soorten die buiten de filters vallen maar die je wel inspreekt: Bonte Kraai
@@ -96,5 +109,7 @@ await writeFile(
 );
 await writeFile('data/attributen-vogels.json', JSON.stringify(attributes, null, 1) + '\n');
 
-console.log(`${species.length} soorten (alle: ${allSpecies.length}), ${attributes.activity.length} activiteiten, ` +
-  `${attributes.method.length} methodes, ${attributes.life_stage.length} kleden`);
+console.log(
+  `${species.length} soorten (alle: ${allSpecies.length}), ${attributes.activity.length} activiteiten, ` +
+    `${attributes.method.length} methodes, ${attributes.life_stage.length} kleden`,
+);

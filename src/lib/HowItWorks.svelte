@@ -17,8 +17,8 @@
     </p>
     <p>
       Maar alles achteraf met de hand invoeren is saai en kost veel tijd, dus blijft het vaak
-      liggen. Met Fluistervink zeg je onderweg gewoon wat je ziet of hoort, en een vogelmaatje schrijft
-      mee. Jij blijft kijken en luisteren; thuis staat je lijst klaar.
+      liggen. Met Fluistervink zeg je onderweg gewoon wat je ziet of hoort, en een vogelmaatje
+      schrijft mee. Jij blijft kijken en luisteren; thuis staat je lijst klaar.
     </p>
   </div>
 </section>
@@ -27,8 +27,8 @@
   <div class="card-body">
     <h3>Inspreken</h3>
     <p>
-      Start een wandeling. Zie of hoor je iets, tik dan op de microfoonknop of houd hem vast, en
-      zeg wat je waarneemt. Gewoon zoals je het tegen een medevogelaar zou zeggen:
+      Start een wandeling. Zie of hoor je iets, tik dan op de microfoonknop of houd hem vast, en zeg
+      wat je waarneemt. Gewoon zoals je het tegen een medevogelaar zou zeggen:
     </p>
     <ul class="examples">
       <li>"zes overvliegende houtduiven"</li>
@@ -101,8 +101,8 @@
     <h3>Feedback geven</h3>
     <p>
       Begin een uitspraak met <em>"feedback"</em>, bijvoorbeeld
-      <em>"feedback, hij herkende blako niet, terwijl dat toch echt bladkoning betekent"</em>.
-      Dat wordt geen waarneming, maar een opmerking voor de ontwikkelaar. Terug te lezen bij
+      <em>"feedback, hij herkende blako niet, terwijl dat toch echt bladkoning betekent"</em>. Dat
+      wordt geen waarneming, maar een opmerking voor de ontwikkelaar. Terug te lezen bij
       <a href="#feedback">Feedback</a>.
     </p>
   </div>
@@ -113,24 +113,21 @@
     <h3>Wat er gebeurt als je iets zegt</h3>
     <ol>
       <li>
-        <strong>De app</strong> noteert het tijdstip en waar je bent, en bewaart je opname op je
-        telefoon.
+        <strong>De app</strong> noteert het tijdstip en waar je bent, en bewaart je opname op je telefoon.
       </li>
       <li>
-        <strong>Spraak wordt tekst.</strong> Een programma van OpenAI (de makers van ChatGPT)
-        schrijft uit wat je zei. Het krijgt een lijst vogelnamen mee, zodat "tjiftjaf" goed
-        overkomt.
+        <strong>Spraak wordt tekst.</strong> Een programma van OpenAI (de makers van ChatGPT) schrijft
+        uit wat je zei. Het krijgt een lijst vogelnamen mee, zodat "tjiftjaf" goed overkomt.
       </li>
       <li>
-        <strong>Tekst wordt een waarneming.</strong> Claude, de AI van Anthropic (een kleine, snelle
-        versie), leest de zin en bepaalt wat je bedoelt: een nieuwe waarneming, een verbetering, of
-        iets weghalen. Het mag alleen kiezen uit een vaste lijst Nederlandse vogelsoorten en kan
-        dus geen soorten verzinnen. Twijfelt het, dan markeert het de waarneming als onzeker in
-        plaats van te gokken.
+        <strong>Tekst wordt een waarneming.</strong> Claude, de AI van Anthropic (een kleine, snelle versie),
+        leest de zin en bepaalt wat je bedoelt: een nieuwe waarneming, een verbetering, of iets weghalen.
+        Het mag alleen kiezen uit een vaste lijst Nederlandse vogelsoorten en kan dus geen soorten verzinnen.
+        Twijfelt het, dan markeert het de waarneming als onzeker in plaats van te gokken.
       </li>
       <li>
-        <strong>De app</strong> controleert het resultaat, slaat het op, zoekt de naam van het
-        gebied op bij waarneming.nl, en trilt.
+        <strong>De app</strong> controleert het resultaat, slaat het op, zoekt de naam van het gebied
+        op bij waarneming.nl, en trilt.
       </li>
     </ol>
   </div>

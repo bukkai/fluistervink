@@ -15,10 +15,12 @@ describe('devNoteText', () => {
     expect(devNoteText(transcript)).toBe(text);
   });
 
-  it.each(['zes overvliegende houtduiven', 'roepje vink', 'feedbackloop bij de vink', 'vink, feedback'])(
-    'laat %j met rust',
-    (transcript) => {
-      expect(devNoteText(transcript)).toBeUndefined();
-    },
-  );
+  it.each([
+    'zes overvliegende houtduiven',
+    'roepje vink',
+    'feedbackloop bij de vink',
+    'vink, feedback',
+  ])('laat %j met rust', (transcript) => {
+    expect(devNoteText(transcript)).toBeUndefined();
+  });
 });

@@ -26,7 +26,8 @@ const OUT = join(ROOT, 'testset', 'feedback');
 const MANIFEST = join(OUT, 'manifest.json');
 const DEFAULT_URL = 'https://fluistervink.stephanmullernl.workers.dev';
 
-const readJson = (file, fallback) => (existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : fallback);
+const readJson = (file, fallback) =>
+  existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : fallback;
 
 function writeJson(file, data, mode) {
   mkdirSync(dirname(file), { recursive: true });
@@ -49,9 +50,14 @@ async function client() {
   const base = (process.env.FLUISTERVINK_URL ?? config.appUrl ?? DEFAULT_URL).replace(/\/$/, '');
   const code = await ownerCode(config);
   const api = async (path, init = {}) => {
-    const response = await fetch(`${base}${path}`, { ...init, headers: { Authorization: `Bearer ${code}` } });
+    const response = await fetch(`${base}${path}`, {
+      ...init,
+      headers: { Authorization: `Bearer ${code}` },
+    });
     if (response.status === 401 || response.status === 403) {
-      console.error('Toegangscode geweigerd: alleen de code van de eigenaar (ACCESS_CODE) mag ophalen.');
+      console.error(
+        'Toegangscode geweigerd: alleen de code van de eigenaar (ACCESS_CODE) mag ophalen.',
+      );
       process.exit(1);
     }
     if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
@@ -67,7 +73,9 @@ async function pull() {
   const keys = [];
   let cursor;
   do {
-    const page = await (await api(`/api/feedback/list${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`)).json();
+    const page = await (
+      await api(`/api/feedback/list${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`)
+    ).json();
     keys.push(...page.keys);
     cursor = page.cursor;
   } while (cursor);
@@ -81,7 +89,9 @@ async function pull() {
   let fetched = 0;
   for (const { key, uploadedAt } of keys) {
     if (manifest[key] === uploadedAt) continue;
-    const data = Buffer.from(await (await api(`/api/feedback/file?key=${encodeURIComponent(key)}`)).arrayBuffer());
+    const data = Buffer.from(
+      await (await api(`/api/feedback/file?key=${encodeURIComponent(key)}`)).arrayBuffer(),
+    );
     const file = join(OUT, ...key.split('/')) + (key.includes('/sessions/') ? '.json' : '');
     mkdirSync(dirname(file), { recursive: true });
     writeFileSync(file, data);
@@ -93,7 +103,9 @@ async function pull() {
   const testers = combine();
   console.log(`${fetched} nieuw of gewijzigd, ${keys.length} in totaal.`);
   for (const [tester, n] of Object.entries(testers)) {
-    console.log(`  ${tester}: ${n.sessions} wandelingen, ${n.audio} opnames → testset/feedback/${tester}.json`);
+    console.log(
+      `  ${tester}: ${n.sessions} wandelingen, ${n.audio} opnames → testset/feedback/${tester}.json`,
+    );
   }
 }
 
@@ -103,15 +115,26 @@ function combine() {
   if (!existsSync(OUT)) return summary;
   for (const tester of readdirSync(OUT, { withFileTypes: true }).filter((d) => d.isDirectory())) {
     const dir = join(OUT, tester.name);
-    const sessionFiles = existsSync(join(dir, 'sessions')) ? readdirSync(join(dir, 'sessions')) : [];
+    const sessionFiles = existsSync(join(dir, 'sessions'))
+      ? readdirSync(join(dir, 'sessions'))
+      : [];
     const audioDir = join(dir, 'audio');
     const audioIds = new Set(existsSync(audioDir) ? readdirSync(audioDir) : []);
 
-    const merged = { exportedAt: new Date().toISOString(), tester: tester.name, sessions: [], utterances: [], observations: [], deletedObservations: [], events: [] };
+    const merged = {
+      exportedAt: new Date().toISOString(),
+      tester: tester.name,
+      sessions: [],
+      utterances: [],
+      observations: [],
+      deletedObservations: [],
+      events: [],
+    };
     for (const file of sessionFiles) {
       const data = JSON.parse(readFileSync(join(dir, 'sessions', file), 'utf8'));
       merged.appVersion = data.appVersion;
-      for (const field of ['sessions', 'observations', 'deletedObservations', 'events']) merged[field].push(...(data[field] ?? []));
+      for (const field of ['sessions', 'observations', 'deletedObservations', 'events'])
+        merged[field].push(...(data[field] ?? []));
       for (const u of data.utterances ?? []) {
         if (audioIds.has(u.id)) {
           const bytes = readFileSync(join(audioDir, u.id));
@@ -129,10 +152,18 @@ function combine() {
 function notes() {
   const items = [];
   if (existsSync(OUT)) {
-    for (const file of readdirSync(OUT).filter((f) => f.endsWith('.json') && f !== 'manifest.json')) {
+    for (const file of readdirSync(OUT).filter(
+      (f) => f.endsWith('.json') && f !== 'manifest.json',
+    )) {
       const data = JSON.parse(readFileSync(join(OUT, file), 'utf8'));
       for (const u of data.utterances ?? []) {
-        if (u.kind === 'dev_note') items.push({ tester: data.tester, at: u.recordedAt, text: u.transcript ?? '', appVersion: u.metrics?.appVersion });
+        if (u.kind === 'dev_note')
+          items.push({
+            tester: data.tester,
+            at: u.recordedAt,
+            text: u.transcript ?? '',
+            appVersion: u.metrics?.appVersion,
+          });
       }
     }
   }
@@ -158,14 +189,18 @@ async function wipe(tester) {
     process.exit(1);
   }
   const rl = createInterface({ input: process.stdin, output: process.stdout });
-  const answer = (await rl.question(`Alles van "${tester}" definitief wissen? Typ de naam ter bevestiging: `)).trim();
+  const answer = (
+    await rl.question(`Alles van "${tester}" definitief wissen? Typ de naam ter bevestiging: `)
+  ).trim();
   rl.close();
   if (answer !== tester) {
     console.log('Niets gewist.');
     return;
   }
   const { api } = await client();
-  const { deleted } = await (await api(`/api/feedback/tester?name=${encodeURIComponent(tester)}`, { method: 'DELETE' })).json();
+  const { deleted } = await (
+    await api(`/api/feedback/tester?name=${encodeURIComponent(tester)}`, { method: 'DELETE' })
+  ).json();
 
   rmSync(join(OUT, tester), { recursive: true, force: true });
   rmSync(join(OUT, `${tester}.json`), { force: true });
@@ -179,4 +214,11 @@ const command = process.argv[2];
 if (command === 'pull') await pull();
 else if (command === 'notes') notes();
 else if (command === 'wipe') await wipe(process.argv[3]);
-else console.log(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(4, 7).join('\n').replace(/^\/\/ ?/gm, ''));
+else
+  console.log(
+    readFileSync(fileURLToPath(import.meta.url), 'utf8')
+      .split('\n')
+      .slice(4, 7)
+      .join('\n')
+      .replace(/^\/\/ ?/gm, ''),
+  );

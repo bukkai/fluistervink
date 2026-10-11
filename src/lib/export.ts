@@ -113,7 +113,9 @@ export async function importJson(file: File): Promise<ImportResult> {
             ? {
                 ...u,
                 status: 'failed' as const,
-                error: u.audio ? 'Geïmporteerd voordat hij verwerkt was' : 'Geïmporteerd zonder opname',
+                error: u.audio
+                  ? 'Geïmporteerd voordat hij verwerkt was'
+                  : 'Geïmporteerd zonder opname',
               }
             : u,
         ),

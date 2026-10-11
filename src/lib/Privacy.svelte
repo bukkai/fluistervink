@@ -14,12 +14,12 @@
     <ul>
       <li>Alles wat je inspreekt, staat eerst op je eigen telefoon.</li>
       <li>
-        Voor het verwerken gaat je opname naar OpenAI (spraak naar tekst) en de tekst naar
-        Anthropic (tekst naar waarneming). Die gebruiken het niet om hun modellen te trainen.
+        Voor het verwerken gaat je opname naar OpenAI (spraak naar tekst) en de tekst naar Anthropic
+        (tekst naar waarneming). Die gebruiken het niet om hun modellen te trainen.
       </li>
       <li>
-        Delen met de ontwikkelaar doe je alleen als je daar ja op zegt, en opnames alleen als je
-        dat apart aanzet.
+        Delen met de ontwikkelaar doe je alleen als je daar ja op zegt, en opnames alleen als je dat
+        apart aanzet.
       </li>
       <li>Geen account, geen advertenties, geen statistieken, geen route van je wandeling.</li>
     </ul>
@@ -31,8 +31,9 @@
     <h3>Op je telefoon</h3>
     <p>
       De opname van elke uitspraak, de tekst, het tijdstip, de locatie (alleen op het moment dat je
-      begint met inspreken), je waarnemingen en een logboek van wat de app deed (fouten, wachttijden)
-      staan in de opslag van de browser op je telefoon. Daar blijven ze tot je ze verwijdert.
+      begint met inspreken), je waarnemingen en een logboek van wat de app deed (fouten,
+      wachttijden) staan in de opslag van de browser op je telefoon. Daar blijven ze tot je ze
+      verwijdert.
     </p>
   </div>
 </section>
@@ -54,8 +55,8 @@
       <dt>Anthropic</dt>
       <dd>
         De tekst van je uitspraak plus de laatste waarnemingen van de wandeling (zodat "nog drie
-        erbij" werkt). Geen opname, geen locatie. Anthropic wist dit binnen 30 dagen en gebruikt
-        het niet voor training.
+        erbij" werkt). Geen opname, geen locatie. Anthropic wist dit binnen 30 dagen en gebruikt het
+        niet voor training.
       </dd>
       <dt>Waarneming.nl</dt>
       <dd>
@@ -76,15 +77,14 @@
     <h3>Delen met de ontwikkelaar</h3>
     <p>
       Fluistervink is nog in ontwikkeling. Zeg je ja tegen delen, dan gaan na elke wandeling je
-      uitspraken als tekst, wat de app ervan maakte, je correcties bij het nalopen, je feedback,
-      het logboek van die wandeling en de locaties van je waarnemingen naar de ontwikkelaar.
-      Opnames alleen als je dat bij <a href="#feedback">Feedback</a> aanzet.
+      uitspraken als tekst, wat de app ervan maakte, je correcties bij het nalopen, je feedback, het
+      logboek van die wandeling en de locaties van je waarnemingen naar de ontwikkelaar. Opnames
+      alleen als je dat bij <a href="#feedback">Feedback</a> aanzet.
     </p>
     <p>
       Het staat bij Cloudflare onder je testernaam. Alleen de ontwikkelaar kan het lezen, en
-      gebruikt het alleen om de herkenning en de app te verbeteren. Niet doorgeven, niet
-      publiceren. Wil je dat het weg is, vraag het aan wie je heeft uitgenodigd: dan wordt alles
-      van jou gewist.
+      gebruikt het alleen om de herkenning en de app te verbeteren. Niet doorgeven, niet publiceren.
+      Wil je dat het weg is, vraag het aan wie je heeft uitgenodigd: dan wordt alles van jou gewist.
     </p>
   </div>
 </section>
@@ -95,8 +95,9 @@
     <ul>
       <li>Delen aan- of uitzetten, met of zonder opnames: <a href="#feedback">Feedback</a>.</li>
       <li>
-        Een wandeling verwijderen, met alle opnames: bij <a href="#wandelingen">Vorige wandelingen</a>.
-        Dat is echt weg.
+        Een wandeling verwijderen, met alle opnames: bij <a href="#wandelingen"
+          >Vorige wandelingen</a
+        >. Dat is echt weg.
       </li>
       <li>Een kopie van al je gegevens: vraag het aan wie je heeft uitgenodigd.</li>
       <li>
@@ -111,16 +112,24 @@
 
 <p class="sources">
   Bronnen, nagekeken op 11 oktober 2026:
-  <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noopener">OpenAI</a>,
+  <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noopener"
+    >OpenAI</a
+  >,
   <a
     href="https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
     target="_blank"
-    rel="noopener">Anthropic (bewaren)</a>,
+    rel="noopener">Anthropic (bewaren)</a
+  >,
   <a
     href="https://privacy.claude.com/en/articles/7996868-is-my-data-used-for-model-training"
     target="_blank"
-    rel="noopener">Anthropic (training)</a>,
-  <a href="https://developers.cloudflare.com/workers/observability/logs/workers-logs/" target="_blank" rel="noopener">Cloudflare</a>.
+    rel="noopener">Anthropic (training)</a
+  >,
+  <a
+    href="https://developers.cloudflare.com/workers/observability/logs/workers-logs/"
+    target="_blank"
+    rel="noopener">Cloudflare</a
+  >.
 </p>
 
 <style>

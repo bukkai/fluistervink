@@ -120,7 +120,10 @@ async function transcribe(request: Request, env: WorkerEnv): Promise<Response> {
 
   const result = (await response.json()) as { text?: string; error?: { message: string } };
   if (!response.ok) {
-    return json({ error: result.error?.message ?? 'Fout bij OpenAI' }, upstreamStatus(response.status));
+    return json(
+      { error: result.error?.message ?? 'Fout bij OpenAI' },
+      upstreamStatus(response.status),
+    );
   }
   return json({ text: result.text ?? '', model }, 200, Date.now() - start);
 }
@@ -284,7 +287,8 @@ async function area(request: Request): Promise<Response> {
     `https://waarneming.nl/api/v1/locations/geojson/?coordinates=${lat},${lon}`,
     { headers: { Accept: 'application/json' } },
   );
-  if (!response.ok) return json({ error: 'Fout bij waarneming.nl' }, upstreamStatus(response.status));
+  if (!response.ok)
+    return json({ error: 'Fout bij waarneming.nl' }, upstreamStatus(response.status));
 
   // Alleen ID en naam; de omtrek van het gebied hebben we niet nodig
   const result = (await response.json()) as {

@@ -78,7 +78,8 @@ const fieldProperties = {
   // vaak het ID van een soort die erop lijkt (Boomklever 70, Boomkruiper 71)
   species_name: {
     type: 'string',
-    description: 'Naam van de soort, precies zoals in de soortenlijst ("Boomkruiper"). Altijd samen met species_id.',
+    description:
+      'Naam van de soort, precies zoals in de soortenlijst ("Boomkruiper"). Altijd samen met species_id.',
   },
   species_id: {
     type: 'integer',
@@ -460,11 +461,15 @@ function toAction(
   if (input.species_name) {
     const named = findPromptSpecies(input.species_name);
     if (!named) {
-      warnings.push(`${block.name}: naam "${input.species_name}" staat niet in de lijst; ID ${fields.speciesId} aangehouden`);
+      warnings.push(
+        `${block.name}: naam "${input.species_name}" staat niet in de lijst; ID ${fields.speciesId} aangehouden`,
+      );
     } else if (fields.speciesId !== named.id) {
       if (fields.speciesId !== undefined) {
         const other = getSpecies(fields.speciesId)?.name ?? 'onbekend';
-        warnings.push(`${block.name}: ID ${fields.speciesId} (${other}) hoort niet bij "${named.name}"; ${named.id} gebruikt`);
+        warnings.push(
+          `${block.name}: ID ${fields.speciesId} (${other}) hoort niet bij "${named.name}"; ${named.id} gebruikt`,
+        );
       }
       fields.speciesId = named.id;
     }

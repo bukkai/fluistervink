@@ -73,7 +73,9 @@ export function stopRecording(): Promise<Recording | undefined> {
 
       const durationMs = Date.now() - startedAt;
       const audio = new Blob(chunks, { type: current.mimeType });
-      resolve(durationMs < MIN_DURATION_MS || !audio.size ? undefined : { audio, startedAt, durationMs });
+      resolve(
+        durationMs < MIN_DURATION_MS || !audio.size ? undefined : { audio, startedAt, durationMs },
+      );
     };
     current.stop();
   });

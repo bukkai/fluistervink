@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { BOOMKLEVER, BOOMKRUIPER, HOUTDUIF, KEEP, VINK, observation, toolResponse } from '../test-helpers';
+import {
+  BOOMKLEVER,
+  BOOMKRUIPER,
+  HOUTDUIF,
+  KEEP,
+  VINK,
+  observation,
+  toolResponse,
+} from '../test-helpers';
 import { parseResponse } from './interpret';
 
 // parseResponse is de poortwachter tussen model en database: wat hier
@@ -9,16 +17,24 @@ import { parseResponse } from './interpret';
 describe('parseResponse', () => {
   it('maakt van add_observation een actie, zonder velden die het model wegliet', () => {
     const { actions, rejected } = parseResponse(
-      toolResponse(['add_observation', { species_name: 'Houtduif', species_id: HOUTDUIF, count: 6, activity_id: 1 }]),
+      toolResponse([
+        'add_observation',
+        { species_name: 'Houtduif', species_id: HOUTDUIF, count: 6, activity_id: 1 },
+      ]),
       [],
     );
     expect(rejected).toEqual([]);
-    expect(actions).toEqual([{ type: 'add', fields: { speciesId: HOUTDUIF, count: 6, activityId: 1 } }]);
+    expect(actions).toEqual([
+      { type: 'add', fields: { speciesId: HOUTDUIF, count: 6, activityId: 1 } },
+    ]);
   });
 
   it('gebruikt de naam als het ID bij een andere soort hoort (Boomklever/Boomkruiper)', () => {
     const { actions, warnings } = parseResponse(
-      toolResponse(['add_observation', { species_name: 'Boomkruiper', species_id: BOOMKLEVER, count: 1 }]),
+      toolResponse([
+        'add_observation',
+        { species_name: 'Boomkruiper', species_id: BOOMKLEVER, count: 1 },
+      ]),
       [],
     );
     expect(actions[0]).toMatchObject({ type: 'add', fields: { speciesId: BOOMKRUIPER } });
@@ -70,10 +86,9 @@ describe('parseResponse', () => {
   });
 
   it('weigert een verwijzing naar een waarneming die niet in de context stond', () => {
-    const { actions, rejected } = parseResponse(
-      toolResponse(['delete_observation', { ref: 2 }]),
-      [observation()],
-    );
+    const { actions, rejected } = parseResponse(toolResponse(['delete_observation', { ref: 2 }]), [
+      observation(),
+    ]);
     expect(actions).toEqual([]);
     expect(rejected).toEqual(['delete_observation: verwijzing #2 bestaat niet']);
   });
@@ -81,17 +96,31 @@ describe('parseResponse', () => {
   it('bewaart de twijfelreden alleen bij een onzekere waarneming', () => {
     const { actions } = parseResponse(
       toolResponse(
-        ['add_observation', { species_id: VINK, count: 1, uncertain: true, uncertain_reason: 'kan ook keep zijn' }],
-        ['add_observation', { species_id: VINK, count: 1, uncertain: false, uncertain_reason: 'zomaar' }],
+        [
+          'add_observation',
+          { species_id: VINK, count: 1, uncertain: true, uncertain_reason: 'kan ook keep zijn' },
+        ],
+        [
+          'add_observation',
+          { species_id: VINK, count: 1, uncertain: false, uncertain_reason: 'zomaar' },
+        ],
       ),
       [],
     );
-    expect(actions[0]).toMatchObject({ fields: { uncertain: true, uncertainReason: 'kan ook keep zijn' } });
-    expect(actions[1]).toEqual({ type: 'add', fields: { speciesId: VINK, count: 1, uncertain: false } });
+    expect(actions[0]).toMatchObject({
+      fields: { uncertain: true, uncertainReason: 'kan ook keep zijn' },
+    });
+    expect(actions[1]).toEqual({
+      type: 'add',
+      fields: { speciesId: VINK, count: 1, uncertain: false },
+    });
   });
 
   it('kent undo en add_dev_note', () => {
-    const { actions } = parseResponse(toolResponse(['undo', {}], ['add_dev_note', { text: 'x' }]), []);
+    const { actions } = parseResponse(
+      toolResponse(['undo', {}], ['add_dev_note', { text: 'x' }]),
+      [],
+    );
     expect(actions).toEqual([{ type: 'undo' }, { type: 'dev_note' }]);
   });
 });

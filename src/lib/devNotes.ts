@@ -96,7 +96,8 @@ export async function devNotesMarkdown(notes: Utterance[]): Promise<string> {
               .slice(-CONTEXT_SIZE);
       if (before.length) {
         lines.push('Uitspraken ervoor:');
-        for (const u of before) lines.push(`- "${u.transcript ?? "(opname, nog niet verstaan)"}" → ${resultLabel(u)}`);
+        for (const u of before)
+          lines.push(`- "${u.transcript ?? '(opname, nog niet verstaan)'}" → ${resultLabel(u)}`);
         lines.push('');
       }
       return lines.join('\n');

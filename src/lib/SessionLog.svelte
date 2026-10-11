@@ -109,7 +109,9 @@
     });
     flashing = ids;
     tick().then(() =>
-      document.getElementById(`obs-${ids[0]}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+      document
+        .getElementById(`obs-${ids[0]}`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
     );
     const timer = setTimeout(() => (flashing = []), 2500);
     return () => clearTimeout(timer);
@@ -125,12 +127,7 @@
   const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
 
   function details(obs: Observation) {
-    return [
-      ...behaviour(obs),
-      obs.area?.name,
-    ]
-      .filter(Boolean)
-      .join(' · ');
+    return [...behaviour(obs), obs.area?.name].filter(Boolean).join(' · ');
   }
 
   function behaviour(obs: Observation) {
@@ -274,7 +271,11 @@
           {#if editing === obs.id}
             <ObservationEditor observation={obs} utterance={source} onclose={closeEditor} />
           {:else}
-            <button class="row" onclick={() => openEditor(obs.id)} aria-label="Waarneming aanpassen">
+            <button
+              class="row"
+              onclick={() => openEditor(obs.id)}
+              aria-label="Waarneming aanpassen"
+            >
               <RarityMark rarity={species?.rarity ?? 0} />
               <span class="main">
                 <span class="name">
@@ -287,7 +288,9 @@
                   <span class="details">{details(obs)}</span>
                 {/if}
                 {#if obs.uncertain}
-                  <span class="reason">Onzeker{obs.uncertainReason ? `: ${obs.uncertainReason}` : ''}</span>
+                  <span class="reason"
+                    >Onzeker{obs.uncertainReason ? `: ${obs.uncertainReason}` : ''}</span
+                  >
                 {/if}
                 {#if obs.privateNote}
                   <span class="note">Notitie: {obs.privateNote}</span>
@@ -302,43 +305,50 @@
               </span>
             </button>
             {#if showActions(obs)}
-            <div class="actions">
-              {#if obs.position && onshowonmap}
-                <button class="to-map" onclick={() => onshowonmap(obs.id)} aria-label="Op de kaart laten zien"
-                  >±{Math.round(obs.position.accuracy)} m</button
-                >
-              {:else if obs.position}
-                <a
-                  href={mapsUrl(obs.position.lat, obs.position.lon)}
-                  target="_blank"
-                  rel="noopener">±{Math.round(obs.position.accuracy)} m</a
-                >
-              {/if}
-              {#if obs.position}
-                {#if positionAge(obs)}
-                  <span class="reason">{positionAge(obs)}</span>
+              <div class="actions">
+                {#if obs.position && onshowonmap}
+                  <button
+                    class="to-map"
+                    onclick={() => onshowonmap(obs.id)}
+                    aria-label="Op de kaart laten zien"
+                    >±{Math.round(obs.position.accuracy)} m</button
+                  >
+                {:else if obs.position}
+                  <a
+                    href={mapsUrl(obs.position.lat, obs.position.lon)}
+                    target="_blank"
+                    rel="noopener">±{Math.round(obs.position.accuracy)} m</a
+                  >
                 {/if}
-              {:else}
-                <span class="reason">geen locatie</span>
-              {/if}
-              <span class="end">
-                {#if obs.uncertain}
-                  <button class="small discard" onclick={() => deleteObservation(obs.id)}>Weg</button>
-                  <button class="small confirm" onclick={() => confirmObservation(obs)}>Klopt</button>
+                {#if obs.position}
+                  {#if positionAge(obs)}
+                    <span class="reason">{positionAge(obs)}</span>
+                  {/if}
+                {:else}
+                  <span class="reason">geen locatie</span>
                 {/if}
-                <!-- Exporteren kan alleen bij een afgelopen wandeling -->
-                {#if session.status === 'ended'}
-                  <label class="export">
-                    <input
-                      type="checkbox"
-                      checked={!obs.skipExport}
-                      onchange={(event) => setSkipExport(obs.id, !event.currentTarget.checked)}
-                    />
-                    Exporteren
-                  </label>
-                {/if}
-              </span>
-            </div>
+                <span class="end">
+                  {#if obs.uncertain}
+                    <button class="small discard" onclick={() => deleteObservation(obs.id)}
+                      >Weg</button
+                    >
+                    <button class="small confirm" onclick={() => confirmObservation(obs)}
+                      >Klopt</button
+                    >
+                  {/if}
+                  <!-- Exporteren kan alleen bij een afgelopen wandeling -->
+                  {#if session.status === 'ended'}
+                    <label class="export">
+                      <input
+                        type="checkbox"
+                        checked={!obs.skipExport}
+                        onchange={(event) => setSkipExport(obs.id, !event.currentTarget.checked)}
+                      />
+                      Exporteren
+                    </label>
+                  {/if}
+                </span>
+              </div>
             {/if}
           {/if}
         </li>
@@ -375,35 +385,37 @@
   <details class="card fold" open={failed > 0 || queued > 0}>
     <summary>Uitspraken ({$utterances.length}){failed ? ` · ${failed} fout` : ''}</summary>
     <ul class="plain">
-    {#each $utterances as u (u.id)}
-      <li class="utterance">
-        <div>
-          {#if u.audio}
-            <button
-              class="play"
-              onclick={() => togglePlay(u)}
-              aria-label={playingId === u.id ? 'Opname pauzeren' : 'Opname afspelen'}
-              >{playingId === u.id ? PAUSE : PLAY}</button
-            >
+      {#each $utterances as u (u.id)}
+        <li class="utterance">
+          <div>
+            {#if u.audio}
+              <button
+                class="play"
+                onclick={() => togglePlay(u)}
+                aria-label={playingId === u.id ? 'Opname pauzeren' : 'Opname afspelen'}
+                >{playingId === u.id ? PAUSE : PLAY}</button
+              >
+            {/if}
+            {#if u.transcript !== undefined}
+              “{u.transcript}”
+            {:else}
+              <span class="muted">Opname van {seconds(u.audioDurationMs ?? 0)}</span>
+            {/if}
+            <span class="status {u.status} {u.result}">{statusLabel(u)}</span>
+            {#if duration(u)}
+              <span class="status"
+                >· {duration(u)}{u.metrics?.wasHidden ? ' (app op achtergrond)' : ''}</span
+              >
+            {/if}
+          </div>
+          {#if u.error}
+            <div class="reason">{u.error}</div>
           {/if}
-          {#if u.transcript !== undefined}
-            “{u.transcript}”
-          {:else}
-            <span class="muted">Opname van {seconds(u.audioDurationMs ?? 0)}</span>
+          {#if u.status === 'failed'}
+            <button class="small" onclick={() => retry(u.id)}>Opnieuw</button>
           {/if}
-          <span class="status {u.status} {u.result}">{statusLabel(u)}</span>
-          {#if duration(u)}
-            <span class="status">· {duration(u)}{u.metrics?.wasHidden ? ' (app op achtergrond)' : ''}</span>
-          {/if}
-        </div>
-        {#if u.error}
-          <div class="reason">{u.error}</div>
-        {/if}
-        {#if u.status === 'failed'}
-          <button class="small" onclick={() => retry(u.id)}>Opnieuw</button>
-        {/if}
-      </li>
-    {/each}
+        </li>
+      {/each}
     </ul>
   </details>
 {/if}

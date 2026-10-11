@@ -140,7 +140,11 @@
 
   {#if selecting}
     <div class="actions">
-      <button class="btn danger block large" disabled={selected.size === 0} onclick={removeSelected}>
+      <button
+        class="btn danger block large"
+        disabled={selected.size === 0}
+        onclick={removeSelected}
+      >
         {selected.size === 0
           ? 'Niets aangevinkt'
           : `Verwijder ${selected.size === 1 ? '1 wandeling' : `${selected.size} wandelingen`}`}

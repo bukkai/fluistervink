@@ -114,7 +114,10 @@ describe('corrigeren', () => {
   });
 
   it('"nee, keep" maakt een onzekere waarneming zeker', async () => {
-    await say('vink', ['add_observation', { species_id: VINK, count: 1, uncertain: true, uncertain_reason: 'x' }]);
+    await say('vink', [
+      'add_observation',
+      { species_id: VINK, count: 1, uncertain: true, uncertain_reason: 'x' },
+    ]);
     await say('nee, keep', ['update_observation', { ref: 1, species_id: KEEP }]);
     const [obs] = await listObservations(SESSION);
     expect(obs).toMatchObject({ speciesId: KEEP, uncertain: false });
@@ -182,7 +185,15 @@ describe('wachtrij', () => {
     const seen: string[] = [];
     vi.mocked(interpret).mockImplementation(async (transcript) => {
       seen.push(transcript);
-      return { actions: [], rejected: [], warnings: [], response: toolResponse(), context: '', contextIds: [], timing: { requestMs: 0 } };
+      return {
+        actions: [],
+        rejected: [],
+        warnings: [],
+        response: toolResponse(),
+        context: '',
+        contextIds: [],
+        timing: { requestMs: 0 },
+      };
     });
     await queue('eerste');
     await queue('tweede');
@@ -198,7 +209,10 @@ describe('wachtrij', () => {
     };
     const id = await queue('vink');
     await processQueue();
-    expect(await db.utterances.get(id)).toMatchObject({ status: 'failed', error: 'geen verbinding' });
+    expect(await db.utterances.get(id)).toMatchObject({
+      status: 'failed',
+      error: 'geen verbinding',
+    });
 
     model.respond = () => toolResponse(['add_observation', { species_id: VINK, count: 1 }]);
     await retry(id);
