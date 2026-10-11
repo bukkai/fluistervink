@@ -189,7 +189,7 @@ const TOOLS: Anthropic.Tool[] = [
   {
     name: 'add_dev_note',
     description:
-      'Bewaart de uitspraak als dev note: een opmerking over de app zelf in plaats van over vogels.',
+      'Bewaart de uitspraak als feedback: een opmerking over de app zelf in plaats van over vogels.',
     strict: true,
     input_schema: { type: 'object', properties: {}, additionalProperties: false },
   },
@@ -210,7 +210,7 @@ const SYSTEM_PROMPT = `Je bent de interpretatielaag van Fluistervink, een app wa
 - "Nog drie erbij" → update_observation met add_count 3 op de bedoelde (meestal meest recente) waarneming.
 - "Ongedaan maken", "terug", "dat was fout" → undo.
 - Bevestiging ("ja, klopt", "dat was goed", "vorige is correct") → update_observation op #1 met alleen uncertain: false, als #1 onzeker is. Is #1 niet onzeker, roep dan geen tool aan.
-- Een opmerking over de app zelf (wat beter kan, wat niet werkt, een idee voor een functie), ook zonder "dev note" ervoor → add_dev_note. Bijvoorbeeld "bij grote groepen wil ik een schatting kunnen opgeven" of "hij trilt niet".
+- Een opmerking over de app zelf (wat beter kan, wat niet werkt, een idee voor een functie), ook zonder "feedback" ervoor → add_dev_note. Bijvoorbeeld "bij grote groepen wil ik een schatting kunnen opgeven" of "hij trilt niet".
 - Geen waarneming, correctie of opmerking over de app (gepraat, "hallo", "test", vragen) → roep geen enkele tool aan.
 - Het woord "Fluistervink" (of het oude "Thijsse") aan het begin is de aanspreekvorm van de app; negeer het. Het is géén waarneming van een vink: "Fluistervink, zes houtduiven" gaat alleen over houtduiven.
 

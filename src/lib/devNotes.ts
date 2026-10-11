@@ -2,20 +2,21 @@ import { getTester } from './api';
 import { db, type Utterance } from './db';
 import { devNoteText } from './observations';
 
-// Dev notes: bevindingen over de app, ingesproken tijdens het testen. Ze worden
-// als uitspraak opgeslagen (kind `dev_note`) en kunnen als Markdown gekopieerd
+// Feedback (vroeger "dev notes"): bevindingen over de app, ingesproken tijdens
+// het testen. Ze worden als uitspraak opgeslagen (kind `dev_note`, de oude
+// naam), gaan mee bij het delen (share.ts) en kunnen als Markdown gekopieerd
 // worden, met wat context erbij, om later te verwerken.
 
 /** Zoveel eerdere uitspraken gaan als context mee in de export. */
 const CONTEXT_SIZE = 3;
 
-/** Alle dev notes, nieuwste eerst. */
+/** Alle feedback, nieuwste eerst. */
 export async function listDevNotes(): Promise<Utterance[]> {
   const all = await db.utterances.orderBy('recordedAt').reverse().toArray();
   return all.filter((u) => u.kind === 'dev_note');
 }
 
-/** De tekst van de note, zonder "dev note" ervoor. */
+/** De tekst van de feedback, zonder "feedback" of "dev note" ervoor. */
 export function noteText(note: Utterance): string {
   return devNoteText(note.transcript ?? '') || (note.transcript ?? '');
 }
@@ -33,7 +34,7 @@ const dateTimeFormat = new Intl.DateTimeFormat('nl-NL', {
 });
 
 function resultLabel(u: Utterance): string {
-  if (u.kind === 'dev_note') return 'dev note';
+  if (u.kind === 'dev_note') return 'feedback';
   if (u.undone) return 'teruggedraaid';
   if (u.status === 'failed') return `fout: ${u.error}`;
   if (u.status !== 'done') return 'nog niet verwerkt';
@@ -43,7 +44,7 @@ function resultLabel(u: Utterance): string {
   return u.error ? `${label}; ${u.error}` : label;
 }
 
-/** Alle dev notes als Markdown, met de uitspraken ervoor als context. */
+/** Alle feedback als Markdown, met de uitspraken ervoor als context. */
 export async function devNotesMarkdown(notes: Utterance[]): Promise<string> {
   const sections = await Promise.all(
     [...notes].reverse().map(async (note) => {
@@ -72,5 +73,5 @@ export async function devNotesMarkdown(notes: Utterance[]): Promise<string> {
   );
   const tester = getTester();
   const header = tester ? `Van: ${tester}\n\n` : '';
-  return `# Dev notes Fluistervink\n\n${header}${sections.join('\n')}`;
+  return `# Feedback Fluistervink\n\n${header}${sections.join('\n')}`;
 }

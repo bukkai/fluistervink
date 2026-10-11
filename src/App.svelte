@@ -14,6 +14,7 @@
   import { vibrate } from './lib/feedback';
   import { instance } from './lib/instance.svelte';
   import { processQueue } from './lib/observations';
+  import { scheduleShare } from './lib/share';
   import DevNotes from './lib/DevNotes.svelte';
   import PastSession from './lib/PastSession.svelte';
   import PastSessions from './lib/PastSessions.svelte';
@@ -22,6 +23,11 @@
   // Uitspraken die bij het afsluiten nog niet verwerkt waren, alsnog verwerken.
   // Dit exemplaar neemt de wachtrij over van een eventueel ander (tabblad).
   processQueue({ takeOver: true });
+
+  // Wandelingen en feedback delen met de ontwikkelaar (share.ts): bij het
+  // opstarten, bij elke schermwissel (bv. klaar met nalopen) en bij weer online
+  scheduleShare();
+  window.addEventListener('online', () => scheduleShare());
 
   // liveQuery draait opnieuw zodra de data in IndexedDB verandert, en is
   // direct bruikbaar als Svelte-store ($sessions).
@@ -32,13 +38,14 @@
   let past = $derived($sessions?.filter((s) => s.status === 'ended') ?? []);
 
   // Elk scherm heeft een eigen adres (#wandelingen, #wandeling/<id>,
-  // #instellingen, #devnotes), zodat de terugknop van Android teruggaat naar
+  // #instellingen, #feedback), zodat de terugknop van Android teruggaat naar
   // het vorige scherm in plaats van de app te sluiten. Leeg = hoofdscherm.
   let hash = $state(location.hash);
   let route = $derived(hash.replace(/^#\/?/, ''));
   const onHashChange = () => {
     hash = location.hash;
     checkInvite();
+    scheduleShare();
     // De bevestiging na het stoppen alleen tonen tot je dat scherm verlaat
     if (justStopped && !hash.endsWith(justStopped)) justStopped = undefined;
     menuOpen = false;
@@ -128,9 +135,7 @@
       <button class="backdrop" aria-label="Menu sluiten" onclick={() => (menuOpen = false)}></button>
       <nav>
         <a href="#wandelingen">Vorige wandelingen</a>
-        {#if $devNotes?.length}
-          <a href="#devnotes">Dev notes ({$devNotes.length})</a>
-        {/if}
+        <a href="#feedback">Feedback{$devNotes?.length ? ` (${$devNotes.length})` : ''}</a>
         <a href="#instellingen">Instellingen</a>
       </nav>
     {/if}
@@ -157,7 +162,7 @@
     />
   {:else if route === 'instellingen'}
     <Settings />
-  {:else if route === 'devnotes'}
+  {:else if route === 'feedback' || route === 'devnotes'}
     <DevNotes />
   {:else if active}
     <section class="walk">
@@ -183,6 +188,8 @@
         <p class="welcome">
           Welkom{welcome.tester ? `, ${welcome.tester}` : ''}! Je toegang is ingesteld. Tip: zet de
           app op je startscherm via het menu van Chrome → <em>Toevoegen aan startscherm</em>.
+          Je wandelingen en feedback worden gedeeld met de ontwikkelaar; zie
+          <a href="#instellingen">Instellingen</a>.
           <button class="link" onclick={() => (welcome = undefined)}>Oké</button>
         </p>
       {:else if welcome}

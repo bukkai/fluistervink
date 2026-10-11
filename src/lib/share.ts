@@ -1,0 +1,175 @@
+import { getTester, putShared } from './api';
+import { db, type Utterance } from './db';
+import { APP_VERSION, logEvent } from './log';
+
+// Delen met de ontwikkelaar: gestopte wandelingen (uitspraken, transcripten,
+// uitvoer van het model, de nagelopen waarnemingen, feedback en het log van
+// die periode) gaan naar de proxy, die ze per tester bewaart. Zo groeit de
+// testset vanzelf, ook met andere stemmen dan die van de eigenaar. Opnames
+// alleen als de gebruiker dat aanzet.
+//
+// Een wandeling gaat opnieuw als hij veranderd is (bv. na het nalopen): de app
+// onthoudt per wandeling een hash van wat er verstuurd is. Lukt het niet, dan
+// bij de volgende gelegenheid opnieuw (opstarten, weer online, ander scherm).
+
+const ENABLED_KEY = 'fluistervink.share';
+const AUDIO_KEY = 'fluistervink.shareAudio';
+const SENT_KEY = 'fluistervink.shared';
+const SENT_AT_KEY = 'fluistervink.sharedAt';
+
+interface Sent {
+  /** Hash van de laatst verstuurde versie per wandeling */
+  sessions: Record<string, string>;
+  /** Uitspraken waarvan de opname al verstuurd is */
+  audio: string[];
+}
+
+function read<T>(key: string, fallback: T): T {
+  try {
+    const value = localStorage.getItem(key);
+    return value === null ? fallback : (JSON.parse(value) as T);
+  } catch {
+    return fallback;
+  }
+}
+
+function write(key: string, value: unknown): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Volle of geblokkeerde opslag: dan volgende keer alles opnieuw, geen ramp
+  }
+}
+
+/** Delen staat standaard aan; de gebruiker kan het uitzetten bij Instellingen. */
+export function shareEnabled(): boolean {
+  return read(ENABLED_KEY, true);
+}
+
+export function setShareEnabled(on: boolean): void {
+  write(ENABLED_KEY, on);
+  if (on) scheduleShare();
+}
+
+/** Opnames meesturen staat standaard uit. */
+export function shareAudio(): boolean {
+  return read(AUDIO_KEY, false);
+}
+
+export function setShareAudio(on: boolean): void {
+  write(AUDIO_KEY, on);
+  if (on) scheduleShare();
+}
+
+/** Moment van de laatste geslaagde ronde, of undefined. */
+export function lastSharedAt(): number | undefined {
+  return read<number | undefined>(SENT_AT_KEY, undefined);
+}
+
+/** Alles van één wandeling, in de vorm van de JSON-export (zonder opnames). */
+async function snapshot(sessionId: string) {
+  const session = await db.sessions.get(sessionId);
+  if (!session) return undefined;
+  const until = session.endedAt ?? Date.now();
+  const [utterances, observations, deletedObservations, events] = await Promise.all([
+    db.utterances.where('sessionId').equals(sessionId).sortBy('recordedAt'),
+    db.observations.where('sessionId').equals(sessionId).toArray(),
+    db.deletedObservations.where('sessionId').equals(sessionId).toArray(),
+    // Het log van de periode van de wandeling (`sessionId` heeft geen index)
+    db.events.where('at').between(session.startedAt, until, true, true).toArray(),
+  ]);
+  return {
+    sessions: [session],
+    utterances: utterances.map(({ audio, ...u }: Utterance) => ({
+      ...u,
+      audioBytes: audio?.size,
+      audioType: audio?.type,
+    })),
+    observations,
+    deletedObservations,
+    events,
+  };
+}
+
+async function hash(text: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(digest.slice(0, 12)), (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+export interface ShareResult {
+  sessions: number;
+  audio: number;
+}
+
+let running: Promise<ShareResult> | undefined;
+
+/**
+ * Verstuurt wat nog niet (of in een oudere versie) verstuurd is. Eén ronde
+ * tegelijk; een tweede aanroep wacht op de lopende.
+ */
+export function shareNow(): Promise<ShareResult> {
+  running ??= run().finally(() => (running = undefined));
+  return running;
+}
+
+async function run(): Promise<ShareResult> {
+  const result = { sessions: 0, audio: 0 };
+  if (!shareEnabled() || !navigator.onLine) return result;
+
+  const sent = read<Sent>(SENT_KEY, { sessions: {}, audio: [] });
+  const audioSent = new Set(sent.audio);
+  const withAudio = shareAudio();
+
+  try {
+    // Alleen gestopte wandelingen: een lopende verandert nog bij elke uitspraak
+    const ended = await db.sessions.where('status').equals('ended').primaryKeys();
+    for (const id of ended) {
+      const data = await snapshot(id);
+      if (!data) continue;
+      const body = JSON.stringify(data);
+      const version = await hash(body);
+      if (sent.sessions[id] !== version) {
+        await putShared(
+          `sessions/${id}`,
+          new Blob(
+            [JSON.stringify({ sharedAt: new Date().toISOString(), appVersion: APP_VERSION, tester: getTester(), ...data })],
+            { type: 'application/json' },
+          ),
+        );
+        sent.sessions[id] = version;
+        write(SENT_KEY, sent);
+        result.sessions++;
+      }
+
+      if (!withAudio) continue;
+      // Opnames los, één voor één: ze veranderen nooit, dus maar één keer
+      for (const u of data.utterances) {
+        if (!u.audioBytes || audioSent.has(u.id)) continue;
+        const audio = (await db.utterances.get(u.id))?.audio;
+        if (!audio) continue;
+        await putShared(`audio/${u.id}`, audio);
+        audioSent.add(u.id);
+        sent.audio = [...audioSent];
+        write(SENT_KEY, sent);
+        result.audio++;
+      }
+    }
+    write(SENT_AT_KEY, Date.now());
+    if (result.sessions || result.audio) logEvent('shared', result);
+  } catch (error) {
+    logEvent('share_failed', { message: error instanceof Error ? error.message : String(error), ...result });
+    throw error;
+  }
+  return result;
+}
+
+let timer: ReturnType<typeof setTimeout> | undefined;
+
+/**
+ * Een ronde over een paar seconden, en dan stil: bij elke schermwissel,
+ * na het stoppen van een wandeling en bij weer online. Fouten alleen in het log.
+ */
+export function scheduleShare(delayMs = 3000): void {
+  clearTimeout(timer);
+  timer = setTimeout(() => shareNow().catch(() => {}), delayMs);
+}

@@ -57,3 +57,15 @@ Het script houdt de codes bij in `.testers.json` (niet in git) en zet ze als geh
 Stuur de tester de link. Op Android: de link in Chrome openen (de app bewaart de code en heet de tester welkom op het hoofdscherm), daarna pas "Toevoegen aan startscherm". Jouw eigen `ACCESS_CODE` blijft gewoon werken, als tester "eigenaar". In Workers Logs staat bij elk verzoek welke tester het deed.
 
 Met de hand kan ook: `ACCESS_CODES` is JSON, `{"anna": "code", "piet": "code"}`, in te stellen in het dashboard onder Variables and Secrets.
+
+### Wat testers delen ophalen
+
+De app deelt gestopte wandelingen (met feedback, correcties en het log) automatisch met de proxy; opnames alleen als de tester dat aanzet bij Instellingen.
+
+```bash
+npm run feedback -- pull    # nieuwe en gewijzigde wandelingen ophalen → testset/feedback/
+npm run feedback -- notes   # alle feedback van testers als Markdown
+npm run testset -- testset/feedback/anna.json
+```
+
+`pull` vraagt één keer om jouw productie-`ACCESS_CODE` en bewaart die in `.testers.json`. Andere server: `FLUISTERVINK_URL=http://localhost:5173 npm run feedback -- pull`.
