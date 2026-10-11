@@ -17,7 +17,7 @@
     await test();
   }
 
-  // Meteen laten zien of de code werkt, ook na het openen van een uitnodigingslink
+  // Meteen laten zien of de code werkt
   onMount(() => {
     if (code) test();
   });

@@ -7,13 +7,16 @@
 //   npm run tester -- remove anna    tester afsluiten
 //   npm run tester -- list           testers met hun uitnodigingslink
 //   npm run tester -- push           de lijst opnieuw naar Cloudflare sturen (productie en previews)
-//   npm run tester -- url <url>      adres van de app (voor de links)
+//   npm run tester -- url <url>      ander adres van de app in de links (bv. een preview)
 
 import { spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+/** Standaardadres voor de links; aan te passen met `npm run tester -- url …`. */
+const DEFAULT_URL = 'https://fluistervink.stephanmullernl.workers.dev';
 
 const FILE = join(dirname(fileURLToPath(import.meta.url)), '..', '.testers.json');
 
@@ -33,7 +36,7 @@ function newCode() {
 }
 
 function link(data, code) {
-  return `${(data.appUrl ?? '<app-url>').replace(/\/$/, '')}/#code=${code}`;
+  return `${(data.appUrl ?? DEFAULT_URL).replace(/\/$/, '')}/#code=${code}`;
 }
 
 /**
@@ -87,7 +90,6 @@ switch (command) {
     push(data);
     console.log(`\n${arg} toegevoegd. Uitnodigingslink (op Android in Chrome openen):\n`);
     console.log(`  ${link(data, data.testers[arg])}\n`);
-    if (!data.appUrl) console.log('Tip: `npm run tester -- url https://…` vult het adres in de link in.');
     break;
   }
   case 'remove': {
