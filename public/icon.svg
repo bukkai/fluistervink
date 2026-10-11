@@ -1,13 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#2f6b3a"/>
-  <!-- Vogeltje in silhouet, ruim binnen de veilige zone voor maskable icons -->
-  <g fill="#f7f5ef">
-    <ellipse cx="250" cy="290" rx="105" ry="75"/>
-    <circle cx="330" cy="215" r="48"/>
-    <path d="M372 205 L412 220 L372 232 Z"/>
-    <path d="M160 270 L100 230 L150 310 Z"/>
-    <rect x="235" y="355" width="10" height="45"/>
-    <rect x="270" y="355" width="10" height="45"/>
-  </g>
-  <circle cx="340" cy="208" r="8" fill="#2f6b3a"/>
+  <!-- Mannetjesvink: roze-oranje lijf, blauwgrijze kruin, donkere vleugel met witte streep -->
+  <defs>
+    <clipPath id="kop"><circle cx="330" cy="215" r="48"/></clipPath>
+  </defs>
+  <rect width="512" height="512" fill="#4b6a84"/>
+  <!-- Staart en pootjes -->
+  <path d="M160 270 L100 230 L150 310 Z" fill="#2b2522"/>
+  <rect x="235" y="355" width="10" height="45" fill="#f4f1ed"/>
+  <rect x="270" y="355" width="10" height="45" fill="#f4f1ed"/>
+  <!-- Lijf en kop -->
+  <ellipse cx="250" cy="290" rx="105" ry="75" fill="#d9876a"/>
+  <circle cx="330" cy="215" r="48" fill="#d9876a"/>
+  <!-- Blauwgrijze kruin en nek -->
+  <path d="M270 250 C295 228 320 206 380 204 L380 150 L270 150 Z" fill="#a9bdcd" clip-path="url(#kop)"/>
+  <!-- Vleugel met witte vleugelstreep -->
+  <path d="M165 262 C200 225 270 228 300 262 C270 300 205 310 165 262 Z" fill="#2b2522"/>
+  <path d="M196 252 C225 238 262 240 284 258" fill="none" stroke="#f4f1ed" stroke-width="12" stroke-linecap="round"/>
+  <!-- Snavel en oog -->
+  <path d="M372 205 L410 218 L372 230 Z" fill="#a9bdcd"/>
+  <circle cx="343" cy="210" r="7" fill="#22292f"/>
 </svg>

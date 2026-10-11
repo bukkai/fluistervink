@@ -89,7 +89,7 @@
       for (const group of groups) {
         const { lat, lon, accuracy } = group[0].position!;
         const uncertain = group.some((obs) => obs.uncertain);
-        const color = uncertain ? '#a5670c' : '#2f6b3a';
+        const color = uncertain ? '#a5670c' : '#4b6a84';
         L.circle([lat, lon], {
           radius: accuracy,
           color,

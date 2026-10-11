@@ -246,7 +246,7 @@
     font-weight: 650;
     color: var(--on-brand);
     background: var(--brand);
-    box-shadow: 0 2px 0 var(--brand-strong), 0 6px 16px rgb(30 60 50 / 0.18);
+    box-shadow: 0 2px 0 var(--brand-strong), 0 6px 16px rgb(40 60 80 / 0.2);
     transition:
       transform 80ms,
       background 150ms;
@@ -264,7 +264,7 @@
 
   .talk.recording {
     background: var(--red);
-    box-shadow: 0 2px 0 #922b21;
+    box-shadow: 0 2px 0 var(--breast-strong);
     animation: pulse 1.4s ease-out infinite;
   }
 
@@ -275,13 +275,13 @@
   @keyframes pulse {
     0% {
       box-shadow:
-        0 2px 0 #922b21,
-        0 0 0 0 rgb(192 57 43 / 0.45);
+        0 2px 0 var(--breast-strong),
+        0 0 0 0 color-mix(in srgb, var(--breast) 45%, transparent);
     }
     100% {
       box-shadow:
-        0 2px 0 #922b21,
-        0 0 0 14px rgb(192 57 43 / 0);
+        0 2px 0 var(--breast-strong),
+        0 0 0 14px transparent;
     }
   }
 
