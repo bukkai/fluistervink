@@ -85,7 +85,7 @@ Soort, activiteit, methode, kleed en telmethode worden opgeslagen als **waarnemi
 4. Opname en Whisper-koppeling, met tijd en GPS bij start van de opname. *(klaar: knop tikken of vasthouden, `gpt-4o-transcribe` met soortnamen en bijnamen in de prompt)*
 5. Review: trilfeedback, afgelopen wandelingen kunnen openen, overzichtslijst met bewerken (soort, aantal, gedrag, verwijderen), onzekere waarnemingen nalopen, audio terugluisteren. *(klaar, plus gebiedsnaam van waarneming.nl bij elke waarneming in PR #18)*
 6. CSV-export voor waarneming.nl. *(klaar: bulkimport van waarneming.nl in PR #19; echte import getest op 11 okt, werkt)*
-7. Opslaan en exporteren van de testset. Bewust na de CSV-export: de testset wordt pas nuttig na een paar wandelingen, en de gegevens ervoor (audio, transcript, LLM-uitvoer, gecorrigeerde waarneming) worden vanaf stap 4 al bewaard.
+7. Opslaan en exporteren van de testset. Bewust na de CSV-export: de testset wordt pas nuttig na een paar wandelingen, en de gegevens ervoor (audio, transcript, LLM-uitvoer, gecorrigeerde waarneming) worden vanaf stap 4 al bewaard. *(klaar: JSON-export met opnames in PR #49; `npm run testset -- <export.json>` haalt de uitspraken opnieuw door spraakherkenning en model en scoort ze tegen de nagelopen waarnemingen, zie `scripts/testset.mjs`)*
 
 ## Wanneer is de MVP geslaagd?
 

@@ -59,6 +59,8 @@ export interface Interpretation {
   response: Anthropic.Message;
   /** De recente waarnemingen zoals het model ze kreeg */
   context: string;
+  /** ID's van die waarnemingen, in volgorde (#1 eerst), om verwijzingen na te gaan */
+  contextIds: string[];
   timing: Timing;
 }
 
@@ -312,20 +314,45 @@ function describe(obs: Observation): string {
 }
 
 /**
+ * Tool calls uit een antwoord van het model, gevalideerd. Los, zodat de
+ * testset ook bewaarde antwoorden kan scoren.
+ * @param context De recente waarnemingen zoals het model ze kreeg (#1 eerst)
+ */
+export function parseResponse(
+  response: Anthropic.Message,
+  context: Observation[],
+): { actions: Action[]; rejected: string[] } {
+  const actions: Action[] = [];
+  const rejected: string[] = [];
+  for (const block of response.content) {
+    if (block.type !== 'tool_use') continue;
+    const result = toAction(block, context);
+    if (typeof result === 'string') rejected.push(result);
+    else actions.push(result);
+  }
+  return { actions, rejected };
+}
+
+/**
  * @param transcript De uitspraak als tekst
  * @param recent Recente waarnemingen van de wandeling, nieuwste eerst
+ * @param options Alleen voor de testset (scripts/testset.mjs): een ander model,
+ *   of de context precies zoals hij destijds was
  */
 export async function interpret(
   transcript: string,
   recent: Observation[],
+  options: { model?: string; contextText?: string } = {},
 ): Promise<Interpretation> {
   const context = recent.slice(0, CONTEXT_SIZE);
-  const contextText = context.length
-    ? context.map((obs, i) => `#${i + 1} ${describe(obs)}`).join('\n')
-    : '(nog geen waarnemingen)';
+  const contextText =
+    options.contextText ??
+    (context.length
+      ? context.map((obs, i) => `#${i + 1} ${describe(obs)}`).join('\n')
+      : '(nog geen waarnemingen)');
 
   const { data: response, timing } = await createMessage<Anthropic.Message>({
-    model: MODEL,
+    model: options.model ?? MODEL,
     max_tokens: 4096,
     // Weinig nadenken: snelheid telt in het veld, en de taak is eenvoudig
     output_config: { effort: 'low' },
@@ -345,15 +372,15 @@ export async function interpret(
     throw new Error('Het model weigerde de uitspraak te verwerken');
   }
 
-  const actions: Action[] = [];
-  const rejected: string[] = [];
-  for (const block of response.content) {
-    if (block.type !== 'tool_use') continue;
-    const result = toAction(block, context);
-    if (typeof result === 'string') rejected.push(result);
-    else actions.push(result);
-  }
-  return { actions, rejected, response, context: contextText, timing };
+  const { actions, rejected } = parseResponse(response, context);
+  return {
+    actions,
+    rejected,
+    response,
+    context: contextText,
+    contextIds: context.map((obs) => obs.id),
+    timing,
+  };
 }
 
 // ---------------------------------------------------------------------------

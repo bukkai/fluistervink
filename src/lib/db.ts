@@ -120,6 +120,8 @@ export interface ProcessingMetrics {
   promptVersion: string;
   /** De recente waarnemingen zoals het model ze kreeg */
   context: string;
+  /** ID's van die waarnemingen (#1 eerst), voor de testset */
+  contextIds?: string[];
   /**
    * Begin en eind van de verwerking (inclusief spraakherkenning). Begin min
    * einde van de uitspraak (`recordedAt` + `audioDurationMs`) = tijd in de wachtrij.
