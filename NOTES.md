@@ -48,6 +48,8 @@ Gemerged t/m **#48**: #46 kaart ↔ lijst in de review, #47 opruimen (alles/lege
 - **Trillen werkt niet** op de telefoon (11 okt, gemeld door eigenaar). Uitzoeken (log: `vibrate_blocked`? instelling van Android?). Tot dan is het blok Trillen op `#uitleg` verborgen (`SHOW_VIBRATION` in `src/lib/HowItWorks.svelte`).
 - **#61** pagina Hoe werkt het (`#uitleg`). **Feedback typen en verwijderen** (branch `feedback-typen`).
 - Uitgaven: bij OpenAI en Anthropic vooraf betaald tegoed met auto-reload uit, dat is de harde grens (11 okt). Twee exemplaren tegelijk is al opgelost (`src/lib/instance.svelte.ts`).
+- **#64** vergeten wandeling: na een uur zonder uitspraken vraagt de app bij het openen of de wandeling nog loopt; na 8 uur stopt hij vanzelf (eindtijd = laatste uitspraak), zodat hij ook gedeeld wordt.
+- **#65** nieuwe versie pas laden als er geen wandeling loopt (`src/lib/update.ts`, `registerType: 'prompt'`). In de ingebouwde browser niet na te bootsen; op de telefoon nalopen (`update_deferred` / `update_applied` in het log).
 
 Daarna:
 
