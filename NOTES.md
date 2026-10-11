@@ -41,7 +41,9 @@ Gemerged t/m **#48**: #46 kaart ↔ lijst in de review, #47 opruimen (alles/lege
 - **#54** na de link naar het hoofdscherm met "Welkom, …" (of een melding als de code niet werkt); productie-adres standaard in het script.
 - **#55** bijnaam "ekkie" → Ekster (voor de eerste tester).
 - Eerste tester uitgenodigd. Nog niet gedaan: harde uitgavenlimieten in de consoles van OpenAI en Anthropic. GitHub-mails per Cloudflare-build: uitzetten in Cloudflare (Settings → Build, reacties op GitHub) of in GitHub Notifications, afhankelijk van de reden onderaan de mail.
-- Volgende onderwerp: dev notes en feedback van testers (hoe krijgt een tester dev notes en export bij mij?).
+- **#57** delen met de ontwikkelaar: gestopte wandelingen (en feedback, log) gaan automatisch per tester naar KV (`/api/feedback`), opnieuw na wijziging; opnames alleen als de tester dat aanzet. Ophalen: `npm run feedback -- pull` (→ `testset/feedback/<tester>.json`) en `npm run feedback -- notes`. "Dev note" heet nu "feedback" (oud voorvoegsel werkt nog).
+- **#58** melding "Wandeling opgeslagen" in saliegroen.
+- Nog open voor testers: privacypagina (delen staat standaard áán, tester ziet dat alleen bij Instellingen), pagina "Hoe werkt het", feedback typen en verwijderen op het Feedback-scherm, Web Locks tegen twee exemplaren (tweede wandeling), uitgavenlimieten bij OpenAI en Anthropic (handmatig).
 
 Daarna:
 
