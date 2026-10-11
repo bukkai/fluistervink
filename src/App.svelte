@@ -17,7 +17,7 @@
   import { vibrate } from './lib/feedback';
   import { instance } from './lib/instance.svelte';
   import { processQueue } from './lib/observations';
-  import { scheduleShare, setShareEnabled, shareChoiceMade } from './lib/share';
+  import { SHARE_CHANGED, scheduleShare, sentNoteIds, setShareEnabled, shareChoiceMade, shareEnabled } from './lib/share';
   import DevNotes from './lib/DevNotes.svelte';
   import Developer from './lib/Developer.svelte';
   import HowItWorks from './lib/HowItWorks.svelte';
@@ -39,6 +39,20 @@
   // direct bruikbaar als Svelte-store ($sessions).
   const sessions = liveQuery(listSessions);
   const devNotes = liveQuery(listDevNotes);
+
+  // Teller bij Feedback: alleen wat nog niet verstuurd is (zoals het
+  // Feedback-scherm). Opnieuw lezen na elke ronde en bij delen aan/uit.
+  let sharing = $state(shareEnabled());
+  let sentNotes = $state(sentNoteIds());
+  const onShareChanged = () => {
+    sharing = shareEnabled();
+    sentNotes = sentNoteIds();
+  };
+  window.addEventListener(SHARE_CHANGED, onShareChanged);
+  onDestroy(() => window.removeEventListener(SHARE_CHANGED, onShareChanged));
+  let unsentNotes = $derived(
+    sharing ? ($devNotes ?? []).filter((n) => !sentNotes.has(n.id)).length : ($devNotes?.length ?? 0),
+  );
 
   let active = $derived($sessions?.find((s) => s.status === 'active'));
   let past = $derived($sessions?.filter((s) => s.status === 'ended') ?? []);
@@ -200,7 +214,7 @@
       <button class="backdrop" aria-label="Menu sluiten" onclick={() => (menuOpen = false)}></button>
       <nav>
         <a href="#wandelingen">Vorige wandelingen</a>
-        <a href="#feedback">Feedback{$devNotes?.length ? ` (${$devNotes.length})` : ''}</a>
+        <a href="#feedback">Feedback{unsentNotes ? ` (${unsentNotes})` : ''}</a>
         <a href="#instellingen">Instellingen</a>
         <a href="#uitleg">Hoe werkt het?</a>
         <a href="#privacy">Privacy</a>
