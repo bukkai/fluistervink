@@ -183,6 +183,7 @@ Typen werkt, ook met de ingebouwde spraakinvoer van Android (die is matig). Besl
   - **Developer:** een scherm met alle inzendingen (per tester, datum, appversie, aantal feedbackpunten), met per inzending: feedback lezen, de dump in de eigen app laden (de JSON-import van #40 bestaat al) en exporteren naar Claude: feedback als Markdown plus de JSON, zodat een ontwikkelsessie ze samen kan analyseren.
   - **Opslag:** de Worker krijgt een route `/api/feedback`; JSON in D1 of R2, audio in R2. Zonder accounts: per tester een eigen toegangscode, zodat je ziet van wie iets komt en één tester kunt uitsluiten. Het developerscherm achter een aparte beheercode.
   - **Kleiner begin:** "Inzenden" maakt alleen een bestand (Markdown + JSON) dat de tester deelt via het Android-deelmenu (mail, WhatsApp). Geen serveropslag nodig; de developer importeert het met de bestaande JSON-import.
+- Idee eigenaar (11 okt), klein: bij "Vorige wandelingen → Opruimen" (`src/lib/PastSessions.svelte`) naast "Alle geëxporteerde aanvinken" ook "Alle lege aanvinken" en "Alles aanvinken" (eigenlijk een schakelaar: alles aan/uit). "Leeg" = 0 waarnemingen (`countPerSession`). Let op: dev notes zijn uitspraken en gaan mee als een wandeling wordt verwijderd. Een wandeling met alleen dev notes dus niet als leeg tellen, of in de bevestiging melden hoeveel dev notes er mee weggaan.
 
 ## Overstappen tussen computers
 
