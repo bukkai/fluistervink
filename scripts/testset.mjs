@@ -59,11 +59,21 @@ const { values: opts, positionals } = parseArgs({
 });
 
 if (positionals.length !== 1) {
-  console.error('Gebruik: npm run testset -- <export.json> [--stt …] [--model …] (zie scripts/testset.mjs)');
+  console.error(
+    'Gebruik: npm run testset -- <export.json> [--stt …] [--model …] (zie scripts/testset.mjs)',
+  );
   process.exit(1);
 }
 
-const FIELDS = ['speciesId', 'count', 'countingMethodId', 'activityId', 'methodId', 'lifeStageId', 'sex'];
+const FIELDS = [
+  'speciesId',
+  'count',
+  'countingMethodId',
+  'activityId',
+  'methodId',
+  'lifeStageId',
+  'sex',
+];
 const SNAKE = {
   species_id: 'speciesId',
   count: 'count',
@@ -82,10 +92,16 @@ const replay = opts.model !== 'origineel' || opts.stt !== 'opgeslagen';
 let proxy;
 if (replay) {
   // Volledige configuratie: de Worker met /api, sleutels uit .dev.vars
-  proxy = await createServer({ root: ROOT, logLevel: 'error', server: { port: 5199, strictPort: false } });
+  proxy = await createServer({
+    root: ROOT,
+    logLevel: 'error',
+    server: { port: 5199, strictPort: false },
+  });
   await proxy.listen();
   const base = proxy.resolvedUrls.local[0];
-  const code = /^ACCESS_CODE\s*=\s*"?([^"\n]*)"?/m.exec(readFileSync(join(ROOT, '.dev.vars'), 'utf8'))?.[1];
+  const code = /^ACCESS_CODE\s*=\s*"?([^"\n]*)"?/m.exec(
+    readFileSync(join(ROOT, '.dev.vars'), 'utf8'),
+  )?.[1];
   if (!code) throw new Error('Geen ACCESS_CODE in .dev.vars');
   // api.ts leest de toegangscode uit localStorage en roept relatieve URL's aan
   globalThis.localStorage = { getItem: () => code.trim(), setItem() {} };
@@ -101,7 +117,8 @@ const loader = await createServer({
   appType: 'custom',
   server: { middlewareMode: true, hmr: false },
 });
-const { MODEL, interpret, parseResponse, promptVersion } = await loader.ssrLoadModule('/src/lib/interpret.ts');
+const { MODEL, interpret, parseResponse, promptVersion } =
+  await loader.ssrLoadModule('/src/lib/interpret.ts');
 const { transcribe } = await loader.ssrLoadModule('/src/lib/transcribe.ts');
 const { devNoteText } = await loader.ssrLoadModule('/src/lib/devNotePrefix.ts');
 const vocab = await loader.ssrLoadModule('/src/lib/vocab.ts');
@@ -250,7 +267,9 @@ function kindOf(expected) {
 
 function fromDataUrl(url) {
   const [head, base64] = url.split(',');
-  return new Blob([Buffer.from(base64, 'base64')], { type: head.replace(/^data:/, '').replace(/;base64$/, '') });
+  return new Blob([Buffer.from(base64, 'base64')], {
+    type: head.replace(/^data:/, '').replace(/;base64$/, ''),
+  });
 }
 
 async function run(item) {
@@ -285,7 +304,11 @@ async function run(item) {
 /** Leeg en standaard gelijkstellen, zoals de app ze invult */
 function norm(field, value) {
   if (value === null || value === undefined || value === 'unknown') {
-    return { countingMethodId: DEFAULT_COUNTING_METHOD, activityId: DEFAULT_ACTIVITY, methodId: DEFAULT_METHOD }[field];
+    return {
+      countingMethodId: DEFAULT_COUNTING_METHOD,
+      activityId: DEFAULT_ACTIVITY,
+      methodId: DEFAULT_METHOD,
+    }[field];
   }
   if (field === 'lifeStageId' && value === 1) return undefined; // 1 = onbekend
   return value;
@@ -307,8 +330,12 @@ function compare(expected, got, context) {
   const pairs = [];
   const unmatched = [];
   for (const e of expected.adds) {
-    const i =
-      left.findIndex((g) => g.speciesId === e.speciesId && same('sex', g.sex, e.sex) && same('lifeStageId', g.lifeStageId, e.lifeStageId));
+    const i = left.findIndex(
+      (g) =>
+        g.speciesId === e.speciesId &&
+        same('sex', g.sex, e.sex) &&
+        same('lifeStageId', g.lifeStageId, e.lifeStageId),
+    );
     const j = i >= 0 ? i : left.findIndex((g) => g.speciesId === e.speciesId);
     if (j >= 0) pairs.push([e, left.splice(j, 1)[0]]);
     else unmatched.push(e);
@@ -319,7 +346,10 @@ function compare(expected, got, context) {
     for (const f of FIELDS.slice(1)) {
       const ok = same(f, e[f], g[f]);
       fieldStats.push([f, ok]);
-      if (!ok) diffs.push(`${speciesName(e.speciesId)}: ${label(f)} ${show(f, g[f])}, moet ${show(f, e[f])}`);
+      if (!ok)
+        diffs.push(
+          `${speciesName(e.speciesId)}: ${label(f)} ${show(f, g[f])}, moet ${show(f, e[f])}`,
+        );
     }
   }
 
@@ -338,7 +368,8 @@ function compare(expected, got, context) {
         f === 'count' && g.addCount
           ? Math.max(1, (g.fields.count ?? e.before.count) + g.addCount)
           : (g.fields[f] ?? e.before[f]);
-      if (!same(f, result, value)) diffs.push(`correctie: ${label(f)} ${show(f, result)}, moet ${show(f, value)}`);
+      if (!same(f, result, value))
+        diffs.push(`correctie: ${label(f)} ${show(f, result)}, moet ${show(f, value)}`);
     }
   }
   for (const g of gotUpdates) diffs.push(`extra correctie op ${target(g.observationId)}`);
@@ -349,12 +380,14 @@ function compare(expected, got, context) {
   for (const id of gotDeletes) diffs.push(`extra verwijderd: ${target(id)}`);
 
   const gotUndo = got.actions.some((a) => a.type === 'undo');
-  if (expected.undo !== gotUndo) diffs.push(expected.undo ? 'ongedaan maken gemist' : 'onterecht ongedaan gemaakt');
+  if (expected.undo !== gotUndo)
+    diffs.push(expected.undo ? 'ongedaan maken gemist' : 'onterecht ongedaan gemaakt');
   // Een dev note waar niets verwacht werd, is geen fout: er komt geen
   // waarneming bij (oudere versies van de app kenden geen dev notes van het model)
   const gotNote = got.actions.some((a) => a.type === 'dev_note');
   if (expected.devNote && !gotNote) diffs.push('dev note gemist');
-  const nothingExpected = !expected.adds.length && !expected.updates.length && !expected.deletes.length && !expected.undo;
+  const nothingExpected =
+    !expected.adds.length && !expected.updates.length && !expected.deletes.length && !expected.undo;
   if (gotNote && !expected.devNote && !nothingExpected) diffs.push('onterecht als dev note');
   for (const r of got.rejected ?? []) diffs.push(`afgewezen: ${r}`);
 
@@ -369,7 +402,15 @@ function compare(expected, got, context) {
 
 const speciesName = (id) => vocab.getSpecies(id)?.name ?? `soort ${id}`;
 const label = (f) =>
-  ({ count: 'aantal', countingMethodId: 'telmethode', activityId: 'gedrag', methodId: 'methode', lifeStageId: 'kleed', sex: 'geslacht', speciesId: 'soort' })[f];
+  ({
+    count: 'aantal',
+    countingMethodId: 'telmethode',
+    activityId: 'gedrag',
+    methodId: 'methode',
+    lifeStageId: 'kleed',
+    sex: 'geslacht',
+    speciesId: 'soort',
+  })[f];
 
 function show(f, value) {
   const v = norm(f, value);
@@ -421,7 +462,14 @@ const outputs = await pool(items, Number(opts.parallel), run);
 const results = items.map((item, i) => {
   const got = outputs[i];
   const base = { id: item.u.id, kind: kindOf(item.expected), original: item.u.transcript, ...got };
-  if (got.error) return { ...base, ok: false, diffs: [`fout: ${got.error}`], fieldStats: [], species: { expected: 0, found: 0, extra: 0 } };
+  if (got.error)
+    return {
+      ...base,
+      ok: false,
+      diffs: [`fout: ${got.error}`],
+      fieldStats: [],
+      species: { expected: 0, found: 0, extra: 0 },
+    };
   return { ...base, ...compare(item.expected, got, item.context) };
 });
 
@@ -432,7 +480,10 @@ await proxy?.close();
 // Verslag
 
 const pct = (a, b) => (b ? `${Math.round((100 * a) / b)}%` : '–');
-const line = (name, a, b) => console.log(`  ${name.padEnd(30)} ${String(a).padStart(3)} / ${String(b).padEnd(4)} ${pct(a, b)}`);
+const line = (name, a, b) =>
+  console.log(
+    `  ${name.padEnd(30)} ${String(a).padStart(3)} / ${String(b).padEnd(4)} ${pct(a, b)}`,
+  );
 const median = (xs) => {
   const s = xs.filter((x) => x !== undefined).sort((a, b) => a - b);
   return s.length ? `${(s[Math.floor(s.length / 2)] / 1000).toFixed(1)} s` : '–';
@@ -441,7 +492,13 @@ const median = (xs) => {
 const version = await promptVersion;
 console.log(`\nTestset: ${positionals[0]}`);
 console.log(`Spraak: ${opts.stt} · model: ${model} · prompt ${version}`);
-console.log(`Overgeslagen: ${Object.entries(skipped).map(([k, n]) => `${n} ${k}`).join(', ') || 'niets'}\n`);
+console.log(
+  `Overgeslagen: ${
+    Object.entries(skipped)
+      .map(([k, n]) => `${n} ${k}`)
+      .join(', ') || 'niets'
+  }\n`,
+);
 
 const ok = results.filter((r) => r.ok).length;
 line('Helemaal goed', ok, results.length);
@@ -449,25 +506,36 @@ for (const kind of [...new Set(results.map((r) => r.kind))].sort()) {
   const of = results.filter((r) => r.kind === kind);
   line(`  ${kind}`, of.filter((r) => r.ok).length, of.length);
 }
-const sp = results.reduce((s, r) => ({ e: s.e + r.species.expected, f: s.f + r.species.found, x: s.x + r.species.extra }), { e: 0, f: 0, x: 0 });
+const sp = results.reduce(
+  (s, r) => ({ e: s.e + r.species.expected, f: s.f + r.species.found, x: s.x + r.species.extra }),
+  { e: 0, f: 0, x: 0 },
+);
 console.log('');
 line('Soorten gevonden', sp.f, sp.e);
 console.log(`  ${'Soorten extra'.padEnd(30)} ${String(sp.x).padStart(3)}`);
-console.log(`  ${'Soort-ID hersteld via naam'.padEnd(30)} ${String(results.reduce((s, r) => s + (r.warnings?.length ?? 0), 0)).padStart(3)}`);
-console.log(`  ${'Onzeker gemarkeerd'.padEnd(30)} ${String(results.reduce((s, r) => s + (r.uncertain ?? 0), 0)).padStart(3)}`);
+console.log(
+  `  ${'Soort-ID hersteld via naam'.padEnd(30)} ${String(results.reduce((s, r) => s + (r.warnings?.length ?? 0), 0)).padStart(3)}`,
+);
+console.log(
+  `  ${'Onzeker gemarkeerd'.padEnd(30)} ${String(results.reduce((s, r) => s + (r.uncertain ?? 0), 0)).padStart(3)}`,
+);
 console.log('\nVelden bij de goede soort:');
 for (const f of FIELDS.slice(1)) {
   const stats = results.flatMap((r) => r.fieldStats).filter(([name]) => name === f);
   line(`  ${label(f)}`, stats.filter(([, good]) => good).length, stats.length);
 }
 if (replay) {
-  console.log(`\nTijd: model ${median(results.map((r) => r.llmMs))} (mediaan)` + (opts.stt !== 'opgeslagen' ? `, spraak ${median(results.map((r) => r.sttMs))}` : ''));
+  console.log(
+    `\nTijd: model ${median(results.map((r) => r.llmMs))} (mediaan)` +
+      (opts.stt !== 'opgeslagen' ? `, spraak ${median(results.map((r) => r.sttMs))}` : ''),
+  );
 }
 
 if (!opts.stil) {
   const fixed = results.filter((r) => r.warnings?.length);
   if (fixed.length) console.log(`\nHersteld door de app (${fixed.length}):`);
-  for (const r of fixed) console.log(`  "${r.transcript}"\n${r.warnings.map((w) => `    - ${w}`).join('\n')}`);
+  for (const r of fixed)
+    console.log(`  "${r.transcript}"\n${r.warnings.map((w) => `    - ${w}`).join('\n')}`);
   const wrong = results.filter((r) => !r.ok);
   if (wrong.length) console.log(`\nFout (${wrong.length}):`);
   for (const r of wrong) {
@@ -485,7 +553,15 @@ const file = join(dir, `${stamp}_${opts.stt}_${model}_${version}.json`);
 writeFileSync(
   file,
   JSON.stringify(
-    { export: positionals[0], stt: opts.stt, model, promptVersion: version, durationMs: Date.now() - started, skipped, results },
+    {
+      export: positionals[0],
+      stt: opts.stt,
+      model,
+      promptVersion: version,
+      durationMs: Date.now() - started,
+      skipped,
+      results,
+    },
     null,
     2,
   ),

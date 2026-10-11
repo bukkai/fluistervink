@@ -17,7 +17,14 @@
   import { vibrate } from './lib/feedback';
   import { instance } from './lib/instance.svelte';
   import { processQueue } from './lib/observations';
-  import { SHARE_CHANGED, scheduleShare, sentNoteIds, setShareEnabled, shareChoiceMade, shareEnabled } from './lib/share';
+  import {
+    SHARE_CHANGED,
+    scheduleShare,
+    sentNoteIds,
+    setShareEnabled,
+    shareChoiceMade,
+    shareEnabled,
+  } from './lib/share';
   import DevNotes from './lib/DevNotes.svelte';
   import Developer from './lib/Developer.svelte';
   import HowItWorks from './lib/HowItWorks.svelte';
@@ -51,7 +58,9 @@
   window.addEventListener(SHARE_CHANGED, onShareChanged);
   onDestroy(() => window.removeEventListener(SHARE_CHANGED, onShareChanged));
   let unsentNotes = $derived(
-    sharing ? ($devNotes ?? []).filter((n) => !sentNotes.has(n.id)).length : ($devNotes?.length ?? 0),
+    sharing
+      ? ($devNotes ?? []).filter((n) => !sentNotes.has(n.id)).length
+      : ($devNotes?.length ?? 0),
   );
 
   let active = $derived($sessions?.find((s) => s.status === 'active'));
@@ -206,12 +215,18 @@
       onclick={() => (menuOpen = !menuOpen)}
     >
       <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
-        <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" />
+        <path
+          d="M4 7h16M4 12h16M4 17h16"
+          stroke="currentColor"
+          stroke-width="2.25"
+          stroke-linecap="round"
+        />
       </svg>
     </button>
     {#if menuOpen}
       <!-- Tik naast het menu = sluiten -->
-      <button class="backdrop" aria-label="Menu sluiten" onclick={() => (menuOpen = false)}></button>
+      <button class="backdrop" aria-label="Menu sluiten" onclick={() => (menuOpen = false)}
+      ></button>
       <nav>
         <a href="#wandelingen">Vorige wandelingen</a>
         <a href="#uitleg">Hoe werkt het?</a>
@@ -287,8 +302,8 @@
       {#if welcome?.ok}
         <p class="welcome">
           Welkom{welcome.tester ? `, ${welcome.tester}` : ''}! Je toegang is ingesteld. Tip: zet de
-          app op je startscherm via het menu van Chrome → <em>Toevoegen aan startscherm</em>.
-          Lees ook even <a href="#uitleg">hoe het werkt</a>.
+          app op je startscherm via het menu van Chrome → <em>Toevoegen aan startscherm</em>. Lees
+          ook even <a href="#uitleg">hoe het werkt</a>.
           <button class="link" onclick={() => (welcome = undefined)}>Oké</button>
         </p>
       {:else if welcome}
@@ -303,8 +318,8 @@
       {/if}
       {#if stale?.kind === 'stopped'}
         <p class="welcome">
-          Je wandeling van {formatMoment(stale.session.startedAt)} stond nog aan. Na 8 uur zonder
-          uitspraken is hij vanzelf gestopt.
+          Je wandeling van {formatMoment(stale.session.startedAt)} stond nog aan. Na 8 uur zonder uitspraken
+          is hij vanzelf gestopt.
           <a href="#wandeling/{stale.session.id}">Bekijken</a> ·
           <button class="link" onclick={() => (stale = undefined)}>Oké</button>
         </p>
@@ -589,5 +604,4 @@
     color: white;
     background: var(--red);
   }
-
 </style>

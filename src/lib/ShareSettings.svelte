@@ -37,7 +37,10 @@
     }
   }
 
-  const sharedAtFormat = new Intl.DateTimeFormat('nl-NL', { dateStyle: 'medium', timeStyle: 'short' });
+  const sharedAtFormat = new Intl.DateTimeFormat('nl-NL', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  });
 </script>
 
 <section class="card">
@@ -67,7 +70,9 @@
       </button>
       <p class="hint" class:error={shareStatus === 'error'}>
         {shareMessage ||
-          (sharedAt ? `Laatst verstuurd: ${sharedAtFormat.format(sharedAt)}.` : 'Nog niets verstuurd.')}
+          (sharedAt
+            ? `Laatst verstuurd: ${sharedAtFormat.format(sharedAt)}.`
+            : 'Nog niets verstuurd.')}
       </p>
     {/if}
   </div>

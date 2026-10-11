@@ -20,7 +20,13 @@ async function csvLines(): Promise<string[]> {
 
 describe('buildExport', () => {
   it('schrijft een kopregel en een regel per waarneming, op volgorde van tijd', async () => {
-    const later = observation({ speciesId: HOUTDUIF, count: 6, observedAt: Date.parse('2026-10-11T14:20:00'), position, activityId: 1 });
+    const later = observation({
+      speciesId: HOUTDUIF,
+      count: 6,
+      observedAt: Date.parse('2026-10-11T14:20:00'),
+      position,
+      activityId: 1,
+    });
     const earlier = observation({
       speciesId: VINK,
       count: 2,

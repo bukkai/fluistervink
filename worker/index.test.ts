@@ -96,7 +96,10 @@ describe('toegangscode', () => {
   });
 
   it('herkent de eigenaar en de testers', async () => {
-    expect(await (await call('/api/ping', { code: OWNER_CODE })).json()).toEqual({ ok: true, tester: 'eigenaar' });
+    expect(await (await call('/api/ping', { code: OWNER_CODE })).json()).toEqual({
+      ok: true,
+      tester: 'eigenaar',
+    });
     expect(await (await call('/api/ping')).json()).toEqual({ ok: true, tester: 'anna' });
   });
 
@@ -162,7 +165,10 @@ describe('/api/messages (Anthropic)', () => {
 
   it('meldt een probleem met onze eigen sleutel als 502, niet als 401', async () => {
     upstream.mockResolvedValue(
-      Response.json({ type: 'error', error: { type: 'authentication_error', message: 'invalid x-api-key' } }, { status: 401 }),
+      Response.json(
+        { type: 'error', error: { type: 'authentication_error', message: 'invalid x-api-key' } },
+        { status: 401 },
+      ),
     );
     const response = await post({ model: 'claude-haiku-5-5', max_tokens: 10, messages: [] });
     expect(response.status).toBe(502);
@@ -206,9 +212,13 @@ describe('/api/transcribe (OpenAI)', () => {
   });
 
   it('geeft fouten van OpenAI door, behalve een sleutelprobleem (502)', async () => {
-    upstream.mockResolvedValueOnce(Response.json({ error: { message: 'te veel' } }, { status: 429 }));
+    upstream.mockResolvedValueOnce(
+      Response.json({ error: { message: 'te veel' } }, { status: 429 }),
+    );
     expect((await post({ audio: audio() })).status).toBe(429);
-    upstream.mockResolvedValueOnce(Response.json({ error: { message: 'sleutel' } }, { status: 401 }));
+    upstream.mockResolvedValueOnce(
+      Response.json({ error: { message: 'sleutel' } }, { status: 401 }),
+    );
     expect((await post({ audio: audio() })).status).toBe(502);
   });
 });
@@ -222,7 +232,11 @@ describe('/api/area (waarneming.nl)', () => {
 
   it('geeft alleen ID en naam van het gebied terug', async () => {
     upstream.mockResolvedValue(
-      Response.json({ features: [{ properties: { id: 1234, title: 'Landgoed Mariëndaal', area: 'groot' }, geometry: {} }] }),
+      Response.json({
+        features: [
+          { properties: { id: 1234, title: 'Landgoed Mariëndaal', area: 'groot' }, geometry: {} },
+        ],
+      }),
     );
     const response = await call('/api/area?lat=51.98&lon=5.88');
     expect(await response.json()).toEqual({ area: { id: 1234, name: 'Landgoed Mariëndaal' } });
@@ -281,7 +295,9 @@ describe('/api/feedback (gedeelde gegevens)', () => {
     const file = await call('/api/feedback/file?key=anna/sessions/w', { code: OWNER_CODE });
     expect(file.headers.get('Content-Type')).toBe('application/json');
     expect(await file.text()).toBe('{"a":1}');
-    expect((await call('/api/feedback/file?key=bestaat/niet', { code: OWNER_CODE })).status).toBe(404);
+    expect((await call('/api/feedback/file?key=bestaat/niet', { code: OWNER_CODE })).status).toBe(
+      404,
+    );
   });
 
   it('wist alles van één tester, en niets van de anderen', async () => {
@@ -290,13 +306,19 @@ describe('/api/feedback (gedeelde gegevens)', () => {
     await put('audio/b', 'geluid');
     await put('sessions/c', '{}', 'code-van-piet');
 
-    const response = await call('/api/feedback/tester?name=anna', { code: OWNER_CODE, method: 'DELETE' });
+    const response = await call('/api/feedback/tester?name=anna', {
+      code: OWNER_CODE,
+      method: 'DELETE',
+    });
     expect(await response.json()).toEqual({ ok: true, deleted: 2 });
     expect([...kv.store.keys()]).toEqual(['piet/sessions/c']);
   });
 
   it('weigert een ongeldige naam bij wissen', async () => {
-    const response = await call('/api/feedback/tester?name=', { code: OWNER_CODE, method: 'DELETE' });
+    const response = await call('/api/feedback/tester?name=', {
+      code: OWNER_CODE,
+      method: 'DELETE',
+    });
     expect(response.status).toBe(400);
   });
 });

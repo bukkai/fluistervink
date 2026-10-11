@@ -1,5 +1,5 @@
-import { svelte } from '@sveltejs/vite-plugin-svelte'
-import { defineConfig } from 'vitest/config'
+import { svelte } from '@sveltejs/vite-plugin-svelte';
+import { defineConfig } from 'vitest/config';
 
 // Los van vite.config.ts: de tests hebben de Worker en de PWA niet nodig.
 // happy-dom geeft een nep-`window` en -`document`, fake-indexeddb een
@@ -14,4 +14,4 @@ export default defineConfig({
     setupFiles: ['src/test-setup.ts'],
     include: ['src/**/*.test.ts', 'worker/**/*.test.ts'],
   },
-})
+});

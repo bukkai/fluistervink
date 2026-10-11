@@ -55,8 +55,7 @@ export async function lastActivityAt(session: Session): Promise<number> {
 }
 
 export type StaleCheck =
-  | { kind: 'stopped'; session: Session }
-  | { kind: 'ask'; session: Session; lastActivityAt: number };
+  { kind: 'stopped'; session: Session } | { kind: 'ask'; session: Session; lastActivityAt: number };
 
 /**
  * Vergeten wandeling (telefoon uitgevallen, niet op Stop gedrukt)? Na 8 uur
@@ -139,11 +138,10 @@ export async function countPerSession(): Promise<Map<string, SessionCounts>> {
   };
   // Alleen de index lezen, niet de uitspraken zelf (die bevatten de audio)
   for (const id of await db.utterances.orderBy('sessionId').keys()) get(id as string).utterances++;
-  for (const id of await db.observations.orderBy('sessionId').keys()) get(id as string).observations++;
+  for (const id of await db.observations.orderBy('sessionId').keys())
+    get(id as string).observations++;
   // `kind` heeft geen index; de audio wordt pas gelezen als iemand hem afspeelt
-  await db.utterances
-    .filter((u) => u.kind === 'dev_note')
-    .each((u) => get(u.sessionId).devNotes++);
+  await db.utterances.filter((u) => u.kind === 'dev_note').each((u) => get(u.sessionId).devNotes++);
   return counts;
 }
 

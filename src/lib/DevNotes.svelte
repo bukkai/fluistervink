@@ -68,7 +68,9 @@
 <div class="title">
   <h2 class="page-title">Feedback</h2>
   {#if $notes?.length}
-    <button class="btn secondary" onclick={copy}>{copied ? 'Gekopieerd ✓' : 'Kopieer als Markdown'}</button>
+    <button class="btn secondary" onclick={copy}
+      >{copied ? 'Gekopieerd ✓' : 'Kopieer als Markdown'}</button
+    >
   {/if}
 </div>
 
@@ -77,8 +79,7 @@
     bind:value={text}
     rows="3"
     placeholder="Wat viel je op? Bijvoorbeeld: hij herkende blako niet"
-    aria-label="Nieuwe feedback"
-  ></textarea>
+    aria-label="Nieuwe feedback"></textarea>
   <button class="btn" disabled={!text.trim()}>Toevoegen</button>
 </form>
 
@@ -92,7 +93,11 @@
             {dateTimeFormat.format(note.recordedAt)}
             {#if note.position}
               ·
-              <a href={mapsUrl(note.position.lat, note.position.lon)} target="_blank" rel="noopener">
+              <a
+                href={mapsUrl(note.position.lat, note.position.lon)}
+                target="_blank"
+                rel="noopener"
+              >
                 locatie
               </a>
             {/if}
@@ -132,9 +137,9 @@
 <p class="muted">
   Typ hierboven, of spreek het in tijdens het vogelen: begin een uitspraak met
   <em>"feedback"</em>, bijvoorbeeld
-  <em>"feedback, hij herkende blako niet, terwijl dat toch echt bladkoning betekent"</em>.
-  Feedback gaat na de wandeling mee naar de ontwikkelaar, als delen aanstaat. Verstuurde feedback
-  blijft hier staan; weghalen kan altijd.
+  <em>"feedback, hij herkende blako niet, terwijl dat toch echt bladkoning betekent"</em>. Feedback
+  gaat na de wandeling mee naar de ontwikkelaar, als delen aanstaat. Verstuurde feedback blijft hier
+  staan; weghalen kan altijd.
 </p>
 
 <ShareSettings />

@@ -60,7 +60,9 @@ function push(data) {
   }
   // Previews zijn open beta in wrangler; mislukt dit, dan werkt productie wel
   if (!put(['preview', 'base-config'])) {
-    console.error('\nLet op: productie is bijgewerkt, de previews niet. Opnieuw: `npm run tester -- push`,');
+    console.error(
+      '\nLet op: productie is bijgewerkt, de previews niet. Opnieuw: `npm run tester -- push`,',
+    );
     console.error('of met de hand in het dashboard onder Variables and Secrets → Previews Base.');
   }
 }
@@ -116,7 +118,9 @@ switch (command) {
     break;
   case 'url':
     if (!arg?.startsWith('https://')) {
-      console.error('Geef het adres van de app, bv. `npm run tester -- url https://….workers.dev`.');
+      console.error(
+        'Geef het adres van de app, bv. `npm run tester -- url https://….workers.dev`.',
+      );
       process.exit(1);
     }
     data.appUrl = arg;
@@ -124,5 +128,11 @@ switch (command) {
     console.log(`Adres opgeslagen: ${arg}`);
     break;
   default:
-    console.log(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(5, 10).join('\n').replace(/^\/\/ ?/gm, ''));
+    console.log(
+      readFileSync(fileURLToPath(import.meta.url), 'utf8')
+        .split('\n')
+        .slice(5, 10)
+        .join('\n')
+        .replace(/^\/\/ ?/gm, ''),
+    );
 }

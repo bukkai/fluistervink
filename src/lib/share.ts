@@ -140,7 +140,12 @@ async function looseSnapshot() {
   const notes = await db.utterances.where('sessionId').equals(NO_SESSION).sortBy('recordedAt');
   const events = (
     await Promise.all(
-      notes.map((n) => db.events.where('at').between(n.recordedAt - LOOSE_EVENTS_MS, n.recordedAt, true, true).toArray()),
+      notes.map((n) =>
+        db.events
+          .where('at')
+          .between(n.recordedAt - LOOSE_EVENTS_MS, n.recordedAt, true, true)
+          .toArray(),
+      ),
     )
   ).flat();
   const unique = [...new Map(events.map((e) => [e.id, e])).values()].sort((a, b) => a.at - b.at);
@@ -155,7 +160,9 @@ async function looseSnapshot() {
 
 async function hash(text: string): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-  return Array.from(new Uint8Array(digest.slice(0, 12)), (b) => b.toString(16).padStart(2, '0')).join('');
+  return Array.from(new Uint8Array(digest.slice(0, 12)), (b) =>
+    b.toString(16).padStart(2, '0'),
+  ).join('');
 }
 
 export interface ShareResult {
@@ -194,7 +201,14 @@ async function run(): Promise<ShareResult> {
         await putShared(
           `sessions/${id}`,
           new Blob(
-            [JSON.stringify({ sharedAt: new Date().toISOString(), appVersion: APP_VERSION, tester: getTester(), ...data })],
+            [
+              JSON.stringify({
+                sharedAt: new Date().toISOString(),
+                appVersion: APP_VERSION,
+                tester: getTester(),
+                ...data,
+              }),
+            ],
             { type: 'application/json' },
           ),
         );
@@ -221,11 +235,21 @@ async function run(): Promise<ShareResult> {
     // zodat de verwijdering doorkomt
     const loose = await looseSnapshot();
     const looseVersion = await hash(JSON.stringify(loose));
-    if (sent.sessions[LOOSE_ID] !== looseVersion && (loose.utterances.length || sent.sessions[LOOSE_ID])) {
+    if (
+      sent.sessions[LOOSE_ID] !== looseVersion &&
+      (loose.utterances.length || sent.sessions[LOOSE_ID])
+    ) {
       await putShared(
         `sessions/${LOOSE_ID}`,
         new Blob(
-          [JSON.stringify({ sharedAt: new Date().toISOString(), appVersion: APP_VERSION, tester: getTester(), ...loose })],
+          [
+            JSON.stringify({
+              sharedAt: new Date().toISOString(),
+              appVersion: APP_VERSION,
+              tester: getTester(),
+              ...loose,
+            }),
+          ],
           { type: 'application/json' },
         ),
       );
@@ -238,7 +262,10 @@ async function run(): Promise<ShareResult> {
     write(SENT_AT_KEY, Date.now());
     if (result.sessions || result.audio) logEvent('shared', result);
   } catch (error) {
-    logEvent('share_failed', { message: error instanceof Error ? error.message : String(error), ...result });
+    logEvent('share_failed', {
+      message: error instanceof Error ? error.message : String(error),
+      ...result,
+    });
     throw error;
   } finally {
     changed();

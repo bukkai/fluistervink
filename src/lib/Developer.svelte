@@ -204,7 +204,8 @@
       <input type="checkbox" bind:checked={withAudio} />
       Met opnames (groter bestand; nodig voor de testset)
     </label>
-    <button class="btn secondary block" onclick={exportData}>Alle gegevens exporteren (JSON)</button>
+    <button class="btn secondary block" onclick={exportData}>Alle gegevens exporteren (JSON)</button
+    >
     <label class="btn secondary block file">
       Wandelingen importeren (JSON)
       <input type="file" accept="application/json,.json" onchange={importData} />
@@ -213,8 +214,8 @@
       <p class="message">{importMessage}</p>
     {/if}
     <p class="hint">
-      Importeren leest een eerdere export weer in. Alleen wandelingen die er nog niet zijn;
-      opnames alleen als ze in de export zitten.
+      Importeren leest een eerdere export weer in. Alleen wandelingen die er nog niet zijn; opnames
+      alleen als ze in de export zitten.
     </p>
   </div>
 </section>

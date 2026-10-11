@@ -246,7 +246,9 @@
     font-weight: 650;
     color: var(--on-brand);
     background: var(--brand);
-    box-shadow: 0 2px 0 var(--brand-strong), 0 6px 16px rgb(60 55 50 / 0.18);
+    box-shadow:
+      0 2px 0 var(--brand-strong),
+      0 6px 16px rgb(60 55 50 / 0.18);
     transition:
       transform 80ms,
       background 150ms;

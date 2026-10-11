@@ -104,7 +104,10 @@ export async function nameFromStart(sessionId: string, position: Position): Prom
  * blijft de startnaam staan.
  */
 export async function nameFromWalk(sessionId: string): Promise<void> {
-  const observations = await db.observations.where('sessionId').equals(sessionId).sortBy('observedAt');
+  const observations = await db.observations
+    .where('sessionId')
+    .equals(sessionId)
+    .sortBy('observedAt');
   const counts = new Map<number, { area: Area; count: number }>();
   for (const { area } of observations) {
     if (!area) continue;

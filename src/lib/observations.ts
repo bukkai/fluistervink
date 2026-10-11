@@ -42,10 +42,7 @@ export async function listUtterances(sessionId: string): Promise<Utterance[]> {
 export async function submitText(sessionId: string, text: string): Promise<void> {
   // Positie opvragen op het moment van de uitspraak, maar niet erop wachten:
   // de uitspraak wordt meteen opgeslagen en verwerkt.
-  await submit(
-    { sessionId, recordedAt: Date.now(), transcript: text.trim() },
-    currentPosition(),
-  );
+  await submit({ sessionId, recordedAt: Date.now(), transcript: text.trim() }, currentPosition());
 }
 
 /**
@@ -130,9 +127,7 @@ export async function listDeleted(sessionId: string): Promise<DeletedObservation
 
 /** Verwijdert een waarneming met de hand; hij gaat naar de prullenbak. */
 export async function deleteObservation(id: string): Promise<void> {
-  await db.transaction('rw', db.observations, db.deletedObservations, () =>
-    moveToBin(id, 'hand'),
-  );
+  await db.transaction('rw', db.observations, db.deletedObservations, () => moveToBin(id, 'hand'));
 }
 
 /** Zet een verwijderde waarneming terug in de lijst. */
