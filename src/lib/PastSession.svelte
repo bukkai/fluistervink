@@ -81,7 +81,7 @@
   const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
 </script>
 
-<a class="back" href="#wandelingen">← Wandelingen</a>
+<a class="back" href="#wandelingen">‹ Wandelingen</a>
 
 {#if justSaved}
   <div class="saved" role="status">
@@ -91,7 +91,7 @@
 {/if}
 
 <header>
-  <h2>{session.place?.name ?? 'Wandeling'}</h2>
+  <h2 class="page-title">{session.place?.name ?? 'Wandeling'}</h2>
   <p class="muted">
     {dateFormat.format(session.startedAt)},
     {timeFormat.format(session.startedAt)}–{session.endedAt
@@ -125,27 +125,35 @@
 
 <SessionLog {session} />
 
-<section class="export">
-  <h2>Klaar met nalopen?</h2>
-  {#if uncertainCount > 0}
+<section class="card export">
+  <div class="card-head">
+    <h2>Klaar met nalopen?</h2>
+    {#if session.exportedAt && !exportResult}
+      <span class="badge">geëxporteerd</span>
+    {/if}
+  </div>
+  <div class="card-body">
+    {#if uncertainCount > 0}
+      <p class="warning">
+        Nog {uncertainCount === 1 ? '1 onzekere waarneming' : `${uncertainCount} onzekere waarnemingen`}.
+        Tik erop om aan te passen, of gebruik "Klopt" of "Weg".
+      </p>
+    {/if}
+    <button class="btn block large" onclick={exportForWaarneming}>Exporteren voor waarneming.nl</button>
+    {#if exportResult}
+      <p>{exportResult}</p>
+    {:else if session.exportedAt}
+      <p class="muted">
+        Geëxporteerd op {dateFormat.format(session.exportedAt)}
+        om {timeFormat.format(session.exportedAt)}.
+      </p>
+    {/if}
     <p class="muted">
-      Nog {uncertainCount === 1 ? '1 onzekere waarneming' : `${uncertainCount} onzekere waarnemingen`}.
-      Tik erop om aan te passen, of gebruik "Klopt" of "Weg".
+      Importeer het bestand bij <a href={IMPORT_URL} target="_blank" rel="noopener">waarneming.nl</a>.
+      Zet de site daarbij op Engels (EN, rechtsboven): gedrag en methode staan in het Engels in het
+      bestand.
     </p>
-  {/if}
-  <button class="primary" onclick={exportForWaarneming}>Exporteren voor waarneming.nl</button>
-  {#if exportResult}
-    <p>{exportResult}</p>
-  {:else if session.exportedAt}
-    <p class="muted">
-      Geëxporteerd op {dateFormat.format(session.exportedAt)}
-      om {timeFormat.format(session.exportedAt)}.
-    </p>
-  {/if}
-  <p class="muted">
-    Importeer het bestand bij <a href={IMPORT_URL} target="_blank" rel="noopener">waarneming.nl</a>.
-    Zet de site daarbij op Engels (EN, rechtsboven): gedrag en methode staan in het Engels in het bestand.
-  </p>
+  </div>
 </section>
 
 <p class="footer muted">
@@ -158,15 +166,15 @@
 
 <style>
   a {
-    color: var(--green);
+    color: var(--brand-strong);
   }
 
   .saved {
     margin-top: 0.75rem;
-    padding: 0.75rem 1rem;
-    border-radius: 0.75rem;
-    background: var(--green);
-    color: white;
+    padding: 0.85rem 1rem;
+    border-radius: var(--radius);
+    background: var(--brand);
+    color: var(--on-brand);
   }
 
   .saved strong {
@@ -178,96 +186,82 @@
     font-size: 0.9rem;
   }
 
-  header h2 {
-    margin: 0.75rem 0 0.25rem;
-    font-size: 1.6rem;
+  header {
+    margin-top: 0.5rem;
+  }
+
+  header .page-title {
+    margin-bottom: 0.15rem;
   }
 
   header p {
     margin: 0;
   }
 
-  .muted {
-    color: var(--muted);
-  }
-
-  button {
-    font: inherit;
-  }
-
-  .link {
-    padding: 0;
-    border: none;
-    background: none;
-    color: var(--green);
-    text-decoration: underline;
-  }
-
   .stats {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.5rem;
     margin: 1rem 0;
   }
 
   .stats div {
-    padding: 0.6rem;
+    padding: 0.6rem 0.65rem;
     border: 1px solid var(--border);
-    border-radius: 0.75rem;
+    border-radius: var(--radius);
+    background: var(--surface);
   }
 
   .stats dt {
-    font-size: 0.8rem;
+    overflow: hidden;
+    font-size: 0.75rem;
+    text-overflow: ellipsis;
+    font-weight: 600;
     color: var(--muted);
   }
 
   .stats dd {
-    margin: 0;
-    font-size: 1.15rem;
+    margin: 0.1rem 0 0;
+    font-size: 1.35rem;
     font-weight: 700;
+    line-height: 1.2;
     white-space: nowrap;
+    font-variant-numeric: tabular-nums;
   }
 
   .stats small {
     display: block;
     font-size: 0.8rem;
-    font-weight: 400;
+    font-weight: 600;
     color: var(--amber);
   }
 
-  .export {
-    margin: 2rem 0 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border);
-  }
-
-  .export h2 {
-    margin-top: 0;
-  }
-
   .export p {
-    margin: 0.5rem 0 0;
+    margin: 0.75rem 0 0;
     font-size: 0.9rem;
   }
 
-  .primary {
-    width: 100%;
-    margin-top: 0.5rem;
-    padding: 1rem;
-    border: none;
-    border-radius: 0.75rem;
-    font-size: 1.1rem;
+  .export .warning {
+    margin: 0 0 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.6rem;
+    color: var(--amber);
+    background: var(--amber-soft);
+  }
+
+  .badge {
+    padding: 0 0.55rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    background: var(--green);
-    color: white;
+    color: var(--brand-strong);
+    background: color-mix(in srgb, var(--brand) 12%, transparent);
   }
 
   .footer {
+    margin: 1.5rem 0 1rem;
     font-size: 0.9rem;
     line-height: 2;
-  }
-
-  .danger {
-    color: var(--red);
+    text-align: center;
   }
 </style>

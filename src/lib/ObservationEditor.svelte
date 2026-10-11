@@ -166,9 +166,9 @@
   </label>
 
   <div class="buttons">
-    <button type="submit" disabled={!valid}>Opslaan</button>
-    <button type="button" class="secondary" onclick={onclose}>Annuleren</button>
-    <button type="button" class="delete" onclick={remove}>Verwijderen</button>
+    <button type="submit" class="btn" disabled={!valid}>Opslaan</button>
+    <button type="button" class="btn secondary" onclick={onclose}>Annuleren</button>
+    <button type="button" class="link danger delete" onclick={remove}>Verwijderen</button>
   </div>
 </form>
 
@@ -182,8 +182,8 @@
   form {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
+    gap: 0.6rem;
+    margin: 0.25rem 0 0.25rem;
   }
 
   .row {
@@ -203,7 +203,9 @@
   label {
     display: flex;
     flex-direction: column;
+    gap: 0.2rem;
     font-size: 0.8rem;
+    font-weight: 600;
     color: var(--muted);
   }
 
@@ -212,21 +214,14 @@
     align-items: center;
     gap: 0.5rem;
     font-size: 0.9rem;
+    font-weight: 400;
     color: var(--fg);
   }
 
-  input:not([type='checkbox']),
-  select,
-  textarea {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 0.5rem;
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
-    font: inherit;
-    font-size: 1rem;
-    background: var(--bg);
-    color: var(--fg);
+  label :global(input),
+  label :global(select),
+  label :global(textarea) {
+    font-weight: 400;
   }
 
   input[aria-invalid='true'] {
@@ -240,7 +235,8 @@
 
   .source {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    font-style: italic;
     color: var(--muted);
   }
 
@@ -252,35 +248,23 @@
 
   .buttons {
     display: flex;
+    align-items: center;
     gap: 0.5rem;
+    margin-top: 0.25rem;
   }
 
-  button {
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 0.5rem;
-    font: inherit;
-    background: var(--green);
-    color: white;
-  }
-
-  button:disabled {
-    opacity: 0.5;
-  }
-
-  button.secondary {
-    background: var(--border);
-    color: var(--fg);
-  }
-
-  button.delete {
+  .delete {
     margin-left: auto;
-    background: none;
-    color: var(--red);
   }
 
   button.play {
+    margin-right: 0.25rem;
     padding: 0 0.5rem;
+    border: none;
+    border-radius: 0.4rem;
     font-size: 0.8rem;
+    font-style: normal;
+    color: white;
+    background: var(--brand);
   }
 </style>

@@ -47,7 +47,7 @@
     month: 'short',
   });
 
-  /** "1 u 5 min, 12 uitspraken, 15 waarnemingen" */
+  /** "1 u 5 min · 12 uitspraken · 15 waarnemingen" */
   function summary(session: Session): string {
     const c = $counts?.get(session.id);
     return [
@@ -56,13 +56,13 @@
       c && `${c.observations} ${c.observations === 1 ? 'waarneming' : 'waarnemingen'}`,
     ]
       .filter(Boolean)
-      .join(', ');
+      .join(' · ');
   }
 </script>
 
-<a class="back" href="#/">← Terug</a>
+<a class="back" href="#/">‹ Terug</a>
 <div class="title">
-  <h2>Vorige wandelingen</h2>
+  <h2 class="page-title">Vorige wandelingen</h2>
   {#if sessions.length > 0}
     {#if selecting}
       <button class="link" onclick={stopSelecting}>Annuleren</button>
@@ -85,9 +85,9 @@
       {/if}
     </p>
   {/if}
-  <ul>
+  <ul class="card">
     {#each sessions as session (session.id)}
-      <li>
+      <li class:selected={selecting && selected.has(session.id)}>
         {#if selecting}
           <label class="row">
             <input
@@ -100,6 +100,7 @@
         {:else}
           <a class="row" href="#wandeling/{session.id}">
             {@render content(session)}
+            <span class="chevron" aria-hidden="true">›</span>
           </a>
         {/if}
       </li>
@@ -108,7 +109,7 @@
 
   {#if selecting}
     <div class="actions">
-      <button class="danger" disabled={selected.size === 0} onclick={removeSelected}>
+      <button class="btn danger block large" disabled={selected.size === 0} onclick={removeSelected}>
         {selected.size === 0
           ? 'Niets aangevinkt'
           : `Verwijder ${selected.size === 1 ? '1 wandeling' : `${selected.size} wandelingen`}`}
@@ -119,64 +120,51 @@
 
 {#snippet content(session: Session)}
   <span class="text">
-    {#if session.place}<strong>{session.place.name}</strong><br />{/if}
-    {dateFormat.format(session.startedAt)},
-    {timeFormat.format(session.startedAt)}
-    <span class="muted">({summary(session)})</span>
-    <br />
-    {#if session.exportedAt}
-      <span class="badge exported">geëxporteerd</span>
-    {:else}
-      <span class="badge">nog niet geëxporteerd</span>
-    {/if}
+    <span class="top">
+      <strong>{session.place?.name ?? 'Wandeling'}</strong>
+      {#if session.exportedAt}
+        <span class="badge exported">geëxporteerd</span>
+      {:else}
+        <span class="badge">niet geëxporteerd</span>
+      {/if}
+    </span>
+    <span class="when">
+      {dateFormat.format(session.startedAt)}, {timeFormat.format(session.startedAt)}
+    </span>
+    <span class="muted summary">{summary(session)}</span>
   </span>
 {/snippet}
 
 <style>
-  .back {
-    color: var(--green);
-  }
-
   .title {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
   }
 
-  .muted {
-    color: var(--muted);
-  }
-
   .hint {
     margin-top: 0;
   }
 
-  button {
-    font: inherit;
-  }
-
-  .link {
-    padding: 0;
-    border: none;
-    background: none;
-    color: var(--green);
-    text-decoration: underline;
-  }
-
   ul {
+    margin: 0;
     padding: 0;
     list-style: none;
   }
 
-  li {
-    border-bottom: 1px solid var(--border);
+  li + li {
+    border-top: 1px solid var(--border);
+  }
+
+  li.selected {
+    background: color-mix(in srgb, var(--breast) 8%, transparent);
   }
 
   .row {
     display: flex;
     gap: 0.75rem;
     align-items: center;
-    padding: 0.75rem 0;
+    padding: 0.8rem 1rem;
     color: inherit;
     text-decoration: none;
   }
@@ -185,30 +173,55 @@
     width: 1.25rem;
     height: 1.25rem;
     flex: none;
+    accent-color: var(--breast);
   }
 
   .text {
+    display: grid;
     flex: 1;
+    min-width: 0;
   }
 
-  a.row::after {
-    content: '›';
+  .top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .top strong {
+    overflow: hidden;
+    font-size: 1.05rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .when {
+    font-size: 0.95rem;
+  }
+
+  .summary {
+    font-size: 0.85rem;
+  }
+
+  .chevron {
+    font-size: 1.5rem;
     color: var(--muted);
   }
 
   .badge {
-    display: inline-block;
-    margin-top: 0.25rem;
-    padding: 0 0.5rem;
-    border: 1px solid var(--border);
+    flex: none;
+    padding: 0 0.55rem;
     border-radius: 1rem;
-    font-size: 0.8rem;
-    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--amber);
+    background: var(--amber-soft);
   }
 
   .badge.exported {
-    border-color: var(--green);
-    color: var(--green);
+    color: var(--brand-strong);
+    background: color-mix(in srgb, var(--brand) 12%, transparent);
   }
 
   /* Knop blijft onderaan in beeld bij een lange lijst */
@@ -217,19 +230,5 @@
     bottom: 0;
     padding: 0.75rem 0;
     background: var(--bg);
-  }
-
-  .danger {
-    width: 100%;
-    padding: 1rem;
-    border: none;
-    border-radius: 0.75rem;
-    font-weight: 600;
-    background: var(--red);
-    color: white;
-  }
-
-  .danger:disabled {
-    opacity: 0.5;
   }
 </style>

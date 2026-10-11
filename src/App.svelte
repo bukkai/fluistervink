@@ -82,6 +82,11 @@
   }
 
   const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
+  const dateFormat = new Intl.DateTimeFormat('nl-NL', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  });
 </script>
 
 <header>
@@ -143,15 +148,27 @@
     <ActiveSession session={active} />
   {:else}
     <section class="home">
+      <img class="hero" src="/icon.svg" alt="" width="112" height="112" />
+      <h1>Klaar om te gaan vogelen?</h1>
       <p class="intro">
-        Druk op de knop en zeg wat je ziet of hoort, bijvoorbeeld
+        Druk tijdens de wandeling op de knop en zeg wat je ziet of hoort, bijvoorbeeld
         <em>"zes overvliegende houtduiven"</em> of <em>"roepje vink"</em>.
       </p>
-      <button class="start" onclick={start}>Start wandeling</button>
       {#if !hasAccessCode}
         <p class="notice">
           Vul eerst de toegangscode in bij <a href="#instellingen">Instellingen</a>.
         </p>
+      {/if}
+      <button class="start" onclick={start}>Start wandeling</button>
+      {#if past[0]}
+        <a class="last card" href="#wandeling/{past[0].id}">
+          <span>
+            <span class="muted">Laatste wandeling</span><br />
+            <strong>{past[0].place?.name ?? 'Wandeling'}</strong>
+            <span class="muted">· {dateFormat.format(past[0].startedAt)}</span>
+          </span>
+          <span class="chevron" aria-hidden="true">›</span>
+        </a>
       {/if}
     </section>
   {/if}
@@ -246,27 +263,66 @@
 
   .home {
     display: grid;
-    gap: 1.5rem;
+    justify-items: center;
+    gap: 1rem;
     margin-top: 2rem;
+    text-align: center;
+  }
+
+  .hero {
+    border-radius: 1.75rem;
+    box-shadow: 0 8px 24px rgb(40 60 80 / 0.2);
+  }
+
+  .home h1 {
+    margin: 0.5rem 0 0;
+    font-size: 1.6rem;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
   }
 
   .intro {
     margin: 0;
-    font-size: 1.1rem;
+    max-width: 24rem;
+    font-size: 1.05rem;
     color: var(--muted);
   }
 
   .notice {
     margin: 0;
+    padding: 0.5rem 0.9rem;
+    border-radius: var(--radius);
+    color: var(--amber);
+    background: var(--amber-soft);
   }
 
   .notice a {
-    color: var(--green);
+    color: inherit;
+    font-weight: 600;
+  }
+
+  .last {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+    width: 100%;
+    margin-top: 0;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .chevron {
+    font-size: 1.5rem;
+    color: var(--muted);
   }
 
   .start {
     width: 100%;
-    padding: 2.5rem 1.5rem;
+    margin-top: 0.5rem;
+    padding: 2.25rem 1.5rem;
     border: none;
     border-radius: 1rem;
     font: inherit;
@@ -274,6 +330,9 @@
     font-weight: 600;
     color: var(--on-brand);
     background: var(--brand);
+    box-shadow:
+      0 2px 0 var(--brand-strong),
+      0 6px 16px rgb(40 60 80 / 0.2);
   }
 
   .walk {
@@ -323,7 +382,4 @@
     background: var(--red);
   }
 
-  .muted {
-    color: var(--muted);
-  }
 </style>

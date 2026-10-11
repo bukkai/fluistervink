@@ -366,28 +366,6 @@
 {/if}
 
 <style>
-  .card {
-    margin-top: 1rem;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--surface);
-  }
-
-  .card-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  h2 {
-    margin: 0;
-    font-size: 1.1rem;
-  }
-
   .summary {
     font-size: 0.85rem;
     white-space: nowrap;
@@ -596,10 +574,6 @@
     font-size: 0.8rem;
     color: white;
     background: var(--brand);
-  }
-
-  .muted {
-    color: var(--muted);
   }
 
   .reason {
