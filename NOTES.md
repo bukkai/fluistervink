@@ -37,6 +37,11 @@ Eerste wandeling gedaan (10 okt), bevindingen hieronder bij "Eerste echte wandel
   - **#32** terugknop sluit het formulier (pushState/popstate). Op de telefoon testen.
   - **#34** naam van de wandeling: bij start het waarneming.nl-gebied van de startpositie, bij stoppen het gebied met de meeste waarnemingen, met de hand aan te passen. Vergeleken met OpenStreetMap (natuurreservaat Mariëndaal, zelfde uitkomst), maar Overpass was onbetrouwbaar; eventueel later als verfijning. Naam bij het starten nog op de telefoon testen.
 - **#35** app hernoemd naar **Fluistervink** (woordgrap op luistervink, ook het toekomstige wake word). Ook intern (database, toegangscode-sleutel, Worker): lege database en nieuwe URL, oude gegevens alleen nog in de JSON-export. Na het mergen: repo hernoemen, nieuwe Worker bij Cloudflare via "Import a repository" met de drie geheimen, oude Worker weg, app opnieuw installeren, map en Claude-geheugen verplaatsen.
+- **D. Flow en indeling** (11 okt, voor een demo op 13 okt), drie gestapelde PR's, mergen in volgorde en de basis telkens eerst naar `main` zetten:
+  - **#37** rustig hoofdscherm met kopbalk en menu; vorige wandelingen, dev notes en instellingen als eigen schermen (`#wandelingen`, `#devnotes`, `#instellingen`).
+  - **#38** reviewscherm: na "Stop wandeling" meteen naar de wandeling; tegels duur/soorten/waarnemingen (+ onzeker), kaart, lijst, "Klaar met nalopen?" met exportknop.
+  - **#39** opruimen: label geëxporteerd per wandeling, wandelingen aanvinken en verwijderen (ook "alle geëxporteerde"), verwijderen vanaf een wandeling. Echt verwijderen, geen prullenbak.
+  - Nog niet: kaart en lijst aan elkaar koppelen (stip ↔ waarneming).
 - Nog te doen uit A: de CSV-import testen.
 
 Stap 1–6 gemerged (t/m PR #19, 10 okt). Daarvoor: **testronde in het veld** (in productie), één echte wandeling, korte versie is genoeg.
