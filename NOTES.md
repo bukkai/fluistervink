@@ -80,6 +80,24 @@ Op een nieuwe computer: `.dev.vars` aanmaken (zie README).
 - **F. Geautomatiseerde tests** (Vitest, later Playwright en GitHub Actions).
 - **Mijlpaal:** na 3–4 wandelingen beoordelen of de MVP geslaagd is; pas dan Capacitor, wake word en achtergrondgebruik.
 
+## Tweede wandeling (11 okt, Arnhem, versie 97084fc)
+
+Export `fluistervink-2026-10-11.json`. 18:06–18:19, kort: telefoon ging uit (accu leeg) midden in een dev note. 10 uitspraken: 7 waarnemingen, 3 dev notes. Wandeling staat nog op actief.
+
+**Herkenning en interpretatie: goed.** Spraakherkenning foutloos, spraakherkenning ±1 s, model 2–4,5 s. Twee dubbele waarnemingen (zin herhaald omdat de eerste kwijt leek) met de hand weggehaald. "Tortelduif" → Turkse Tortel onzeker, met de hand bevestigd.
+
+**Traag (dev note: "bijzonder langzaam", interface na verversen even leeg, opnames die later terugkomen).** Wachttijd tussen einde opname en start verwerking: 2 min (ekster), 2 min (huismus), 1 min 48 (kauwen), 1 min (merel), en bij de merel nog eens 59 s *ín* de verwerking terwijl de verzoeken samen maar 3,7 s duurden. Na het herstarten van de telefoon (18:18) weer direct (8 s).
+- Niet het netwerk: elk verzoek dat liep was snel (spraak ±1 s), geen time-outs of `attempt_failed`. Eén `offline` van 2 s en één `area_error`. Wifi is dus vermoedelijk niet de oorzaak.
+- Wel IndexedDB: de tijd zit in de stappen zonder netwerk. Bij de start van 18:08:42 deed de wachtrij ruim een minuut niets (het `requeued` kwam pas na de volgende start). Past bij "interface leeg na verversen".
+- Vermoedelijke oorzaak: **twee exemplaren van de app tegelijk.** Om 18:06:22–27 werd de app geopend in een gewoon Chrome-tabblad (`standalone: false`, vier keer herladen door de update), om 18:06:49 in de geïnstalleerde app. Het tabblad bleef op de achtergrond open. Een bevroren achtergrondtabblad kan een IndexedDB-transactie vasthouden, en dan wacht het andere exemplaar. Beide exemplaren draaien ook een eigen wachtrij, en bij het opstarten zet de ene de uitspraken van de andere terug op "wachtend". De herstart sloot het tabblad, daarna was alles snel. Alternatief: telefoon met bijna lege accu in energiebesparing (minder waarschijnlijk, de herstart veranderde de accu niet).
+- Kan niet hard bewezen worden: de log ziet niet welk exemplaar wat doet en meet geen tijden van IndexedDB.
+
+**"Denkt dat de app op de achtergrond is":** de log heeft echte `hidden`-momenten (18:07:03–18:07:35 meteen na een opname, 18:11:44–18:12:06). Nagaan: scherm uit? Of een melding over de bijna lege accu?
+
+**Goed:** de laatste dev note bleef bewaard toen de telefoon uitging (`recording_stopped_hidden`), en werd nog verwerkt.
+
+**Voorstel PR:** (1) Web Locks (`navigator.locks`) om de wachtrij, zodat maar één exemplaar verwerkt en een tweede niet de uitspraken van het eerste terugzet. (2) Melding "Fluistervink is al open in een ander venster". (3) Meten: moment van opslaan, tijd per stap (database, spraak, model) en een id per exemplaar in elke gebeurtenis.
+
 ## Eerste echte wandeling (10 okt, Arnhem, versie 6e80882)
 
 Export `thijsse-2026-10-10.json` geanalyseerd. 14:39–16:12, 55 uitspraken: 33 waarnemingen/correcties, 19 dev notes, 3 genegeerd. 30 waarnemingen over.
