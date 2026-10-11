@@ -4,9 +4,6 @@
   import { APP_VERSION } from './log';
 
   let code = $state(getAccessCode());
-  // Bij het laden open zolang er nog geen code is; daarna houdt bind:open
-  // bij of de gebruiker het paneel open- of dichtklapt.
-  let open = $state(!getAccessCode());
   let status = $state<'idle' | 'busy' | 'ok' | 'error'>('idle');
   let message = $state('');
 
@@ -33,32 +30,30 @@
   }
 </script>
 
-<details bind:open>
-  <summary>Instellingen</summary>
-  <form onsubmit={save}>
-    <label>
-      Toegangscode
-      <input type="password" bind:value={code} autocomplete="off" required />
-    </label>
-    <button disabled={status === 'busy'}>Opslaan en testen</button>
-    {#if message}
-      <p class={status}>{message}</p>
-    {/if}
-  </form>
-  <button class="secondary" onclick={exportData}>Alle gegevens exporteren (JSON)</button>
-  <p class="version">Versie {APP_VERSION}</p>
-</details>
+<a class="back" href="#/">← Terug</a>
+<h2>Instellingen</h2>
+
+<form onsubmit={save}>
+  <label>
+    Toegangscode
+    <input type="password" bind:value={code} autocomplete="off" required />
+  </label>
+  <button disabled={status === 'busy'}>Opslaan en testen</button>
+  {#if message}
+    <p class={status}>{message}</p>
+  {/if}
+</form>
+<button class="secondary" onclick={exportData}>Alle gegevens exporteren (JSON)</button>
+<p class="version">Versie {APP_VERSION}</p>
 
 <style>
-  details {
-    margin-top: 2rem;
-    color: var(--muted);
+  .back {
+    color: var(--green);
   }
 
   form {
     display: grid;
     gap: 0.75rem;
-    margin-top: 0.75rem;
   }
 
   label {
@@ -94,6 +89,7 @@
 
   .version {
     font-size: 0.8rem;
+    color: var(--muted);
   }
 
   .ok {

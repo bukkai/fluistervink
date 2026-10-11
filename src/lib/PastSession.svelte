@@ -59,7 +59,7 @@
   const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
 </script>
 
-<a href="#/">← Terug</a>
+<a href="#wandelingen">← Terug</a>
 
 <h2>{session.place?.name ?? 'Wandeling'}</h2>
 <p class="muted">

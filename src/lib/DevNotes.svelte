@@ -21,40 +21,37 @@
   });
 </script>
 
+<a class="back" href="#/">← Terug</a>
+<h2>Dev notes</h2>
+
 {#if $notes?.length}
-  <details>
-    <summary>Dev notes ({$notes.length})</summary>
-    <button onclick={copy}>{copied ? 'Gekopieerd' : 'Kopieer als Markdown'}</button>
-    <ul>
-      {#each $notes as note (note.id)}
-        <li>
-          <div>{noteText(note)}</div>
-          <div class="muted">
-            {dateTimeFormat.format(note.recordedAt)}
-            {#if note.position}
-              ·
-              <a href={mapsUrl(note.position.lat, note.position.lon)} target="_blank" rel="noopener">
-                locatie
-              </a>
-            {/if}
-          </div>
-        </li>
-      {/each}
-    </ul>
-  </details>
+  <button onclick={copy}>{copied ? 'Gekopieerd' : 'Kopieer als Markdown'}</button>
+  <ul>
+    {#each $notes as note (note.id)}
+      <li>
+        <div>{noteText(note)}</div>
+        <div class="muted">
+          {dateTimeFormat.format(note.recordedAt)}
+          {#if note.position}
+            ·
+            <a href={mapsUrl(note.position.lat, note.position.lon)} target="_blank" rel="noopener">
+              locatie
+            </a>
+          {/if}
+        </div>
+      </li>
+    {/each}
+  </ul>
+{:else if $notes}
+  <p class="muted">Nog geen dev notes. Begin een uitspraak met "dev note" om er een in te spreken.</p>
 {/if}
 
 <style>
-  details {
-    margin-top: 1.5rem;
-  }
-
-  summary {
-    font-weight: 600;
+  .back {
+    color: var(--green);
   }
 
   button {
-    margin-top: 0.75rem;
     padding: 0.5rem 1rem;
     border: 1px solid var(--border);
     border-radius: 0.5rem;

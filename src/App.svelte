@@ -2,17 +2,19 @@
   import { liveQuery } from 'dexie';
   import { onDestroy } from 'svelte';
   import {
-    countPerSession,
+    formatDuration,
     listSessions,
     requestPersistentStorage,
     startSession,
     stopSession,
   } from './lib/sessions';
-  import type { Session } from './lib/db';
   import ActiveSession from './lib/ActiveSession.svelte';
+  import { getAccessCode } from './lib/api';
+  import { listDevNotes } from './lib/devNotes';
   import { processQueue } from './lib/observations';
   import DevNotes from './lib/DevNotes.svelte';
   import PastSession from './lib/PastSession.svelte';
+  import PastSessions from './lib/PastSessions.svelte';
   import Settings from './lib/Settings.svelte';
 
   // Uitspraken die bij het afsluiten nog niet verwerkt waren, alsnog verwerken
@@ -21,24 +23,37 @@
   // liveQuery draait opnieuw zodra de data in IndexedDB verandert, en is
   // direct bruikbaar als Svelte-store ($sessions).
   const sessions = liveQuery(listSessions);
-  const counts = liveQuery(countPerSession);
+  const devNotes = liveQuery(listDevNotes);
 
   let active = $derived($sessions?.find((s) => s.status === 'active'));
   let past = $derived($sessions?.filter((s) => s.status === 'ended') ?? []);
 
-  // Een eerdere wandeling openen gaat via de URL (#wandeling/<id>), zodat de
-  // terugknop van Android terug naar het overzicht gaat.
+  // Elk scherm heeft een eigen adres (#wandelingen, #wandeling/<id>,
+  // #instellingen, #devnotes), zodat de terugknop van Android teruggaat naar
+  // het vorige scherm in plaats van de app te sluiten. Leeg = hoofdscherm.
   let hash = $state(location.hash);
+  let route = $derived(hash.replace(/^#\/?/, ''));
   const onHashChange = () => {
     hash = location.hash;
+    menuOpen = false;
     window.scrollTo(0, 0);
   };
   window.addEventListener('hashchange', onHashChange);
   onDestroy(() => window.removeEventListener('hashchange', onHashChange));
 
   let opened = $derived(
-    hash.startsWith('#wandeling/') ? past.find((s) => s.id === hash.slice(11)) : undefined,
+    route.startsWith('wandeling/') ? past.find((s) => s.id === route.slice(10)) : undefined,
   );
+
+  let menuOpen = $state(false);
+
+  // Zonder toegangscode werkt de verwerking niet; dan op het hoofdscherm een
+  // verwijzing naar de instellingen. De code staat in localStorage (geen
+  // state), dus opnieuw lezen bij elke schermwissel.
+  let hasAccessCode = $derived.by(() => {
+    void route;
+    return !!getAccessCode();
+  });
 
   // Klok voor de looptijd van de lopende wandeling
   let now = $state(Date.now());
@@ -55,84 +70,168 @@
   }
 
   const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
-  const dateFormat = new Intl.DateTimeFormat('nl-NL', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  });
-
-  function duration(ms: number): string {
-    const minutes = Math.floor(ms / 60_000);
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return h > 0 ? `${h} u ${m} min` : `${m} min`;
-  }
-
-  /** "1 u 5 min, 12 uitspraken, 15 waarnemingen, geëxporteerd" */
-  function summary(session: Session): string {
-    const c = $counts?.get(session.id);
-    return [
-      duration((session.endedAt ?? session.startedAt) - session.startedAt),
-      c && `${c.utterances} ${c.utterances === 1 ? 'uitspraak' : 'uitspraken'}`,
-      c && `${c.observations} ${c.observations === 1 ? 'waarneming' : 'waarnemingen'}`,
-      session.exportedAt && 'geëxporteerd',
-    ]
-      .filter(Boolean)
-      .join(', ');
-  }
 </script>
 
-<main>
-  <h1>Fluistervink</h1>
+<header>
+  <a class="brand" href="#/">
+    <img src="/icon.svg" alt="" width="32" height="32" />
+    Fluistervink
+  </a>
+  <button
+    class="menu-button"
+    aria-label="Menu"
+    aria-expanded={menuOpen}
+    onclick={() => (menuOpen = !menuOpen)}
+  >
+    ☰
+  </button>
+  {#if menuOpen}
+    <!-- Tik naast het menu = sluiten -->
+    <button class="backdrop" aria-label="Menu sluiten" onclick={() => (menuOpen = false)}></button>
+    <nav>
+      <a href="#wandelingen">Vorige wandelingen</a>
+      {#if $devNotes?.length}
+        <a href="#devnotes">Dev notes ({$devNotes.length})</a>
+      {/if}
+      <a href="#instellingen">Instellingen</a>
+    </nav>
+  {/if}
+</header>
 
+<main>
   {#if $sessions === undefined}
     <!-- Database wordt nog geladen -->
+  {:else if route === 'wandelingen'}
+    <PastSessions sessions={past} />
   {:else if opened}
     <PastSession session={opened} resumable={!active && opened === past[0]} />
+  {:else if route === 'instellingen'}
+    <Settings />
+  {:else if route === 'devnotes'}
+    <DevNotes />
   {:else if active}
     <section class="active">
       <p>
         Wandeling bezig sinds {timeFormat.format(active.startedAt)}
-        <span class="muted">({duration(now - active.startedAt)})</span>
+        <span class="muted">({formatDuration(now - active.startedAt)})</span>
         {#if active.place}<br /><span class="muted">{active.place.name}</span>{/if}
       </p>
       <button class="stop" onclick={stop}>Stop wandeling</button>
     </section>
     <ActiveSession session={active} />
   {:else}
-    <button class="start" onclick={start}>Start wandeling</button>
+    <section class="home">
+      <p class="intro">
+        Druk op de knop en zeg wat je ziet of hoort, bijvoorbeeld
+        <em>"zes overvliegende houtduiven"</em> of <em>"roepje vink"</em>.
+      </p>
+      <button class="start" onclick={start}>Start wandeling</button>
+      {#if !hasAccessCode}
+        <p class="notice">
+          Vul eerst de toegangscode in bij <a href="#instellingen">Instellingen</a>.
+        </p>
+      {/if}
+    </section>
   {/if}
-
-  {#if past.length > 0 && !opened}
-    <h2>Eerdere wandelingen</h2>
-    <ul>
-      {#each past as session (session.id)}
-        <li>
-          <a href="#wandeling/{session.id}">
-            {#if session.place}<strong>{session.place.name}</strong><br />{/if}
-            {dateFormat.format(session.startedAt)},
-            {timeFormat.format(session.startedAt)}
-            <span class="muted">
-              ({summary(session)})
-            </span>
-          </a>
-        </li>
-      {/each}
-    </ul>
-  {/if}
-
-  <DevNotes />
-  <Settings />
 </main>
 
 <style>
+  header {
+    position: sticky;
+    top: 0;
+    /* Boven de kaart: Leaflet gebruikt z-index tot 1000 */
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 32rem;
+    margin: 0 auto;
+    padding: 0.75rem 1rem;
+    background: var(--bg);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .brand img {
+    border-radius: 0.5rem;
+  }
+
+  .menu-button {
+    width: 2.75rem;
+    height: 2.75rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1.5rem;
+    background: none;
+    color: inherit;
+  }
+
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    border: none;
+    background: rgb(0 0 0 / 0.2);
+  }
+
+  nav {
+    position: absolute;
+    top: 100%;
+    right: 1rem;
+    display: grid;
+    min-width: 14rem;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background: var(--bg);
+    box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.15);
+  }
+
+  nav a {
+    padding: 1rem 1.25rem;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  nav a + a {
+    border-top: 1px solid var(--border);
+  }
+
   main {
     max-width: 32rem;
     margin: 0 auto;
-    padding: 1rem;
+    padding: 0 1rem 1rem;
   }
 
-  button {
+  .home {
+    display: grid;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .intro {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--muted);
+  }
+
+  .notice {
+    margin: 0;
+  }
+
+  .notice a {
+    color: var(--green);
+  }
+
+  .start,
+  .stop {
     width: 100%;
     padding: 1.5rem;
     border: none;
@@ -144,6 +243,7 @@
   }
 
   .start {
+    padding: 2.5rem 1.5rem;
     background: var(--green);
   }
 
@@ -152,28 +252,6 @@
   }
 
   .muted {
-    color: var(--muted);
-  }
-
-  ul {
-    padding: 0;
-    list-style: none;
-  }
-
-  li {
-    border-bottom: 1px solid var(--border);
-  }
-
-  li a {
-    display: block;
-    padding: 0.75rem 0;
-    color: inherit;
-    text-decoration: none;
-  }
-
-  li a::after {
-    content: '›';
-    float: right;
     color: var(--muted);
   }
 </style>
