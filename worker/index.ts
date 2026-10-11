@@ -141,6 +141,7 @@ async function messages(request: Request, env: WorkerEnv): Promise<Response> {
  * - PUT /api/feedback/audio/<id>     opname
  * - GET /api/feedback/list?cursor=…  sleutels met metadata (eigenaar)
  * - GET /api/feedback/file?key=…     één bestand (eigenaar)
+ * - DELETE /api/feedback/tester?name=…  alles van één tester wissen (eigenaar)
  */
 async function feedback(request: Request, env: WorkerEnv, tester: string): Promise<Response> {
   const url = new URL(request.url);
@@ -167,6 +168,19 @@ async function feedback(request: Request, env: WorkerEnv, tester: string): Promi
       keys: result.keys.map((k) => ({ key: k.name, ...(k.metadata as object) })),
       cursor: result.list_complete ? undefined : result.cursor,
     });
+  }
+  if (request.method === 'DELETE' && kind === 'tester') {
+    const name = url.searchParams.get('name') ?? '';
+    if (!/^[\w-]+$/.test(name)) return json({ error: 'Ongeldige naam' }, 400);
+    let deleted = 0;
+    let cursor: string | undefined;
+    do {
+      const page = await env.FEEDBACK.list({ prefix: `${name}/`, cursor });
+      await Promise.all(page.keys.map((k) => env.FEEDBACK.delete(k.name)));
+      deleted += page.keys.length;
+      cursor = page.list_complete ? undefined : page.cursor;
+    } while (cursor);
+    return json({ ok: true, deleted });
   }
   if (request.method === 'GET' && kind === 'file') {
     const { value, metadata } = await env.FEEDBACK.getWithMetadata<{ contentType?: string }>(

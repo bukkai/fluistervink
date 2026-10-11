@@ -132,7 +132,7 @@
     <p class="hint">
       Na elke wandeling gaan de uitspraken, wat de app ervan maakte, je correcties bij het nalopen
       en je feedback naar de ontwikkelaar, om de herkenning te verbeteren. Ook de locaties van je
-      waarnemingen.
+      waarnemingen. Zie <a href="#privacy">Privacy</a>.
     </p>
     <label class="check">
       <input type="checkbox" bind:checked={sharing} onchange={() => setShareEnabled(sharing)} />
@@ -229,6 +229,10 @@
     margin: 0;
     font-size: 0.85rem;
     color: var(--muted);
+  }
+
+  .hint a {
+    color: inherit;
   }
 
   .version {

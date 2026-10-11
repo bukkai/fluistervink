@@ -41,9 +41,17 @@ function write(key: string, value: unknown): void {
   }
 }
 
-/** Delen staat standaard aan; de gebruiker kan het uitzetten bij Instellingen. */
+/**
+ * Delen gebeurt pas na toestemming: het hoofdscherm vraagt het één keer (zie
+ * shareChoiceMade), daarna aan of uit bij Instellingen.
+ */
 export function shareEnabled(): boolean {
-  return read(ENABLED_KEY, true);
+  return read(ENABLED_KEY, false);
+}
+
+/** Heeft de gebruiker al gekozen of de app mag delen? */
+export function shareChoiceMade(): boolean {
+  return read<boolean | undefined>(ENABLED_KEY, undefined) !== undefined;
 }
 
 export function setShareEnabled(on: boolean): void {

@@ -12,7 +12,10 @@
     "run_worker_first": ["/api/*"],
     "not_found_handling": "single-page-application"
   },
-  "observability": { "enabled": true },
+  // Workers Logs: alleen wat de Worker zelf logt (tester en pad, fouten). Geen
+  // invocation logs, want die bevatten het volledige adres, en bij /api/area
+  // staan daar de coördinaten in (zie de privacypagina).
+  "observability": { "enabled": true, "logs": { "invocation_logs": false } },
   // Wat testers delen (wandelingen, feedback, opnames), zie /api/feedback in
   // worker/index.ts. Aangemaakt met `npx wrangler kv namespace create FEEDBACK`.
   // Lokaal (npm run dev) een eigen, lege KV: testen komt niet in productie.

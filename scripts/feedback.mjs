@@ -4,6 +4,7 @@
 //
 //   npm run feedback -- pull     nieuwe en gewijzigde wandelingen en opnames ophalen
 //   npm run feedback -- notes    alle feedback als Markdown, nieuwste eerst
+//   npm run feedback -- wipe <tester>   alles van een tester wissen, online en hier
 //
 // Na `pull` staat er per tester een export in testset/feedback/<tester>.json,
 // in hetzelfde formaat als de JSON-export van de app (met de opnames die er
@@ -14,7 +15,7 @@
 // (niet in git). Adres: FLUISTERVINK_URL, anders `appUrl` uit .testers.json,
 // anders productie.
 
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { createInterface } from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
@@ -42,12 +43,13 @@ async function ownerCode(config) {
   return code;
 }
 
-async function pull() {
+/** Verzoeken aan /api/feedback met de code van de eigenaar. */
+async function client() {
   const config = readJson(CONFIG, { testers: {} });
   const base = (process.env.FLUISTERVINK_URL ?? config.appUrl ?? DEFAULT_URL).replace(/\/$/, '');
   const code = await ownerCode(config);
-  const api = async (path) => {
-    const response = await fetch(`${base}${path}`, { headers: { Authorization: `Bearer ${code}` } });
+  const api = async (path, init = {}) => {
+    const response = await fetch(`${base}${path}`, { ...init, headers: { Authorization: `Bearer ${code}` } });
     if (response.status === 401 || response.status === 403) {
       console.error('Toegangscode geweigerd: alleen de code van de eigenaar (ACCESS_CODE) mag ophalen.');
       process.exit(1);
@@ -55,6 +57,11 @@ async function pull() {
     if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
     return response;
   };
+  return { config, code, api };
+}
+
+async function pull() {
+  const { config, code, api } = await client();
 
   // Lijst van alles wat er is, met het moment van uploaden
   const keys = [];
@@ -140,7 +147,36 @@ function notes() {
   }
 }
 
+/**
+ * Alles wat een tester gedeeld heeft wissen, in KV én in testset/feedback/
+ * (de privacypagina belooft dat op verzoek). Exports die je zelf elders in
+ * testset/ hebt gezet, blijven staan.
+ */
+async function wipe(tester) {
+  if (!tester || !/^[\w-]+$/.test(tester)) {
+    console.error('Gebruik: npm run feedback -- wipe <tester>');
+    process.exit(1);
+  }
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  const answer = (await rl.question(`Alles van "${tester}" definitief wissen? Typ de naam ter bevestiging: `)).trim();
+  rl.close();
+  if (answer !== tester) {
+    console.log('Niets gewist.');
+    return;
+  }
+  const { api } = await client();
+  const { deleted } = await (await api(`/api/feedback/tester?name=${encodeURIComponent(tester)}`, { method: 'DELETE' })).json();
+
+  rmSync(join(OUT, tester), { recursive: true, force: true });
+  rmSync(join(OUT, `${tester}.json`), { force: true });
+  const manifest = readJson(MANIFEST, {});
+  for (const key of Object.keys(manifest)) if (key.startsWith(`${tester}/`)) delete manifest[key];
+  if (existsSync(MANIFEST)) writeJson(MANIFEST, manifest);
+  console.log(`${deleted} bestanden online gewist, en de kopie in testset/feedback/.`);
+}
+
 const command = process.argv[2];
 if (command === 'pull') await pull();
 else if (command === 'notes') notes();
-else console.log(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(4, 6).join('\n').replace(/^\/\/ ?/gm, ''));
+else if (command === 'wipe') await wipe(process.argv[3]);
+else console.log(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(4, 7).join('\n').replace(/^\/\/ ?/gm, ''));
