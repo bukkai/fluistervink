@@ -261,6 +261,11 @@ Typen werkt, ook met de ingebouwde spraakinvoer van Android (die is matig). Besl
   - Nieuwe versie gevonden: niet zomaar herladen. Tijdens een opname of met een volle wachtrij wachten. Op een rustig moment (geen opname, wachtrij leeg) vanzelf herladen, of een balkje "Nieuwe versie – vernieuwen". Gegevens staan in IndexedDB, dus herladen verliest niets behalve een lopende opname.
   - Na het herladen kort melden "Bijgewerkt naar versie …", eventueel met wat er nieuw is (sluit aan bij de beta-/prodsplitsing en de feedback van testers).
   - Optioneel: `/api/ping` geeft de versie van de server terug. Wijkt die af van de app, dan meteen controleren op een update; zo blijven app en proxy niet lang uit de pas lopen.
+- Vraag eigenaar (11 okt): kan de export naar waarneming.nl volautomatisch? Uitgezocht:
+  - De API-documentatie (`waarneming.nl/api/docs/`) is alleen zichtbaar na inloggen; de API is volgens die pagina beperkt tot goedgekeurde apps en toepassingen. Dus eerst toestemming en een client-ID vragen via het contactformulier (FAQ). Pas daarna is te zien welke endpoints er zijn (aanmaken, in bulk, geluid erbij). Stond al op de roadmap: "Upload via de API (OAuth)".
+  - Met een client-ID: de gebruiker logt één keer in bij waarneming.nl (OAuth), de app bewaart een token en zendt namens hem in. De `uuid` die nu in de CSV gaat, voorkomt ook dan dubbel invoeren. Audio zou als geluidsopname mee kunnen (alleen als de gebruiker dat wil).
+  - Advies: niet écht volautomatisch (direct na elke uitspraak), maar één knop "Inzenden" per wandeling ná het nalopen. AI maakt fouten en de gebruiker blijft verantwoordelijk voor wat er op waarneming.nl komt; ongecontroleerde waarnemingen vervuilen de gegevens (zie het citizen-science-idee). Eventueel een instelling "zekere waarnemingen meteen inzenden" voor ervaren gebruikers.
+  - Voor de aanvraag helpt een korte uitleg van de app (zie de ideeën "Hoe werkt het" en citizen science) en het bewijs dat de CSV-import al goed werkt.
 
 ## Overstappen tussen computers
 
