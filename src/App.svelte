@@ -12,14 +12,16 @@
   import { getAccessCode } from './lib/api';
   import { listDevNotes } from './lib/devNotes';
   import { vibrate } from './lib/feedback';
+  import { instance } from './lib/instance.svelte';
   import { processQueue } from './lib/observations';
   import DevNotes from './lib/DevNotes.svelte';
   import PastSession from './lib/PastSession.svelte';
   import PastSessions from './lib/PastSessions.svelte';
   import Settings from './lib/Settings.svelte';
 
-  // Uitspraken die bij het afsluiten nog niet verwerkt waren, alsnog verwerken
-  processQueue();
+  // Uitspraken die bij het afsluiten nog niet verwerkt waren, alsnog verwerken.
+  // Dit exemplaar neemt de wachtrij over van een eventueel ander (tabblad).
+  processQueue({ takeOver: true });
 
   // liveQuery draait opnieuw zodra de data in IndexedDB verandert, en is
   // direct bruikbaar als Svelte-store ($sessions).
@@ -120,7 +122,14 @@
 </header>
 
 <main>
-  {#if $sessions === undefined}
+  {#if instance.dormant}
+    <!-- Overgenomen door een ander exemplaar (tabblad of geïnstalleerde app) -->
+    <section class="home">
+      <h1>Fluistervink is in een ander venster geopend</h1>
+      <p class="intro">Gebruik de app op één plek tegelijk, anders zitten ze elkaar in de weg.</p>
+      <button class="start" onclick={() => location.reload()}>Hier verder</button>
+    </section>
+  {:else if $sessions === undefined}
     <!-- Database wordt nog geladen -->
   {:else if route === 'wandelingen'}
     <PastSessions sessions={past} />
