@@ -24,21 +24,21 @@ Alle drie gemerged (9–10 okt). Daarna **#18 Gebied van waarneming.nl** bij elk
 
 Gemerged (10 okt). Nog doen: eerste echte import, zie hieronder.
 
-## Volgende stap (11 okt)
+## Volgende stap (11 okt, avond)
 
-Alles t/m **PR #43** is gemerged (prompt #25–#26, soortenlijst #28–#29/#33, veldgedrag #30, opruimen #31, terugknop #32, naam wandeling #34, Fluistervink #35–#36, hoofdscherm/review/opruimen #37–#39, JSON-import #40, redesign #41–#42, icoon #43). Geen open PR's.
+Alles t/m **PR #45** is gemerged: #44 (één exemplaar van de app tegelijk via Web Locks, melding bij een tweede venster, meer metingen per stap; zie "Tweede wandeling") en #45 (nieuw logo, app-icoon, laadscherm, kleuren op het logo afgestemd).
 
-**CSV-import op waarneming.nl getest (11 okt): werkte heel goed.** Stap 6 is daarmee af.
-
-Nu: **tweede echte wandeling** (11 okt). Na afloop JSON-export en dev notes aan Claude geven. Op de telefoon ook letten op: tikje bij loslaten en opname stoppen bij wisselen van app (#30), terugknop (#32, #43), naam van de wandeling bij het starten (#34), nieuw icoon.
+**Open: PR #46** kaart en lijst gekoppeld in de review (branch `kaart-en-lijst`). Tik op een waarneming in het popup-venster → lijst scrolt ernaartoe en hij licht op; "±35 m" in de review → stip op de kaart met popup (kaarten-app-link staat nu in het popup-venster). Getest in de browser; op de telefoon nalopen, mergen vóór de demo (13 okt).
 
 Daarna, in volgorde:
 
-1. Eventueel vóór de demo (13 okt): kaart en lijst koppelen (stip ↔ waarneming).
-2. Bevindingen van wandeling 2 verwerken (prompt, bijnamen, Whisper-prompt).
+1. **Derde wandeling** met de versie van #44: is de vertraging weg? Na afloop JSON-export (nu met tijden per stap en id per exemplaar) aan Claude geven.
+2. Bevindingen van wandeling 2/3 verwerken (prompt, bijnamen, Whisper-prompt; bv. "tortelduif").
 3. **Stap 7, testset** (roadmap B).
 4. Klein: "Alle lege / alles aanvinken" bij Opruimen; afkortingen leeftijd/kleed in de prompt; meer gedragingen en methoden.
 5. F. Vitest. Mijlpaal na 3–4 wandelingen.
+
+Tip: draait er in een andere Claude-sessie al een dev-server op 5173, dan tijdelijk een tweede configuratie op 5174 in `.claude/launch.json`.
 
 ### Eerder (10 okt)
 
