@@ -37,7 +37,7 @@ export default defineConfig({
         // API-verzoeken nooit via de cache of de index.html-fallback laten lopen
         navigateFallbackDenylist: [/^\/api\//],
       },
-      includeAssets: ['icon.png', 'apple-touch-icon.png'],
+      includeAssets: ['icon.svg', 'logo.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'Fluistervink',
         short_name: 'Fluistervink',
@@ -49,8 +49,9 @@ export default defineConfig({
         theme_color: '#4b6a84',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
-          // Geen 'maskable': de snavel loopt tot de rand en zou worden afgesneden
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
+          // Oog en snavel staan binnen de veilige zone, dus rond afsnijden mag
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
     }),

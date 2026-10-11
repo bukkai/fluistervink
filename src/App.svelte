@@ -94,7 +94,7 @@
 <header>
   <div class="bar">
     <a class="brand" href="#/">
-      <img src="/icon.png" alt="" width="32" height="32" />
+      <img src="/icon.svg" alt="" width="32" height="32" />
       Fluistervink
     </a>
     <button
@@ -157,7 +157,7 @@
     <ActiveSession session={active} />
   {:else}
     <section class="home">
-      <img class="hero" src="/icon.png" alt="" width="112" height="112" />
+      <img class="hero" src="/icon.svg" alt="" width="112" height="112" />
       <h1>Klaar om te gaan vogelen?</h1>
       <p class="intro">
         Druk tijdens de wandeling op de knop en zeg wat je ziet of hoort, bijvoorbeeld
