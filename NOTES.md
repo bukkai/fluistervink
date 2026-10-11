@@ -248,6 +248,12 @@ Typen werkt, ook met de ingebouwde spraakinvoer van Android (die is matig). Besl
     3. *De app zelf* (geen AI): tijd en GPS bij het begin van de opname, controleren, opslaan, gebiedsnaam van waarneming.nl, export.
   - **Grenzen, eerlijk benoemd:** AI maakt fouten (verkeerd verstaan, verkeerde soort, aantallen). Daarom: altijd zelf nalopen voor je inzendt; jij blijft verantwoordelijk voor wat er op waarneming.nl komt. Geen soortherkenning op geluid (dat doen apps als Merlin of BirdNET); Fluistervink verwerkt alleen wat jíj zegt.
   - Verwijst naar de privacypagina voor wat er met opnames gebeurt; eventueel worden het twee kopjes op één pagina. Sluit aan bij het citizen-science-idee (waarom makkelijk invoeren telt).
+- Idee eigenaar (11 okt), vóór de echte release: twee omgevingen. **Stabiel** op `fluistervink.heg-mus.nl`, **beta** blijft op `fluistervink.stephanmullernl.workers.dev`. Testers krijgen beta (hun uitnodigingslinks wijzen daar al naar), prod blijft stabiel. Aandachtspunten:
+  - **Domein:** de DNS van heg-mus.nl staat bij TransIP. Een Custom Domain op een Worker vereist dat de zone in Cloudflare staat: nameservers van heg-mus.nl naar Cloudflare verhuizen (gratis; eerst alle bestaande records overnemen, vooral mail: MX, SPF, DKIM). Een losse CNAME bij TransIP naar workers.dev werkt niet.
+  - **Twee Workers:** `fluistervink` (beta, zoals nu, bouwt vanaf `main`) en een tweede, bv. via `env.production` in `wrangler.jsonc` met de custom domain. Tweede Workers Builds-configuratie die vanaf een branch `release` (of tags) deployt. Een release = `main` naar `release` mergen, na een geslaagde betaronde.
+  - **Per omgeving apart:** geheimen (`ACCESS_CODE`, `ACCESS_CODES`, API-sleutels; aparte sleutels maken de kosten per omgeving zichtbaar), KV-namespace `FEEDBACK`, en de scripts `npm run tester` / `npm run feedback` met een keuze voor de omgeving.
+  - **Gegevens zijn per adres:** IndexedDB en de geïnstalleerde PWA horen bij het domein. Wandelingen op beta staan niet op prod; overzetten via JSON-export/-import (#40). Wel nagaan dat prod een export van een nieuwere beta (hogere db-versie) netjes weigert of aankan.
+  - **Herkenbaar maken:** op beta een duidelijk label "Beta" en een andere naam/kleur in het manifest ("Fluistervink beta"), zodat je ze op het startscherm niet verwart. Versie of commit in Instellingen staat er al.
 
 ## Overstappen tussen computers
 
