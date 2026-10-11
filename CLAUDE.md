@@ -6,7 +6,7 @@ De naam is een woordgrap op "luistervink": je fluistert je waarnemingen in, en d
 
 ## Werkwijze in het veld
 
-1. App openen → sessie (= één wandeling) start. Een duidelijke knop "stop wandeling" beëindigt de sessie.
+1. App openen → sessie (= één wandeling) start. Een duidelijke knop "stop wandeling" beëindigt de sessie. Vergeten te stoppen: na een uur zonder uitspraken vraagt de app bij het openen of de wandeling nog loopt; na 8 uur stopt hij vanzelf, met de laatste uitspraak als eindtijd (`checkStaleSession` in `src/lib/sessions.ts`).
 2. Iets gezien of gehoord → knop indrukken (MVP) of later het wake word "Fluistervink" zeggen, en de waarneming inspreken.
 3. Elke uitspraak wordt verwerkt en verschijnt in het overzicht. Bevestiging via trillen, zodat de gebruiker niet naar het scherm hoeft te kijken.
 4. Correcties kunnen in het veld met de stem: "nee, keep in plaats van vink", "nog drie erbij", "die laatste weg".

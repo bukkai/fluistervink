@@ -33,6 +33,8 @@ export interface Session {
   id: string;
   startedAt: number;
   endedAt?: number;
+  /** Laatst voortgezet; telt als activiteit voor het automatisch stoppen */
+  resumedAt?: number;
   status: 'active' | 'ended';
   /** Laatst geëxporteerd voor waarneming.nl */
   exportedAt?: number;

@@ -2,11 +2,14 @@
   import { liveQuery } from 'dexie';
   import { onDestroy } from 'svelte';
   import {
+    checkStaleSession,
     formatDuration,
+    keepSession,
     listSessions,
     requestPersistentStorage,
     startSession,
     stopSession,
+    type StaleCheck,
   } from './lib/sessions';
   import ActiveSession from './lib/ActiveSession.svelte';
   import { getAccessCode, getTester, ping, takeInvite } from './lib/api';
@@ -112,6 +115,49 @@
     requestPersistentStorage();
   }
 
+  // Vergeten wandeling (sessions.ts): bij het openen van de app, en bij
+  // terugkomen uit de achtergrond (Android sluit de app niet altijd)
+  let stale = $state<StaleCheck>();
+  async function checkStale() {
+    const result = await checkStaleSession();
+    if (result) stale = result;
+    // Gestopt = klaar om te delen
+    if (result?.kind === 'stopped') scheduleShare();
+  }
+  checkStale();
+  const onVisible = () => {
+    if (!document.hidden) checkStale();
+  };
+  document.addEventListener('visibilitychange', onVisible);
+  onDestroy(() => document.removeEventListener('visibilitychange', onVisible));
+
+  let askStillWalking = $derived(
+    stale?.kind === 'ask' && stale.session.id === active?.id ? stale : undefined,
+  );
+
+  async function keepWalking() {
+    if (!askStillWalking) return;
+    await keepSession(askStillWalking.session.id);
+    stale = undefined;
+  }
+
+  /** Vergeten te stoppen: eindtijd is de laatste uitspraak, niet nu */
+  async function stopForgotten() {
+    if (!askStillWalking) return;
+    const { session, lastActivityAt } = askStillWalking;
+    stale = undefined;
+    await stopSession(session.id, lastActivityAt);
+    justStopped = session.id;
+    location.hash = `wandeling/${session.id}`;
+  }
+
+  /** "vandaag 14:32" of "ma 12 okt 14:32" */
+  function formatMoment(at: number): string {
+    const day =
+      new Date(at).toDateString() === new Date().toDateString() ? 'vandaag' : dateFormat.format(at);
+    return `${day} ${timeFormat.format(at)}`;
+  }
+
   /** Net gestopte wandeling, voor de bevestiging "opgeslagen" */
   let justStopped = $state<string>();
 
@@ -205,6 +251,16 @@
       </div>
       <button class="stop" onclick={stop}>Stop</button>
     </section>
+    {#if askStillWalking}
+      <div class="still-walking card">
+        <strong>Loopt deze wandeling nog?</strong>
+        <p>Sinds {formatMoment(askStillWalking.lastActivityAt)} is er niets ingesproken.</p>
+        <div class="buttons">
+          <button class="btn" onclick={keepWalking}>Ja, ga door</button>
+          <button class="btn secondary" onclick={stopForgotten}>Nee, stoppen</button>
+        </div>
+      </div>
+    {/if}
     <ActiveSession session={active} />
   {:else}
     <section class="home">
@@ -229,6 +285,14 @@
       {:else if !hasAccessCode}
         <p class="notice">
           Vul eerst de toegangscode in bij <a href="#instellingen">Instellingen</a>.
+        </p>
+      {/if}
+      {#if stale?.kind === 'stopped'}
+        <p class="welcome">
+          Je wandeling van {formatMoment(stale.session.startedAt)} stond nog aan. Na 8 uur zonder
+          uitspraken is hij vanzelf gestopt.
+          <a href="#wandeling/{stale.session.id}">Bekijken</a> ·
+          <button class="link" onclick={() => (stale = undefined)}>Oké</button>
         </p>
       {/if}
       {#if hasAccessCode && askShare}
@@ -414,9 +478,21 @@
     color: inherit;
   }
 
-  .consent-buttons {
+  .consent-buttons,
+  .still-walking .buttons {
     display: flex;
     gap: 0.5rem;
+  }
+
+  .still-walking {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding: 0.9rem 1rem;
+  }
+
+  .still-walking p {
+    margin: 0;
   }
 
   .last {
