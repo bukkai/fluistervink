@@ -112,6 +112,8 @@ export interface TranscriptionMetrics {
   /** Duur van het verzoek aan de proxy, en daarvan de tijd bij OpenAI */
   requestMs: number;
   upstreamMs?: number;
+  /** Zekerheid van de spraakherkenning (0–1), zie `MIN_CONFIDENCE` */
+  confidence?: number;
 }
 
 export interface ProcessingMetrics {

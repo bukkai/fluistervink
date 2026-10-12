@@ -115,6 +115,8 @@ async function transcribe(request: Request, env: WorkerEnv): Promise<Response> {
   upstream.set('language', 'nl');
   upstream.set('response_format', 'json');
   if (typeof prompt === 'string' && prompt) upstream.set('prompt', prompt);
+  // Zekerheid per stukje tekst; whisper-1 kan dat niet
+  if (model !== 'whisper-1') upstream.append('include[]', 'logprobs');
 
   const start = Date.now();
   const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
@@ -123,14 +125,33 @@ async function transcribe(request: Request, env: WorkerEnv): Promise<Response> {
     body: upstream,
   });
 
-  const result = (await response.json()) as { text?: string; error?: { message: string } };
+  const result = (await response.json()) as {
+    text?: string;
+    logprobs?: { logprob: number }[];
+    error?: { message: string };
+  };
   if (!response.ok) {
     return json(
       { error: result.error?.message ?? 'Fout bij OpenAI' },
       upstreamStatus(response.status),
     );
   }
-  return json({ text: result.text ?? '', model }, 200, Date.now() - start);
+  return json(
+    { text: result.text ?? '', model, confidence: confidence(result.logprobs) },
+    200,
+    Date.now() - start,
+  );
+}
+
+/**
+ * Hoe zeker de spraakherkenning was, tussen 0 en 1: het meetkundig gemiddelde
+ * van de kansen per stukje tekst. Echte uitspraken scoren 0,8–1; geritsel in
+ * een broekzak (waar het model dan een vogel bij verzint) onder 0,3.
+ */
+function confidence(logprobs: { logprob: number }[] | undefined): number | undefined {
+  if (!logprobs?.length) return undefined;
+  const mean = logprobs.reduce((sum, token) => sum + token.logprob, 0) / logprobs.length;
+  return Math.round(Math.exp(mean) * 1000) / 1000;
 }
 
 /**

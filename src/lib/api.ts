@@ -124,7 +124,7 @@ export interface TranscribeOptions {
 export async function transcribe(
   audio: Blob,
   { model, prompt }: TranscribeOptions = {},
-): Promise<{ data: { text: string; model: string }; timing: Timing }> {
+): Promise<{ data: { text: string; model: string; confidence?: number }; timing: Timing }> {
   const form = new FormData();
   // OpenAI herkent het formaat aan de extensie: "audio/webm;codecs=opus" → .webm
   const extension = /^audio\/(\w+)/.exec(audio.type)?.[1] ?? 'webm';

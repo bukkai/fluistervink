@@ -3,7 +3,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FakeLockManager, HOUTDUIF, KEEP, VINK, toolResponse } from '../test-helpers';
 import { db, type Observation, type Utterance } from './db';
 import { interpret } from './interpret';
-import { STEAL_AFTER_MS, listObservations, processQueue, retry } from './observations';
+import {
+  STEAL_AFTER_MS,
+  isAccidental,
+  listObservations,
+  processQueue,
+  retry,
+} from './observations';
 
 // De wachtrij van begin tot eind, met een nagebootst model: wat het model
 // teruggeeft gaat door de echte validatie (parseResponse) en wordt echt in de
@@ -102,6 +108,42 @@ describe('toevoegen', () => {
     const utterance = await say('mooi weer vandaag');
     expect(utterance.result).toBe('ignored');
     expect(await db.observations.count()).toBe(0);
+  });
+});
+
+describe('per ongeluk opgenomen', () => {
+  const audio = new Blob(['x'], { type: 'audio/webm' });
+
+  it('herkent een lange opname met bijna geen tekst', () => {
+    // 12 okt, broekzak: 20 s geritsel, verstaan als "Roodhalsfuut."
+    expect(isAccidental({ audio, audioDurationMs: 20_442, transcript: 'Roodhalsfuut.' })).toBe(
+      true,
+    );
+    // Echte uitspraken: kort, of lang met veel tekst
+    expect(isAccidental({ audio, audioDurationMs: 3_900, transcript: 'Bosuil' })).toBe(false);
+    expect(
+      isAccidental({
+        audio,
+        audioDurationMs: 32_600,
+        transcript:
+          "KBV'tje in de struik hier. Zou misschien een blako kunnen zijn, ik hoor hem niet goed.",
+      }),
+    ).toBe(false);
+    // Getypt: geen opname
+    expect(isAccidental({ audioDurationMs: 20_000, transcript: 'x' })).toBe(false);
+  });
+
+  it('maakt wat eruit komt onzeker, met de reden', async () => {
+    model.respond = () =>
+      toolResponse(['add_observation', { species_name: 'Vink', species_id: VINK, count: 1 }]);
+    const id = await queue('Vink.');
+    await db.utterances.update(id, { audio, audioDurationMs: 20_000 });
+    await processQueue();
+
+    const [obs] = await listObservations(SESSION);
+    expect(obs.uncertain).toBe(true);
+    expect(obs.uncertainReason).toContain('Per ongeluk opgenomen?');
+    expect((await db.utterances.get(id))!.result).toBe('uncertain');
   });
 });
 
