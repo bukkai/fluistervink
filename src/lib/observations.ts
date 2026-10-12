@@ -403,23 +403,54 @@ async function finishWithout(
 
 /** Zet de opname om in tekst en slaat het transcript op. */
 async function transcribeUtterance(utterance: Utterance): Promise<Utterance> {
-  const { text, timing } = await transcribe(utterance.audio!);
+  const { text, confidence, timing } = await transcribe(utterance.audio!);
   const changes = {
     transcript: text,
     transcription: {
       model: TRANSCRIBE_MODEL,
       promptVersion: await transcribePromptVersion,
       ...timing,
+      confidence,
     },
   };
   await db.utterances.update(utterance.id, changes);
   return { ...utterance, ...changes };
 }
 
+/** Vanaf deze lengte valt een opname met (bijna) geen tekst op. */
+const ACCIDENTAL_MIN_MS = 8_000;
+/** Minder woorden per seconde dan dit = (bijna) geen spraak. */
+const ACCIDENTAL_MAX_WORDS_PER_S = 0.2;
+
+/**
+ * Een lange opname met bijna geen tekst is vrijwel zeker per ongeluk gemaakt
+ * (in de broekzak): de spraakherkenning verzint dan een paar woorden uit het
+ * geritsel, vaak een soortnaam uit de prompt. 12 okt: 20 s opname,
+ * "Roodhalsfuut" (0,05 woord/s); echte lange uitspraken halen 0,5 of meer.
+ * Volume en de zekerheid van de spraakherkenning bleken geen goed signaal:
+ * geritsel is luider dan fluisteren, en de zekerheid wisselt per poging.
+ */
+export function isAccidental(
+  utterance: Pick<Utterance, 'audioDurationMs' | 'transcript' | 'audio'>,
+): boolean {
+  const ms = utterance.audioDurationMs;
+  if (!utterance.audio || !ms || ms < ACCIDENTAL_MIN_MS) return false;
+  const words = (utterance.transcript ?? '').split(/\s+/).filter(Boolean).length;
+  return words / (ms / 1000) < ACCIDENTAL_MAX_WORDS_PER_S;
+}
+
 /** Voert de acties uit en geeft terug wat er veranderde. */
 async function applyActions(utterance: Utterance, actions: Action[]): Promise<Change[]> {
   const changes: Change[] = [];
   let order = Date.now();
+  // Waarschijnlijk per ongeluk opgenomen: alles wat eruit komt onzeker, zodat
+  // het bij het nalopen opvalt
+  const accidental: Partial<Observation> = isAccidental(utterance)
+    ? {
+        uncertain: true,
+        uncertainReason: `Per ongeluk opgenomen? ${Math.round(utterance.audioDurationMs! / 1000)} s opname, verstaan: "${utterance.transcript}"`,
+      }
+    : {};
 
   for (const action of actions) {
     switch (action.type) {
@@ -433,6 +464,7 @@ async function applyActions(utterance: Utterance, actions: Action[]): Promise<Ch
           methodId: DEFAULT_METHOD,
           ...action.fields,
           uncertain: action.fields.uncertain ?? false,
+          ...accidental,
           observedAt: utterance.recordedAt,
           createdAt: order++,
           position: utterance.position,
@@ -460,6 +492,7 @@ async function applyActions(utterance: Utterance, actions: Action[]): Promise<Ch
           patch.uncertain ??= false;
           if (!patch.uncertain) patch.uncertainReason = undefined;
         }
+        Object.assign(patch, accidental);
 
         const before = Object.fromEntries(
           Object.keys(patch).map((key) => [key, current[key as keyof Observation]]),

@@ -211,7 +211,10 @@ describe('/api/transcribe (OpenAI)', () => {
   it('stuurt door met onze sleutel, Nederlands en de soortenprompt', async () => {
     upstream.mockResolvedValue(Response.json({ text: 'zes houtduiven' }));
     const response = await post({ audio: audio(), prompt: 'Houtduif, Vink' });
-    expect(await response.json()).toEqual({ text: 'zes houtduiven', model: 'gpt-4o-transcribe' });
+    expect(await response.json()).toMatchObject({
+      text: 'zes houtduiven',
+      model: 'gpt-4o-transcribe',
+    });
 
     const [url, init] = upstream.mock.calls[0];
     expect(url).toBe('https://api.openai.com/v1/audio/transcriptions');
@@ -220,6 +223,26 @@ describe('/api/transcribe (OpenAI)', () => {
     expect(sent.get('language')).toBe('nl');
     expect(sent.get('prompt')).toBe('Houtduif, Vink');
     expect(sent.get('model')).toBe('gpt-4o-transcribe');
+    expect(sent.get('include[]')).toBe('logprobs');
+  });
+
+  it('geeft de zekerheid mee (meetkundig gemiddelde van de kansen)', async () => {
+    upstream.mockResolvedValue(
+      Response.json({
+        text: 'vink',
+        logprobs: [{ logprob: Math.log(0.5) }, { logprob: Math.log(0.125) }],
+      }),
+    );
+    expect(await (await post({ audio: audio() })).json()).toMatchObject({ confidence: 0.25 });
+  });
+
+  it('vraagt geen zekerheid bij whisper-1 (kan dat niet)', async () => {
+    upstream.mockResolvedValue(Response.json({ text: 'vink' }));
+    const body = (await (await post({ audio: audio(), model: 'whisper-1' })).json()) as {
+      confidence?: number;
+    };
+    expect(body.confidence).toBeUndefined();
+    expect((upstream.mock.calls[0][1]?.body as FormData).has('include[]')).toBe(false);
   });
 
   it('geeft fouten van OpenAI door, behalve een sleutelprobleem (502)', async () => {

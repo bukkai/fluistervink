@@ -34,7 +34,7 @@ export const transcribePromptVersion: Promise<string> = crypto.subtle
 export async function transcribe(
   audio: Blob,
   model = TRANSCRIBE_MODEL,
-): Promise<{ text: string; timing: Timing }> {
+): Promise<{ text: string; confidence?: number; timing: Timing }> {
   const { data, timing } = await transcribeAudio(audio, { model, prompt: PROMPT });
-  return { text: data.text.trim(), timing };
+  return { text: data.text.trim(), confidence: data.confidence, timing };
 }
