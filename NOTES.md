@@ -58,7 +58,7 @@ Daarna:
 
 1. ~~Derde wandeling~~ (12 okt middag, zie hieronder; STT: `gpt-4o-transcribe` blijft). Meer wandelingen met opnames delen en `npm run testset` blijven draaien: per run met `--stt gpt-4o-transcribe` en `gpt-4o-mini-transcribe` (en `whisper-1`), en eventueel `--model claude-sonnet-5-5`. Ook nagaan of de vertraging van #44 weg is.
 2. Prompt verbeteren met wat de testset laat zien (punten hierboven, "tortelduif"), telkens nagaan met de testset.
-3. Mijlpaal na 3–4 wandelingen. (Vitest: #66.)
+3. ~~Mijlpaal na 3–4 wandelingen~~: beoordeeld op 12 okt, zie `docs/mijlpaal-mvp.md`. Criteria gehaald (88% zonder correctie goed, correcties met de stem 9/10). Voorstel: eerst nog één wandeling van Tim en één van jezelf met de huidige versie, daarna Capacitor (trillen en achtergrond eerst, wake word later). Bosuil uit de bus nog weghalen.
 4. Later: kostenoverzicht per wandeling in het testset-script (uit het `usage`-blok van Anthropic, plus minuten audio voor OpenAI). Stand 11 okt: $0,36 deze maand bij Anthropic, 97% uit de cache, ruwweg een tiende cent per uitspraak; tegoed zonder auto-reload is de harde grens.
 
 ### Eerder (10 okt)
