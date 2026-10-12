@@ -25,8 +25,10 @@
 // het test altijd de versie van de huidige branch.
 //
 // Het juiste antwoord per uitspraak wordt afgeleid, niet met de hand gelabeld:
-// - nieuwe waarnemingen: zoals ze nú zijn, met alle correcties (met de hand
-//   of met de stem: "nee, keep" is meestal een verstaanfout). Met de hand
+// - nieuwe waarnemingen: zoals ze nú zijn, met alle correcties met de hand.
+//   Van latere correcties met de stem telt alleen de soort mee ("nee, keep"
+//   is meestal een verstaanfout); een later aantal of geslacht is nieuwe
+//   informatie ("totaal drie, waarvan twee vrouwtjes"), zie `labelFor`. Met de hand
 //   verwijderd = had er niet moeten komen; een dubbel ingesproken waarneming
 //   telt dus als fout (ruis, maar voor elke variant dezelfde). Met de stem
 //   verwijderd ("die mag weg, was toch iets anders") = was op dat moment goed;
@@ -185,22 +187,53 @@ function contextFor(u) {
   return list.map((o) => stateBefore(o, u));
 }
 
+/**
+ * Velden die de correcties in uitspraak `u` wijzigden, volgens de tool calls
+ * (een veld dat eerst leeg was, staat niet in de JSON van `before`).
+ */
+function calledFieldsOf(u) {
+  return new Set(
+    originalCalls(u)
+      .filter((c) => c.name === 'update_observation')
+      .flatMap((c) => Object.entries(c.input))
+      .filter(([key, value]) => SNAKE[key] && value !== null && value !== undefined)
+      .map(([key]) => SNAKE[key]),
+  );
+}
+
+/**
+ * Het juiste antwoord voor een nieuwe waarneming uit uitspraak `u`: zoals hij
+ * nu is, maar latere correcties met de stem tellen alleen mee voor de soort.
+ * "Nee, keep" is meestal een verstaanfout, dus keep had het al moeten zijn.
+ * Een later aantal, geslacht of gedrag is meestal nieuwe informatie ("totaal
+ * drie wilde eenden, waarvan twee vrouwtjes", 12 okt): die terugdraaien.
+ * Correcties met de hand tellen altijd mee.
+ */
+function labelFor(obs, u) {
+  const label = { ...obs };
+  const later = utterances.filter((v) => v.recordedAt > u.recordedAt && !v.undone).reverse();
+  for (const v of later) {
+    const called = calledFieldsOf(v);
+    for (const c of v.changes ?? []) {
+      if (c.type !== 'update' || c.observationId !== obs.id) continue;
+      for (const f of FIELDS) {
+        if (f !== 'speciesId' && (f in c.before || called.has(f))) label[f] = c.before[f];
+      }
+    }
+  }
+  return label;
+}
+
 function expectedFor(u) {
   const calls = originalCalls(u);
   const changes = u.changes ?? [];
   const adds = changes
     .filter((c) => c.type === 'add')
     .map((c) => obsById.get(c.observationId))
-    .filter((o) => o && o.deletedBy !== 'hand');
-  // Welke velden de correctie wijzigde: uit `before`, aangevuld met de tool
-  // call (een veld dat eerst leeg was, staat niet in de JSON van `before`)
-  const calledFields = new Set(
-    calls
-      .filter((c) => c.name === 'update_observation')
-      .flatMap((c) => Object.entries(c.input))
-      .filter(([key, value]) => SNAKE[key] && value !== null && value !== undefined)
-      .map(([key]) => SNAKE[key]),
-  );
+    .filter((o) => o && o.deletedBy !== 'hand')
+    .map((o) => labelFor(o, u));
+  // Welke velden de correctie wijzigde: uit `before`, aangevuld met de tool call
+  const calledFields = calledFieldsOf(u);
   const updates = changes
     .filter((c) => c.type === 'update')
     .map((c) => {
