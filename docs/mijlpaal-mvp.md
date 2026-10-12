@@ -40,7 +40,7 @@ Ook goed: aantallen, gedrag, methode en kleed klopten bij de juiste soort vrijwe
 
 | Oorzaak | Aantal | Status |
 |---|---|---|
-| Verstaan (jargon, uitspraak) | 2: kpv, landkop | Beide onzeker gemarkeerd. "kpv" als bijnaam van KBV staat nog open (wens van 10 okt) |
+| Verstaan (jargon, uitspraak) | 2: kpv, landkop | Beide onzeker gemarkeerd. "KPV = KBV" staat sinds #25 in de prompt |
 | Model | 2: gemengde zin, wilde eenden. Plus Tims "kei" | Opgelost in #25 en #75 |
 | Beleid veranderd | 1: vermoeden genegeerd | Nu een onzekere waarneming (#51) |
 | Per ongeluk opgenomen | 2: Roodhalsfuut (20 s broekzak), waarschijnlijk ook Bosuil (bus, 4 s) | Een lange opname wordt nu onzeker (#76). Een korte zoals de Bosuil nog niet |
@@ -77,5 +77,4 @@ Aanbeveling: **B, kort**. Eén wandeling van Tim en één van jezelf, en daarna 
 ## Opruimen
 
 - De **Bosuil** van de bus (12 okt, 09:51) staat nog als waarneming in die wandeling (niet geëxporteerd). Waarschijnlijk niet gezegd, dus weghalen.
-- **"kpv"** als bijnaam van KBV toevoegen in `data/bijnamen.json` (wens 9 van de eerste wandeling, nog niet gedaan).
 - Wandeling 1 is nooit in de app nagelopen (alles nog concept). Niet erg voor de cijfers hierboven, maar wel voor latere testset-runs.
