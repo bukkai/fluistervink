@@ -18,7 +18,7 @@ Wat overblijft, ligt vooral buiten het model: verstaanfouten bij jargon, en opna
 
 | | Datum | Duur | Uitspraken | Nagelopen? |
 |---|---|---|---|---|
-| 1. Mariëndaal | 10 okt | 94 min | 55 (20 feedback) | Nee, in de app niet. Fouten met de hand geanalyseerd (`NOTES.md`) |
+| 1. Mariëndaal | 10 okt | 94 min | 55 (20 feedback) | Nee, in de app niet. Fouten met de hand geanalyseerd (`docs/veldtests.md`) |
 | 2. Lombok | 11 okt | 35 min | 10 (3 feedback) | Ja, deels |
 | 3. Biljoen | 12 okt | 28 min | 12 | Ja, en geëxporteerd |
 | (Bus) | 12 okt | 32 min | 6 | Getypt, op één opname na. Telt niet mee voor spraak |

@@ -18,7 +18,7 @@ De naam is een woordgrap op "luistervink": je fluistert je waarnemingen in, en d
 - **Doelgroep:** persoonlijk gebruik, recreatief vogelen op wandelingen. Geen professionele inventarisatieprotocollen.
 - **Front-end-stack:** Vite, Svelte 5 met TypeScript, Dexie (IndexedDB), vite-plugin-pwa. Gekozen omdat Svelte-runes en -templates dicht bij de Angular-ervaring van de eigenaar liggen, met weinig boilerplate.
 - **Platform:** Android. Start als PWA (Chrome op Android); later in Capacitor verpakken met een native Kotlin-plugin voor wake word en achtergrondaudio. Houd de webcode daarom platformonafhankelijk.
-- **Spraak naar tekst:** Whisper via de API van OpenAI (`gpt-4o-transcribe`, `gpt-4o-mini-transcribe` of `whisper-1`), met een soortenlijst in de prompt om herkenning van soortnamen te verbeteren. Vergelijken met de Web Speech API op basis van de testset (zie hieronder).
+- **Spraak naar tekst:** Whisper via de API van OpenAI (`gpt-4o-transcribe`, `gpt-4o-mini-transcribe` of `whisper-1`), met een soortenlijst in de prompt om herkenning van soortnamen te verbeteren. Gekozen op basis van de testset (12 okt): `gpt-4o-transcribe`.
 - **Interpretatie:** een LLM (klein en snel model, bv. Claude Haiku) met tool use. Het model geeft acties terug, de app voert ze uit:
   - `add_observation`, `update_observation`, `delete_observation`, `undo`
   - Context per aanroep: de laatste waarnemingen van de huidige sessie, zodat verwijzingen als "die", "de vorige" en "nog drie" werken.
@@ -65,7 +65,7 @@ Doel: valideren dat herkenning en interpretatie in het veld goed genoeg werken.
 - Automatisch pauzeren als een andere app (zoals Merlin) de microfoon gebruikt
 - Accounts, delen of multi-user
 
-## Datamodel (eerste schets)
+## Datamodel
 
 - **Session:** id, start- en eindtijd, status, naam (gebied van waarneming.nl: bij de start dat van de startpositie, bij het stoppen dat met de meeste waarnemingen; met de hand aan te passen)
 - **Utterance:** id, sessionId, tijdstip, lat/lon/nauwkeurigheid, audio, transcript, LLM-uitvoer, verwerkingsstatus
@@ -75,24 +75,15 @@ Soort, activiteit, methode, kleed en telmethode worden opgeslagen als **waarnemi
 
 ## Openstaande punten
 
-- **Importformaat van waarneming.nl:** opgelost en getest (11 okt), zie `docs/waarneming-nl.md`. Waarneming.nl heeft een eigen bulkimport (CSV) met velden voor activiteit, methode, kleed, telmethode, geslacht, zekerheid en een uuid tegen dubbel invoeren. Gedrag en methode gaan als tekst in de taal van de site; de app exporteert Engels.
-- **Soortenlijst:** opgelost. `scripts/fetch-species.mjs` haalt de lijst op bij de openbare API van waarneming.nl → `data/soorten-nl.json` (350 soorten met waarneming.nl-ID's). Bijnamen en afkortingen uit vogelaarsjargon ("tova", "robotap", "KBV") staan in `data/bijnamen.json` (bijnaam → soort-ID) en gaan mee in de systeemprompt; vrij aan te vullen.
-- **STT-keuze:** Whisper tegenover Web Speech API, beslissen op basis van de testset.
 - **Mapping van gesproken termen naar velden:** eerste voorstel in `docs/waarneming-nl.md`, verfijnen met de testset.
 
-## Voorgestelde bouwvolgorde
+Opgelost en vastgelegd: het importformaat van waarneming.nl (bulkimport, `docs/waarneming-nl.md`, getest op 11 okt), de soortenlijst (`scripts/fetch-species.mjs` → `data/soorten-nl.json`, bijnamen in `data/bijnamen.json`, beide in de systeemprompt) en de STT-keuze (`gpt-4o-transcribe`).
 
-1. Projectopzet: PWA-skelet, IndexedDB, sessies, deploy naar Cloudflare. *(klaar)*
-2. Proxy (Cloudflare Worker) voor de API-sleutels. *(klaar)*
-3. LLM-interpretatie met tools, eerst getest met tekstinvoer (zonder spraak). *(klaar)*
-4. Opname en Whisper-koppeling, met tijd en GPS bij start van de opname. *(klaar: knop tikken of vasthouden, `gpt-4o-transcribe` met soortnamen en bijnamen in de prompt)*
-5. Review: trilfeedback, afgelopen wandelingen kunnen openen, overzichtslijst met bewerken (soort, aantal, gedrag, verwijderen), onzekere waarnemingen nalopen, audio terugluisteren. *(klaar, plus gebiedsnaam van waarneming.nl bij elke waarneming in PR #18)*
-6. CSV-export voor waarneming.nl. *(klaar: bulkimport van waarneming.nl in PR #19; echte import getest op 11 okt, werkt)*
-7. Opslaan en exporteren van de testset. Bewust na de CSV-export: de testset wordt pas nuttig na een paar wandelingen, en de gegevens ervoor (audio, transcript, LLM-uitvoer, gecorrigeerde waarneming) worden vanaf stap 4 al bewaard. *(klaar: JSON-export met opnames in PR #49; `npm run testset -- <export.json>` haalt de uitspraken opnieuw door spraakherkenning en model en scoort ze tegen de nagelopen waarnemingen, zie `scripts/testset.mjs`)*
+## Bouwvolgorde en mijlpaal
 
-## Wanneer is de MVP geslaagd?
+De zeven bouwstappen van de MVP zijn klaar: projectopzet, proxy, interpretatie met tools, opname met spraakherkenning, review, CSV-export en testset (`npm run testset -- <export.json>` haalt uitspraken opnieuw door spraakherkenning en model en scoort ze tegen de nagelopen waarnemingen, zie `scripts/testset.mjs`).
 
-Na drie à vier echte wandelingen is het grootste deel van de waarnemingen zonder correctie correct, en werken spraakcorrecties ("nee, keep") betrouwbaar. Pas dan investeren in de native laag (Capacitor, wake word "Fluistervink", achtergrondgebruik).
+**Mijlpaal:** de MVP is geslaagd als na drie à vier echte wandelingen het grootste deel van de waarnemingen zonder correctie correct is en spraakcorrecties ("nee, keep") betrouwbaar werken. Beoordeeld op 12 okt: gehaald (88% zonder correctie goed, correcties met de stem 9 van de 10), zie `docs/mijlpaal-mvp.md`. Volgende stap: de native laag (Capacitor, wake word "Fluistervink", achtergrondgebruik).
 
 ## Latere roadmap
 
@@ -102,7 +93,6 @@ Na drie à vier echte wandelingen is het grootste deel van de waarnemingen zonde
 - Offline wachtrij met sync-status
 - Upload via de API van waarneming.nl (OAuth; client-ID aanvragen bij Observation.org)
 - Eventueel: BirdNET on-device voor soortsuggesties
-- Flow en indeling: hoofdscherm, menu (instellingen, vorige wandelingen), wandeling met locatienaam, reviewscherm met kaart vóór de export. Zie `docs/ideeen-flow.md`.
 
 ## Werkafspraken
 
