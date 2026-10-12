@@ -21,6 +21,8 @@ const PATTERNS = {
   ignored: [120, 150, 120],
   /** Fout bij verwerken (geen verbinding, time-out): drie korte */
   failed: [120, 150, 120, 150, 120],
+  /** Easter egg "zeemeeuw": boos gepik */
+  angry: [70, 40, 70, 40, 70, 40, 250, 80, 70, 40, 70, 40, 400],
 };
 
 export type Feedback = keyof typeof PATTERNS;
