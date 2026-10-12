@@ -56,7 +56,7 @@ Gemerged t/m **#48**: #46 kaart ↔ lijst in de review, #47 opruimen (alles/lege
 
 Daarna:
 
-1. **Derde wandeling**, daarna exporteren **met opnames** en `npm run testset` draaien: per run met `--stt gpt-4o-transcribe` en `gpt-4o-mini-transcribe` (en `whisper-1`), en eventueel `--model claude-sonnet-5-5`. Ook nagaan of de vertraging van #44 weg is.
+1. ~~Derde wandeling~~ (12 okt middag, zie hieronder; STT: `gpt-4o-transcribe` blijft). Meer wandelingen met opnames delen en `npm run testset` blijven draaien: per run met `--stt gpt-4o-transcribe` en `gpt-4o-mini-transcribe` (en `whisper-1`), en eventueel `--model claude-sonnet-5-5`. Ook nagaan of de vertraging van #44 weg is.
 2. Prompt verbeteren met wat de testset laat zien (punten hierboven, "tortelduif"), telkens nagaan met de testset.
 3. Mijlpaal na 3–4 wandelingen. (Vitest: #66.)
 4. Later: kostenoverzicht per wandeling in het testset-script (uit het `usage`-blok van Anthropic, plus minuten audio voor OpenAI). Stand 11 okt: $0,36 deze maand bij Anthropic, 97% uit de cache, ruwweg een tiende cent per uitspraak; tegoed zonder auto-reload is de harde grens.
@@ -118,6 +118,15 @@ Opgehaald met `npm run feedback -- pull`. Wachtrij overal in orde: elke uitspraa
 - **Tim (11 okt, 22:05, eerste echte tester):** "Twee kauwen, een kraai" goed. Daarna "Die kei van net vloog richting het westen": spraakherkenning maakte van "kraai" "kei", en het model maakte er een **nieuwe** Bruine Kiekendief van (onzeker) in plaats van de kraai bij te werken. Tim corrigeerde zelf met de stem ("die kiekendief mag weg, ik zei die kraai van zojuist…"), wat goed ging. Promptpunt: "die X van net/zojuist" verwijst naar een bestaande waarneming; is X onduidelijk, dan liever de best passende recente waarneming bijwerken (onzeker) dan een nieuwe soort verzinnen. Feedback "de knop" is afgekapt; Tim vragen wat hij bedoelde. → **PR #75**: regel in de prompt; promptgevallen in `testset/promptgevallen-van-net.json` (lokaal, gemaakt met `testset/maak-promptgevallen-van-net.mjs`), oud 5–6/7, nieuw 3 × 7/7. Tims twee uitspraken in `uitsluiten.txt` (label verwacht de kiekendief).
 - **Bus (07:25–07:57):** "tuto" → Turkse Tortel goed. **Bosuil:** eigenaar dacht hem verwijderd te hebben, maar er is geen verwijderuitspraak en geen verwijdering in de prullenbak. Vlak na "Bosuil" ging de app een paar keer kort naar de achtergrond (07:51–07:52); vermoedelijk is een opname "bosuil weg" door het wisselen van app afgebroken of te kort geweest. Navragen hoe hij verwijderd werd.
 - **Wandeling middag (12:00–12:28), alles geëxporteerd:** "Landkop roepend" → Vogel onbekend, daarna met de stem naar Glanskop: goed. "Totaal drie wilde eenden, waarvan twee vrouwtjes" → 2 ♀ + 1 zonder geslacht: goed. Boomkruiper en Boomklever goed (#52). "Roodhalsfuut" daarna met de hand verwijderd.
+
+## Testset op de wandeling van 12 okt middag (glanskop)
+
+Export van deze wandeling: `testset/wandeling-2026-10-12-middag.json` (12 uitspraken, alle met opname). Huidige prompt a62a9345.
+
+- **Spraakherkenning: `gpt-4o-transcribe` blijft.** 9/12, tegen `gpt-4o-mini-transcribe` 8/12 en `whisper-1` 7/12. Mini en whisper maakten van "Ekster" "Extra"; whisper van "Roodborst alarmroepje" "Een groot borstelarmroepje". Openstaand punt STT-keuze daarmee beslist (nog één korte wandeling, wel).
+- **Landkop/glanskop:** alle drie verstaan "Landkop", dus de uitspraak, niet het model. Correctie met de stem werkte.
+- **Roodhalsfuut = broekzakopname** (20 s geritsel, bevestigd door de eigenaar). Elke poging gaf een andere vogel. Ook de **Bosuil uit de bus** was vermoedelijk rommel (opnieuw verstaan: "Houtsnip", "Witoog", "Nog drie erbij"). Gemeten: volume werkt niet als signaal (geritsel −28 dB, goed verstane "Grote gele" −43 dB), en de zekerheid van OpenAI (logprobs) schommelt met `language=nl` te veel per poging. Wat wel scheidt: lang en bijna geen tekst (broekzak 0,05 woord/s; echte lange uitspraken ≥ 0,52). → **PR #76**: ≥ 8 s en < 0,2 woord/s maakt de uitkomst onzeker; zekerheid wordt wel bewaard (`transcription.confidence`) om later opnieuw te bekijken.
+- **Wilde eend** was ruis in het script ("totaal drie, waarvan twee vrouwtjes" werd teruggerekend naar de eerdere uitspraak). → **PR #77**: latere correcties met de stem tellen alleen mee voor de soort.
 
 ## Tweede wandeling (11 okt, Arnhem, versie 97084fc)
 
