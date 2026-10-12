@@ -38,6 +38,8 @@ export default defineConfig({
       workbox: {
         // API-verzoeken nooit via de cache of de index.html-fallback laten lopen
         navigateFallbackDenylist: [/^\/api\//],
+        // Ook afbeeldingen (de meeuwen van de zeemeeuw-grap), zodat ze offline werken
+        globPatterns: ['**/*.{js,css,html,png,svg}'],
       },
       includeAssets: ['icon.svg', 'logo.svg', 'apple-touch-icon.png'],
       manifest: {

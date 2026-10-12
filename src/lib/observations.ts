@@ -16,6 +16,7 @@ import { INSTANCE_ID } from './instance.svelte';
 import { APP_VERSION, logEvent, wasHiddenSince } from './log';
 import type { Recording } from './recorder.svelte';
 import { TRANSCRIBE_MODEL, transcribe, transcribePromptVersion } from './transcribe';
+import { checkZeemeeuw } from './zeemeeuw.svelte';
 import { devNoteText } from './devNotePrefix';
 
 export { devNoteText };
@@ -295,6 +296,7 @@ async function processUtterance(utterance: Utterance): Promise<void> {
       utterance = await transcribeUtterance(utterance);
     }
     const transcript = utterance.transcript ?? '';
+    checkZeemeeuw(transcript);
 
     // Dev notes gaan niet naar het model: snel, gratis en altijd goed herkend
     if (devNoteText(transcript) !== undefined) {

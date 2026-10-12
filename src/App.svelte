@@ -32,6 +32,7 @@
   import PastSessions from './lib/PastSessions.svelte';
   import Privacy from './lib/Privacy.svelte';
   import Settings from './lib/Settings.svelte';
+  import Zeemeeuwen from './lib/Zeemeeuwen.svelte';
 
   // Uitspraken die bij het afsluiten nog niet verwerkt waren, alsnog verwerken.
   // Dit exemplaar neemt de wachtrij over van een eventueel ander (tabblad).
@@ -354,6 +355,8 @@
     </section>
   {/if}
 </main>
+
+<Zeemeeuwen />
 
 <style>
   header {
