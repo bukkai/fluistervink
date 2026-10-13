@@ -7,6 +7,7 @@
   import { submitRecording, submitText } from './observations';
   import { recorder, startRecording, stopRecording } from './recorder.svelte';
   import SessionLog from './SessionLog.svelte';
+  import { createTalkButton } from './talkButton';
 
   let { session }: { session: Session } = $props();
 
@@ -46,36 +47,43 @@
     return () => document.removeEventListener('visibilitychange', onHidden);
   });
 
-  /** Langer ingedrukt dan dit = vasthouden (loslaten stopt); korter = tikken (nog eens tikken stopt). */
-  const HOLD_MS = 400;
   /** Vergeten te stoppen: na een minuut stopt de opname vanzelf. */
   const MAX_RECORDING_MS = 60_000;
 
-  let pressedAt = 0;
   let lookup: Promise<PositionLookup> | undefined;
   let maxTimer: ReturnType<typeof setTimeout> | undefined;
   let elapsed = $state(0);
 
-  async function press(event: PointerEvent) {
+  // Tikken of vasthouden, bestand tegen haperend contact (handschoenen)
+  const talk = createTalkButton({
+    status: () => recorder.status,
+    start: async () => {
+      // Tijd en positie horen bij het begin van de opname, niet bij het eind
+      lookup = currentPosition();
+      if (!(await startRecording())) return false;
+      vibrate('recording');
+      maxTimer = setTimeout(finishRecording, MAX_RECORDING_MS);
+      return true;
+    },
+    finish: finishRecording,
+    log: (type, data) => logEvent(type, data, { sessionId: session.id }),
+  });
+
+  function press(event: PointerEvent) {
+    // Een tweede vinger of de muis met een andere knop telt niet
+    if (!event.isPrimary || event.button !== 0) return;
     event.preventDefault();
     // Loslaten telt ook als de vinger van de knop afglijdt
     (event.currentTarget as Element).setPointerCapture(event.pointerId);
-    if (recorder.status === 'starting') return;
-    if (recorder.status === 'recording') {
-      finishRecording();
-      return;
-    }
-    pressedAt = Date.now();
-    // Tijd en positie horen bij het begin van de opname, niet bij het eind
-    lookup = currentPosition();
-    if (await startRecording()) {
-      vibrate('recording');
-      maxTimer = setTimeout(finishRecording, MAX_RECORDING_MS);
-    }
+    talk.down();
   }
 
-  function release() {
-    if (recorder.status === 'recording' && Date.now() - pressedAt > HOLD_MS) finishRecording();
+  function release(event: PointerEvent) {
+    if (event.isPrimary) talk.up();
+  }
+
+  function cancel(event: PointerEvent) {
+    if (event.isPrimary) talk.cancel();
   }
 
   async function finishRecording() {
@@ -136,6 +144,7 @@
   disabled={recorder.status === 'unsupported'}
   onpointerdown={press}
   onpointerup={release}
+  onpointercancel={cancel}
   oncontextmenu={(event) => event.preventDefault()}
 >
   <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true">
