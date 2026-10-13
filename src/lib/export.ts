@@ -82,9 +82,6 @@ export interface ImportResult {
  */
 export async function importJson(file: File): Promise<ImportResult> {
   const data = JSON.parse(await file.text());
-  if (!Array.isArray(data?.sessions) || !Array.isArray(data?.utterances)) {
-    throw new Error('Dit is geen export van Fluistervink.');
-  }
   checkImport(data);
   const sessions: Session[] = data.sessions;
   type ExportedUtterance = Omit<Utterance, 'audio'> & { audioBytes?: number; audioData?: string };
@@ -139,15 +136,18 @@ export async function importJson(file: File): Promise<ImportResult> {
 
 /**
  * Controleert de typen van wat er geïmporteerd wordt. Een export kan van een
- * tester komen (npm run feedback -- pull) en is dus niet te vertrouwen: een
- * "aantal" dat stiekem HTML is, zou anders in de kaart terechtkomen.
+ * tester komen (npm run feedback -- pull) en is dus niet te vertrouwen; zo
+ * komt er geen tekst binnen waar de app een getal verwacht.
  */
-export function checkImport(data: {
-  sessions: unknown[];
-  utterances: unknown[];
+function checkImport(data: {
+  sessions?: unknown;
+  utterances?: unknown;
   observations?: unknown;
   deletedObservations?: unknown;
 }): void {
+  if (!Array.isArray(data?.sessions) || !Array.isArray(data?.utterances)) {
+    throw new Error('Dit is geen export van Fluistervink.');
+  }
   const fail = (what: string): never => {
     throw new Error(`Ongeldige export: ${what}`);
   };

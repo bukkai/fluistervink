@@ -10,6 +10,7 @@ import {
   codeName,
   countingMethods,
   getSpecies,
+  speciesName,
   findPromptSpecies,
   isPromptSpecies,
   lifeStages,
@@ -318,7 +319,7 @@ export const promptVersion: Promise<string> = crypto.subtle
 const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
 
 /** Vanaf deze afstand staat de afstand in de context (zie "nog een X" in de prompt) */
-export const FAR_AWAY_M = 250;
+const FAR_AWAY_M = 250;
 
 /** Afstand in meters tussen twee posities (haversine) */
 export function distanceMeters(a: Position, b: Position): number {
@@ -330,6 +331,7 @@ export function distanceMeters(a: Position, b: Position): number {
   return 2 * 6_371_000 * Math.asin(Math.sqrt(h));
 }
 
+/** De systeemprompt verwijst naar deze woorden ("… m hiervandaan"); houd ze gelijk */
 function farAway(obs: Observation, here: Position | undefined): string | undefined {
   if (!here || !obs.position) return undefined;
   const meters = distanceMeters(obs.position, here);
@@ -351,7 +353,7 @@ export function describeContext(context: Observation[], here?: Position): string
 
 function describe(obs: Observation, here?: Position): string {
   const parts = [
-    `${obs.count} × ${getSpecies(obs.speciesId)?.name ?? `soort ${obs.speciesId}`}`,
+    `${obs.count} × ${speciesName(obs.speciesId)}`,
     codeName(allActivities, obs.activityId),
     codeName(allMethods, obs.methodId),
     codeName(allLifeStages, obs.lifeStageId),

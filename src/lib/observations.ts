@@ -311,9 +311,12 @@ async function processUtterance(utterance: Utterance): Promise<void> {
 
     step = 'interpret';
     const contextStart = Date.now();
-    const recent = await listObservations(utterance.sessionId);
-    // Vers uit de database: de GPS kan na het opslaan van de uitspraak binnengekomen zijn
-    const here = (await db.utterances.get(utterance.id))?.position;
+    // Positie vers uit de database: de GPS kan na het opslaan van de uitspraak binnengekomen zijn
+    const [recent, fresh] = await Promise.all([
+      listObservations(utterance.sessionId),
+      db.utterances.get(utterance.id),
+    ]);
+    const here = fresh?.position;
     contextMs = Date.now() - contextStart;
     interpretation = await interpret(transcript, recent, { here });
     if (interpretation.warnings.length) {

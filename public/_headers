@@ -3,16 +3,18 @@
 # voor /api, dat de Worker zelf afhandelt.
 #
 # Content-Security-Policy: alleen scripts van de eigen site, zodat een fout in
-# het escapen (innerHTML in de kaart) geen code van buiten kan laden of de
-# toegangscode naar een andere server kan sturen. Kaarttegels alleen van
-# OpenStreetMap; opnames afspelen via blob:. 'unsafe-inline' voor stijlen,
-# omdat de vormpjes op de kaart hun kleur in een style-attribuut krijgen.
+# het escapen geen code van buiten kan laden of de toegangscode naar een andere
+# server kan sturen. Kaarttegels alleen van
+# OpenStreetMap; opnames afspelen via blob:. Geen inline stijlen: geen
+# <style> in index.html (zie src/splash.css) en geen style-attributen in HTML
+# (kleuren via classes, zie src/lib/rarity.ts). Svelte en Leaflet zetten
+# stijlen via element.style, en dat mag wel.
 #
 # Referrer-Policy: OpenStreetMap wil weten van welke site tegels komen; alleen
 # het domein, nooit het pad of de #code=.
 
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tile.openstreetmap.org; media-src 'self' blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: https://tile.openstreetmap.org; media-src 'self' blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
   Permissions-Policy: microphone=(self), geolocation=(self), camera=(), payment=(), usb=()
   Referrer-Policy: strict-origin-when-cross-origin
   X-Content-Type-Options: nosniff

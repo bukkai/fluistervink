@@ -1,28 +1,20 @@
 <script lang="ts">
-  import { hasRarity, rarityFill, rarityLabels, rarityShape } from './rarity';
+  import { hasRarity, rarityLabels, raritySvg } from './rarity';
 
-  // Zeldzaamheid als gekleurd vormpje, zie rarity.ts
+  // Zeldzaamheid als gekleurd vormpje, zie rarity.ts (zelfde vorm als op de kaart)
 
   let { rarity }: { rarity: number } = $props();
 </script>
 
 {#if hasRarity(rarity)}
-  <svg
-    class="mark"
-    viewBox="0 0 12 12"
-    role="img"
-    aria-label={rarityLabels[rarity]}
-    style:fill={rarityFill(rarity)}
-  >
-    <title>{rarityLabels[rarity]}</title>
-    {@html rarityShape(rarity)}
-  </svg>
+  {@html raritySvg(rarity, 'rarity-mark', rarityLabels[rarity])}
 {:else}
-  <span class="mark"></span>
+  <span class="rarity-mark"></span>
 {/if}
 
 <style>
-  .mark {
+  /* Global: de svg komt uit {@html}, daar komen Svelte's scoped classes niet bij */
+  :global(.rarity-mark) {
     display: inline-block;
     flex: none;
     width: 0.75rem;

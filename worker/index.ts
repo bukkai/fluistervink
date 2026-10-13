@@ -103,6 +103,8 @@ export default {
  * `prompt` (bv. soortnamen, om de herkenning te sturen).
  */
 async function transcribe(request: Request, env: WorkerEnv): Promise<Response> {
+  // Ruimte voor de andere velden (model, prompt met soortnamen) naast de audio
+  if (declaredTooLarge(request, MAX_AUDIO_BYTES + 256 * 1024)) return tooLarge();
   const form = await request.formData();
   const audio = form.get('audio');
   const model = String(form.get('model') ?? TRANSCRIBE_MODELS[0]);
@@ -165,17 +167,21 @@ function confidence(logprobs: { logprob: number }[] | undefined): number | undef
  * checkMessage), zodat een toegangscode geen vrije toegang tot ons tegoed is.
  */
 async function messages(request: Request, env: WorkerEnv): Promise<Response> {
-  const raw = await request.arrayBuffer();
-  if (raw.byteLength > MAX_MESSAGE_BYTES) return json({ error: 'Verzoek te groot' }, 413);
-  const body = JSON.parse(
-    new TextDecoder().decode(raw),
-  ) as Anthropic.MessageCreateParamsNonStreaming;
-
-  if (!CLAUDE_MODELS.includes(body.model)) {
-    return json({ error: `Model niet toegestaan: ${body.model}` }, 400);
+  const raw = await readBody(request, MAX_MESSAGE_BYTES);
+  if (raw instanceof Response) return raw;
+  let parsed: Record<string, unknown>;
+  try {
+    parsed = JSON.parse(new TextDecoder().decode(raw));
+  } catch {
+    return json({ error: 'Ongeldige JSON' }, 400);
   }
-  const problem = checkMessage(body as unknown as Record<string, unknown>);
+
+  if (!CLAUDE_MODELS.includes(parsed.model as string)) {
+    return json({ error: `Model niet toegestaan: ${parsed.model}` }, 400);
+  }
+  const problem = checkMessage(parsed);
   if (problem) return json({ error: problem }, 400);
+  const body = parsed as unknown as Anthropic.MessageCreateParamsNonStreaming;
 
   const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
   const start = Date.now();
@@ -253,10 +259,9 @@ async function feedback(request: Request, env: WorkerEnv, tester: string): Promi
 
   if (request.method === 'PUT' && (kind === 'sessions' || kind === 'audio')) {
     if (!id || !/^[\w-]{1,64}$/.test(id)) return json({ error: 'Ongeldige id' }, 400);
-    const limit = kind === 'sessions' ? MAX_SESSION_BYTES : MAX_AUDIO_BYTES;
-    const body = await request.arrayBuffer();
+    const body = await readBody(request, kind === 'sessions' ? MAX_SESSION_BYTES : MAX_AUDIO_BYTES);
+    if (body instanceof Response) return body;
     if (body.byteLength === 0) return json({ error: 'Leeg' }, 400);
-    if (body.byteLength > limit) return json({ error: 'Te groot' }, 413);
     const contentType = request.headers.get('Content-Type') ?? 'application/octet-stream';
     await env.FEEDBACK.put(`${tester}/${kind}/${id}`, body, {
       metadata: { contentType, uploadedAt: Date.now(), bytes: body.byteLength },
@@ -519,6 +524,24 @@ async function authorize(request: Request, env: WorkerEnv): Promise<string | nul
     if (crypto.subtle.timingSafeEqual(given, await hash(expected))) match ??= name;
   }
   return match;
+}
+
+/**
+ * Leest de body, maar niet als die groter is dan `limit`: volgens de
+ * Content-Length al vóór het inlezen, anders (zonder die header) erna.
+ */
+async function readBody(request: Request, limit: number): Promise<ArrayBuffer | Response> {
+  if (declaredTooLarge(request, limit)) return tooLarge();
+  const body = await request.arrayBuffer();
+  return body.byteLength > limit ? tooLarge() : body;
+}
+
+function declaredTooLarge(request: Request, limit: number): boolean {
+  return Number(request.headers.get('Content-Length') ?? 0) > limit;
+}
+
+function tooLarge(): Response {
+  return json({ error: 'Te groot' }, 413);
 }
 
 /**

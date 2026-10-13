@@ -9,36 +9,9 @@
     <title>Fluistervink</title>
     <!-- Laadscherm: direct zichtbaar, nog vóór de JavaScript geladen is. Zelfde
          achtergrond als het opstartscherm van Android (background_color in
-         vite.config.ts), zodat het opstarten één vloeiende beweging is. -->
-    <style>
-      #splash {
-        position: fixed;
-        inset: 0;
-        z-index: 2000;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 1.25rem;
-        background: #f4f1ed;
-        color: #22292f;
-        font:
-          700 1.75rem/1 system-ui,
-          sans-serif;
-        letter-spacing: -0.01em;
-        transition: opacity 250ms;
-      }
-      #splash svg {
-        overflow: hidden;
-        border-radius: 50%;
-        background: #fff;
-        box-shadow: 0 6px 20px rgb(60 55 50 / 0.14);
-      }
-      #splash.hidden {
-        opacity: 0;
-        pointer-events: none;
-      }
-    </style>
+         vite.config.ts), zodat het opstarten één vloeiende beweging is. Stijl in
+         src/splash.css. -->
+    <link rel="stylesheet" href="/src/splash.css" />
   </head>
   <body>
     <div id="splash">

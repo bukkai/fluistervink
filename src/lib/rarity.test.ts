@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hasRarity, rarityFill, rarityShape, raritySvg } from './rarity';
+import { hasRarity, raritySvg } from './rarity';
 
 describe('rarity', () => {
   it('kent alleen de niveaus 1 tot en met 4', () => {
@@ -7,15 +7,22 @@ describe('rarity', () => {
   });
 
   it('geeft onbekend een eigen vorm en kleur, niet die van algemeen', () => {
-    expect(rarityShape(0)).not.toBe(rarityShape(1));
-    expect(rarityFill(0)).not.toBe(rarityFill(1));
-    expect(rarityFill(3)).toBe('var(--rarity-3)');
+    const unknown = raritySvg(0, 'pin');
+    const common = raritySvg(1, 'pin');
+    expect(unknown).toContain('rarity-0');
+    expect(unknown.replace('rarity-0', '')).not.toBe(common.replace('rarity-1', ''));
   });
 
-  it('zet de kleur in style, niet in het fill-attribuut', () => {
+  it('zet de kleur in een class, niet in een style-attribuut (CSP)', () => {
     const svg = raritySvg(2, 'pin');
-    expect(svg).toContain('style="fill: var(--rarity-2)"');
-    expect(svg).toContain('aria-hidden="true"');
-    expect(svg).not.toMatch(/ fill="/);
+    expect(svg).toContain('class="pin rarity-2"');
+    expect(svg).not.toMatch(/style=|fill=/);
+  });
+
+  it('is decoratief zonder label, en een benoemd plaatje met label', () => {
+    expect(raritySvg(3, 'pin')).toContain('aria-hidden="true"');
+    expect(raritySvg(3, 'mark', 'zeldzaam')).toContain(
+      'role="img" aria-label="zeldzaam"><title>zeldzaam</title>',
+    );
   });
 });
