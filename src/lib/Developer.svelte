@@ -67,14 +67,17 @@
   let name = $state('');
   let email = $state('');
   let inviting = $state(false);
-  /** Net uitgenodigd: link tonen, voor als de mail-app niet openging */
-  let invited = $state<{ name: string; link: string }>();
+  /** Net uitgenodigd: knop naar de mail-app, en de link om te kopiëren */
+  let invited = $state<{ name: string; link: string; mailto: string }>();
   let inviteError = $state('');
 
   /**
-   * Maakt een code bij de proxy en opent de mail-app met een kant-en-klaar
-   * bericht. De mail gaat vanaf je eigen adres (geen mailserver nodig, komt
-   * niet in de spam); het e-mailadres zelf wordt nergens bewaard.
+   * Maakt een code bij de proxy en toont daarna een knop die de mail-app opent
+   * met een kant-en-klaar bericht. De mail gaat vanaf je eigen adres (geen
+   * mailserver nodig, komt niet in de spam); het e-mailadres zelf wordt
+   * nergens bewaard. De mail-app openen kan niet meteen na het aanmaken:
+   * Chrome op Android opent een andere app alleen direct na een tik, en het
+   * wachten op de proxy telt niet meer als zo'n tik.
    */
   async function invite(event: SubmitEvent) {
     event.preventDefault();
@@ -84,8 +87,7 @@
     try {
       const tester = await addTester(name.trim());
       const link = inviteLink(tester.code);
-      invited = { name: tester.name, link };
-      location.href = mailto(email.trim(), tester.name, link);
+      invited = { name: tester.name, link, mailto: mailto(email.trim(), tester.name, link) };
       name = '';
       email = '';
       await loadTesters();
@@ -244,16 +246,19 @@
       E-mailadres
       <input type="email" bind:value={email} required autocomplete="off" />
     </label>
-    <button class="btn" disabled={inviting}>Uitnodigen en mailen</button>
+    <button class="btn" class:secondary={invited} disabled={inviting}>Code maken</button>
     {#if inviteError}
       <p class="message error">{inviteError}</p>
     {/if}
     {#if invited}
-      <p class="message">
-        Code voor {invited.name} gemaakt; je mail-app opent met het bericht. Ging die niet open?
+      <p class="message">Code voor {invited.name} gemaakt.</p>
+      <a class="btn" href={invited.mailto}>Mail openen</a>
+      <p class="hint">
+        Opent je mail-app met het bericht. Lukt dat niet,
         <button type="button" class="link" onclick={() => copyLink('new', invited!.link)}>
-          {copied === 'new' ? 'Gekopieerd' : 'Link kopiëren'}
+          {copied === 'new' ? 'gekopieerd' : 'kopieer dan de link'}
         </button>
+        en stuur hem zelf.
       </p>
     {/if}
     <p class="hint">
