@@ -312,8 +312,10 @@ async function processUtterance(utterance: Utterance): Promise<void> {
     step = 'interpret';
     const contextStart = Date.now();
     const recent = await listObservations(utterance.sessionId);
+    // Vers uit de database: de GPS kan na het opslaan van de uitspraak binnengekomen zijn
+    const here = (await db.utterances.get(utterance.id))?.position;
     contextMs = Date.now() - contextStart;
-    interpretation = await interpret(transcript, recent);
+    interpretation = await interpret(transcript, recent, { here });
     if (interpretation.warnings.length) {
       logEvent('species_id_fixed', { warnings: interpretation.warnings }, ids);
     }
