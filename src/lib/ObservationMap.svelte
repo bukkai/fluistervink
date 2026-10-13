@@ -5,7 +5,7 @@
   import type { Observation, Session } from './db';
   import { mapsUrl } from './devNotes';
   import { listObservations } from './observations';
-  import { hasRarity, rarityShape } from './rarity';
+  import { hasRarity, rarityLabels, raritySvg } from './rarity';
   import { getSpecies } from './vocab';
 
   // Kaart met waar elke waarneming van een wandeling is gedaan. Alleen
@@ -67,7 +67,7 @@
       const mark = obs.uncertain ? ' <span class="uncertain">(onzeker)</span>' : '';
       const button = document.createElement('button');
       button.className = 'obs';
-      button.innerHTML = `${shape(rarityOf(obs), 'rarity')}${obs.count}× ${escape(name)}${mark}`;
+      button.innerHTML = `${popupMark(rarityOf(obs))}${obs.count}× ${escape(name)}${mark}`;
       button.onclick = () => onselect?.([obs.id]);
       el.append(button);
     }
@@ -84,10 +84,24 @@
     return getSpecies(obs.speciesId)?.rarity ?? 0;
   }
 
-  /** Vorm en kleur van de zeldzaamheid, zoals in de lijst; onbekend is grijs */
-  function shape(rarity: number, className: string): string {
-    const fill = hasRarity(rarity) ? `var(--rarity-${rarity})` : '#6f7587';
-    return `<svg class="${className}" viewBox="-1 -1 14 14" fill="${fill}">${rarityShape(rarity)}</svg>`;
+  /** Vormpje in het popup-venster, zoals in de lijst: bij onbekend een lege plek */
+  function popupMark(rarity: number): string {
+    return hasRarity(rarity) ? raritySvg(rarity, 'rarity') : '<span class="rarity"></span>';
+  }
+
+  /** Stip op de kaart; onzeker krijgt een vraagteken, los van de kleur van de vorm */
+  function pinHtml(rarity: number, uncertain: boolean): string {
+    const badge = uncertain ? '<span class="pin-uncertain">?</span>' : '';
+    return raritySvg(rarity, 'pin') + badge;
+  }
+
+  /** Naam van de stip voor schermlezers (Leaflet maakt er een knop van) */
+  function pinTitle(group: Observation[], rarity: number, uncertain: boolean): string {
+    const names = group.map((obs) => getSpecies(obs.speciesId)?.name ?? `soort ${obs.speciesId}`);
+    const parts = [names.join(', ')];
+    if (hasRarity(rarity)) parts.push(rarityLabels[rarity]);
+    if (uncertain) parts.push('onzeker');
+    return parts.join(' · ');
   }
 
   // Leaflet pas laden als de kaart echt getoond wordt, zodat de rest van de
@@ -137,14 +151,15 @@
         const rarity = Math.max(...group.map(rarityOf));
         const marker = L.marker([lat, lon], {
           icon: L.divIcon({
-            html: shape(rarity, uncertain ? 'pin uncertain' : 'pin'),
-            className: '',
+            html: pinHtml(rarity, uncertain),
+            className: 'pin-icon',
             iconSize: [20, 20],
           }),
+          title: pinTitle(group, rarity, uncertain),
           // Zeldzame soorten bovenop
           zIndexOffset: rarity * 100,
         })
-          .bindPopup(popup(group))
+          .bindPopup(() => popup(group))
           .addTo(map);
         for (const obs of group) markers.set(obs.id, marker);
         bounds.extend([lat, lon]);
@@ -242,7 +257,7 @@
     color: #7d6210;
   }
 
-  /* Stip op de kaart: wit randje, bruin als er iets onzeker is */
+  /* Stip op de kaart: wit randje */
   .map :global(svg.pin) {
     display: block;
     width: 20px;
@@ -253,12 +268,26 @@
     filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.35));
   }
 
-  .map :global(svg.pin.uncertain) {
-    stroke: #7d6210;
+  /* Onzeker: bruin vraagteken rechtsboven, goed te zien op elke kleur */
+  .map :global(.pin-uncertain) {
+    position: absolute;
+    top: -7px;
+    right: -8px;
+    width: 13px;
+    height: 13px;
+    border: 1.5px solid #fff;
+    border-radius: 50%;
+    font:
+      bold 10px/13px system-ui,
+      sans-serif;
+    text-align: center;
+    color: #fff;
+    background: #7d6210;
   }
 
   /* Vormpje voor de soort in het popup-venster, zoals in de lijst */
-  .map :global(svg.rarity) {
+  .map :global(.rarity) {
+    display: inline-block;
     width: 0.75rem;
     height: 0.75rem;
     margin-right: 0.35rem;
