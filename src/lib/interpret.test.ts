@@ -116,12 +116,12 @@ describe('parseResponse', () => {
     });
   });
 
-  it('kent undo en add_dev_note', () => {
+  it('kent undo, redo en add_dev_note', () => {
     const { actions } = parseResponse(
-      toolResponse(['undo', {}], ['add_dev_note', { text: 'x' }]),
+      toolResponse(['undo', {}], ['redo', {}], ['add_dev_note', { text: 'x' }]),
       [],
     );
-    expect(actions).toEqual([{ type: 'undo' }, { type: 'dev_note' }]);
+    expect(actions).toEqual([{ type: 'undo' }, { type: 'redo' }, { type: 'dev_note' }]);
   });
 });
 

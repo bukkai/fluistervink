@@ -51,6 +51,7 @@ export type Action =
   | { type: 'update'; observationId: string; fields: ObservationFields; addCount?: number }
   | { type: 'delete'; observationId: string }
   | { type: 'undo' }
+  | { type: 'redo' }
   | { type: 'dev_note' };
 
 export interface Interpretation {
@@ -189,6 +190,13 @@ const TOOLS: Anthropic.Tool[] = [
     input_schema: { type: 'object', properties: {}, additionalProperties: false },
   },
   {
+    name: 'redo',
+    description:
+      'Zet terug wat de laatste undo terugdraaide, bij "toch niet ongedaan maken" of "zet terug wat je net ongedaan maakte".',
+    strict: true,
+    input_schema: { type: 'object', properties: {}, additionalProperties: false },
+  },
+  {
     name: 'add_dev_note',
     description:
       'Bewaart de uitspraak als feedback: een opmerking over de app zelf in plaats van over vogels.',
@@ -212,7 +220,8 @@ const SYSTEM_PROMPT = `Je bent de interpretatielaag van Fluistervink, een app wa
 - Verwijzing naar een eerdere waarneming ("die X van net", "de X van zojuist", "die X van daarnet") → update_observation op die waarneming, nooit een nieuwe waarneming. Staat X niet in de lijst met recente waarnemingen, dan is het vrijwel altijd een verstaanfout: kies de recente waarneming waarvan de naam er het meest op lijkt en zet uncertain op true met een korte reden. "Die kei van net vloog richting west", terwijl er net een kraai was → update_observation op de kraai (overvliegend west), uncertain_reason "Gezegd: kei, opgevat als de kraai van net".
 - "Nog drie erbij" → update_observation met add_count 3 op de bedoelde (meestal meest recente) waarneming.
 - "Nog een X" of "nog twee X" zonder "erbij" of "bij": telt op bij de meest recente X (add_count), tenzij die volgens de lijst ver weg is ("… m hiervandaan" of "… km hiervandaan"). Dan is het een nieuwe vogel op een nieuwe plek: add_observation. Met "erbij" of "bij" ("doe er nog vier bij", "nog twee erbij") altijd add_count, ook als de vorige ver weg is.
-- "Ongedaan maken", "terug", "dat was fout" → undo.
+- "Ongedaan maken", "terug", "dat was fout" → undo. Nog een keer undo gaat een stap verder terug.
+- Een undo zelf terugdraaien ("toch niet ongedaan maken", "zet terug wat je net ongedaan maakte", "dat ongedaan maken was fout") → redo.
 - Bevestiging ("ja, klopt", "dat was goed", "vorige is correct") → update_observation op #1 met alleen uncertain: false, als #1 onzeker is. Is #1 niet onzeker, roep dan geen tool aan.
 - Een opmerking over de app zelf (wat beter kan, wat niet werkt, een idee voor een functie), ook zonder "feedback" ervoor → add_dev_note. Bijvoorbeeld "bij grote groepen wil ik een schatting kunnen opgeven" of "hij trilt niet".
 - Geen waarneming, correctie of opmerking over de app (gepraat, "hallo", "test", vragen) → roep geen enkele tool aan.
@@ -471,6 +480,7 @@ function toAction(
   const input = block.input as RawFields;
 
   if (block.name === 'undo') return { type: 'undo' };
+  if (block.name === 'redo') return { type: 'redo' };
   if (block.name === 'add_dev_note') return { type: 'dev_note' };
 
   const fields: ObservationFields = {

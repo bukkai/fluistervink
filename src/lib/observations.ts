@@ -522,6 +522,10 @@ async function applyActions(utterance: Utterance, actions: Action[]): Promise<Ch
         await undoPrevious(utterance);
         break;
 
+      case 'redo':
+        await redoUndo(utterance);
+        break;
+
       case 'dev_note':
         // Geen wijziging aan waarnemingen; de uitspraak wordt een dev note
         break;
@@ -542,15 +546,54 @@ async function undoPrevious(utterance: Utterance): Promise<void> {
   );
   if (!previous) return;
 
-  for (const change of [...previous.changes!].reverse()) {
-    if (change.type === 'add') await moveToBin(change.observationId, 'undo');
-    if (change.type === 'update') await db.observations.update(change.observationId, change.before);
+  const changes = await revert(previous.changes!);
+  await db.utterances.update(previous.id, { undone: true });
+  await db.utterances.update(utterance.id, { undid: { utteranceId: previous.id, changes } });
+}
+
+/**
+ * Draait de meest recente undo terug ("toch niet ongedaan maken"). Daarna is
+ * die undo zelf teruggedraaid, en kan een nieuwe undo de oorspronkelijke
+ * uitspraak weer terugdraaien.
+ */
+async function redoUndo(utterance: Utterance): Promise<void> {
+  const undo = (await listUtterances(utterance.sessionId)).find(
+    (u) => u.id !== utterance.id && u.recordedAt <= utterance.recordedAt && !u.undone && u.undid,
+  );
+  if (!undo) return;
+
+  await revert(undo.undid!.changes);
+  await db.utterances.update(undo.undid!.utteranceId, { undone: false });
+  await db.utterances.update(undo.id, { undone: true });
+}
+
+/**
+ * Draait wijzigingen terug, de laatste eerst, en geeft terug wat dat zelf
+ * veranderde (in dezelfde vorm, zodat ook dat weer terug kan).
+ */
+async function revert(changes: Change[]): Promise<Change[]> {
+  const reverted: Change[] = [];
+  for (const change of [...changes].reverse()) {
+    if (change.type === 'add') {
+      const observation = await moveToBin(change.observationId, 'undo');
+      if (observation) reverted.push({ type: 'delete', observation });
+    }
+    if (change.type === 'update') {
+      const current = await db.observations.get(change.observationId);
+      if (!current) continue;
+      const before = Object.fromEntries(
+        Object.keys(change.before).map((key) => [key, current[key as keyof Observation]]),
+      ) as Partial<Observation>;
+      await db.observations.update(change.observationId, change.before);
+      reverted.push({ type: 'update', observationId: change.observationId, before });
+    }
     if (change.type === 'delete') {
       await db.observations.put(change.observation);
       await db.deletedObservations.delete(change.observation.id);
+      reverted.push({ type: 'add', observationId: change.observation.id });
     }
   }
-  await db.utterances.update(previous.id, { undone: true });
+  return reverted;
 }
 
 /** Aantal soorten, zonder verzamelsoorten ("Eend onbekend") */

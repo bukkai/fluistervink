@@ -20,7 +20,7 @@ De naam is een woordgrap op "luistervink": je fluistert je waarnemingen in, en d
 - **Platform:** Android. Start als PWA (Chrome op Android); later in Capacitor verpakken met een native Kotlin-plugin voor wake word en achtergrondaudio. Houd de webcode daarom platformonafhankelijk.
 - **Spraak naar tekst:** Whisper via de API van OpenAI (`gpt-4o-transcribe`, `gpt-4o-mini-transcribe` of `whisper-1`), met een soortenlijst in de prompt om herkenning van soortnamen te verbeteren. Gekozen op basis van de testset (12 okt): `gpt-4o-transcribe`.
 - **Interpretatie:** een LLM (klein en snel model, bv. Claude Haiku) met tool use. Het model geeft acties terug, de app voert ze uit:
-  - `add_observation`, `update_observation`, `delete_observation`, `undo`
+  - `add_observation`, `update_observation`, `delete_observation`, `undo`, `redo` (een undo terugdraaien)
   - Context per aanroep: de laatste waarnemingen van de huidige sessie, zodat verwijzingen als "die", "de vorige" en "nog drie" werken.
   - Soorten alleen via ID's uit een vaste soortenlijst (Nederlandse vogels, in de systeemprompt, met prompt caching). De app valideert elk soort-ID; het model kan geen soorten verzinnen.
   - Bij twijfel zet het model een `uncertain`-vlag in plaats van terug te vragen. Uitspraken zonder waarneming worden genegeerd.

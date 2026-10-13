@@ -99,8 +99,13 @@ export interface Utterance {
   error?: string;
   /** Wat deze uitspraak in de database veranderde, zodat `undo` het kan terugdraaien */
   changes?: Change[];
-  /** Teruggedraaid door een latere `undo` */
+  /** Teruggedraaid door een latere `undo` (of, bij een undo, door een `redo`) */
   undone?: boolean;
+  /**
+   * Bij een `undo`: welke uitspraak die terugdraaide en wat dat in de database
+   * veranderde, zodat `redo` het weer kan terugzetten
+   */
+  undid?: { utteranceId: string; changes: Change[] };
   /** Aantal verwerkingspogingen (meer dan 1 na "Opnieuw" of een herstart) */
   attempts?: number;
   /** Meetgegevens van de laatste verwerkingspoging, voor analyse */
