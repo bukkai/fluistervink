@@ -2,11 +2,12 @@
 
 Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van elke werksessie, vóór het pushen. Oudere bevindingen uit de veldtests staan in `docs/veldtests.md`, de beoordeling van de mijlpaal in `docs/mijlpaal-mvp.md`; wat er per PR gebeurde, staat in de PR's op GitHub.
 
-## Waar ik ben (12 okt)
+## Waar ik ben (13 okt)
 
 - Bouwstappen 1–7 uit `CLAUDE.md` klaar en gemerged (t/m PR #78). In productie op `fluistervink.stephanmullernl.workers.dev`, met één tester (Tim).
 - **Mijlpaal MVP gehaald** (12 okt, `docs/mijlpaal-mvp.md`): 88% van de waarnemingen zonder correctie goed, correcties met de stem 9 van de 10 keer.
 - **Spraakherkenning: `gpt-4o-transcribe` blijft** (testset 12 okt: 9/12, tegen `gpt-4o-mini-transcribe` 8/12 en `whisper-1` 7/12).
+- **Export gebundeld** (PR #90, 13 okt): na het nalopen zet je een wandeling "klaar voor waarneming.nl"; op het scherm Wandelingen gaan alle klaarstaande wandelingen in één CSV. Bestaande wandelingen hebben nog geen "klaar": de nog niet geëxporteerde één keer klaarzetten.
 - Uitgaven: bij OpenAI en Anthropic vooraf betaald tegoed met auto-reload uit; dat is de harde grens. Stand 11 okt: $0,36 die maand bij Anthropic, 97% uit de cache, ruwweg een tiende cent per uitspraak.
 
 ## Volgende stappen
@@ -40,7 +41,12 @@ Nog niet gepland; eerst overleggen.
   - Tweede Worker (bv. `env.production` in `wrangler.jsonc`), deployt vanaf een branch `release`. Per omgeving eigen geheimen, KV en een omgevingskeuze in `npm run tester` / `npm run feedback`.
   - Gegevens zijn per adres (IndexedDB, geïnstalleerde PWA): overzetten via JSON-export/-import; nagaan dat prod een export van een nieuwere db-versie netjes weigert.
   - Beta herkenbaar maken: label en andere naam/kleur in het manifest.
-- **Inzenden via de API van waarneming.nl:** API-documentatie alleen na inloggen; toegang alleen voor goedgekeurde apps, dus eerst een client-ID aanvragen via het contactformulier. Daarna OAuth, één knop "Inzenden" per wandeling ná het nalopen (niet volautomatisch). De `uuid` uit de CSV voorkomt ook dan dubbel invoeren. Voor de aanvraag helpt een korte uitleg van de app en het bewijs dat de CSV-import werkt.
+- **Inzenden via de API van waarneming.nl** (uitgezocht 13 okt; de officiële documentatie op `waarneming.nl/api/docs/*.md` gaf ons een 403, dus gecontroleerd in de TypeScript-client [observation-js](https://github.com/robbeverhelst/observation-js); nog na te lopen in de documentatie, ingelogd):
+  - De API kan wel waarnemingen invoeren (niet via het importformulier). `POST /api/v1/observations/create/` ("one-way sync") neemt een lijst waarnemingen en geeft per waarneming de URL of de fouten; een fout houdt de rest niet tegen; `external_id` voorkomt dubbel invoeren (bestaande wordt bijgewerkt). `create-single/` is voor één waarneming met foto's/geluid.
+  - Velden passen op wat we bewaren: `species` (ID), `date`, `time`, `point` (GeoJSON of WKT), `accuracy`, `number`, `sex`, `activity`, `life_stage`, `method`, `counting_method`, `is_certain`, `notes`, `uuid`.
+  - OAuth: `/api/v1/oauth2/authorize/` en `/api/v1/oauth2/token/` (authorization code of password grant, met client-ID en secret). Testomgeving: `waarneming-test.nl`.
+  - Eerst een client-ID aanvragen via het contactformulier (concept in de sessie van 13 okt: app, nalopen vóór inzenden, vaste soortenlijst, 88% goed; vragen: inlogmethode, client secret, testaccount op waarneming-test.nl, `create/` met `external_id` en welke scope, redirect-URL). Daarna: account koppelen bij Instellingen, route `/api/waarneming` in de proxy (CORS, secret), knop "Inzenden" voor de klaarstaande wandelingen, ID/link van waarneming.nl bewaren, `#privacy` en `#uitleg` bijwerken.
+- **Uploaden met een Playwright-script** (overwogen 13 okt, niet gebouwd): kan technisch (eigen browserprofiel, zelf inloggen, CSV uploaden op `/import/observations/`), maar werkt alleen op een computer, terwijl het importeren meestal op de telefoon gebeurt; de CSV moet dan via de proxy naar de computer en "geëxporteerd" terug. De import meldt de uitkomst pas per mail, en het breekt als de pagina verandert. De API is de betere weg.
 - **Waarom makkelijk invoeren goed is voor citizen science** (voor README, een "Over"-scherm of een aanvraag bij waarneming.nl): meer en vollediger gegevens (ook algemene soorten), minder vertekening naar zeldzaamheden, tijd en GPS op het moment zelf, en meer mensen die meedoen.
 - **Soortenstatistieken over alle gebruikers:** tellen per soort-ID wat het model koos, wat met de hand gecorrigeerd werd en wat het niet kon plaatsen, om de soortenlijst, bijnamen en STT-prompt bij te stellen. Kan in de proxy (Analytics Engine of D1); alleen geaggregeerd, en op `#privacy` vermelden. Pas relevant bij meer gebruikers; tot die tijd geeft de testset hetzelfde beeld.
 - Foto koppelen aan een waarneming via tijd en locatie.
