@@ -1,4 +1,5 @@
 import { logEvent } from './log';
+import { microphoneConstraints } from './microphone';
 
 // Opname via de microfoon (MediaRecorder). De microfoon gaat alleen aan
 // tijdens een opname en daarna meteen weer uit, zodat andere apps (Merlin) er
@@ -35,13 +36,18 @@ export async function startRecording(): Promise<boolean> {
 
   let stream: MediaStream;
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1 } });
+    stream = await navigator.mediaDevices.getUserMedia({ audio: await microphoneConstraints() });
   } catch (error) {
     const denied = error instanceof DOMException && error.name === 'NotAllowedError';
     logEvent('mic_error', { name: (error as Error).name, message: (error as Error).message });
     recorder.status = denied ? 'denied' : 'idle';
     return false;
   }
+
+  // Welke microfoon het werd, om het haperen van Bluetooth-audio na te gaan
+  const [track] = stream.getAudioTracks();
+  const { deviceId: _, groupId: __, ...settings } = track?.getSettings() ?? {};
+  logEvent('mic_opened', { label: track?.label, ...settings });
 
   const mimeType = MIME_TYPES.find((type) => MediaRecorder.isTypeSupported(type));
   mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
