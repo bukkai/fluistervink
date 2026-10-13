@@ -12,11 +12,42 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 
 ## Volgende stappen
 
-1. Nog één wandeling van Tim en één van jezelf met de huidige versie; daarna Capacitor (trillen en achtergrond eerst, wake word later).
+1. Nog één wandeling van Tim en één van jezelf met de huidige versie; daarna Capacitor (trillen en achtergrond eerst, wake word later). Zie de roadmap naar v1.0 hieronder.
 2. Bosuil uit de bus (12 okt) nog weghalen.
 3. Bij elke nieuwe gedeelde wandeling `npm run feedback -- pull` en `npm run testset` draaien, eventueel ook met `--model claude-sonnet-5-5`.
-4. Prompt verbeteren met wat de testset laat zien ("tortelduif"; soortnamen als "pijl", "vaaltje", "knoopgans"), telkens nagaan met de testset.
+4. Prompt verbeteren met wat de testset laat zien ("tortelduif"; soortnamen als "pijl", "vaaltje"), telkens nagaan met de testset.
 5. Later: kostenoverzicht per wandeling in het testset-script (uit het `usage`-blok van Anthropic, plus minuten audio voor OpenAI).
+
+## Roadmap naar v1.0 (13 okt)
+
+Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de app installeren, een hele wandeling gebruiken zonder naar het scherm te kijken, en thuis zonder gedoe naar waarneming.nl exporteren.
+
+**Nog te beslissen:** v1.0 voor een besloten kring (toegangscodes, zoals nu) of openbaar in de Play Store? Openbaar betekent: bepalen wie de API-kosten betaalt (tegoed per gebruiker, eigen sleutel, limiet) en misbruik afvangen. Bij een besloten kring blijft het huidige model.
+
+1. **Veldgebruik afmaken met de native laag (Capacitor), de kern van v1.0:**
+   - Trillen op de achtergrond en met het scherm uit (grootste ergernis van de eerste wandeling).
+   - Opnemen met het scherm uit via een foreground service; microfoon loslaten als Merlin hem wil.
+   - Audiofocus zelf regelen (waarschijnlijk ook de oplossing voor de haperende podcast via Bluetooth).
+   - Verspreiden via de Play Store (eerst interne test).
+   - Te overwegen: volumeknop of Bluetooth-afstandsbediening als push-to-talk (handschoenen, telefoon in de zak).
+   - Wake word **buiten v1.0**: de knop bevalt, en een wake word brengt eigen valse meldingen mee.
+2. **Herkenning breder bewijzen:** de 88% rust op drie wandelingen van één spreker, rond Arnhem, in oktober.
+   - Meer sprekers: Tim plus twee à drie testers met een echte wandeling.
+   - Voorjaarsronde (april/mei): veel meer soorten, zang, broedgedrag, paartjes. Reden om v1.0 niet vóór het voorjaar te noemen.
+   - Open punten: korte spookopnames onzeker maken, tijd bij nocmig, jargon uit de testset ("pijl", "vaaltje").
+   - Kosten per wandeling in het testset-script.
+3. **Klaar voor vreemden:**
+   - Twee omgevingen (stabiel en beta, zie Ideeën voor later).
+   - Back-up / nieuwe telefoon: alles staat lokaal; niet-geëxporteerde wandelingen zijn weg als de telefoon kwijt is. Export naar bestand, of automatisch via de proxy zoals het delen.
+   - Welkom en uitleg voor wie geen uitnodiging kreeg: toestemming voor microfoon en GPS, eerste wandeling stap voor stap.
+   - Ruwe randen: uitnodigingsmail vanuit Developer, nieuwe versie pas laden buiten een wandeling (#65), undo van een undo.
+4. **Thuis meer waarde dan alleen exporteren** (zolang de API van waarneming.nl wacht):
+   - Kaart clusteren (voorstel onder Ideeën voor later).
+   - Overzicht per wandeling en over wandelingen heen: soortenlijst, aantallen, jaarlijst.
+   - Snellere review: alleen de onzekere langslopen, "alles klopt" met één tik.
+5. **Bewust niet in v1.0:** API van waarneming.nl (v1.0 levert juist de gebruikers op die de aanvraag sterker maken), GPS-track, accounts, BirdNET, wake word.
+
+Volgorde: (a) nu de twee wandelingen en de kleine open punten; (b) Capacitor: trillen, foreground service, audiofocus, eventueel volumeknop; (c) twee omgevingen en back-up, dan twee à drie testers erbij; (d) voorjaar: veldtest met veel soorten, prompt bijwerken, daarna v1.0 in de Play Store.
 
 ## Open punten
 
