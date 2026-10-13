@@ -21,6 +21,7 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 
 - **Tim vragen** wat hij bedoelde met de afgekapte feedback "de knop" (11 okt).
 - **Tester uitnodigen vanuit Developer opende geen mail** (12 okt). Mogelijke oorzaak in `invite` (`src/lib/Developer.svelte`): de `mailto:` wordt pas geopend ná het wachten op `addTester`, en Chrome op Android opent externe apps soms alleen direct na een tik. Testen: welk toestel, gebeurt er niets of komt er een fout, lukt het met de link die het scherm daarna toont? Oplossing als het daaraan ligt: na het aanmaken een knop "Mail openen" (gewone `<a href="mailto:…">`).
+- **Podcast pauzeert bij inspreken** (13 okt, in de auto via Bluetooth): pauze tijdens de opname, dan even verder, dan weer stil. Vermoeden: de microfoon zet Bluetooth in belmodus (HFP), en het terugschakelen naar muziek (A2DP) hapert. Trillen vraagt geen audio aan. Nog na te gaan: gebeurt het ook zonder Bluetooth, en helpt het om de microfoon van de telefoon te kiezen (`deviceId` uit `enumerateDevices`)? Anders oplossen in Capacitor (audiofocus zelf regelen).
 - **Nieuwe versie pas laden als er geen wandeling loopt** (#65): op de telefoon nalopen (`update_deferred` / `update_applied` in het log).
 - **Korte spookopnames:** een lange broekzakopname wordt onzeker (#76), een korte (zoals de Bosuil, 4 s) nog niet.
 - **STT gaf één keer zelf antwoord** in plaats van te transcriberen ("Sorry, ik kan niet voldoen aan het verzoek …", 11 okt) en liet daarbij het woord "feedback" weg. Onschuldig, maar in de gaten houden.
