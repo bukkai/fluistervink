@@ -114,13 +114,18 @@ describe('toevoegen', () => {
 describe('per ongeluk opgenomen', () => {
   const audio = new Blob(['x'], { type: 'audio/webm' });
 
-  it('herkent een lange opname met bijna geen tekst', () => {
+  it('herkent een opname met bijna geen tekst', () => {
     // 12 okt, broekzak: 20 s geritsel, verstaan als "Roodhalsfuut."
     expect(isAccidental({ audio, audioDurationMs: 20_442, transcript: 'Roodhalsfuut.' })).toBe(
       true,
     );
-    // Echte uitspraken: kort, of lang met veel tekst
-    expect(isAccidental({ audio, audioDurationMs: 3_900, transcript: 'Bosuil' })).toBe(false);
+    // 12 okt, bus: 3,9 s, vrijwel zeker niet gezegd
+    expect(isAccidental({ audio, audioDurationMs: 3_900, transcript: 'Bosuil' })).toBe(true);
+    // Echte uitspraken: kort, ook één woord, of lang met veel tekst
+    expect(isAccidental({ audio, audioDurationMs: 1_900, transcript: 'Boomklever.' })).toBe(false);
+    expect(isAccidental({ audio, audioDurationMs: 4_100, transcript: 'Drie kuifmezen.' })).toBe(
+      false,
+    );
     expect(
       isAccidental({
         audio,
