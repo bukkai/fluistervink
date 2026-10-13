@@ -12,6 +12,7 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 
 ## Volgende stappen
 
+0. **Native laag**: plan in `docs/plan-capacitor.md` (goedgekeurd 13 okt). Eigenaar installeert Android Studio (telefoon: Android 15); daarna fase 0 (microfoon van de telefoon kiezen, in de PWA) en fase 1 (schil en trillen met patronen).
 1. Een paar echte betatesters uitnodigen (de eigenaar regelt ze) en nog een wandeling van jezelf met de huidige versie; daarna Capacitor (trillen en achtergrond eerst, wake word later). Zie de roadmap naar v1.0 hieronder.
 2. Bosuil uit de bus (12 okt) nog weghalen.
 3. Bij elke nieuwe gedeelde wandeling `npm run feedback -- pull` en `npm run testset` draaien, eventueel ook met `--model claude-sonnet-5-5`.

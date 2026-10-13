@@ -17,7 +17,7 @@ De naam is een woordgrap op "luistervink": je fluistert je waarnemingen in, en d
 
 - **Doelgroep:** persoonlijk gebruik, recreatief vogelen op wandelingen. Geen professionele inventarisatieprotocollen.
 - **Front-end-stack:** Vite, Svelte 5 met TypeScript, Dexie (IndexedDB), vite-plugin-pwa. Gekozen omdat Svelte-runes en -templates dicht bij de Angular-ervaring van de eigenaar liggen, met weinig boilerplate.
-- **Platform:** Android. Start als PWA (Chrome op Android); later in Capacitor verpakken met een native Kotlin-plugin voor wake word en achtergrondaudio. Houd de webcode daarom platformonafhankelijk.
+- **Platform:** Android. Begonnen als PWA (Chrome op Android, werkt ook in Safari op een iPhone, zonder trillen); nu in Capacitor verpakt, in fasen (`docs/plan-capacitor.md`, goedgekeurd 13 okt). De app laadt de webcode live van de site (`server.url`), zodat een gemergde PR meteen ook in de app staat; alleen native wijzigingen vragen een nieuwe app-versie. App-ID `nl.hegmus.fluistervink`. Verspreiden via de interne test van Google Play. Native functies alleen via `src/lib/native.ts`, met de web-API's als terugval: de PWA blijft werken, dus houd de webcode platformonafhankelijk.
 - **Spraak naar tekst:** Whisper via de API van OpenAI (`gpt-4o-transcribe`, `gpt-4o-mini-transcribe` of `whisper-1`), met een soortenlijst in de prompt om herkenning van soortnamen te verbeteren. Gekozen op basis van de testset (12 okt): `gpt-4o-transcribe`.
 - **Interpretatie:** een LLM (klein en snel model, bv. Claude Haiku) met tool use. Het model geeft acties terug, de app voert ze uit:
   - `add_observation`, `update_observation`, `delete_observation`, `undo`, `redo` (een undo terugdraaien)
@@ -58,8 +58,7 @@ Doel: valideren dat herkenning en interpretatie in het veld goed genoeg werken.
 
 **Bewust níet in de MVP (niet toevoegen zonder overleg):**
 
-- Wake word en achtergrondgebruik met het scherm uit
-- Capacitor of native code
+- Wake word (de native laag wel, zie `docs/plan-capacitor.md`)
 - GPS-track (ook later niet gewenst) en locaties verslepen op de kaart
 - Echte offline-ondersteuning (verwerken zodra er verbinding is, sync-status)
 - Uploaden via de API van waarneming.nl
@@ -84,11 +83,11 @@ Opgelost en vastgelegd: het importformaat van waarneming.nl (bulkimport, `docs/w
 
 De zeven bouwstappen van de MVP zijn klaar: projectopzet, proxy, interpretatie met tools, opname met spraakherkenning, review, CSV-export en testset (`npm run testset -- <export.json>` haalt uitspraken opnieuw door spraakherkenning en model en scoort ze tegen de nagelopen waarnemingen, zie `scripts/testset.mjs`).
 
-**Mijlpaal:** de MVP is geslaagd als na drie à vier echte wandelingen het grootste deel van de waarnemingen zonder correctie correct is en spraakcorrecties ("nee, keep") betrouwbaar werken. Beoordeeld op 12 okt: gehaald (88% zonder correctie goed, correcties met de stem 9 van de 10), zie `docs/mijlpaal-mvp.md`. Volgende stap: de native laag (Capacitor, wake word "Fluistervink", achtergrondgebruik).
+**Mijlpaal:** de MVP is geslaagd als na drie à vier echte wandelingen het grootste deel van de waarnemingen zonder correctie correct is en spraakcorrecties ("nee, keep") betrouwbaar werken. Beoordeeld op 12 okt: gehaald (88% zonder correctie goed, correcties met de stem 9 van de 10), zie `docs/mijlpaal-mvp.md`. Volgende stap: de native laag, zie `docs/plan-capacitor.md`.
 
 ## Latere roadmap
 
-- Capacitor met een native Kotlin-plugin: foreground service met microfoon, wake word "Fluistervink" (bv. Porcupine of openWakeWord)
+- Wake word "Fluistervink" (bv. Porcupine of openWakeWord), na de native laag
 - Automatisch pauzeren en hervatten als een andere app de microfoon gebruikt (AudioRecordingCallback)
 - Locaties verslepen op de kaart in de review
 - Offline wachtrij met sync-status
