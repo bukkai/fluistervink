@@ -4,7 +4,7 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 
 ## Waar ik ben (13 okt)
 
-- Bouwstappen 1–7 uit `CLAUDE.md` klaar en gemerged (t/m PR #78). In productie op `fluistervink.stephanmullernl.workers.dev`, met één tester (Tim).
+- Bouwstappen 1–7 uit `CLAUDE.md` klaar en gemerged (t/m PR #78). In productie op `fluistervink.stephanmullernl.workers.dev`, met één tester (Tim, een alter ego van de eigenaar).
 - **Mijlpaal MVP gehaald** (12 okt, `docs/mijlpaal-mvp.md`): 88% van de waarnemingen zonder correctie goed, correcties met de stem 9 van de 10 keer.
 - **Spraakherkenning: `gpt-4o-transcribe` blijft** (testset 12 okt: 9/12, tegen `gpt-4o-mini-transcribe` 8/12 en `whisper-1` 7/12).
 - **Export gebundeld** (PR #90, 13 okt): na het nalopen zet je een wandeling "klaar voor waarneming.nl"; op het scherm Wandelingen gaan alle klaarstaande wandelingen in één CSV. Bestaande wandelingen hebben nog geen "klaar": de nog niet geëxporteerde één keer klaarzetten.
@@ -12,7 +12,7 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 
 ## Volgende stappen
 
-1. Nog één wandeling van Tim en één van jezelf met de huidige versie; daarna Capacitor (trillen en achtergrond eerst, wake word later). Zie de roadmap naar v1.0 hieronder.
+1. Een paar echte betatesters uitnodigen (de eigenaar regelt ze) en nog een wandeling van jezelf met de huidige versie; daarna Capacitor (trillen en achtergrond eerst, wake word later). Zie de roadmap naar v1.0 hieronder.
 2. Bosuil uit de bus (12 okt) nog weghalen.
 3. Bij elke nieuwe gedeelde wandeling `npm run feedback -- pull` en `npm run testset` draaien, eventueel ook met `--model claude-sonnet-5-5`.
 4. Prompt verbeteren met wat de testset laat zien ("tortelduif"; soortnamen als "pijl", "vaaltje"), telkens nagaan met de testset.
@@ -22,7 +22,7 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 
 Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de app installeren, een hele wandeling gebruiken zonder naar het scherm te kijken, en thuis zonder gedoe naar waarneming.nl exporteren.
 
-**Nog te beslissen:** v1.0 voor een besloten kring (toegangscodes, zoals nu) of openbaar in de Play Store? Openbaar betekent: bepalen wie de API-kosten betaalt (tegoed per gebruiker, eigen sleutel, limiet) en misbruik afvangen. Bij een besloten kring blijft het huidige model.
+**Besloten (13 okt): v1.0 voorlopig voor een besloten kring**, met toegangscodes zoals nu. Openbaar in de Play Store zou betekenen: bepalen wie de API-kosten betaalt (tegoed per gebruiker, eigen sleutel, limiet) en misbruik afvangen; dat komt pas later aan de orde.
 
 1. **Veldgebruik afmaken met de native laag (Capacitor), de kern van v1.0:**
    - Trillen op de achtergrond en met het scherm uit (grootste ergernis van de eerste wandeling).
@@ -32,7 +32,7 @@ Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de a
    - Te overwegen: volumeknop of Bluetooth-afstandsbediening als push-to-talk (handschoenen, telefoon in de zak).
    - Wake word **buiten v1.0**: de knop bevalt, en een wake word brengt eigen valse meldingen mee.
 2. **Herkenning breder bewijzen:** de 88% rust op drie wandelingen van één spreker, rond Arnhem, in oktober.
-   - Meer sprekers: Tim plus twee à drie testers met een echte wandeling.
+   - Meer sprekers: twee à drie echte betatesters met een echte wandeling. Tim is een alter ego van de eigenaar, dus alle gegevens tot nu toe komen van één spreker.
    - Voorjaarsronde (april/mei): veel meer soorten, zang, broedgedrag, paartjes. Reden om v1.0 niet vóór het voorjaar te noemen.
    - Open punten: korte spookopnames onzeker maken, tijd bij nocmig, jargon uit de testset ("pijl", "vaaltje").
    - Kosten per wandeling in het testset-script.
@@ -47,7 +47,7 @@ Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de a
    - Snellere review: alleen de onzekere langslopen, "alles klopt" met één tik.
 5. **Bewust niet in v1.0:** API van waarneming.nl (v1.0 levert juist de gebruikers op die de aanvraag sterker maken), GPS-track, accounts, BirdNET, wake word.
 
-Volgorde: (a) nu de twee wandelingen en de kleine open punten; (b) Capacitor: trillen, foreground service, audiofocus, eventueel volumeknop; (c) twee omgevingen en back-up, dan twee à drie testers erbij; (d) voorjaar: veldtest met veel soorten, prompt bijwerken, daarna v1.0 in de Play Store.
+Volgorde: (a) nu de kleine open punten, betatesters uitnodigen en een wandeling; (b) Capacitor: trillen, foreground service, audiofocus, eventueel volumeknop; (c) twee omgevingen en back-up, dan twee à drie testers erbij; (d) voorjaar: veldtest met veel soorten, prompt bijwerken, daarna v1.0 in de Play Store.
 
 ## Open punten
 
