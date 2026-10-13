@@ -450,7 +450,7 @@
     margin: 1rem 0 0;
     padding: 0.5rem 0.9rem;
     border-radius: var(--radius);
-    font-size: 0.9rem;
+    font-size: 1rem;
     color: var(--amber);
     background: var(--amber-soft);
   }
@@ -577,8 +577,11 @@
     margin-left: auto;
   }
 
+  /* Weg, Klopt, Opnieuw: ook tijdens de wandeling, dus 48 px hoog (handschoenen) */
   button.small {
-    padding: 0.3rem 0.9rem;
+    box-sizing: border-box;
+    min-height: 3rem;
+    padding: 0.3rem 1rem;
     border: none;
     border-radius: 2rem;
     font: inherit;
