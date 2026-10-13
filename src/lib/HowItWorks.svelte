@@ -49,6 +49,7 @@
       <li>"nee, keep in plaats van vink"</li>
       <li>"nog drie erbij"</li>
       <li>"die laatste weg"</li>
+      <li>"ongedaan maken" (en als dat te veel was: "toch niet ongedaan maken")</li>
     </ul>
     <p>Thuis kun je alles nalopen en aanpassen door op een waarneming te tikken.</p>
   </div>

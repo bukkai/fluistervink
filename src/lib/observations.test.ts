@@ -216,6 +216,49 @@ describe('ongedaan maken', () => {
   });
 });
 
+describe('opnieuw doen', () => {
+  it('zet een ongedaan gemaakte toevoeging terug', async () => {
+    const first = await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    const undo = await say('ongedaan maken', ['undo', {}]);
+    await say('toch niet ongedaan maken', ['redo', {}]);
+    const [obs] = await listObservations(SESSION);
+    expect(obs).toMatchObject({ speciesId: VINK, count: 1 });
+    expect(await db.deletedObservations.count()).toBe(0);
+    expect((await db.utterances.get(first.id))?.undone).toBe(false);
+    expect((await db.utterances.get(undo.id))?.undone).toBe(true);
+  });
+
+  it('zet een ongedaan gemaakte correctie en verwijdering terug', async () => {
+    await say('twee vinken', ['add_observation', { species_id: VINK, count: 2 }]);
+    await say('houtduif', ['add_observation', { species_id: HOUTDUIF, count: 1 }]);
+    const [houtduif, vink] = await listObservations(SESSION);
+    await say(
+      'die vink is een keep, houtduif weg',
+      ['update_observation', { ref: 2, species_id: KEEP }],
+      ['delete_observation', { ref: 1 }],
+    );
+    await say('ongedaan maken', ['undo', {}]);
+    await say('toch niet', ['redo', {}]);
+    expect(await db.observations.get(vink.id)).toMatchObject({ speciesId: KEEP, count: 2 });
+    expect(await db.observations.get(houtduif.id)).toBeUndefined();
+    expect(await db.deletedObservations.get(houtduif.id)).toBeDefined();
+  });
+
+  it('daarna ongedaan maken draait de uitspraak weer terug', async () => {
+    await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    await say('ongedaan maken', ['undo', {}]);
+    await say('toch niet', ['redo', {}]);
+    await say('ongedaan maken', ['undo', {}]);
+    expect(await db.observations.count()).toBe(0);
+  });
+
+  it('doet niets zonder eerdere undo', async () => {
+    await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    await say('toch niet', ['redo', {}]);
+    expect(await db.observations.count()).toBe(1);
+  });
+});
+
 describe('wachtrij', () => {
   it('feedback gaat niet naar het model', async () => {
     const utterance = await say('Feedback, de knop is te klein');
