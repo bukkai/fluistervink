@@ -11,7 +11,7 @@ De naam is een woordgrap op "luistervink": je fluistert je waarnemingen in, en d
 3. Elke uitspraak wordt verwerkt en verschijnt in het overzicht. Bevestiging via trillen, zodat de gebruiker niet naar het scherm hoeft te kijken.
 4. Correcties kunnen in het veld met de stem: "nee, keep in plaats van vink", "nog drie erbij", "die laatste weg".
 5. Thuis: review van soort, aantal, gedrag en locatie, nalopen van onzekere waarnemingen, audio terugluisteren.
-6. Inzenden naar waarneming.nl (MVP: CSV-export; later via de API).
+6. Een nagelopen wandeling zet je "klaar voor waarneming.nl". Wanneer het uitkomt, exporteer je alle klaarstaande wandelingen in één CSV (scherm Wandelingen) en importeer je die bij waarneming.nl; ze zijn dan "geëxporteerd". Eén wandeling los exporteren kan ook. Later via de API (`/api/v1/observations/create/`, zie `NOTES.md`).
 
 ## Vastgelegde ontwerpkeuzes
 
@@ -68,7 +68,7 @@ Doel: valideren dat herkenning en interpretatie in het veld goed genoeg werken.
 
 ## Datamodel
 
-- **Session:** id, start- en eindtijd, status, naam (gebied van waarneming.nl: bij de start dat van de startpositie, bij het stoppen dat met de meeste waarnemingen; met de hand aan te passen)
+- **Session:** id, start- en eindtijd, status, klaar voor export en geëxporteerd (tijdstippen), naam (gebied van waarneming.nl: bij de start dat van de startpositie, bij het stoppen dat met de meeste waarnemingen; met de hand aan te passen)
 - **Utterance:** id, sessionId, tijdstip, lat/lon/nauwkeurigheid, audio, transcript, LLM-uitvoer, verwerkingsstatus
 - **Observation:** id, sessionId, utteranceId (bron), soort-ID, aantal, telmethode, activiteit/gedrag (bv. overvliegend, ter plaatse, roepend, zingend), methode (gezien/gehoord), optioneel geslacht/leeftijd/kleed, tijdstip, lat/lon/nauwkeurigheid, `uncertain`, opmerking (voor waarneming.nl), eigen notitie (niet geëxporteerd), vlag "niet exporteren", status (concept / gereviewd / geëxporteerd)
 

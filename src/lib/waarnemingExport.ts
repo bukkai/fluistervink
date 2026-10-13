@@ -1,4 +1,5 @@
 import { db, type Observation, type Session } from './db';
+import { download } from './export';
 import { listObservations } from './observations';
 import {
   allActivities,
@@ -39,6 +40,8 @@ type Row = Record<(typeof COLUMNS)[number], string>;
 export interface WaarnemingExport {
   csv: Blob;
   filename: string;
+  /** De wandelingen in het bestand */
+  sessions: Session[];
   /** De waarnemingen die in het bestand staan */
   exported: Observation[];
   /** Waarnemingen zonder positie: de import weigert die, dus ze blijven eruit */
@@ -47,11 +50,13 @@ export interface WaarnemingExport {
   excluded: Observation[];
 }
 
-export async function buildExport(session: Session): Promise<WaarnemingExport> {
+/** Eén CSV voor een of meer wandelingen (waarneming.nl neemt er tot 5000 tegelijk). */
+export async function buildExport(sessions: Session[]): Promise<WaarnemingExport> {
+  sessions = [...sessions].sort((a, b) => a.startedAt - b.startedAt);
   // Op volgorde van tijd (de lijst in de app toont de nieuwste eerst)
-  const observations = (await listObservations(session.id)).sort(
-    (a, b) => a.observedAt - b.observedAt || a.createdAt - b.createdAt,
-  );
+  const observations = (await Promise.all(sessions.map((s) => listObservations(s.id))))
+    .flat()
+    .sort((a, b) => a.observedAt - b.observedAt || a.createdAt - b.createdAt);
   const excluded = observations.filter((obs) => obs.skipExport);
   const included = observations.filter((obs) => !obs.skipExport);
   const exported = included.filter((obs) => obs.position);
@@ -60,23 +65,83 @@ export async function buildExport(session: Session): Promise<WaarnemingExport> {
   return {
     // CRLF en UTF-8 (zonder BOM, anders hoort die bij de eerste kolomnaam)
     csv: new Blob([lines.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8' }),
-    // Met de begintijd, zodat twee wandelingen op één dag niet hetzelfde
-    // bestand lijken (en je niet per ongeluk het verkeerde uploadt)
-    filename: `waarneming-${fileTimestamp(new Date(session.startedAt))}.csv`,
+    filename: filename(sessions),
+    sessions,
     exported,
     skipped,
     excluded,
   };
 }
 
-/** Na het downloaden: waarnemingen en wandeling markeren als geëxporteerd. */
-export async function markExported(session: Session, observations: Observation[]): Promise<void> {
+// Eén wandeling: met de begintijd, zodat twee wandelingen op één dag niet
+// hetzelfde bestand lijken (en je niet per ongeluk het verkeerde uploadt).
+// Meer wandelingen: van de eerste tot de laatste dag.
+function filename(sessions: Session[]): string {
+  const first = new Date(sessions[0].startedAt);
+  if (sessions.length === 1) return `waarneming-${fileTimestamp(first)}.csv`;
+  const last = new Date(sessions[sessions.length - 1].startedAt);
+  const days = [isoDate(first), isoDate(last)];
+  return `waarneming-${days[0] === days[1] ? days[0] : days.join('-tot-')}-${sessions.length}-wandelingen.csv`;
+}
+
+/** Na het downloaden: waarnemingen en wandelingen markeren als geëxporteerd. */
+export async function markExported(
+  sessions: Session[],
+  observations: Observation[],
+): Promise<void> {
+  const exportedAt = Date.now();
   await db.transaction('rw', db.sessions, db.observations, async () => {
     await db.observations.bulkUpdate(
       observations.map((obs) => ({ key: obs.id, changes: { status: 'exported' as const } })),
     );
-    await db.sessions.update(session.id, { exportedAt: Date.now() });
+    await db.sessions.bulkUpdate(sessions.map((s) => ({ key: s.id, changes: { exportedAt } })));
   });
+}
+
+/** Nagelopen en klaar voor waarneming.nl, of toch nog niet. */
+export async function markReady(sessionId: string, ready: boolean): Promise<void> {
+  await db.sessions.update(sessionId, { readyAt: ready ? Date.now() : undefined });
+}
+
+/** Wandelingen die klaarstaan en nog niet geëxporteerd zijn. */
+export function readyForExport(sessions: Session[]): Session[] {
+  return sessions.filter((s) => s.readyAt && !s.exportedAt);
+}
+
+/**
+ * Exporteren vanuit het scherm: waarschuwen, downloaden en markeren. Geeft
+ * de uitkomst als tekst terug, of niets als de gebruiker annuleert.
+ */
+export async function exportForWaarneming(sessions: Session[]): Promise<string | undefined> {
+  const result = await buildExport(sessions);
+  if (result.exported.length === 0) return 'Geen waarnemingen met een locatie om te exporteren.';
+  const uncertain = result.exported.filter((obs) => obs.uncertain).length;
+  const earlier = result.sessions.filter((s) => s.exportedAt).length;
+  const warnings = [
+    uncertain > 0 &&
+      `${uncertain} ${uncertain === 1 ? 'waarneming is' : 'waarnemingen zijn'} nog onzeker ` +
+        `en ${uncertain === 1 ? 'gaat' : 'gaan'} mee als "niet zeker".`,
+    earlier > 0 &&
+      `${sessions.length === 1 ? 'Deze wandeling is' : `${earlier} van deze wandelingen zijn`} ` +
+        'al eerder geëxporteerd. Waarneming.nl weigert de hele import als er een waarneming in ' +
+        'zit die al is ingevoerd.',
+  ].filter(Boolean);
+  if (warnings.length && !confirm([...warnings, 'Toch exporteren?'].join('\n\n'))) return;
+
+  download(result.csv, result.filename);
+  await markExported(result.sessions, result.exported);
+  const n = result.exported.length;
+  const walks = result.sessions.length;
+  return [
+    `${n === 1 ? '1 waarneming' : `${n} waarnemingen`}` +
+      (walks > 1 ? ` uit ${walks} wandelingen` : '') +
+      ' geëxporteerd.',
+    result.skipped.length &&
+      `${result.skipped.length} zonder locatie overgeslagen; voer die met de hand in.`,
+    result.excluded.length && `${result.excluded.length} uitgevinkt en niet geëxporteerd.`,
+  ]
+    .filter(Boolean)
+    .join(' ');
 }
 
 function toRow(obs: Observation): Row {

@@ -36,6 +36,8 @@ export interface Session {
   /** Laatst voortgezet; telt als activiteit voor het automatisch stoppen */
   resumedAt?: number;
   status: 'active' | 'ended';
+  /** Nagelopen en klaargezet voor de volgende export naar waarneming.nl */
+  readyAt?: number;
   /** Laatst geëxporteerd voor waarneming.nl */
   exportedAt?: number;
   /** Naam van de wandeling ("Landgoed Mariëndaal"), zie `area.ts` */

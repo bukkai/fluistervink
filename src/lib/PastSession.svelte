@@ -1,16 +1,16 @@
 <script lang="ts">
   import { liveQuery } from 'dexie';
   import type { Session } from './db';
-  import { download } from './export';
   import { renameSession } from './area';
   import { countSpecies, listObservations } from './observations';
   import { deleteSessions, formatDuration, resumeSession } from './sessions';
   import ObservationMap from './ObservationMap.svelte';
   import SessionLog from './SessionLog.svelte';
-  import { IMPORT_URL, buildExport, markExported } from './waarnemingExport';
+  import { IMPORT_URL, exportForWaarneming, markReady } from './waarnemingExport';
 
-  // Een afgelopen wandeling nalopen en exporteren. Hier kom je ook meteen
-  // na "Stop wandeling".
+  // Een afgelopen wandeling nalopen en klaarzetten voor waarneming.nl (de
+  // export zelf gaat voor alle klaarstaande wandelingen tegelijk, op het
+  // scherm Wandelingen). Hier kom je ook meteen na "Stop wandeling".
 
   /**
    * `resumable`: de meest recente wandeling, en er loopt geen andere.
@@ -54,33 +54,20 @@
   /** Uitkomst van de laatste export, om onder de knop te tonen */
   let exportResult = $state<string>();
 
-  async function exportForWaarneming() {
-    const result = await buildExport(session);
-    if (result.exported.length === 0) {
-      exportResult = 'Geen waarnemingen met een locatie om te exporteren.';
+  async function ready() {
+    if (
+      uncertainCount > 0 &&
+      !confirm(
+        `Nog ${uncertainCount === 1 ? '1 onzekere waarneming' : `${uncertainCount} onzekere waarnemingen`}. ` +
+          'Die gaan mee als "niet zeker". Toch klaarzetten?',
+      )
+    )
       return;
-    }
-    const uncertain = result.exported.filter((obs) => obs.uncertain).length;
-    const warnings = [
-      uncertain > 0 &&
-        `${uncertain} ${uncertain === 1 ? 'waarneming is' : 'waarnemingen zijn'} nog onzeker ` +
-          `en ${uncertain === 1 ? 'gaat' : 'gaan'} mee als "niet zeker".`,
-      session.exportedAt &&
-        'Deze wandeling is al eerder geëxporteerd. Waarneming.nl weigert waarnemingen ' +
-          'die al zijn ingevoerd.',
-    ].filter(Boolean);
-    if (warnings.length && !confirm([...warnings, 'Toch exporteren?'].join('\n\n'))) return;
+    await markReady(session.id, true);
+  }
 
-    download(result.csv, result.filename);
-    await markExported(session, result.exported);
-    exportResult = [
-      `${result.exported.length} waarnemingen geëxporteerd.`,
-      result.skipped.length &&
-        `${result.skipped.length} zonder locatie overgeslagen; voer die met de hand in.`,
-      result.excluded.length && `${result.excluded.length} uitgevinkt en niet geëxporteerd.`,
-    ]
-      .filter(Boolean)
-      .join(' ');
+  async function exportOnlyThis() {
+    exportResult = (await exportForWaarneming([session])) ?? exportResult;
   }
 
   const dateFormat = new Intl.DateTimeFormat('nl-NL', { dateStyle: 'full' });
@@ -93,7 +80,8 @@
   <div class="saved" role="status">
     <strong>✓ Wandeling opgeslagen</strong>
     <p>
-      Alles staat veilig op je telefoon. Loop de waarnemingen na en exporteer ze naar waarneming.nl.
+      Alles staat veilig op je telefoon. Loop de waarnemingen na en zet de wandeling klaar voor
+      waarneming.nl.
     </p>
   </div>
 {/if}
@@ -138,20 +126,11 @@
     <h2>Klaar met nalopen?</h2>
     {#if session.exportedAt && !exportResult}
       <span class="badge">geëxporteerd</span>
+    {:else if session.readyAt && !exportResult}
+      <span class="badge">klaar</span>
     {/if}
   </div>
   <div class="card-body">
-    {#if uncertainCount > 0}
-      <p class="warning">
-        Nog {uncertainCount === 1
-          ? '1 onzekere waarneming'
-          : `${uncertainCount} onzekere waarnemingen`}. Tik erop om aan te passen, of gebruik
-        "Klopt" of "Weg".
-      </p>
-    {/if}
-    <button class="btn block large" onclick={exportForWaarneming}
-      >Exporteren voor waarneming.nl</button
-    >
     {#if exportResult}
       <p>{exportResult}</p>
     {:else if session.exportedAt}
@@ -159,11 +138,33 @@
         Geëxporteerd op {dateFormat.format(session.exportedAt)}
         om {timeFormat.format(session.exportedAt)}.
       </p>
+    {:else if session.readyAt}
+      <p>
+        Deze wandeling staat klaar. Exporteer alle klaarstaande wandelingen in één keer bij
+        <a class="link" href="#wandelingen">Wandelingen</a>.
+      </p>
+      <button class="btn secondary block" onclick={() => markReady(session.id, false)}
+        >Toch nog niet klaar</button
+      >
+    {:else}
+      {#if uncertainCount > 0}
+        <p class="warning">
+          Nog {uncertainCount === 1
+            ? '1 onzekere waarneming'
+            : `${uncertainCount} onzekere waarnemingen`}. Tik erop om aan te passen, of gebruik
+          "Klopt" of "Weg".
+        </p>
+      {/if}
+      <button class="btn block large" onclick={ready}>Klaar voor waarneming.nl</button>
+      <p class="muted">
+        Klaargezette wandelingen exporteer je later in één bestand, bij
+        <a class="link" href="#wandelingen">Wandelingen</a>.
+      </p>
     {/if}
     <p class="muted">
-      Importeer het bestand bij <a href={IMPORT_URL} target="_blank" rel="noopener">waarneming.nl</a
-      >. Zet de site daarbij op Engels (EN, rechtsboven): gedrag en methode staan in het Engels in
-      het bestand.
+      Of <button class="link" onclick={exportOnlyThis}>exporteer alleen deze wandeling</button>
+      en importeer het bestand bij
+      <a href={IMPORT_URL} target="_blank" rel="noopener">waarneming.nl</a>, met de site op Engels.
     </p>
   </div>
 </section>
