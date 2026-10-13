@@ -594,7 +594,10 @@
   /* Bewust klein en omlijnd: stoppen moet kunnen, maar niet per ongeluk */
   .stop {
     flex: none;
-    padding: 0.6rem 1.1rem;
+    /* Klein, maar wel 48 px hoog: ook met handschoenen te raken */
+    box-sizing: border-box;
+    min-height: 3rem;
+    padding: 0.6rem 1.25rem;
     border: 1.5px solid var(--red);
     border-radius: 2rem;
     font: inherit;

@@ -301,7 +301,8 @@
     margin: 0.5rem 0 0;
     min-height: 1.5em;
     text-align: center;
-    font-size: 0.9rem;
+    /* Ook foutmeldingen (geen microfoon): in het veld leesbaar, minstens 16 px */
+    font-size: 1rem;
     color: var(--muted);
   }
 
