@@ -5,8 +5,8 @@
   import type { Observation, Session } from './db';
   import { mapsUrl } from './devNotes';
   import { listObservations } from './observations';
-  import { hasRarity, rarityLabels, raritySvg } from './rarity';
-  import { getSpecies } from './vocab';
+  import { hasRarity, rarityLabels, rarityOf, raritySvg } from './rarity';
+  import { speciesName } from './vocab';
 
   // Kaart met waar elke waarneming van een wandeling is gedaan. Alleen
   // bekijken; locaties verslepen kan later.
@@ -49,49 +49,40 @@
     return [...groups.values()];
   }
 
-  function escape(text: string): string {
-    const el = document.createElement('span');
-    el.textContent = text;
-    return el.innerHTML;
+  /** Element met tekst (nooit HTML) of andere elementen erin */
+  function el(tag: string, className: string, ...children: (Node | string)[]): HTMLElement {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    node.append(...children);
+    return node;
   }
 
-  /** Popup-venster bij een stip; elke waarneming is een knop naar de lijst */
+  /**
+   * Popup-venster bij een stip; elke waarneming is een knop naar de lijst.
+   * Met DOM-elementen en textContent, niet met innerHTML: gegevens uit de
+   * database (ook uit een import) komen zo nooit als HTML in de pagina.
+   */
   function popup(group: Observation[]): HTMLElement {
     const first = group[0];
     const { lat, lon, accuracy } = first.position!;
-    const area = first.area?.name ? ` · ${escape(first.area.name)}` : '';
-    const el = document.createElement('div');
-    el.innerHTML = `<strong>${timeFormat.format(first.observedAt)}</strong>${area}`;
+    const content = el('div', '', el('strong', '', timeFormat.format(first.observedAt)));
+    if (first.area?.name) content.append(` · ${first.area.name}`);
     for (const obs of group) {
-      const name = getSpecies(obs.speciesId)?.name ?? `soort ${obs.speciesId}`;
-      const mark = obs.uncertain ? ' <span class="uncertain">(onzeker)</span>' : '';
-      const button = document.createElement('button');
-      button.className = 'obs';
-      // Number(): ook als er via een import iets anders dan een getal in staat,
-      // komt er geen HTML in het popup-venster
-      button.innerHTML = `${popupMark(rarityOf(obs))}${Number(obs.count)}× ${escape(name)}${mark}`;
+      const button = el('button', 'obs', `${obs.count}× ${speciesName(obs.speciesId)}`);
+      // Vormpje zoals in de lijst (uit vaste waarden); bij onbekend een lege plek
+      const rarity = rarityOf(obs.speciesId);
+      if (hasRarity(rarity)) button.insertAdjacentHTML('afterbegin', raritySvg(rarity, 'rarity'));
+      else button.prepend(el('span', 'rarity'));
+      if (obs.uncertain) button.append(' ', el('span', 'uncertain', '(onzeker)'));
       button.onclick = () => onselect?.([obs.id]);
-      el.append(button);
+      content.append(button);
     }
-    const footer = document.createElement('div');
-    footer.className = 'accuracy';
-    const link = document.createElement('a');
-    link.href = mapsUrl(Number(lat), Number(lon));
+    const link = el('a', '', 'kaarten-app') as HTMLAnchorElement;
+    link.href = mapsUrl(lat, lon);
     link.target = '_blank';
     link.rel = 'noopener';
-    link.textContent = 'kaarten-app';
-    footer.append(`± ${Math.round(accuracy)} m · `, link);
-    el.append(footer);
-    return el;
-  }
-
-  function rarityOf(obs: Observation): number {
-    return getSpecies(obs.speciesId)?.rarity ?? 0;
-  }
-
-  /** Vormpje in het popup-venster, zoals in de lijst: bij onbekend een lege plek */
-  function popupMark(rarity: number): string {
-    return hasRarity(rarity) ? raritySvg(rarity, 'rarity') : '<span class="rarity"></span>';
+    content.append(el('div', 'accuracy', `± ${Math.round(accuracy)} m · `, link));
+    return content;
   }
 
   /** Stip op de kaart; onzeker krijgt een vraagteken, los van de kleur van de vorm */
@@ -102,8 +93,7 @@
 
   /** Naam van de stip voor schermlezers (Leaflet maakt er een knop van) */
   function pinTitle(group: Observation[], rarity: number, uncertain: boolean): string {
-    const names = group.map((obs) => getSpecies(obs.speciesId)?.name ?? `soort ${obs.speciesId}`);
-    const parts = [names.join(', ')];
+    const parts = [group.map((obs) => speciesName(obs.speciesId)).join(', ')];
     if (hasRarity(rarity)) parts.push(rarityLabels[rarity]);
     if (uncertain) parts.push('onzeker');
     return parts.join(' · ');
@@ -153,7 +143,7 @@
           interactive: false,
         }).addTo(map);
         // Meerdere soorten op één plek: de zeldzaamste bepaalt de stip
-        const rarity = Math.max(...group.map(rarityOf));
+        const rarity = Math.max(...group.map((obs) => rarityOf(obs.speciesId)));
         const marker = L.marker([lat, lon], {
           icon: L.divIcon({
             html: pinHtml(rarity, uncertain),
@@ -263,10 +253,13 @@
   }
 
   /* Stip op de kaart: wit randje */
+  /* 17 px in een icoon van 20: het witte randje valt buiten de vorm */
   .map :global(svg.pin) {
     display: block;
-    width: 20px;
-    height: 20px;
+    width: 17px;
+    height: 17px;
+    margin: 1.5px;
+    overflow: visible;
     stroke: #fff;
     stroke-width: 1.5;
     stroke-linejoin: round;

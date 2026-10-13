@@ -244,6 +244,21 @@ describe('/api/messages (Anthropic)', () => {
     expect(upstream).not.toHaveBeenCalled();
   });
 
+  it('weigert ongeldige JSON met 400', async () => {
+    const response = await call('/api/messages', { method: 'POST', body: '{kapot' });
+    expect(response.status).toBe(400);
+  });
+
+  it('weigert een te groot verzoek al op de Content-Length', async () => {
+    const response = await call('/api/messages', {
+      method: 'POST',
+      body: '{}',
+      headers: { 'Content-Length': String(10 * 1024 * 1024) },
+    });
+    expect(response.status).toBe(413);
+    expect(upstream).not.toHaveBeenCalled();
+  });
+
   it('weigert een te groot verzoek', async () => {
     const response = await post({
       model: 'claude-haiku-5-5',

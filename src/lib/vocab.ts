@@ -41,6 +41,11 @@ export function getSpecies(id: number): Species | undefined {
   return speciesById.get(id);
 }
 
+/** Naam om te tonen; "soort 123" als het ID niet (meer) in de lijst staat */
+export function speciesName(id: number): string {
+  return getSpecies(id)?.name ?? `soort ${id}`;
+}
+
 const promptSpeciesByName = new Map(species.map((s) => [s.name.toLowerCase(), s]));
 
 /** Soort uit de lijst in de prompt, op naam (hoofdletters maken niet uit) */

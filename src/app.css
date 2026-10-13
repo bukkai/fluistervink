@@ -213,3 +213,20 @@ h2 {
 .muted {
   color: var(--muted);
 }
+
+/* Zeldzaamheid: vulkleur van de vormpjes (src/lib/rarity.ts); 0 = onbekend */
+.rarity-0 {
+  fill: var(--brand);
+}
+.rarity-1 {
+  fill: var(--rarity-1);
+}
+.rarity-2 {
+  fill: var(--rarity-2);
+}
+.rarity-3 {
+  fill: var(--rarity-3);
+}
+.rarity-4 {
+  fill: var(--rarity-4);
+}
