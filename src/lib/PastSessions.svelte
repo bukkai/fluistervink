@@ -2,6 +2,7 @@
   import { liveQuery } from 'dexie';
   import type { Session } from './db';
   import { countPerSession, deleteSessions, formatDuration } from './sessions';
+  import { IMPORT_URL, exportForWaarneming, readyForExport } from './waarnemingExport';
 
   let { sessions }: { sessions: Session[] } = $props();
 
@@ -10,6 +11,14 @@
   /** Opruimen: wandelingen aanvinken en in één keer verwijderen */
   let selecting = $state(false);
   let selected = $state<Set<string>>(new Set());
+
+  /** Nagelopen wandelingen, samen in één bestand naar waarneming.nl */
+  let ready = $derived(readyForExport(sessions));
+  let exportResult = $state<string>();
+
+  async function exportReady() {
+    exportResult = (await exportForWaarneming(ready)) ?? exportResult;
+  }
 
   let exportedIds = $derived(sessions.filter((s) => s.exportedAt).map((s) => s.id));
 
@@ -109,6 +118,31 @@
 {#if sessions.length === 0}
   <p class="muted">Nog geen wandelingen.</p>
 {:else}
+  {#if !selecting && (ready.length > 0 || exportResult)}
+    <section class="card export">
+      <div class="card-body">
+        {#if ready.length > 0}
+          <p>
+            <strong
+              >{ready.length === 1 ? '1 wandeling' : `${ready.length} wandelingen`} klaar voor waarneming.nl</strong
+            >
+          </p>
+          <button class="btn block large" onclick={exportReady}
+            >Exporteren voor waarneming.nl</button
+          >
+        {/if}
+        {#if exportResult}
+          <p>{exportResult}</p>
+        {/if}
+        <p class="muted">
+          Importeer het bestand bij <a href={IMPORT_URL} target="_blank" rel="noopener"
+            >waarneming.nl</a
+          >. Zet de site daarbij op Engels (EN, rechtsboven): gedrag en methode staan in het Engels
+          in het bestand.
+        </p>
+      </div>
+    </section>
+  {/if}
   {#if selecting}
     <p class="muted hint">Vink de wandelingen aan die weg mogen.</p>
     <p class="quick">
@@ -168,6 +202,8 @@
       <strong>{session.place?.name ?? 'Wandeling'}</strong>
       {#if session.exportedAt}
         <span class="badge exported">geëxporteerd</span>
+      {:else if session.readyAt}
+        <span class="badge ready">klaar</span>
       {:else}
         <span class="badge">niet geëxporteerd</span>
       {/if}
@@ -184,6 +220,19 @@
     display: flex;
     align-items: baseline;
     justify-content: space-between;
+  }
+
+  .export {
+    margin-bottom: 1rem;
+  }
+
+  .export p {
+    margin: 0 0 0.75rem;
+  }
+
+  .export p:last-child {
+    margin: 0.75rem 0 0;
+    font-size: 0.9rem;
   }
 
   .hint {
@@ -268,6 +317,11 @@
     font-weight: 600;
     color: var(--amber);
     background: var(--amber-soft);
+  }
+
+  .badge.ready {
+    color: var(--success);
+    background: color-mix(in srgb, var(--success) 12%, transparent);
   }
 
   .badge.exported {
