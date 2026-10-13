@@ -64,7 +64,7 @@ describe('buildExport', () => {
     expect(result.exported.map((o) => o.id)).toEqual([withPosition.id]);
     expect(result.skipped.map((o) => o.id)).toEqual([withoutPosition.id]);
     expect(result.excluded.map((o) => o.id)).toEqual([unchecked.id]);
-    expect(result.filename).toBe('waarneming-2026-10-11.csv');
+    expect(result.filename).toBe('waarneming-2026-10-11-1400.csv');
   });
 
   it('zet een onbekende nauwkeurigheid (boven 1000 m) op 999', async () => {
