@@ -70,8 +70,10 @@
       <dd>Niet begrepen, er is niets opgeslagen. Zeg het nog eens.</dd>
       <dt>Drie korte</dt>
       <dd>
-        Er ging iets mis, bijvoorbeeld geen verbinding. De opname is bewaard; tik later in de lijst
-        op "Opnieuw".
+        Er ging iets mis, bijvoorbeeld geen bereik. De opname is bewaard en gaat niet verloren, maar
+        wordt niet vanzelf opnieuw verwerkt: tik later, als je weer bereik hebt, bij de wandeling
+        onder "Uitspraken" op "Opnieuw". Bij heel slecht bereik kan deze tril tot een halve minuut
+        op zich laten wachten.
       </dd>
     </dl>
     <p>

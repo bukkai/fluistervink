@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { db, type Session } from './db';
-import { ASK_AFTER_MS, AUTO_STOP_AFTER_MS, checkStaleSession, keepSession } from './sessions';
+import {
+  ASK_AFTER_MS,
+  AUTO_STOP_AFTER_MS,
+  checkStaleSession,
+  countPerSession,
+  keepSession,
+} from './sessions';
 
 // Vergeten wandeling: na een uur stilte vragen, na 8 uur vanzelf stoppen.
 
@@ -62,5 +68,22 @@ describe('checkStaleSession', () => {
     await walk(3, 2);
     await keepSession('wandeling');
     expect(await checkStaleSession()).toBeUndefined();
+  });
+});
+
+describe('countPerSession', () => {
+  it('telt mislukte en wachtende uitspraken als niet verwerkt', async () => {
+    // Geen bereik: de opname is bewaard maar nog geen waarneming geworden
+    await db.utterances.bulkAdd([
+      { id: 'a', sessionId: 'wandeling', recordedAt: now, status: 'failed' },
+      { id: 'b', sessionId: 'wandeling', recordedAt: now, status: 'pending' },
+      { id: 'c', sessionId: 'wandeling', recordedAt: now, status: 'done' },
+    ]);
+    expect((await countPerSession()).get('wandeling')).toEqual({
+      utterances: 3,
+      observations: 0,
+      devNotes: 0,
+      unprocessed: 2,
+    });
   });
 });
