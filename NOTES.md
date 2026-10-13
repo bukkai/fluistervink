@@ -52,10 +52,10 @@ Volgorde: (a) nu de kleine open punten, betatesters uitnodigen en een wandeling;
 ## Open punten
 
 - **Tim vragen** wat hij bedoelde met de afgekapte feedback "de knop" (11 okt).
-- **Tester uitnodigen vanuit Developer opende geen mail** (12 okt). Mogelijke oorzaak in `invite` (`src/lib/Developer.svelte`): de `mailto:` wordt pas geopend ná het wachten op `addTester`, en Chrome op Android opent externe apps soms alleen direct na een tik. Testen: welk toestel, gebeurt er niets of komt er een fout, lukt het met de link die het scherm daarna toont? Oplossing als het daaraan ligt: na het aanmaken een knop "Mail openen" (gewone `<a href="mailto:…">`).
+- **Uitnodiging vanuit Developer** (PR #91, 13 okt): na "Code maken" opent een aparte knop "Mail openen" de mail-app (Chrome opende hem niet na het wachten op de proxy). De mail noemt nu ook iPhone/Safari (zonder trillen). Nog nagaan op de telefoon of de mail-app opent.
 - **Podcast pauzeert bij inspreken** (13 okt, in de auto via Bluetooth): pauze tijdens de opname, dan even verder, dan weer stil. Vermoeden: de microfoon zet Bluetooth in belmodus (HFP), en het terugschakelen naar muziek (A2DP) hapert. Trillen vraagt geen audio aan. Nog na te gaan: gebeurt het ook zonder Bluetooth, en helpt het om de microfoon van de telefoon te kiezen (`deviceId` uit `enumerateDevices`)? Anders oplossen in Capacitor (audiofocus zelf regelen).
 - **Nieuwe versie pas laden als er geen wandeling loopt** (#65): op de telefoon nalopen (`update_deferred` / `update_applied` in het log).
-- **Korte spookopnames:** een lange broekzakopname wordt onzeker (#76), een korte (zoals de Bosuil, 4 s) nog niet.
+- **Korte spookopnames** (PR #92, 13 okt): grens van `isAccidental` naar 3,5 s en < 0,3 woord/s, zodat ook de Bosuil (3,9 s) onzeker wordt. Bewust klein gehouden; geen verdere moeite nodig volgens de eigenaar.
 - **STT gaf één keer zelf antwoord** in plaats van te transcriberen ("Sorry, ik kan niet voldoen aan het verzoek …", 11 okt) en liet daarbij het woord "feedback" weg. Onschuldig, maar in de gaten houden.
 - **Nocmig met een tijd:** "vannacht een waterral overvliegend, half 3 een roepje" krijgt de tijd van de uitspraak. Idee: optioneel tijdveld in `add_observation` (model krijgt datum en tijd mee, app rekent om).
 - "Ongedaan maken" van een ongedaan-maken wordt niet ondersteund; een tweede "undo" gaat een uitspraak verder terug.
