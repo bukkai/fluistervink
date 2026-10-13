@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Fluistervink</string>
+    <string name="title_activity_main">Fluistervink</string>
+    <string name="package_name">nl.hegmus.fluistervink</string>
+    <string name="custom_url_scheme">nl.hegmus.fluistervink</string>
+</resources>

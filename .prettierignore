@@ -6,3 +6,6 @@ public/
 *.md
 package-lock.json
 worker/worker-configuration.d.ts
+
+# Android-project (Capacitor), deels gegenereerd
+android/

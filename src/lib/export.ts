@@ -8,6 +8,7 @@ import {
 } from './db';
 import { getTester, type Area } from './api';
 import { APP_VERSION, logEvent } from './log';
+import { PLATFORM } from './native';
 
 // Ruwe export van alle gegevens, als vangnet tijdens de ontwikkeling, en het
 // terugzetten ervan. Standaard zonder audio, alleen de grootte; met
@@ -42,6 +43,7 @@ export async function exportAllJson({ withAudio = false } = {}): Promise<Blob> {
   const data = {
     exportedAt: new Date().toISOString(),
     appVersion: APP_VERSION,
+    platform: PLATFORM,
     tester: getTester(),
     sessions,
     utterances: await Promise.all(

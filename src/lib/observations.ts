@@ -21,6 +21,7 @@ import { devNoteText } from './devNotePrefix';
 
 export { devNoteText };
 import { DEFAULT_ACTIVITY, DEFAULT_COUNTING_METHOD, DEFAULT_METHOD, getSpecies } from './vocab';
+import { PLATFORM } from './native';
 
 // Local-first verwerking: elke uitspraak wordt eerst opgeslagen (status
 // `pending`) en daarna één voor één, op volgorde, door het model gehaald.
@@ -350,6 +351,7 @@ async function processUtterance(utterance: Utterance): Promise<void> {
 
   const metrics: ProcessingMetrics = {
     appVersion: APP_VERSION,
+    platform: PLATFORM,
     model: MODEL,
     promptVersion: await promptVersion,
     context: interpretation.context,

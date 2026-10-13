@@ -18,6 +18,7 @@
     "feedback": "node scripts/feedback.mjs"
   },
   "devDependencies": {
+    "@capacitor/cli": "8.5.3",
     "@cloudflare/vite-plugin": "^1.63.1",
     "@sveltejs/vite-plugin-svelte": "^7.3.0",
     "@tsconfig/svelte": "^5.0.8",
@@ -37,6 +38,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.132.1",
+    "@capacitor/android": "8.5.3",
+    "@capacitor/core": "8.5.3",
     "dexie": "^4.4.6",
     "leaflet": "^1.9.4"
   }

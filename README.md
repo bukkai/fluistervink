@@ -21,12 +21,29 @@ npm run types    # Worker-types opnieuw genereren na wijzigen van wrangler.jsonc
 
 Op een telefoon testen: `npm run dev -- --host` en open het adres op hetzelfde wifi-netwerk. Microfoon en GPS werken alleen via HTTPS of localhost, dus voor echte veldtests de Cloudflare-deploy gebruiken.
 
+## Android-app
+
+De Android-app (Capacitor, `android/`, plan in `docs/plan-capacitor.md`) laadt de webcode live van de site. Een gemergde PR staat dus meteen ook in de app; alleen wijzigingen in `android/` of `capacitor.config.ts` vragen een nieuwe installatie.
+
+Eenmalig: [Android Studio](https://developer.android.com/studio) installeren en de wizard doorlopen (die installeert de Android SDK). Op de telefoon de ontwikkelaarsopties aanzetten (Instellingen → Over de telefoon → zeven keer op het buildnummer tikken) en daarin USB-foutopsporing. Telefoon met USB aansluiten en de vraag op de telefoon toestaan.
+
+```bash
+npx cap sync android   # config en plugins naar android/ kopiëren
+npx cap run android    # bouwen en installeren op de aangesloten telefoon
+npx cap open android   # of: openen in Android Studio (daar op Run ▶)
+```
+
+Een branch testen vóór het mergen: `CAP_SERVER_URL=<preview-adres van Cloudflare> npx cap sync android` en daarna `npx cap run android`. Daarna weer zonder `CAP_SERVER_URL` syncen.
+
+Native code staat in `android/app/src/main/java/nl/hegmus/fluistervink/` (Java, zoals de `MainActivity` die Capacitor aanmaakt). De webcode praat er alleen mee via `src/lib/native.ts`.
+
 ## Stack
 
 - [Vite](https://vite.dev) als build tool en dev server
 - [Svelte 5](https://svelte.dev) met TypeScript
 - [Dexie](https://dexie.org) als wrapper om IndexedDB (`src/lib/db.ts`)
 - [vite-plugin-pwa](https://vite-pwa-org.netlify.app) voor manifest en service worker
+- [Capacitor](https://capacitorjs.com) voor de Android-app (`android/`)
 - Cloudflare Worker (`worker/index.ts`) als proxy naar OpenAI en Anthropic, met [@cloudflare/vite-plugin](https://developers.cloudflare.com/workers/vite-plugin/) zodat hij in de dev server meedraait
 
 ## Deploy
