@@ -34,13 +34,13 @@ Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de a
 2. **Herkenning breder bewijzen:** de 88% rust op drie wandelingen van één spreker, rond Arnhem, in oktober.
    - Meer sprekers: twee à drie echte betatesters met een echte wandeling. Tim is een alter ego van de eigenaar, dus alle gegevens tot nu toe komen van één spreker.
    - Voorjaarsronde (april/mei): veel meer soorten, zang, broedgedrag, paartjes. Reden om v1.0 niet vóór het voorjaar te noemen.
-   - Open punten: korte spookopnames onzeker maken, tijd bij nocmig, jargon uit de testset ("pijl", "vaaltje").
+   - Open punten: jargon uit de testset ("pijl", "vaaltje"). Korte spookopnames: #92; nocmig: niet nu.
    - Kosten per wandeling in het testset-script.
 3. **Klaar voor vreemden:**
    - Twee omgevingen (stabiel en beta, zie Ideeën voor later).
    - Back-up / nieuwe telefoon: alles staat lokaal; niet-geëxporteerde wandelingen zijn weg als de telefoon kwijt is. Export naar bestand, of automatisch via de proxy zoals het delen.
    - Welkom en uitleg voor wie geen uitnodiging kreeg: toestemming voor microfoon en GPS, eerste wandeling stap voor stap.
-   - Ruwe randen: uitnodigingsmail vanuit Developer, nieuwe versie pas laden buiten een wandeling (#65), undo van een undo.
+   - Ruwe randen: uitnodigingsmail vanuit Developer, nieuwe versie pas laden buiten een wandeling (#65), undo van een undo (#93).
 4. **Thuis meer waarde dan alleen exporteren** (zolang de API van waarneming.nl wacht):
    - Kaart clusteren (voorstel onder Ideeën voor later).
    - Overzicht per wandeling en over wandelingen heen: soortenlijst, aantallen, jaarlijst.
@@ -57,8 +57,7 @@ Volgorde: (a) nu de kleine open punten, betatesters uitnodigen en een wandeling;
 - **Nieuwe versie pas laden als er geen wandeling loopt** (#65): op de telefoon nalopen (`update_deferred` / `update_applied` in het log).
 - **Korte spookopnames** (PR #92, 13 okt): grens van `isAccidental` naar 3,5 s en < 0,3 woord/s, zodat ook de Bosuil (3,9 s) onzeker wordt. Bewust klein gehouden; geen verdere moeite nodig volgens de eigenaar.
 - **STT gaf één keer zelf antwoord** in plaats van te transcriberen ("Sorry, ik kan niet voldoen aan het verzoek …", 11 okt) en liet daarbij het woord "feedback" weg. Onschuldig, maar in de gaten houden.
-- **Nocmig met een tijd:** "vannacht een waterral overvliegend, half 3 een roepje" krijgt de tijd van de uitspraak. Idee: optioneel tijdveld in `add_observation` (model krijgt datum en tijd mee, app rekent om).
-- "Ongedaan maken" van een ongedaan-maken wordt niet ondersteund; een tweede "undo" gaat een uitspraak verder terug.
+- **Undo terugdraaien** (PR #93, 13 okt): nieuwe tool `redo` ("toch niet ongedaan maken"); een undo bewaart wat hij terugdraaide (`undid`). Nog met het echte model proberen.
 - Cloudflare-previews: vermoedelijk onthoudt Cloudflare het deploy-commando per branch vanaf de eerste build. Bij problemen: nieuwe branch maken.
 - Een branch-regel op `main` met verplichte check kan niet: GitHub biedt dat niet voor privérepo's zonder Pro. De check draait wel bij elke PR.
 
@@ -66,6 +65,7 @@ Volgorde: (a) nu de kleine open punten, betatesters uitnodigen en een wandeling;
 
 Nog niet gepland; eerst overleggen.
 
+- **Nocmig met een tijd** (13 okt: niet nu, te niche volgens de eigenaar): "vannacht een waterral overvliegend, half 3 een roepje" krijgt de tijd van de uitspraak. Idee: optioneel tijdveld in `add_observation` (model krijgt datum en tijd mee, app rekent om).
 - **Trillen zonder Touch feedback:** Chrome trilt alleen als Touch feedback van Android aan staat (uitleg en tip staan op `#uitleg`). Alternatief: een melding met trilpatroon via de service worker (werkt ook op de achtergrond), of Capacitor.
 - **Twee omgevingen** vóór een echte release: stabiel op `fluistervink.heg-mus.nl`, beta blijft op workers.dev (testers zitten daar al).
   - Domein: DNS van heg-mus.nl staat bij TransIP; voor een Custom Domain moeten de nameservers naar Cloudflare (eerst alle records overnemen, vooral mail: MX, SPF, DKIM).
