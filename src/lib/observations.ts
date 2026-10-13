@@ -425,15 +425,17 @@ async function transcribeUtterance(utterance: Utterance): Promise<Utterance> {
 }
 
 /** Vanaf deze lengte valt een opname met (bijna) geen tekst op. */
-const ACCIDENTAL_MIN_MS = 8_000;
+const ACCIDENTAL_MIN_MS = 3_500;
 /** Minder woorden per seconde dan dit = (bijna) geen spraak. */
-const ACCIDENTAL_MAX_WORDS_PER_S = 0.2;
+const ACCIDENTAL_MAX_WORDS_PER_S = 0.3;
 
 /**
- * Een lange opname met bijna geen tekst is vrijwel zeker per ongeluk gemaakt
- * (in de broekzak): de spraakherkenning verzint dan een paar woorden uit het
- * geritsel, vaak een soortnaam uit de prompt. 12 okt: 20 s opname,
- * "Roodhalsfuut" (0,05 woord/s); echte lange uitspraken halen 0,5 of meer.
+ * Een opname met bijna geen tekst voor zijn lengte is vrijwel zeker per ongeluk
+ * gemaakt (in de broekzak): de spraakherkenning verzint dan een paar woorden
+ * uit het geritsel, vaak een soortnaam uit de prompt. 12 okt: 20 s opname,
+ * "Roodhalsfuut" (0,05 woord/s), en in de bus 3,9 s "Bosuil" (0,26 woord/s).
+ * Echte uitspraken halen 0,5 of meer, ook één soortnaam ("Boomklever", 1,9 s).
+ * Een echte trage uitspraak wordt hooguit onzeker, en dat zie je bij het nalopen.
  * Volume en de zekerheid van de spraakherkenning bleken geen goed signaal:
  * geritsel is luider dan fluisteren, en de zekerheid wisselt per poging.
  */

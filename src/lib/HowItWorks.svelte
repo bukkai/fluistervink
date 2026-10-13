@@ -131,8 +131,8 @@
       </li>
       <li>
         <strong>De app</strong> controleert het resultaat, slaat het op, zoekt de naam van het gebied
-        op bij waarneming.nl, en trilt. Een lange opname met bijna geen tekst (knop per ongeluk aangezet
-        in je zak) wordt onzeker: uit geritsel verzint de spraakherkenning soms een vogel.
+        op bij waarneming.nl, en trilt. Een opname met bijna geen tekst (knop per ongeluk aangezet in
+        je zak) wordt onzeker: uit geritsel verzint de spraakherkenning soms een vogel.
       </li>
     </ol>
   </div>
