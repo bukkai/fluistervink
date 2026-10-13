@@ -44,6 +44,11 @@ Nog niet gepland; eerst overleggen.
 - **Waarom makkelijk invoeren goed is voor citizen science** (voor README, een "Over"-scherm of een aanvraag bij waarneming.nl): meer en vollediger gegevens (ook algemene soorten), minder vertekening naar zeldzaamheden, tijd en GPS op het moment zelf, en meer mensen die meedoen.
 - **Soortenstatistieken over alle gebruikers:** tellen per soort-ID wat het model koos, wat met de hand gecorrigeerd werd en wat het niet kon plaatsen, om de soortenlijst, bijnamen en STT-prompt bij te stellen. Kan in de proxy (Analytics Engine of D1); alleen geaggregeerd, en op `#privacy` vermelden. Pas relevant bij meer gebruikers; tot die tijd geeft de testset hetzelfde beeld.
 - Foto koppelen aan een waarneming via tijd en locatie.
+- Idee eigenaar (13 okt): stippen dicht bij elkaar overlappen op de kaart (`src/lib/ObservationMap.svelte`). Nu komen alleen waarnemingen met precies dezelfde positie (zelfde uitspraak) in één stip. Opties:
+  1. **Clusteren met `leaflet.markercluster`** (de gangbare plugin, gebundeld via npm, dus geen probleem met de CSP): stippen die op het scherm overlappen worden één bolletje met een getal; tikken zoomt in tot ze los liggen; op het hoogste zoomniveau waaieren ze uit (spiderfy). Eigen icoon voor het cluster: het aantal waarnemingen, met kleur en vorm van de zeldzaamste soort erin (zoals nu bij een stip met meerdere soorten). Nauwkeurigheidscirkels alleen tonen voor losse stippen, anders wordt het een vlek.
+  2. **Zelf groeperen op schermafstand:** bij elke zoom opnieuw stippen binnen ±24 px samenvoegen (uitbreiding van `groupByPosition`). Geen extra pakket, maar zoom- en tikgedrag zelf bouwen.
+  3. **Cluster als lijst:** tikken op een cluster opent meteen het popup-venster met alle waarnemingen erin (dat venster is al een lijst met knoppen naar de lijst), met een knop "Inzoomen". Op een telefoon is dat sneller dan drie keer inzoomen. Te combineren met 1 (`clusterclick` zelf afhandelen).
+  Voorstel: 1 met het popup-gedrag van 3 bij een klein cluster (bv. ≤ 5 waarnemingen of hoog ingezoomd), anders inzoomen. Speelt het meest bij lang op één plek staan (vogelhut); testen met een echte wandeling uit de testset.
 
 ## Overstappen tussen computers
 
