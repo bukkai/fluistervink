@@ -8,7 +8,7 @@ import {
   observation,
   toolResponse,
 } from '../test-helpers';
-import { parseResponse } from './interpret';
+import { describeContext, distanceMeters, parseResponse } from './interpret';
 
 // parseResponse is de poortwachter tussen model en database: wat hier
 // doorkomt, voert de app uit. Het model mag geen soorten verzinnen en niet
@@ -122,5 +122,40 @@ describe('parseResponse', () => {
       [],
     );
     expect(actions).toEqual([{ type: 'undo' }, { type: 'dev_note' }]);
+  });
+});
+
+// De afstand in de context laat het model "nog een X" van een paar kilometer
+// verderop als nieuwe waarneming zien (feedback 13 okt, Aalscholver op de A12).
+describe('describeContext', () => {
+  const here = { lat: 52.0557, lon: 5.4, accuracy: 10, fixedAt: 0 };
+  const at = (lat: number, lon: number) => ({ lat, lon, accuracy: 10, fixedAt: 0 });
+
+  it('meet afstanden in meters', () => {
+    // 0,01° noorderbreedte is ruim 1,1 km
+    expect(distanceMeters(here, at(52.0657, 5.4))).toBeCloseTo(1112, -1);
+  });
+
+  it('noemt de afstand alleen als een waarneming ver weg is', () => {
+    const text = describeContext(
+      [
+        observation({ speciesId: HOUTDUIF, position: at(52.0558, 5.4) }),
+        observation({ speciesId: VINK, position: at(52.0587, 5.4) }),
+        observation({ speciesId: KEEP, position: at(52.051, 5.4583) }),
+        observation({ speciesId: KEEP }),
+      ],
+      here,
+    );
+    const lines = text.split('\n');
+    expect(lines[0]).not.toMatch(/hiervandaan/);
+    expect(lines[1]).toMatch(/, 350 m hiervandaan$/);
+    expect(lines[2]).toMatch(/, 4,0 km hiervandaan$/);
+    // Zonder positie geen afstand
+    expect(lines[3]).not.toMatch(/hiervandaan/);
+  });
+
+  it('noemt geen afstand als de uitspraak nog geen positie heeft', () => {
+    const text = describeContext([observation({ position: at(52.051, 5.4583) })]);
+    expect(text).not.toMatch(/hiervandaan/);
   });
 });

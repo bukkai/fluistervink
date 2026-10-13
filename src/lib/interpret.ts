@@ -1,6 +1,6 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import { createMessage, type Timing } from './api';
-import type { Observation } from './db';
+import type { Observation, Position } from './db';
 import {
   activities,
   aliases,
@@ -210,6 +210,7 @@ const SYSTEM_PROMPT = `Je bent de interpretatielaag van Fluistervink, een app wa
 - Correctie op iets eerders → update_observation of delete_observation, met het nummer (ref) uit de lijst met recente waarnemingen. Zonder nadere aanduiding gaat het om #1, de meest recente. "Nee, keep in plaats van vink" slaat op de meest recente vink.
 - Verwijzing naar een eerdere waarneming ("die X van net", "de X van zojuist", "die X van daarnet") → update_observation op die waarneming, nooit een nieuwe waarneming. Staat X niet in de lijst met recente waarnemingen, dan is het vrijwel altijd een verstaanfout: kies de recente waarneming waarvan de naam er het meest op lijkt en zet uncertain op true met een korte reden. "Die kei van net vloog richting west", terwijl er net een kraai was → update_observation op de kraai (overvliegend west), uncertain_reason "Gezegd: kei, opgevat als de kraai van net".
 - "Nog drie erbij" → update_observation met add_count 3 op de bedoelde (meestal meest recente) waarneming.
+- "Nog een X" of "nog twee X" zonder "erbij" of "bij": telt op bij de meest recente X (add_count), tenzij die volgens de lijst ver weg is ("… m hiervandaan" of "… km hiervandaan"). Dan is het een nieuwe vogel op een nieuwe plek: add_observation. Met "erbij" of "bij" ("doe er nog vier bij", "nog twee erbij") altijd add_count, ook als de vorige ver weg is.
 - "Ongedaan maken", "terug", "dat was fout" → undo.
 - Bevestiging ("ja, klopt", "dat was goed", "vorige is correct") → update_observation op #1 met alleen uncertain: false, als #1 onzeker is. Is #1 niet onzeker, roep dan geen tool aan.
 - Een opmerking over de app zelf (wat beter kan, wat niet werkt, een idee voor een functie), ook zonder "feedback" ervoor → add_dev_note. Bijvoorbeeld "bij grote groepen wil ik een schatting kunnen opgeven" of "hij trilt niet".
@@ -316,7 +317,39 @@ export const promptVersion: Promise<string> = crypto.subtle
 
 const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
 
-function describe(obs: Observation): string {
+/** Vanaf deze afstand staat de afstand in de context (zie "nog een X" in de prompt) */
+export const FAR_AWAY_M = 250;
+
+/** Afstand in meters tussen twee posities (haversine) */
+export function distanceMeters(a: Position, b: Position): number {
+  const rad = (deg: number) => (deg * Math.PI) / 180;
+  const dLat = rad(b.lat - a.lat);
+  const dLon = rad(b.lon - a.lon);
+  const h =
+    Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLon / 2) ** 2;
+  return 2 * 6_371_000 * Math.asin(Math.sqrt(h));
+}
+
+function farAway(obs: Observation, here: Position | undefined): string | undefined {
+  if (!here || !obs.position) return undefined;
+  const meters = distanceMeters(obs.position, here);
+  if (meters < FAR_AWAY_M) return undefined;
+  return meters < 1000
+    ? `${Math.round(meters / 50) * 50} m hiervandaan`
+    : `${(meters / 1000).toFixed(1).replace('.', ',')} km hiervandaan`;
+}
+
+/**
+ * De recente waarnemingen zoals het model ze krijgt, #1 = nieuwste.
+ * @param here Positie van de uitspraak, als die er al is
+ */
+export function describeContext(context: Observation[], here?: Position): string {
+  return context.length
+    ? context.map((obs, i) => `#${i + 1} ${describe(obs, here)}`).join('\n')
+    : '(nog geen waarnemingen)';
+}
+
+function describe(obs: Observation, here?: Position): string {
   const parts = [
     `${obs.count} × ${getSpecies(obs.speciesId)?.name ?? `soort ${obs.speciesId}`}`,
     codeName(allActivities, obs.activityId),
@@ -326,6 +359,7 @@ function describe(obs: Observation): string {
     obs.uncertain ? 'onzeker' : undefined,
     obs.remarks ? `opmerking: "${obs.remarks}"` : undefined,
     obs.privateNote ? `notitie: "${obs.privateNote}"` : undefined,
+    farAway(obs, here),
   ];
   return `${timeFormat.format(obs.observedAt)} ${parts.filter(Boolean).join(', ')}`;
 }
@@ -354,20 +388,18 @@ export function parseResponse(
 /**
  * @param transcript De uitspraak als tekst
  * @param recent Recente waarnemingen van de wandeling, nieuwste eerst
- * @param options Alleen voor de testset (scripts/testset.mjs): een ander model,
- *   of de context precies zoals hij destijds was
+ * @param options `here`: positie van de uitspraak, voor de afstand tot eerdere
+ *   waarnemingen. `model` en `contextText` alleen voor de testset
+ *   (scripts/testset.mjs): een ander model, of de context precies zoals hij
+ *   destijds was
  */
 export async function interpret(
   transcript: string,
   recent: Observation[],
-  options: { model?: string; contextText?: string } = {},
+  options: { here?: Position; model?: string; contextText?: string } = {},
 ): Promise<Interpretation> {
   const context = recent.slice(0, CONTEXT_SIZE);
-  const contextText =
-    options.contextText ??
-    (context.length
-      ? context.map((obs, i) => `#${i + 1} ${describe(obs)}`).join('\n')
-      : '(nog geen waarnemingen)');
+  const contextText = options.contextText ?? describeContext(context, options.here);
 
   const { data: response, timing } = await createMessage<Anthropic.Message>({
     model: options.model ?? MODEL,
