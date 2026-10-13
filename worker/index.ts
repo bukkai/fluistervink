@@ -34,6 +34,11 @@ const CLAUDE_MODELS = ['claude-haiku-5-5', 'claude-sonnet-5-5', 'claude-opus-5-5
 const MAX_OUTPUT_TOKENS = 4096;
 /** Een uitspraak duurt seconden; 10 MB is ruim en voorkomt misbruik. */
 const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
+/**
+ * Een verzoek van de app (systeemprompt met soortenlijst, tools, uitspraak) is
+ * ~30 kB; dit is ruim, maar houdt enorme invoer op ons tegoed tegen.
+ */
+const MAX_MESSAGE_BYTES = 256 * 1024;
 /** Een gedeelde wandeling zonder opnames is hooguit een paar honderd kB. */
 const MAX_SESSION_BYTES = 5 * 1024 * 1024;
 
@@ -156,14 +161,21 @@ function confidence(logprobs: { logprob: number }[] | undefined): number | undef
 
 /**
  * Doorgeefluik naar de Messages API van Anthropic. De app stelt de prompt en
- * tools samen; de proxy controleert alleen het model en de uitvoerlimiet.
+ * tools samen; de proxy laat alleen door wat de app zelf gebruikt (zie
+ * checkMessage), zodat een toegangscode geen vrije toegang tot ons tegoed is.
  */
 async function messages(request: Request, env: WorkerEnv): Promise<Response> {
-  const body = (await request.json()) as Anthropic.MessageCreateParamsNonStreaming;
+  const raw = await request.arrayBuffer();
+  if (raw.byteLength > MAX_MESSAGE_BYTES) return json({ error: 'Verzoek te groot' }, 413);
+  const body = JSON.parse(
+    new TextDecoder().decode(raw),
+  ) as Anthropic.MessageCreateParamsNonStreaming;
 
   if (!CLAUDE_MODELS.includes(body.model)) {
     return json({ error: `Model niet toegestaan: ${body.model}` }, 400);
   }
+  const problem = checkMessage(body as unknown as Record<string, unknown>);
+  if (problem) return json({ error: problem }, 400);
 
   const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
   const start = Date.now();
@@ -173,6 +185,52 @@ async function messages(request: Request, env: WorkerEnv): Promise<Response> {
     max_tokens: Math.min(body.max_tokens ?? MAX_OUTPUT_TOKENS, MAX_OUTPUT_TOKENS),
   });
   return json(message, 200, Date.now() - start);
+}
+
+/** Velden die de app meestuurt (src/lib/interpret.ts); andere worden geweigerd. */
+const MESSAGE_FIELDS = new Set([
+  'model',
+  'max_tokens',
+  'system',
+  'messages',
+  'tools',
+  'tool_choice',
+  'temperature',
+  'output_config',
+  'stream',
+]);
+/** Inhoud van een bericht: geen documenten of afbeeldingen (die kunnen een URL laten ophalen). */
+const CONTENT_TYPES = new Set(['text', 'tool_use', 'tool_result']);
+
+/**
+ * Waarom dit verzoek niet door mag, of undefined. Alleen eigen tools (met een
+ * input_schema): tools van Anthropic zelf, zoals web search, kosten per
+ * gebruik en heeft de app niet nodig.
+ */
+function checkMessage(body: Record<string, unknown>): string | undefined {
+  const extra = Object.keys(body).filter((key) => !MESSAGE_FIELDS.has(key));
+  if (extra.length) return `Velden niet toegestaan: ${extra.join(', ')}`;
+
+  const tools = body.tools ?? [];
+  if (!Array.isArray(tools)) return 'Ongeldige tools';
+  for (const tool of tools as { type?: unknown; input_schema?: unknown }[]) {
+    if ((tool.type !== undefined && tool.type !== 'custom') || !tool.input_schema) {
+      return 'Alleen eigen tools toegestaan';
+    }
+  }
+
+  if (!Array.isArray(body.messages)) return 'Ongeldige messages';
+  for (const message of body.messages as { content?: unknown }[]) {
+    if (typeof message.content === 'string') continue;
+    if (!Array.isArray(message.content)) return 'Ongeldige inhoud';
+    for (const block of message.content as { type?: unknown; content?: unknown }[]) {
+      if (!CONTENT_TYPES.has(String(block?.type))) return 'Inhoud niet toegestaan';
+      // Een tool-resultaat kan zelf ook blokken bevatten; daar alleen tekst
+      const inner = Array.isArray(block.content) ? (block.content as { type?: unknown }[]) : [];
+      if (inner.some((part) => part?.type !== 'text')) return 'Inhoud niet toegestaan';
+    }
+  }
+  return undefined;
 }
 
 /**

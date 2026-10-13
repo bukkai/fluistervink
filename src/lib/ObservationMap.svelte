@@ -67,15 +67,20 @@
       const mark = obs.uncertain ? ' <span class="uncertain">(onzeker)</span>' : '';
       const button = document.createElement('button');
       button.className = 'obs';
-      button.innerHTML = `${popupMark(rarityOf(obs))}${obs.count}× ${escape(name)}${mark}`;
+      // Number(): ook als er via een import iets anders dan een getal in staat,
+      // komt er geen HTML in het popup-venster
+      button.innerHTML = `${popupMark(rarityOf(obs))}${Number(obs.count)}× ${escape(name)}${mark}`;
       button.onclick = () => onselect?.([obs.id]);
       el.append(button);
     }
     const footer = document.createElement('div');
     footer.className = 'accuracy';
-    footer.innerHTML =
-      `± ${Math.round(accuracy)} m · ` +
-      `<a href="${mapsUrl(lat, lon)}" target="_blank" rel="noopener">kaarten-app</a>`;
+    const link = document.createElement('a');
+    link.href = mapsUrl(Number(lat), Number(lon));
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = 'kaarten-app';
+    footer.append(`± ${Math.round(accuracy)} m · `, link);
     el.append(footer);
     return el;
   }

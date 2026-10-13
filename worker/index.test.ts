@@ -174,6 +174,86 @@ describe('/api/messages (Anthropic)', () => {
     expect(JSON.parse(String(init?.body))).toMatchObject({ max_tokens: 4096, stream: false });
   });
 
+  it('laat een verzoek zoals de app het stuurt door', async () => {
+    upstream.mockResolvedValue(Response.json(message));
+    const response = await post({
+      model: 'claude-haiku-5-5',
+      max_tokens: 4096,
+      output_config: { effort: 'low' },
+      tools: [{ name: 'add_observation', description: '…', input_schema: { type: 'object' } }],
+      tool_choice: { type: 'auto' },
+      system: [{ type: 'text', text: 'soorten…', cache_control: { type: 'ephemeral' } }],
+      messages: [
+        { role: 'user', content: 'zes houtduiven' },
+        { role: 'assistant', content: [{ type: 'tool_use', id: 't1', name: 'undo', input: {} }] },
+        {
+          role: 'user',
+          content: [
+            { type: 'tool_result', tool_use_id: 't1', content: [{ type: 'text', text: 'ok' }] },
+          ],
+        },
+      ],
+    });
+    expect(response.status).toBe(200);
+  });
+
+  // Een toegangscode mag geen vrije toegang tot ons tegoed bij Anthropic zijn
+  it.each([
+    ['een onbekend veld', { metadata: { user_id: 'x' } }],
+    [
+      'een tool van Anthropic zelf',
+      { tools: [{ type: 'web_search_20250305', name: 'web_search' }] },
+    ],
+    ['een tool zonder schema', { tools: [{ name: 'x' }] }],
+    [
+      'een document via een URL',
+      {
+        messages: [
+          {
+            role: 'user',
+            content: [{ type: 'document', source: { type: 'url', url: 'https://x.test/a.pdf' } }],
+          },
+        ],
+      },
+    ],
+    [
+      'een afbeelding in een tool-resultaat',
+      {
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'tool_result',
+                tool_use_id: 't1',
+                content: [{ type: 'image', source: { type: 'url', url: 'https://x.test/a.png' } }],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  ])('weigert %s', async (_, extra) => {
+    const response = await post({
+      model: 'claude-haiku-5-5',
+      max_tokens: 10,
+      messages: [{ role: 'user', content: 'vink' }],
+      ...extra,
+    });
+    expect(response.status).toBe(400);
+    expect(upstream).not.toHaveBeenCalled();
+  });
+
+  it('weigert een te groot verzoek', async () => {
+    const response = await post({
+      model: 'claude-haiku-5-5',
+      max_tokens: 10,
+      messages: [{ role: 'user', content: 'vink '.repeat(60_000) }],
+    });
+    expect(response.status).toBe(413);
+    expect(upstream).not.toHaveBeenCalled();
+  });
+
   it('meldt een probleem met onze eigen sleutel als 502, niet als 401', async () => {
     upstream.mockResolvedValue(
       Response.json(
