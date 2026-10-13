@@ -25,7 +25,7 @@ Op een telefoon testen: `npm run dev -- --host` en open het adres op hetzelfde w
 
 De Android-app (Capacitor, `android/`, plan in `docs/plan-capacitor.md`) laadt de webcode live van de site. Een gemergde PR staat dus meteen ook in de app; alleen wijzigingen in `android/` of `capacitor.config.ts` vragen een nieuwe installatie.
 
-Eenmalig: [Android Studio](https://developer.android.com/studio) installeren en de wizard doorlopen (die installeert de Android SDK). Op de telefoon de ontwikkelaarsopties aanzetten (Instellingen → Over de telefoon → zeven keer op het buildnummer tikken) en daarin USB-foutopsporing. Telefoon met USB aansluiten en de vraag op de telefoon toestaan.
+Eenmalig: [Android Studio](https://developer.android.com/studio) installeren en de wizard doorlopen (die installeert de Android SDK). Daarnaast Java 21: Gradle 8.14 draait niet op de Java 25 van Android Studio. `android/gradle/gradle-daemon-jvm.properties` laat Gradle zelf een Java 21 kiezen; zet er een neer met het archief van [Adoptium](https://adoptium.net) (Temurin 21), uitgepakt in `~/Library/Java/JavaVirtualMachines/`. Homebrew bouwt Java op een Intel-Mac met de nieuwste macOS uit de broncode, en dat duurt uren. Op de telefoon de ontwikkelaarsopties aanzetten (Instellingen → Over de telefoon → zeven keer op het buildnummer tikken) en daarin USB-foutopsporing. Telefoon met USB aansluiten en de vraag op de telefoon toestaan.
 
 ```bash
 npx cap sync android   # config en plugins naar android/ kopiëren
