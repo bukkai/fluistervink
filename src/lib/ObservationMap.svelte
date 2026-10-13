@@ -1,10 +1,11 @@
 <script lang="ts">
   import { liveQuery } from 'dexie';
-  import type { CircleMarker, Map as LeafletMap } from 'leaflet';
+  import type { Map as LeafletMap, Marker } from 'leaflet';
   import 'leaflet/dist/leaflet.css';
   import type { Observation, Session } from './db';
   import { mapsUrl } from './devNotes';
   import { listObservations } from './observations';
+  import { hasRarity, rarityShape } from './rarity';
   import { getSpecies } from './vocab';
 
   // Kaart met waar elke waarneming van een wandeling is gedaan. Alleen
@@ -30,7 +31,7 @@
   let map: LeafletMap | undefined;
   let fitted = false;
   /** Stip per waarneming, om er vanuit de lijst naartoe te gaan */
-  let markers = new Map<string, CircleMarker>();
+  let markers = new Map<string, Marker>();
 
   const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
 
@@ -66,7 +67,7 @@
       const mark = obs.uncertain ? ' <span class="uncertain">(onzeker)</span>' : '';
       const button = document.createElement('button');
       button.className = 'obs';
-      button.innerHTML = `${obs.count}× ${escape(name)}${mark}`;
+      button.innerHTML = `${shape(rarityOf(obs), 'rarity')}${obs.count}× ${escape(name)}${mark}`;
       button.onclick = () => onselect?.([obs.id]);
       el.append(button);
     }
@@ -77,6 +78,16 @@
       `<a href="${mapsUrl(lat, lon)}" target="_blank" rel="noopener">kaarten-app</a>`;
     el.append(footer);
     return el;
+  }
+
+  function rarityOf(obs: Observation): number {
+    return getSpecies(obs.speciesId)?.rarity ?? 0;
+  }
+
+  /** Vorm en kleur van de zeldzaamheid, zoals in de lijst; onbekend is grijs */
+  function shape(rarity: number, className: string): string {
+    const fill = hasRarity(rarity) ? `var(--rarity-${rarity})` : '#6f7587';
+    return `<svg class="${className}" viewBox="-1 -1 14 14" fill="${fill}">${rarityShape(rarity)}</svg>`;
   }
 
   // Leaflet pas laden als de kaart echt getoond wordt, zodat de rest van de
@@ -115,20 +126,23 @@
       for (const group of groups) {
         const { lat, lon, accuracy } = group[0].position!;
         const uncertain = group.some((obs) => obs.uncertain);
-        const color = uncertain ? '#7d6210' : '#6f7587';
         L.circle([lat, lon], {
           radius: accuracy,
-          color,
+          color: uncertain ? '#7d6210' : '#6f7587',
           weight: 1,
           fillOpacity: 0.1,
           interactive: false,
         }).addTo(map);
-        const marker = L.circleMarker([lat, lon], {
-          radius: 7,
-          color: '#fff',
-          weight: 2,
-          fillColor: color,
-          fillOpacity: 1,
+        // Meerdere soorten op één plek: de zeldzaamste bepaalt de stip
+        const rarity = Math.max(...group.map(rarityOf));
+        const marker = L.marker([lat, lon], {
+          icon: L.divIcon({
+            html: shape(rarity, uncertain ? 'pin uncertain' : 'pin'),
+            className: '',
+            iconSize: [20, 20],
+          }),
+          // Zeldzame soorten bovenop
+          zIndexOffset: rarity * 100,
         })
           .bindPopup(popup(group))
           .addTo(map);
@@ -226,6 +240,29 @@
 
   .map :global(.uncertain) {
     color: #7d6210;
+  }
+
+  /* Stip op de kaart: wit randje, bruin als er iets onzeker is */
+  .map :global(svg.pin) {
+    display: block;
+    width: 20px;
+    height: 20px;
+    stroke: #fff;
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.35));
+  }
+
+  .map :global(svg.pin.uncertain) {
+    stroke: #7d6210;
+  }
+
+  /* Vormpje voor de soort in het popup-venster, zoals in de lijst */
+  .map :global(svg.rarity) {
+    width: 0.75rem;
+    height: 0.75rem;
+    margin-right: 0.35rem;
+    vertical-align: -0.05rem;
   }
 
   .map :global(.accuracy) {
