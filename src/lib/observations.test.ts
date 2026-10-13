@@ -271,6 +271,101 @@ describe('wachtrij', () => {
   });
 });
 
+describe('netwerk weg', () => {
+  // Een opname gaat eerst naar /api/transcribe (echte api.ts, nagebootste
+  // fetch), daarna naar het (nagebootste) model.
+  const audio = new Blob(['opus'], { type: 'audio/webm' });
+  let vibrations: number[][];
+  let transcribeCalls: number;
+
+  beforeEach(() => {
+    vibrations = [];
+    transcribeCalls = 0;
+    vi.stubGlobal('navigator', {
+      ...navigator,
+      onLine: true,
+      locks: undefined,
+      vibrate: (pattern: number[]) => (vibrations.push(pattern), true),
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  /** fetch zoals een telefoon zonder bereik (of met), alleen voor /api/transcribe */
+  function network(online: boolean) {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        transcribeCalls++;
+        if (!online) throw new TypeError('Failed to fetch');
+        return new Response(JSON.stringify({ text: 'Roepje vink.' }), { status: 200 });
+      }),
+    );
+  }
+
+  async function record(): Promise<string> {
+    const id = crypto.randomUUID();
+    clock += 60_000;
+    await db.utterances.add({
+      id,
+      sessionId: SESSION,
+      recordedAt: clock,
+      audio,
+      audioDurationMs: 2_000,
+      status: 'pending',
+    });
+    return id;
+  }
+
+  const FAILED = [120, 150, 120, 150, 120];
+
+  it('weg tijdens het uploaden: opname blijft bewaard, drie korte trillen', async () => {
+    network(false);
+    const id = await record();
+    await processQueue();
+    const u = await db.utterances.get(id);
+    expect(u?.status).toBe('failed');
+    expect(u?.audio).toBeDefined();
+    expect(u?.transcript).toBeUndefined();
+    expect(u?.error).toMatch(/^Spraakherkenning: /);
+    expect(vibrations).toEqual([FAILED]);
+    expect(interpret).not.toHaveBeenCalled();
+  });
+
+  it('weg tussen verstaan en interpreteren: transcript blijft, opnieuw slaat het verstaan over', async () => {
+    network(true);
+    model.respond = () => {
+      throw new Error('Geen internetverbinding');
+    };
+    const id = await record();
+    await processQueue();
+    expect(await db.utterances.get(id)).toMatchObject({
+      status: 'failed',
+      transcript: 'Roepje vink.',
+      error: 'Geen internetverbinding',
+    });
+    expect(vibrations).toEqual([FAILED]);
+
+    model.respond = () => toolResponse(['add_observation', { species_id: VINK, count: 1 }]);
+    await retry(id);
+    await vi.waitFor(async () => expect((await db.utterances.get(id))?.status).toBe('done'));
+    expect(transcribeCalls).toBe(1);
+    expect(await db.observations.count()).toBe(1);
+  });
+
+  it('een mislukte uitspraak houdt de rest van de wachtrij niet op', async () => {
+    network(false);
+    const first = await record();
+    const second = await record();
+    await processQueue();
+    expect((await db.utterances.get(first))?.status).toBe('failed');
+    expect((await db.utterances.get(second))?.status).toBe('failed');
+    expect(vibrations).toEqual([FAILED, FAILED]);
+  });
+});
+
 describe('slot van de wachtrij', () => {
   let locks: FakeLockManager;
 

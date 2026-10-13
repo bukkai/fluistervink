@@ -14,15 +14,17 @@
   let exportedIds = $derived(sessions.filter((s) => s.exportedAt).map((s) => s.id));
 
   /**
-   * Leeg: geen waarnemingen en geen feedback. Een wandeling met alleen
-   * feedback telt niet als leeg, want die gaan mee als de wandeling weg is.
+   * Leeg: geen waarnemingen, geen feedback en geen onverwerkte uitspraken.
+   * Een wandeling met alleen feedback telt niet als leeg, want die gaan mee
+   * als de wandeling weg is; met een mislukte uitspraak (geen bereik) ook
+   * niet, want daar kan nog een waarneming in zitten.
    */
   let emptyIds = $derived(
     $counts
       ? sessions
           .filter((s) => {
             const c = $counts.get(s.id);
-            return !c || (c.observations === 0 && c.devNotes === 0);
+            return !c || (c.observations === 0 && c.devNotes === 0 && c.unprocessed === 0);
           })
           .map((s) => s.id)
       : [],
@@ -50,12 +52,18 @@
     const n = selected.size;
     const notExported = sessions.filter((s) => selected.has(s.id) && !s.exportedAt).length;
     const devNotes = [...selected].reduce((sum, id) => sum + ($counts?.get(id)?.devNotes ?? 0), 0);
+    const unprocessed = [...selected].reduce(
+      (sum, id) => sum + ($counts?.get(id)?.unprocessed ?? 0),
+      0,
+    );
     const message = [
       `${n === 1 ? '1 wandeling' : `${n} wandelingen`} voorgoed verwijderen, met alle waarnemingen en opnames?`,
       notExported > 0 &&
         `${notExported === 1 ? 'Eén daarvan is' : `${notExported} daarvan zijn`} nog niet geëxporteerd.`,
       devNotes > 0 &&
         `${devNotes === 1 ? '1 feedbackbericht gaat' : `${devNotes} feedbackberichten gaan`} ook weg.`,
+      unprocessed > 0 &&
+        `${unprocessed === 1 ? '1 uitspraak is' : `${unprocessed} uitspraken zijn`} nog niet verwerkt (bv. geen bereik) en ${unprocessed === 1 ? 'gaat' : 'gaan'} verloren.`,
     ]
       .filter(Boolean)
       .join('\n\n');
@@ -79,6 +87,7 @@
       c && `${c.utterances} ${c.utterances === 1 ? 'uitspraak' : 'uitspraken'}`,
       c && `${c.observations} ${c.observations === 1 ? 'waarneming' : 'waarnemingen'}`,
       c?.devNotes && `${c.devNotes} ${c.devNotes === 1 ? 'feedbackbericht' : 'feedbackberichten'}`,
+      c?.unprocessed && `${c.unprocessed} niet verwerkt`,
     ]
       .filter(Boolean)
       .join(' · ');

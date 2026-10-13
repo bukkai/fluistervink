@@ -127,13 +127,20 @@ export interface SessionCounts {
   utterances: number;
   observations: number;
   devNotes: number;
+  /**
+   * Uitspraken die (nog) niet verwerkt zijn: mislukt (bv. geen bereik) of nog
+   * in de wachtrij. Daar kan nog een waarneming in zitten, dus de wandeling
+   * is niet leeg.
+   */
+  unprocessed: number;
 }
 
 /** Aantal uitspraken, waarnemingen en dev notes per wandeling, voor het overzicht */
 export async function countPerSession(): Promise<Map<string, SessionCounts>> {
   const counts = new Map<string, SessionCounts>();
   const get = (id: string) => {
-    if (!counts.has(id)) counts.set(id, { utterances: 0, observations: 0, devNotes: 0 });
+    if (!counts.has(id))
+      counts.set(id, { utterances: 0, observations: 0, devNotes: 0, unprocessed: 0 });
     return counts.get(id)!;
   };
   // Alleen de index lezen, niet de uitspraken zelf (die bevatten de audio)
@@ -142,6 +149,11 @@ export async function countPerSession(): Promise<Map<string, SessionCounts>> {
     get(id as string).observations++;
   // `kind` heeft geen index; de audio wordt pas gelezen als iemand hem afspeelt
   await db.utterances.filter((u) => u.kind === 'dev_note').each((u) => get(u.sessionId).devNotes++);
+  // Via de index op status; normaal zijn dit er geen of een paar
+  await db.utterances
+    .where('status')
+    .anyOf('failed', 'pending', 'processing')
+    .each((u) => get(u.sessionId).unprocessed++);
   return counts;
 }
 
