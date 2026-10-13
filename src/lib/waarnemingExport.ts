@@ -60,7 +60,9 @@ export async function buildExport(session: Session): Promise<WaarnemingExport> {
   return {
     // CRLF en UTF-8 (zonder BOM, anders hoort die bij de eerste kolomnaam)
     csv: new Blob([lines.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8' }),
-    filename: `waarneming-${isoDate(new Date(session.startedAt))}.csv`,
+    // Met de begintijd, zodat twee wandelingen op één dag niet hetzelfde
+    // bestand lijken (en je niet per ongeluk het verkeerde uploadt)
+    filename: `waarneming-${fileTimestamp(new Date(session.startedAt))}.csv`,
     exported,
     skipped,
     excluded,
@@ -123,6 +125,11 @@ function csvField(value: string): string {
 /** Datum in de lokale tijd van het apparaat, als YYYY-MM-DD */
 function isoDate(date: Date): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+/** Datum en begintijd voor de bestandsnaam, als YYYY-MM-DD-HHMM */
+function fileTimestamp(date: Date): string {
+  return `${isoDate(date)}-${pad(date.getHours())}${pad(date.getMinutes())}`;
 }
 
 function pad(n: number): string {
