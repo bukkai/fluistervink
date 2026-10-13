@@ -105,10 +105,10 @@
       '',
       'Wil je Fluistervink testen? Met deze app spreek je tijdens het vogelen je waarnemingen in, en thuis loop je ze na en zet je ze op waarneming.nl.',
       '',
-      'Open deze link op je Android-telefoon in Chrome:',
+      'Open deze link op je telefoon, op Android in Chrome en op een iPhone in Safari:',
       link,
       '',
-      'De link is persoonlijk, dus stuur hem niet door. Daarna kun je in het menu van Chrome kiezen voor "Toevoegen aan startscherm". In de app staat onder "Hoe werkt het?" hoe je waarnemingen inspreekt.',
+      'De link is persoonlijk, dus stuur hem niet door. Daarna kun je de app op je beginscherm zetten: in Chrome via het menu, "Toevoegen aan startscherm", in Safari via de deelknop, "Zet op beginscherm". Op een iPhone trilt de app niet; kijk dan even op het scherm of je waarneming erbij staat. In de app staat onder "Hoe werkt het?" hoe je waarnemingen inspreekt.',
       '',
       'Groet,',
     ].join('\n');

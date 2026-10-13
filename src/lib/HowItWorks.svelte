@@ -80,6 +80,7 @@
       Voel je niets? Zet dan in de instellingen van je telefoon trillen bij aanraken aan (bij een
       Engelse telefoon: Sound and vibration → Vibration and haptics → Touch feedback). De app trilt
       alleen als hij op je scherm staat, niet met het scherm uit of als je een andere app open hebt.
+      Op een iPhone trilt de app helemaal niet (Safari kan dat niet); kijk dan even op het scherm.
     </p>
   </div>
 </section>
