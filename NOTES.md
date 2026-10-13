@@ -15,7 +15,7 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 1. Een paar echte betatesters uitnodigen (de eigenaar regelt ze) en nog een wandeling van jezelf met de huidige versie; daarna Capacitor (trillen en achtergrond eerst, wake word later). Zie de roadmap naar v1.0 hieronder.
 2. Bosuil uit de bus (12 okt) nog weghalen.
 3. Bij elke nieuwe gedeelde wandeling `npm run feedback -- pull` en `npm run testset` draaien, eventueel ook met `--model claude-sonnet-5-5`.
-4. Prompt verbeteren met wat de testset laat zien ("tortelduif"; soortnamen als "pijl", "vaaltje"), telkens nagaan met de testset.
+4. Prompt verbeteren met wat de testset laat zien ("tortelduif"), telkens nagaan met de testset.
 5. Later: kostenoverzicht per wandeling in het testset-script (uit het `usage`-blok van Anthropic, plus minuten audio voor OpenAI).
 
 ## Roadmap naar v1.0 (13 okt)
@@ -34,7 +34,7 @@ Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de a
 2. **Herkenning breder bewijzen:** de 88% rust op drie wandelingen van één spreker, rond Arnhem, in oktober.
    - Meer sprekers: twee à drie echte betatesters met een echte wandeling. Tim is een alter ego van de eigenaar, dus alle gegevens tot nu toe komen van één spreker.
    - Voorjaarsronde (april/mei): veel meer soorten, zang, broedgedrag, paartjes. Reden om v1.0 niet vóór het voorjaar te noemen.
-   - Open punten: jargon uit de testset ("pijl", "vaaltje"). Korte spookopnames: #92; nocmig: niet nu.
+   - Open punten: korte spookopnames (#92); nocmig: niet nu. "Pijl" en "vaaltje" werken al (bijnamen, proef 11 okt).
    - Kosten per wandeling in het testset-script.
 3. **Klaar voor vreemden:**
    - Twee omgevingen (stabiel en beta, zie Ideeën voor later).
@@ -51,7 +51,6 @@ Volgorde: (a) nu de kleine open punten, betatesters uitnodigen en een wandeling;
 
 ## Open punten
 
-- **Tim vragen** wat hij bedoelde met de afgekapte feedback "de knop" (11 okt).
 - **Uitnodiging vanuit Developer** (PR #91, 13 okt): na "Code maken" opent een aparte knop "Mail openen" de mail-app (Chrome opende hem niet na het wachten op de proxy). De mail noemt nu ook iPhone/Safari (zonder trillen). Nog nagaan op de telefoon of de mail-app opent.
 - **Podcast pauzeert bij inspreken** (13 okt, in de auto via Bluetooth): pauze tijdens de opname, dan even verder, dan weer stil. Vermoeden: de microfoon zet Bluetooth in belmodus (HFP), en het terugschakelen naar muziek (A2DP) hapert. Trillen vraagt geen audio aan. Nog na te gaan: gebeurt het ook zonder Bluetooth, en helpt het om de microfoon van de telefoon te kiezen (`deviceId` uit `enumerateDevices`)? Anders oplossen in Capacitor (audiofocus zelf regelen).
 - **Nieuwe versie pas laden als er geen wandeling loopt** (#65): op de telefoon nalopen (`update_deferred` / `update_applied` in het log).
