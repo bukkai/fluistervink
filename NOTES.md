@@ -12,7 +12,7 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 
 ## Volgende stappen
 
-0. **Native laag**: plan in `docs/plan-capacitor.md` (goedgekeurd 13 okt). Eigenaar installeert Android Studio (telefoon: Android 15); daarna fase 0 (microfoon van de telefoon kiezen, in de PWA) en fase 1 (schil en trillen met patronen).
+0. **Native laag** (`docs/plan-capacitor.md`): fase 0 (#94, microfoon van de telefoon zonder echo-onderdrukking; nog proberen in de auto, kijk naar `mic_opened` in het log) en fase 1 (#95, Android-app met trilpatronen) gemerged op 14 okt. Getest op de Fairphone 5 (Android 15): alle patronen komen door, ook op stil. Volgende: een echte wandeling met de app, daarna fase 2 (foreground service, trillen met het scherm uit).
 1. Een paar echte betatesters uitnodigen (de eigenaar regelt ze) en nog een wandeling van jezelf met de huidige versie; daarna Capacitor (trillen en achtergrond eerst, wake word later). Zie de roadmap naar v1.0 hieronder.
 2. Bosuil uit de bus (12 okt) nog weghalen.
 3. Bij elke nieuwe gedeelde wandeling `npm run feedback -- pull` en `npm run testset` draaien, eventueel ook met `--model claude-sonnet-5-5`.
@@ -86,6 +86,13 @@ Nog niet gepland; eerst overleggen.
   2. **Zelf groeperen op schermafstand:** bij elke zoom opnieuw stippen binnen ±24 px samenvoegen (uitbreiding van `groupByPosition`). Geen extra pakket, maar zoom- en tikgedrag zelf bouwen.
   3. **Cluster als lijst:** tikken op een cluster opent meteen het popup-venster met alle waarnemingen erin (dat venster is al een lijst met knoppen naar de lijst), met een knop "Inzoomen". Op een telefoon is dat sneller dan drie keer inzoomen. Te combineren met 1 (`clusterclick` zelf afhandelen).
   Voorstel: 1 met het popup-gedrag van 3 bij een klein cluster (bv. ≤ 5 waarnemingen of hoog ingezoomd), anders inzoomen. Speelt het meest bij lang op één plek staan (vogelhut); testen met een echte wandeling uit de testset.
+
+## Android-app
+
+- Bouwen vraagt Java 21 (Temurin uit `~/Library/Java/JavaVirtualMachines/`; Homebrew bouwt het op de Intel-Mac uit de broncode) en `JAVA_HOME` naar de Java van Android Studio, zie README.
+- Installeren gaat draadloos (adb, draadloze foutopsporing): de USB-poort ziet de Fairphone niet. De verbinding valt weg als de telefoon op slot gaat of van wifi wisselt; dan opnieuw aanzetten. De poort vindt `adb mdns services`; koppelen (`adb pair`) blijft bewaard.
+- Trillen als "communicatieverzoek": als "melding" hield Android het op stil tegen (`ignored_for_ringer_mode`). Nagaan met `adb shell dumpsys vibrator_manager`.
+- De app heeft een eigen database (los van de PWA in Chrome): eenmalig overzetten met de JSON-export en -import.
 
 ## Overstappen tussen computers
 
