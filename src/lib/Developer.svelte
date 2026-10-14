@@ -12,7 +12,7 @@
     type SharedNote,
     type Tester,
   } from './api';
-  import { download, exportAllJson, importJson } from './export';
+  import { exportAllJson, importJson, saveFile } from './export';
 
   let testers = $state<Tester[]>();
   let testersError = $state('');
@@ -163,10 +163,17 @@
   /** Met opnames: voor de testset, of om terug te kunnen luisteren na importeren */
   let withAudio = $state(false);
 
+  let exportMessage = $state('');
+
   async function exportData() {
     const date = new Date().toISOString().slice(0, 10);
     const suffix = withAudio ? '-met-opnames' : '';
-    download(await exportAllJson({ withAudio }), `fluistervink-${date}${suffix}.json`);
+    exportMessage = '';
+    try {
+      await saveFile(await exportAllJson({ withAudio }), `fluistervink-${date}${suffix}.json`);
+    } catch (error) {
+      exportMessage = `Exporteren mislukt: ${error instanceof Error ? error.message : error}`;
+    }
   }
 </script>
 
@@ -312,6 +319,9 @@
     </label>
     <button class="btn secondary block" onclick={exportData}>Alle gegevens exporteren (JSON)</button
     >
+    {#if exportMessage}
+      <p class="message error">{exportMessage}</p>
+    {/if}
     <label class="btn secondary block file">
       Wandelingen importeren (JSON)
       <input type="file" accept="application/json,.json" onchange={importData} />

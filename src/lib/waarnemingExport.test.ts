@@ -1,7 +1,20 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { HOUTDUIF, VINK, observation } from '../test-helpers';
 import { db, type Session } from './db';
-import { buildExport, markExported, markReady, readyForExport } from './waarnemingExport';
+import {
+  buildExport,
+  exportForWaarneming,
+  markExported,
+  markReady,
+  readyForExport,
+} from './waarnemingExport';
+
+// Het opslaan zelf (download of het venster van Android) nagebootst
+const saveFile = vi.hoisted(() => vi.fn());
+vi.mock('./export', async (actual) => ({
+  ...(await actual<typeof import('./export')>()),
+  saveFile,
+}));
 
 // De CSV moet precies passen op de bulkimport van waarneming.nl (getest op
 // 11 okt, zie docs/waarneming-nl.md). Deze tests leggen dat formaat vast.
@@ -127,5 +140,37 @@ describe('meer wandelingen in één export', () => {
 
     const ready = readyForExport(await db.sessions.toArray());
     expect(ready.map((s) => s.id)).toEqual([session.id]);
+  });
+});
+
+describe('exportForWaarneming', () => {
+  async function walkWithObservation() {
+    await db.sessions.add(session);
+    const obs = observation({ position });
+    await db.observations.add(obs);
+    return obs;
+  }
+
+  it('markeert als geëxporteerd als het bestand is opgeslagen', async () => {
+    const obs = await walkWithObservation();
+    saveFile.mockResolvedValueOnce(true);
+    expect(await exportForWaarneming([session])).toBe('1 waarneming geëxporteerd.');
+    expect((await db.sessions.get(session.id))?.exportedAt).toBeDefined();
+    expect((await db.observations.get(obs.id))?.status).toBe('exported');
+  });
+
+  it('markeert niets als de gebruiker het opslaan annuleert', async () => {
+    const obs = await walkWithObservation();
+    saveFile.mockResolvedValueOnce(false);
+    expect(await exportForWaarneming([session])).toBeUndefined();
+    expect((await db.sessions.get(session.id))?.exportedAt).toBeUndefined();
+    expect((await db.observations.get(obs.id))?.status).not.toBe('exported');
+  });
+
+  it('meldt het en markeert niets als het opslaan mislukt', async () => {
+    await walkWithObservation();
+    saveFile.mockRejectedValueOnce(new Error('geen ruimte'));
+    expect(await exportForWaarneming([session])).toBe('Opslaan mislukt: geen ruimte');
+    expect((await db.sessions.get(session.id))?.exportedAt).toBeUndefined();
   });
 });

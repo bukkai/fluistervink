@@ -1,5 +1,6 @@
 import { db, type Observation, type Session } from './db';
-import { download } from './export';
+import { saveFile } from './export';
+import { logEvent } from './log';
 import { listObservations } from './observations';
 import {
   allActivities,
@@ -84,7 +85,7 @@ function filename(sessions: Session[]): string {
   return `waarneming-${days[0] === days[1] ? days[0] : days.join('-tot-')}-${sessions.length}-wandelingen.csv`;
 }
 
-/** Na het downloaden: waarnemingen en wandelingen markeren als geëxporteerd. */
+/** Na het opslaan: waarnemingen en wandelingen markeren als geëxporteerd. */
 export async function markExported(
   sessions: Session[],
   observations: Observation[],
@@ -109,8 +110,10 @@ export function readyForExport(sessions: Session[]): Session[] {
 }
 
 /**
- * Exporteren vanuit het scherm: waarschuwen, downloaden en markeren. Geeft
- * de uitkomst als tekst terug, of niets als de gebruiker annuleert.
+ * Exporteren vanuit het scherm: waarschuwen, opslaan en markeren. Geeft de
+ * uitkomst als tekst terug, of niets als de gebruiker annuleert. Alleen als
+ * geëxporteerd markeren als het bestand er echt is (14 okt: de Android-app
+ * markeerde zonder bestand).
  */
 export async function exportForWaarneming(sessions: Session[]): Promise<string | undefined> {
   const result = await buildExport(sessions);
@@ -128,7 +131,12 @@ export async function exportForWaarneming(sessions: Session[]): Promise<string |
   ].filter(Boolean);
   if (warnings.length && !confirm([...warnings, 'Toch exporteren?'].join('\n\n'))) return;
 
-  download(result.csv, result.filename);
+  try {
+    if (!(await saveFile(result.csv, result.filename))) return;
+  } catch (error) {
+    logEvent('export_failed', { error: String(error) });
+    return `Opslaan mislukt: ${error instanceof Error ? error.message : error}`;
+  }
   await markExported(result.sessions, result.exported);
   const n = result.exported.length;
   const walks = result.sessions.length;
