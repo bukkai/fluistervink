@@ -66,3 +66,27 @@ export async function walkServiceStatus(): Promise<{ draait: boolean; fout?: str
   if (!isNativeApp) return { draait: false };
   return Wandeling.status().catch((error) => ({ draait: false, fout: String(error) }));
 }
+
+interface BestandPlugin {
+  opslaan(options: { naam: string; type: string; data: string }): Promise<{ opgeslagen: boolean }>;
+}
+
+const Bestand = registerPlugin<BestandPlugin>('Bestand');
+
+/**
+ * Een bestand opslaan via het "Opslaan als"-venster van Android
+ * (BestandPlugin.java): de WebView van de app doet niets met een gewone
+ * download. Geeft false als de gebruiker annuleert; gooit bij een fout.
+ */
+export async function saveFileNative(blob: Blob, filename: string): Promise<boolean> {
+  const data = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    // "data:<type>;base64,<data>": alleen het deel na de komma
+    reader.onload = () => resolve(String(reader.result).split(',', 2)[1] ?? '');
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+  // Zonder "; charset=…": het venster kiest de extensie op het kale type
+  const type = blob.type.split(';')[0] || 'application/octet-stream';
+  return (await Bestand.opslaan({ naam: filename, type, data })).opgeslagen;
+}
