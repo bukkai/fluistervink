@@ -13,3 +13,6 @@ testset/
 
 # Toegangscodes van testers (scripts/tester.mjs)
 .testers.json
+
+# Gebouwde APK om zelf te installeren
+apk/

@@ -70,6 +70,7 @@ Elke fase is één à twee PR's en wordt op een wandeling getest voordat de volg
 - **Eerst een proef, vóór de nette uitwerking:** blijft de JavaScript in de WebView op de achtergrond draaien? Komen de verzoeken aan de proxy terug, en volgt dan de tril? Het gebeurtenissenlog meet dit al: achtergrond, tijden per stap en `vibrate_blocked`. Werkt de GPS van de WebView (`watchPosition`) op de achtergrond niet goed genoeg, dan gaat de positie via de Geolocation-plugin van Capacitor.
 - Bij het stoppen van de wandeling verdwijnt de melding. Na 8 uur stopt hij vanzelf, net als de wandeling (`checkStaleSession`).
 - `#uitleg` en `#privacy` bijwerken: het trillen, de melding, en dat Google Play weet dat je de app hebt.
+- **Stand (14 okt):** de proef staat klaar op de branch `fase2-achtergrond`: `WandelingService` (type `location`, melding "Wandeling loopt", vangnet 8 uur na de laatste opname) en `WandelingPlugin`, aangestuurd vanuit `src/lib/walkService.ts`. Het log krijgt `walk_service_started`, `walk_service_failed` en `walk_service_stopped`. Nog geen wakelock: eerst zien of het zonder gaat. `#uitleg` en `#privacy` volgen als de proef werkt.
 - **Klaar als:** op een wandeling: knop indrukken, inspreken, scherm uit. Een paar seconden later voel je het juiste patroon, ook bij een onzekere waarneming of een fout.
 
 ### Fase 3: opnemen zonder te kijken (aparte beslissing, na fase 2)
