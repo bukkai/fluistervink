@@ -27,3 +27,42 @@ export async function vibrateNative(pattern: number[]): Promise<boolean> {
     return false;
   }
 }
+
+export interface WalkServiceResult {
+  ok: boolean;
+  /** Waarom het niet lukte */
+  reden?: string;
+  /** Mag de app meldingen tonen (Android 13+)? Anders draait de service zonder zichtbare melding */
+  meldingen?: boolean;
+}
+
+interface WandelingPlugin {
+  start(): Promise<WalkServiceResult>;
+  stop(): Promise<void>;
+  status(): Promise<{ draait: boolean; fout?: string; meldingen: boolean }>;
+}
+
+const Wandeling = registerPlugin<WandelingPlugin>('Wandeling');
+
+/**
+ * Foreground service met de melding "Wandeling loopt" (WandelingService.java):
+ * houdt de app in leven met het scherm uit, zodat de wachtrij doorloopt en de
+ * tril na het verwerken toch komt. In de browser bestaat dit niet.
+ */
+export async function startWalkService(): Promise<WalkServiceResult> {
+  if (!isNativeApp) return { ok: false, reden: 'web' };
+  try {
+    return await Wandeling.start();
+  } catch (error) {
+    return { ok: false, reden: String(error) };
+  }
+}
+
+export async function stopWalkService(): Promise<void> {
+  if (isNativeApp) await Wandeling.stop().catch(() => {});
+}
+
+export async function walkServiceStatus(): Promise<{ draait: boolean; fout?: string }> {
+  if (!isNativeApp) return { draait: false };
+  return Wandeling.status().catch((error) => ({ draait: false, fout: String(error) }));
+}

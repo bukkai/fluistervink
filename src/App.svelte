@@ -17,6 +17,7 @@
   import { vibrate } from './lib/feedback';
   import { instance } from './lib/instance.svelte';
   import { processQueue } from './lib/observations';
+  import { syncWalkService } from './lib/walkService';
   import {
     SHARE_CHANGED,
     scheduleShare,
@@ -66,6 +67,13 @@
 
   let active = $derived($sessions?.find((s) => s.status === 'active'));
   let past = $derived($sessions?.filter((s) => s.status === 'ended') ?? []);
+
+  // Android-app: melding "Wandeling loopt" zolang er een wandeling loopt, zodat
+  // de app met het scherm uit doorwerkt (walkService.ts). Pas na het laden.
+  let activeId = $derived($sessions ? (active?.id ?? null) : undefined);
+  $effect(() => {
+    if (activeId !== undefined) syncWalkService(activeId ?? undefined);
+  });
 
   // Elk scherm heeft een eigen adres (#wandelingen, #wandeling/<id>,
   // #instellingen, #feedback), zodat de terugknop van Android teruggaat naar
@@ -150,7 +158,10 @@
   }
   checkStale();
   const onVisible = () => {
-    if (!document.hidden) checkStale();
+    if (document.hidden) return;
+    checkStale();
+    // Android kan de service intussen gestopt hebben
+    if (activeId) syncWalkService(activeId);
   };
   document.addEventListener('visibilitychange', onVisible);
   onDestroy(() => document.removeEventListener('visibilitychange', onVisible));

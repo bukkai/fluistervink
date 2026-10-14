@@ -7,6 +7,7 @@
   import { submitRecording, submitText } from './observations';
   import { recorder, startRecording, stopRecording } from './recorder.svelte';
   import SessionLog from './SessionLog.svelte';
+  import { syncWalkService } from './walkService';
   import { createTalkButton } from './talkButton';
 
   let { session }: { session: Session } = $props();
@@ -60,6 +61,8 @@
     start: async () => {
       // Tijd en positie horen bij het begin van de opname, niet bij het eind
       lookup = currentPosition();
+      // Lukte de service bij de start nog niet (geen locatietoestemming), dan nu
+      syncWalkService(session.id);
       if (!(await startRecording())) return false;
       vibrate('recording');
       maxTimer = setTimeout(finishRecording, MAX_RECORDING_MS);

@@ -24,6 +24,12 @@
 
         </activity>
 
+        <!-- Houdt de app in leven tijdens een wandeling (fase 2) -->
+        <service
+            android:name=".WandelingService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -47,4 +53,8 @@
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
     <!-- Trilfeedback (TrillenPlugin) -->
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Foreground service tijdens een wandeling (WandelingService), met melding -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 </manifest>

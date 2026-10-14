@@ -9,6 +9,7 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         // Eigen plugins vóór super.onCreate registreren
         registerPlugin(TrillenPlugin.class);
+        registerPlugin(WandelingPlugin.class);
         super.onCreate(savedInstanceState);
     }
 }
