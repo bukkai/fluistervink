@@ -32,8 +32,14 @@
     <p>
       De opname van elke uitspraak, de tekst, het tijdstip, de locatie (alleen op het moment dat je
       begint met inspreken), je waarnemingen en een logboek van wat de app deed (fouten,
-      wachttijden) staan in de opslag van de browser op je telefoon. Daar blijven ze tot je ze
-      verwijdert.
+      wachttijden) staan in de opslag van de app (of van de browser) op je telefoon. Daar blijven ze
+      tot je ze verwijdert.
+    </p>
+    <p>
+      In de Android-app staat tijdens een wandeling de melding "Wandeling loopt". Daardoor mag de
+      app doorwerken met het scherm uit, en blijft hij je locatie volgen om bij een uitspraak meteen
+      te weten waar je bent. Bewaard wordt nog steeds alleen de locatie bij het begin van een
+      uitspraak, geen route. Na "Stop" houdt het volgen op.
     </p>
   </div>
 </section>
@@ -67,6 +73,12 @@
       <dd>
         Bij het bekijken van de kaart haalt je telefoon kaartstukjes op bij OpenStreetMap. Hun
         server ziet daardoor welk gebied je bekijkt.
+      </dd>
+      <dt>Google</dt>
+      <dd>
+        Installeer je de Android-app via Google Play, dan weet Google dat je hem hebt, zoals bij
+        elke app. De app zelf stuurt niets naar Google. Sla je een export op in Google Drive, dan
+        staat dat bestand bij Google.
       </dd>
     </dl>
   </div>
