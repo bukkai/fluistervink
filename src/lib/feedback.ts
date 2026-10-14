@@ -1,5 +1,6 @@
 import type { Utterance } from './db';
 import { logEvent } from './log';
+import { isNativeApp, vibrateNative } from './native';
 
 // Trilfeedback, zodat je in het veld niet naar het scherm hoeft te kijken.
 // Patronen in milliseconden: tril, pauze, tril, …
@@ -28,11 +29,18 @@ const PATTERNS = {
 export type Feedback = keyof typeof PATTERNS;
 
 /**
- * Trilt, als het apparaat dat kan. Chrome weigert als de app op de achtergrond
- * staat of als je de pagina sinds het openen nog niet hebt aangeraakt; dat
- * komt in het gebeurtenissenlog.
+ * Trilt, als het apparaat dat kan. In de Android-app via Android zelf; in de
+ * browser weigert Chrome als de app op de achtergrond staat of als je de
+ * pagina sinds het openen nog niet hebt aangeraakt. Weigeren komt in het
+ * gebeurtenissenlog.
  */
 export function vibrate(feedback: Feedback): void {
+  if (isNativeApp) {
+    vibrateNative(PATTERNS[feedback]).then((ok) => {
+      if (!ok) logEvent('vibrate_blocked', { feedback, hidden: document.hidden, native: true });
+    });
+    return;
+  }
   if (!navigator.vibrate) return;
   if (!navigator.vibrate(PATTERNS[feedback])) {
     logEvent('vibrate_blocked', {
