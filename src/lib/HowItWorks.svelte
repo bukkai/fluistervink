@@ -2,6 +2,7 @@
   // Uitleg voor testers en andere geïnteresseerden: hoe je de app gebruikt en
   // wat AI er wel en niet in doet. Kort en zonder technische termen. Houd de
   // trilpatronen gelijk met feedback.ts.
+  import { isNativeApp } from './native';
 </script>
 
 <a class="back" href="#/">Terug</a>
@@ -77,12 +78,23 @@
         op zich laten wachten.
       </dd>
     </dl>
-    <p>
-      Voel je niets? Zet dan in de instellingen van je telefoon trillen bij aanraken aan (bij een
-      Engelse telefoon: Sound and vibration → Vibration and haptics → Touch feedback). De app trilt
-      alleen als hij op je scherm staat, niet met het scherm uit of als je een andere app open hebt.
-      Op een iPhone trilt de app helemaal niet (Safari kan dat niet); kijk dan even op het scherm.
-    </p>
+    {#if isNativeApp}
+      <p>
+        Zolang een wandeling loopt, staat er een melding "Wandeling loopt" bovenin je telefoon.
+        Daardoor werkt de app door als je scherm uit is of je een andere app opent: na het inspreken
+        mag je je telefoon gewoon wegstoppen, de tril komt vanzelf. Laat de knop wel eerst los of
+        tik op Stop, want als je het scherm uitzet tijdens het inspreken, stopt de opname. Tik op de
+        melding om de app weer te openen; na "Stop" verdwijnt hij.
+      </p>
+    {:else}
+      <p>
+        Voel je niets? Zet dan in de instellingen van je telefoon trillen bij aanraken aan (bij een
+        Engelse telefoon: Sound and vibration → Vibration and haptics → Touch feedback). De app
+        trilt alleen als hij op je scherm staat, niet met het scherm uit of als je een andere app
+        open hebt. In de Android-app van Fluistervink kan dat wel. Op een iPhone trilt de app
+        helemaal niet (Safari kan dat niet); kijk dan even op het scherm.
+      </p>
+    {/if}
   </div>
 </section>
 
