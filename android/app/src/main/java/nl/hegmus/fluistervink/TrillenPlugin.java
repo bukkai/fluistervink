@@ -17,9 +17,12 @@ import org.json.JSONException;
 
 /**
  * Trilpatronen voor de webcode (src/lib/native.ts). Chrome trilt alleen als
- * "Touch feedback" van Android aan staat en de app op het scherm staat. Hier
- * trilt de app als een melding: los van die instelling, en (met de foreground
- * service van fase 2) ook op de achtergrond. Wel stil bij "Niet storen".
+ * "Touch feedback" van Android aan staat en de app op het scherm staat.
+ *
+ * Gebruik "communicatieverzoek": Android houdt in de stille stand alleen
+ * trillen van beltonen en meldingen tegen (getest op 14 okt: een melding werd
+ * "ignored_for_ringer_mode"), en dit gebruik mag ook vanaf de achtergrond
+ * trillen (fase 2). Los van "Touch feedback".
  */
 @CapacitorPlugin(name = "Trillen")
 public class TrillenPlugin extends Plugin {
@@ -52,10 +55,10 @@ public class TrillenPlugin extends Plugin {
 
         VibrationEffect effect = VibrationEffect.createWaveform(timings, -1);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            vibrator.vibrate(effect, VibrationAttributes.createForUsage(VibrationAttributes.USAGE_NOTIFICATION));
+            vibrator.vibrate(effect, VibrationAttributes.createForUsage(VibrationAttributes.USAGE_COMMUNICATION_REQUEST));
         } else {
             AudioAttributes attributes = new AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION_COMMUNICATION_REQUEST)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                 .build();
             vibrator.vibrate(effect, attributes);
