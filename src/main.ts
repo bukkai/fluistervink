@@ -2,10 +2,21 @@ import { mount } from 'svelte';
 import './app.css';
 import App from './App.svelte';
 import { acceptInviteLink } from './lib/api';
-import { startLogging } from './lib/log';
+import { logEvent, startLogging } from './lib/log';
 import './lib/update';
 
 startLogging();
+// De app-code laadde eerst niet en public/herstel.js heeft de cache gewist:
+// loggen, en de vlag weg zodat het een volgende keer weer kan
+try {
+  const failedScript = sessionStorage.getItem('fluistervink-herstel');
+  if (failedScript) {
+    logEvent('cache_recovered', { failedScript });
+    sessionStorage.removeItem('fluistervink-herstel');
+  }
+} catch {
+  // Geen sessionStorage: dan ook geen herstel gebeurd
+}
 // Vóór het mounten, zodat de router "#code=…" nooit als scherm ziet. Ook bij
 // hashchange: staat de app al open, dan herlaadt de link de pagina niet. Deze
 // luisteraar komt vóór die van de router in App.svelte en gaat dus eerst.
