@@ -14,10 +14,9 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 
 0. **Native laag** (`docs/plan-capacitor.md`): fase 0 (#94, microfoon van de telefoon zonder echo-onderdrukking; nog proberen in de auto, kijk naar `mic_opened` in het log) en fase 1 (#95, Android-app met trilpatronen) gemerged op 14 okt. Getest op de Fairphone 5 (Android 15): alle patronen komen door, ook op stil. Eerste wandeling met de app (14 okt, Velp, 19 min, 17 uitspraken): ging goed. Microfoon zonder echo-onderdrukking (`mic_opened`), antwoord in 2–7 s. Merlin openen stopt de opname (verwacht, zo laten); vliegtuigmodus midden in een opname: netjes opnieuw geprobeerd. Missers: "ekster" werd "Extra" (STT, ekster ontbreekt), en "één huismus ter plaatse, nee, maak er twee van, een mannetje en een vrouwtje" maakte van de huismus van 11:36 een mannetje en voegde een vrouwtje toe met activiteit roepend (model, Haiku). Nagespeeld met de testset (juiste uitkomst met de hand ingevuld): de huidige prompt deed het 20 van de 21 keer goed, dus een uitschieter. Een extra regel in de prompt maakte geen meetbaar verschil en is niet toegevoegd. Wel de wandeling nalopen, dan komt de uitspraak met het goede antwoord in de testset. Volgende: fase 2 (foreground service, trillen met het scherm uit).
 1. Een paar echte betatesters uitnodigen (de eigenaar regelt ze) en nog een wandeling van jezelf met de huidige versie; daarna Capacitor (trillen en achtergrond eerst, wake word later). Zie de roadmap naar v1.0 hieronder.
-2. Bosuil uit de bus (12 okt) nog weghalen.
-3. Bij elke nieuwe gedeelde wandeling `npm run feedback -- pull` en `npm run testset` draaien, eventueel ook met `--model claude-sonnet-5-5`.
-4. Prompt verbeteren met wat de testset laat zien ("tortelduif"), telkens nagaan met de testset.
-5. Later: kostenoverzicht per wandeling in het testset-script (uit het `usage`-blok van Anthropic, plus minuten audio voor OpenAI).
+2. Bij elke nieuwe gedeelde wandeling `npm run feedback -- pull` en `npm run testset` draaien, eventueel ook met `--model claude-sonnet-5-5`.
+3. Prompt verbeteren met wat de testset laat zien ("tortelduif"), telkens nagaan met de testset.
+4. Later: kostenoverzicht per wandeling in het testset-script (uit het `usage`-blok van Anthropic, plus minuten audio voor OpenAI).
 
 ## Roadmap naar v1.0 (13 okt)
 
