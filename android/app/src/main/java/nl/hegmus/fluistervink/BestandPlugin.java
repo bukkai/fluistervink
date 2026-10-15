@@ -1,10 +1,13 @@
 package nl.hegmus.fluistervink;
 
 import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
+import android.provider.MediaStore;
 import android.util.Base64;
-import android.webkit.MimeTypeMap;
 import androidx.activity.result.ActivityResult;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -18,20 +21,32 @@ import java.io.OutputStream;
 /**
  * Een bestand opslaan (CSV voor waarneming.nl, JSON-export) vanuit de webcode
  * (src/lib/native.ts). De WebView doet niets met een download zoals Chrome
- * die geeft, dus hier het "Opslaan als"-venster van Android: de gebruiker
- * kiest de plek (Downloads, Drive), en de app heeft geen toestemming voor de
- * opslag nodig.
+ * die geeft.
+ *
+ * Vanaf Android 10 rechtstreeks in Downloads, met het type van de webcode
+ * erbij, zoals Chrome een download opslaat; daar is geen toestemming voor
+ * nodig. Via het "Opslaan als"-venster raadde Android het type zelf uit de
+ * extensie, en zo'n CSV was op waarneming.nl uitgegrijsd: het uploadveld
+ * accepteert alleen het type "text/csv" (15 okt). Oudere Android-versies
+ * houden het venster.
  */
 @CapacitorPlugin(name = "Bestand")
 public class BestandPlugin extends Plugin {
 
-    /** naam, type (MIME) en data (base64). Geeft { opgeslagen: false } bij annuleren. */
+    /**
+     * naam, type (MIME) en data (base64). Geeft { opgeslagen, map }: map is
+     * "Downloads" als de app zelf de plek koos; opgeslagen false bij annuleren.
+     */
     @PluginMethod
     public void opslaan(PluginCall call) {
         String naam = call.getString("naam");
-        String type = typeVoor(naam, call.getString("type", "application/octet-stream"));
+        String type = call.getString("type", "application/octet-stream");
         if (naam == null || call.getString("data") == null) {
             call.reject("Naam of data ontbreekt");
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            inDownloads(call, naam, type);
             return;
         }
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
@@ -41,17 +56,34 @@ public class BestandPlugin extends Plugin {
         startActivityForResult(call, intent, "naKiezen");
     }
 
-    /**
-     * Het type dat Android zelf bij de extensie hoort. Chrome zet accept=".csv"
-     * van een uploadveld (waarneming.nl) met dezelfde tabel om naar een type,
-     * en grijst in het kiesvenster bestanden met een ander type uit; een CSV
-     * met "text/csv" was daar niet te kiezen (15 okt).
-     */
-    private static String typeVoor(String naam, String type) {
-        if (naam == null) return type;
-        String extensie = MimeTypeMap.getFileExtensionFromUrl(Uri.encode(naam));
-        String vanAndroid = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extensie.toLowerCase());
-        return vanAndroid != null ? vanAndroid : type;
+    /** Bestaat de naam al, dan maakt Android er "naam (1).csv" van. */
+    private void inDownloads(PluginCall call, String naam, String type) {
+        ContentResolver resolver = getContext().getContentResolver();
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.MediaColumns.DISPLAY_NAME, naam);
+        values.put(MediaStore.MediaColumns.MIME_TYPE, type);
+        // Onzichtbaar voor andere apps tot het bestand helemaal geschreven is
+        values.put(MediaStore.MediaColumns.IS_PENDING, 1);
+        Uri uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+        if (uri == null) {
+            call.reject("Opslaan mislukt: kan geen bestand maken in Downloads");
+            return;
+        }
+        try {
+            schrijf(uri, call.getString("data"));
+        } catch (IOException | IllegalArgumentException e) {
+            resolver.delete(uri, null, null);
+            call.reject("Opslaan mislukt: " + e.getMessage());
+            return;
+        }
+        values.clear();
+        values.put(MediaStore.MediaColumns.IS_PENDING, 0);
+        resolver.update(uri, values, null, null);
+
+        JSObject uitkomst = new JSObject();
+        uitkomst.put("opgeslagen", true);
+        uitkomst.put("map", "Downloads");
+        call.resolve(uitkomst);
     }
 
     @ActivityCallback
@@ -64,14 +96,20 @@ public class BestandPlugin extends Plugin {
             call.resolve(uitkomst);
             return;
         }
-        try (OutputStream out = getContext().getContentResolver().openOutputStream(uri, "wt")) {
-            if (out == null) throw new IOException("Kan het bestand niet openen");
-            out.write(Base64.decode(call.getString("data"), Base64.DEFAULT));
+        try {
+            schrijf(uri, call.getString("data"));
         } catch (IOException | IllegalArgumentException e) {
             call.reject("Opslaan mislukt: " + e.getMessage());
             return;
         }
         uitkomst.put("opgeslagen", true);
         call.resolve(uitkomst);
+    }
+
+    private void schrijf(Uri uri, String data) throws IOException {
+        try (OutputStream out = getContext().getContentResolver().openOutputStream(uri, "wt")) {
+            if (out == null) throw new IOException("Kan het bestand niet openen");
+            out.write(Base64.decode(data, Base64.DEFAULT));
+        }
     }
 }

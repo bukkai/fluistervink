@@ -8,7 +8,7 @@ import {
 } from './db';
 import { getTester, type Area } from './api';
 import { APP_VERSION, logEvent } from './log';
-import { PLATFORM, isNativeApp, saveFileNative } from './native';
+import { PLATFORM, isNativeApp, saveFileNative, type SaveResult } from './native';
 
 // Ruwe export van alle gegevens, als vangnet tijdens de ontwikkeling, en het
 // terugzetten ervan. Standaard zonder audio, alleen de grootte; met
@@ -61,12 +61,12 @@ export async function exportAllJson({ withAudio = false } = {}): Promise<Blob> {
 }
 
 /**
- * Slaat een bestand op: in de browser als download, in de Android-app via het
- * "Opslaan als"-venster (daar doet een download niets). Geeft false als de
- * gebruiker annuleert. In de browser weten we niet of de download lukt; daar
- * altijd true.
+ * Slaat een bestand op: in de browser als download, in de Android-app in
+ * Downloads (daar doet een download niets). Geeft false als de gebruiker
+ * annuleert. In de browser weten we niet of de download lukt; daar altijd
+ * opgeslagen, zonder map.
  */
-export async function saveFile(blob: Blob, filename: string): Promise<boolean> {
+export async function saveFile(blob: Blob, filename: string): Promise<SaveResult> {
   if (isNativeApp) return saveFileNative(blob, filename);
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -74,7 +74,7 @@ export async function saveFile(blob: Blob, filename: string): Promise<boolean> {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
-  return true;
+  return {};
 }
 
 export interface ImportResult {

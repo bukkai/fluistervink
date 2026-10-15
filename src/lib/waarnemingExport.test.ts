@@ -153,10 +153,18 @@ describe('exportForWaarneming', () => {
 
   it('markeert als geëxporteerd als het bestand is opgeslagen', async () => {
     const obs = await walkWithObservation();
-    saveFile.mockResolvedValueOnce(true);
+    saveFile.mockResolvedValueOnce({});
     expect(await exportForWaarneming([session])).toBe('1 waarneming geëxporteerd.');
     expect((await db.sessions.get(session.id))?.exportedAt).toBeDefined();
     expect((await db.observations.get(obs.id))?.status).toBe('exported');
+  });
+
+  it('zegt in de app in welke map het bestand staat', async () => {
+    await walkWithObservation();
+    saveFile.mockResolvedValueOnce({ folder: 'Downloads' });
+    expect(await exportForWaarneming([session])).toBe(
+      '1 waarneming geëxporteerd. Het bestand staat in Downloads.',
+    );
   });
 
   it('markeert niets als de gebruiker het opslaan annuleert', async () => {
