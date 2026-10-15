@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { HOUTDUIF, VINK, observation } from '../test-helpers';
+import { HOUTDUIF, VINK, observation, unzipStored } from '../test-helpers';
 import { db, type Session } from './db';
 import {
   buildExport,
@@ -27,8 +27,8 @@ const session: Session = {
 const position = { lat: 51.9789, lon: 5.8812346, accuracy: 7.6, fixedAt: 0 };
 
 async function csvLines(): Promise<string[]> {
-  const { csv } = await buildExport([session]);
-  return (await csv.text()).split('\r\n');
+  const { file } = await buildExport([session]);
+  return (await file.text()).split('\r\n');
 }
 
 describe('buildExport', () => {
@@ -84,6 +84,30 @@ describe('buildExport', () => {
     await db.observations.add(observation({ position: { ...position, accuracy: 2500 } }));
     expect((await csvLines())[1].split(',')[5]).toBe('999');
   });
+
+  it('maakt in de app een xlsx met dezelfde kolommen, getallen als getal', async () => {
+    await db.observations.add(
+      observation({ observedAt: Date.parse('2026-10-11T14:10:00'), position }),
+    );
+    const result = await buildExport([session], 'xlsx');
+    expect(result.filename).toBe('waarneming-2026-10-11-1400.xlsx');
+    expect(result.file.type).toBe(
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    );
+    const sheet = (await unzipStored(result.file)).get('xl/worksheets/sheet1.xml')!;
+    expect(sheet).toContain(
+      '<c r="A1" t="inlineStr"><is><t xml:space="preserve">date</t></is></c>',
+    );
+    expect(sheet).toContain(
+      '<c r="O1" t="inlineStr"><is><t xml:space="preserve">uuid</t></is></c>',
+    );
+    expect(sheet).toContain(
+      '<c r="A2" t="inlineStr"><is><t xml:space="preserve">2026-10-11</t></is></c>',
+    );
+    expect(sheet).toContain('<c r="D2" t="n"><v>51.9789</v></c>');
+    expect(sheet).toContain('<c r="E2" t="n"><v>5.881235</v></c>');
+    expect(sheet).toContain('<c r="F2" t="n"><v>8</v></c>');
+  });
 });
 
 describe('meer wandelingen in één export', () => {
@@ -107,7 +131,7 @@ describe('meer wandelingen in één export', () => {
     expect(result.exported.map((o) => o.id)).toEqual([early.id, late.id]);
     expect(result.sessions.map((s) => s.id)).toEqual([session.id, second.id]);
     expect(result.filename).toBe('waarneming-2026-10-11-tot-2026-10-13-2-wandelingen.csv');
-    expect((await result.csv.text()).split('\r\n')).toHaveLength(4);
+    expect((await result.file.text()).split('\r\n')).toHaveLength(4);
   });
 
   it('noemt een bestand met wandelingen van één dag naar die dag', async () => {

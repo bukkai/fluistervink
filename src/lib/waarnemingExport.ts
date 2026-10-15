@@ -1,6 +1,7 @@
 import { db, type Observation, type Session } from './db';
 import { saveFile } from './export';
 import { logEvent } from './log';
+import { isNativeApp } from './native';
 import { listObservations } from './observations';
 import {
   allActivities,
@@ -10,6 +11,7 @@ import {
   getSpecies,
   type Code,
 } from './vocab';
+import { buildXlsx } from './xlsx';
 
 // Export van een wandeling voor de bulkimport van waarneming.nl
 // (https://waarneming.nl/import/observations/, zie docs/waarneming-nl.md).
@@ -38,8 +40,18 @@ const COLUMNS = [
 
 type Row = Record<(typeof COLUMNS)[number], string>;
 
+/** Kolommen die in een xlsx een getal zijn, zoals in het voorbeeld van waarneming.nl */
+const NUMERIC = new Set<string>(['lat', 'lng', 'accuracy', 'number']);
+
+/**
+ * CSV, of xlsx in de Android-app: een .csv krijgt daar van Android een type
+ * dat het uploadveld van waarneming.nl uitgrijst (15 okt). In de browser
+ * blijft het CSV, de vorm die in een echte import is getest.
+ */
+export type ExportFormat = 'csv' | 'xlsx';
+
 export interface WaarnemingExport {
-  csv: Blob;
+  file: Blob;
   filename: string;
   /** De wandelingen in het bestand */
   sessions: Session[];
@@ -52,7 +64,10 @@ export interface WaarnemingExport {
 }
 
 /** Eén CSV voor een of meer wandelingen (waarneming.nl neemt er tot 5000 tegelijk). */
-export async function buildExport(sessions: Session[]): Promise<WaarnemingExport> {
+export async function buildExport(
+  sessions: Session[],
+  format: ExportFormat = 'csv',
+): Promise<WaarnemingExport> {
   sessions = [...sessions].sort((a, b) => a.startedAt - b.startedAt);
   // Op volgorde van tijd (de lijst in de app toont de nieuwste eerst)
   const observations = (await Promise.all(sessions.map((s) => listObservations(s.id))))
@@ -62,11 +77,10 @@ export async function buildExport(sessions: Session[]): Promise<WaarnemingExport
   const included = observations.filter((obs) => !obs.skipExport);
   const exported = included.filter((obs) => obs.position);
   const skipped = included.filter((obs) => !obs.position);
-  const lines = [COLUMNS.map(csvField).join(','), ...exported.map((obs) => toLine(toRow(obs)))];
+  const rows = exported.map(toRow);
   return {
-    // CRLF en UTF-8 (zonder BOM, anders hoort die bij de eerste kolomnaam)
-    csv: new Blob([lines.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8' }),
-    filename: filename(sessions),
+    file: format === 'xlsx' ? toXlsx(rows) : toCsv(rows),
+    filename: `${filename(sessions)}.${format}`,
     sessions,
     exported,
     skipped,
@@ -79,10 +93,10 @@ export async function buildExport(sessions: Session[]): Promise<WaarnemingExport
 // Meer wandelingen: van de eerste tot de laatste dag.
 function filename(sessions: Session[]): string {
   const first = new Date(sessions[0].startedAt);
-  if (sessions.length === 1) return `waarneming-${fileTimestamp(first)}.csv`;
+  if (sessions.length === 1) return `waarneming-${fileTimestamp(first)}`;
   const last = new Date(sessions[sessions.length - 1].startedAt);
   const days = [isoDate(first), isoDate(last)];
-  return `waarneming-${days[0] === days[1] ? days[0] : days.join('-tot-')}-${sessions.length}-wandelingen.csv`;
+  return `waarneming-${days[0] === days[1] ? days[0] : days.join('-tot-')}-${sessions.length}-wandelingen`;
 }
 
 /** Na het opslaan: waarnemingen en wandelingen markeren als geëxporteerd. */
@@ -116,7 +130,7 @@ export function readyForExport(sessions: Session[]): Session[] {
  * markeerde zonder bestand).
  */
 export async function exportForWaarneming(sessions: Session[]): Promise<string | undefined> {
-  const result = await buildExport(sessions);
+  const result = await buildExport(sessions, isNativeApp ? 'xlsx' : 'csv');
   if (result.exported.length === 0) return 'Geen waarnemingen met een locatie om te exporteren.';
   const uncertain = result.exported.filter((obs) => obs.uncertain).length;
   const earlier = result.sessions.filter((s) => s.exportedAt).length;
@@ -133,7 +147,7 @@ export async function exportForWaarneming(sessions: Session[]): Promise<string |
 
   let saved;
   try {
-    saved = await saveFile(result.csv, result.filename);
+    saved = await saveFile(result.file, result.filename);
     if (!saved) return;
   } catch (error) {
     logEvent('export_failed', { error: String(error) });
@@ -190,8 +204,24 @@ function english(codes: Code[], id: number | undefined): string {
   return codes.find((c) => c.id === id)?.en ?? '';
 }
 
-function toLine(row: Row): string {
-  return COLUMNS.map((column) => csvField(row[column])).join(',');
+function toCsv(rows: Row[]): Blob {
+  const lines = [
+    COLUMNS.map(csvField).join(','),
+    ...rows.map((row) => COLUMNS.map((column) => csvField(row[column])).join(',')),
+  ];
+  // CRLF en UTF-8 (zonder BOM, anders hoort die bij de eerste kolomnaam)
+  return new Blob([lines.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8' });
+}
+
+function toXlsx(rows: Row[]): Blob {
+  return buildXlsx([
+    [...COLUMNS],
+    ...rows.map((row) =>
+      COLUMNS.map((column) =>
+        NUMERIC.has(column) && row[column] !== '' ? Number(row[column]) : row[column],
+      ),
+    ),
+  ]);
 }
 
 function csvField(value: string): string {

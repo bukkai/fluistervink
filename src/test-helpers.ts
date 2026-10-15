@@ -1,4 +1,6 @@
 // Bouwstenen voor de tests: nepwaarnemingen en nepantwoorden van het model.
+import { expect } from 'vitest';
+import { crc32 } from './lib/xlsx';
 import type Anthropic from '@anthropic-ai/sdk';
 import type { Observation } from './lib/db';
 
@@ -117,4 +119,26 @@ export class FakeLockManager {
       pending: this.waiting.map(info),
     };
   }
+}
+
+/** Leest een zip zonder compressie terug: naam → tekst, en controleert de CRC */
+export async function unzipStored(blob: Blob): Promise<Map<string, string>> {
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  const view = new DataView(bytes.buffer);
+  const files = new Map<string, string>();
+  let at = 0;
+  while (view.getUint32(at, true) === 0x04034b50) {
+    expect(view.getUint16(at + 8, true)).toBe(0);
+    const size = view.getUint32(at + 18, true);
+    const nameLength = view.getUint16(at + 26, true);
+    const name = new TextDecoder().decode(bytes.slice(at + 30, at + 30 + nameLength));
+    const data = bytes.slice(at + 30 + nameLength, at + 30 + nameLength + size);
+    expect(crc32(data)).toBe(view.getUint32(at + 14, true));
+    files.set(name, new TextDecoder().decode(data));
+    at += 30 + nameLength + size;
+  }
+  // Daarna de centrale lijst, met evenveel bestanden
+  expect(view.getUint32(at, true)).toBe(0x02014b50);
+  expect(view.getUint16(bytes.length - 12, true)).toBe(files.size);
+  return files;
 }
