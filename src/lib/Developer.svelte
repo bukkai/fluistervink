@@ -170,7 +170,11 @@
     const suffix = withAudio ? '-met-opnames' : '';
     exportMessage = '';
     try {
-      await saveFile(await exportAllJson({ withAudio }), `fluistervink-${date}${suffix}.json`);
+      const saved = await saveFile(
+        await exportAllJson({ withAudio }),
+        `fluistervink-${date}${suffix}.json`,
+      );
+      if (saved && saved.folder) exportMessage = `Opgeslagen in ${saved.folder}.`;
     } catch (error) {
       exportMessage = `Exporteren mislukt: ${error instanceof Error ? error.message : error}`;
     }

@@ -68,17 +68,24 @@ export async function walkServiceStatus(): Promise<{ draait: boolean; fout?: str
 }
 
 interface BestandPlugin {
-  opslaan(options: { naam: string; type: string; data: string }): Promise<{ opgeslagen: boolean }>;
+  opslaan(options: {
+    naam: string;
+    type: string;
+    data: string;
+  }): Promise<{ opgeslagen: boolean; map?: string }>;
 }
 
 const Bestand = registerPlugin<BestandPlugin>('Bestand');
 
+/** Uitkomst van opslaan: false als de gebruiker annuleerde, anders waar het staat */
+export type SaveResult = false | { folder?: string };
+
 /**
- * Een bestand opslaan via het "Opslaan als"-venster van Android
- * (BestandPlugin.java): de WebView van de app doet niets met een gewone
- * download. Geeft false als de gebruiker annuleert; gooit bij een fout.
+ * Een bestand opslaan in Downloads (BestandPlugin.java; op Android 9 en ouder
+ * via het "Opslaan als"-venster): de WebView van de app doet niets met een
+ * gewone download. Gooit bij een fout.
  */
-export async function saveFileNative(blob: Blob, filename: string): Promise<boolean> {
+export async function saveFileNative(blob: Blob, filename: string): Promise<SaveResult> {
   const data = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     // "data:<type>;base64,<data>": alleen het deel na de komma
@@ -88,7 +95,8 @@ export async function saveFileNative(blob: Blob, filename: string): Promise<bool
   });
   // Zonder "; charset=…": het venster kiest de extensie op het kale type
   const type = blob.type.split(';')[0] || 'application/octet-stream';
-  return (await Bestand.opslaan({ naam: filename, type, data })).opgeslagen;
+  const { opgeslagen, map } = await Bestand.opslaan({ naam: filename, type, data });
+  return opgeslagen && { folder: map };
 }
 
 interface VersiePlugin {

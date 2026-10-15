@@ -131,8 +131,10 @@ export async function exportForWaarneming(sessions: Session[]): Promise<string |
   ].filter(Boolean);
   if (warnings.length && !confirm([...warnings, 'Toch exporteren?'].join('\n\n'))) return;
 
+  let saved;
   try {
-    if (!(await saveFile(result.csv, result.filename))) return;
+    saved = await saveFile(result.csv, result.filename);
+    if (!saved) return;
   } catch (error) {
     logEvent('export_failed', { error: String(error) });
     return `Opslaan mislukt: ${error instanceof Error ? error.message : error}`;
@@ -144,6 +146,7 @@ export async function exportForWaarneming(sessions: Session[]): Promise<string |
     `${n === 1 ? '1 waarneming' : `${n} waarnemingen`}` +
       (walks > 1 ? ` uit ${walks} wandelingen` : '') +
       ' geëxporteerd.',
+    saved.folder && `Het bestand staat in ${saved.folder}.`,
     result.skipped.length &&
       `${result.skipped.length} zonder locatie overgeslagen; voer die met de hand in.`,
     result.excluded.length && `${result.excluded.length} uitgevinkt en niet geëxporteerd.`,
