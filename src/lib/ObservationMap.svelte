@@ -1,6 +1,6 @@
 <script lang="ts">
   import { liveQuery } from 'dexie';
-  import type { Map as LeafletMap, Marker } from 'leaflet';
+  import type { Map as LeafletMap, Marker, TileLayer } from 'leaflet';
   import 'leaflet/dist/leaflet.css';
   import type { Observation, Session } from './db';
   import { mapsUrl } from './devNotes';
@@ -29,6 +29,7 @@
 
   let container = $state<HTMLDivElement>();
   let map: LeafletMap | undefined;
+  let tiles: TileLayer | undefined;
   let fitted = false;
   /** Stip per waarneming, om er vanuit de lijst naartoe te gaan */
   let markers = new Map<string, Marker>();
@@ -119,7 +120,7 @@
       if (!container) return;
       if (!map) {
         map = L.map(container, { zoomControl: true });
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
           maxZoom: 19,
           attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         }).addTo(map);
@@ -177,6 +178,27 @@
     return () => map?.remove();
   });
 
+  /**
+   * Soms bleef de kaart een zwart vlak (15 okt, in de app): gemaakt voordat
+   * het vak zijn maat had, of tegels die bij slecht bereik mislukten. Leaflet
+   * probeert dat zelf niet opnieuw; dit wel, en met de hand via de knop.
+   */
+  function reload() {
+    map?.invalidateSize();
+    tiles?.redraw();
+  }
+
+  $effect(() => {
+    if (!container) return;
+    const observer = new ResizeObserver(() => map?.invalidateSize());
+    observer.observe(container);
+    window.addEventListener('online', reload);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('online', reload);
+    };
+  });
+
   // Vanuit de lijst: kaart in beeld, inzoomen op de stip en het popup-venster openen
   $effect(() => {
     if (!focus || !map) return;
@@ -194,13 +216,14 @@
 {#if $observations && $observations.length > 0}
   <section>
     <div class="map" bind:this={container}></div>
-    {#if withoutPosition > 0}
-      <p class="muted">
+    <p class="muted">
+      {#if withoutPosition > 0}
         {withoutPosition}
         {withoutPosition === 1 ? 'waarneming' : 'waarnemingen'} zonder locatie
         {withoutPosition === 1 ? 'staat' : 'staan'} niet op de kaart.
-      </p>
-    {/if}
+      {/if}
+      <button type="button" class="link" onclick={reload}>Kaart opnieuw laden</button>
+    </p>
   </section>
 {/if}
 
