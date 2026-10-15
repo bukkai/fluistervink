@@ -11,6 +11,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(TrillenPlugin.class);
         registerPlugin(WandelingPlugin.class);
         registerPlugin(BestandPlugin.class);
+        registerPlugin(VersiePlugin.class);
         super.onCreate(savedInstanceState);
     }
 }
