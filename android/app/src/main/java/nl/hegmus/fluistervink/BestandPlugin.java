@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Base64;
+import android.webkit.MimeTypeMap;
 import androidx.activity.result.ActivityResult;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -28,7 +29,7 @@ public class BestandPlugin extends Plugin {
     @PluginMethod
     public void opslaan(PluginCall call) {
         String naam = call.getString("naam");
-        String type = call.getString("type", "application/octet-stream");
+        String type = typeVoor(naam, call.getString("type", "application/octet-stream"));
         if (naam == null || call.getString("data") == null) {
             call.reject("Naam of data ontbreekt");
             return;
@@ -38,6 +39,19 @@ public class BestandPlugin extends Plugin {
             .setType(type)
             .putExtra(Intent.EXTRA_TITLE, naam);
         startActivityForResult(call, intent, "naKiezen");
+    }
+
+    /**
+     * Het type dat Android zelf bij de extensie hoort. Chrome zet accept=".csv"
+     * van een uploadveld (waarneming.nl) met dezelfde tabel om naar een type,
+     * en grijst in het kiesvenster bestanden met een ander type uit; een CSV
+     * met "text/csv" was daar niet te kiezen (15 okt).
+     */
+    private static String typeVoor(String naam, String type) {
+        if (naam == null) return type;
+        String extensie = MimeTypeMap.getFileExtensionFromUrl(Uri.encode(naam));
+        String vanAndroid = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extensie.toLowerCase());
+        return vanAndroid != null ? vanAndroid : type;
     }
 
     @ActivityCallback
