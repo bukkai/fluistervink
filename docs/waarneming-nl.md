@@ -7,6 +7,7 @@ Stand van zaken 6 oktober 2026.
 Uitgezocht op 10 oktober 2026 (ingelogd). Waarneming.nl heeft een eigen **bulkimport**: `https://waarneming.nl/import/observations/` (het oude adres `/exports/import/` verwijst ernaartoe). Daarnaast zet dezelfde pagina exports van Ornitho, iNaturalist en eBird om; het eBird-formaat hebben we dus niet nodig.
 
 - `.csv` (UTF-8) of `.xlsx`, tot 5000 waarnemingen. Volgorde van de kolommen maakt niet uit; onbekende kolommen worden genegeerd.
+  - Het uploadveld accepteert alleen de types `text/csv` en xlsx (niet de extensie `.csv`; nagekeken 15 okt). Op Android krijgt een `.csv` buiten de downloads van Chrome een ander type en is hij uitgegrijsd; daarom exporteert de Android-app xlsx. Het voorbeeldbestand (`observations-import-example.xlsx`, gemaakt met openpyxl) zet datum, tijd en tekst als tekstcel en `lat`, `lng`, `accuracy`, `number` als getal; `src/lib/xlsx.ts` doet hetzelfde.
 - De import draait op de achtergrond; je krijgt een e-mail. Bij een fout wordt er níets geïmporteerd en krijg je het bestand terug met een kolom `errors`.
 - Voorbeeldbestand met alle kolommen en opzoektabellen: `/import/observations/example/`.
 
