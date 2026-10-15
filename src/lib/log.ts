@@ -1,5 +1,6 @@
 import { db } from './db';
 import { INSTANCE_ID, claimInstance } from './instance.svelte';
+import { nativeAppVersion } from './native';
 
 // Gebeurtenissenlog voor de ontwikkelfase: alles wat helpt om later te
 // begrijpen wat er gebeurde (fouten, app op de achtergrond, geen netwerk,
@@ -46,6 +47,8 @@ export function startLogging(): void {
     online: navigator.onLine,
     standalone: matchMedia('(display-mode: standalone)').matches,
   });
+  // Welke native code er op de telefoon staat (alleen in de Android-app)
+  nativeAppVersion().then((versie) => versie && logEvent('native_version', { versie }));
   claimInstance();
 
   document.addEventListener('visibilitychange', () => {

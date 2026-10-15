@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { ApiError, getAccessCode, getTester, ping, setAccessCode } from './api';
   import { APP_VERSION } from './log';
+  import { nativeAppVersion } from './native';
   import { shareAudio, shareEnabled } from './share';
 
   let code = $state(getAccessCode());
@@ -9,6 +10,9 @@
   let message = $state('');
 
   let tester = $state(getTester());
+
+  let appVersion = $state<string>();
+  nativeAppVersion().then((versie) => (appVersion = versie));
 
   async function save(event: SubmitEvent) {
     event.preventDefault();
@@ -71,7 +75,9 @@
   </div>
 </section>
 
-<p class="version">Fluistervink · versie {APP_VERSION}</p>
+<p class="version">
+  Fluistervink · versie {APP_VERSION}{#if appVersion}<br />Android-app {appVersion}{/if}
+</p>
 
 <style>
   form,

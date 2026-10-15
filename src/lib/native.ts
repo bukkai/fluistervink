@@ -90,3 +90,24 @@ export async function saveFileNative(blob: Blob, filename: string): Promise<bool
   const type = blob.type.split(';')[0] || 'application/octet-stream';
   return (await Bestand.opslaan({ naam: filename, type, data })).opgeslagen;
 }
+
+interface VersiePlugin {
+  info(): Promise<{ versie: string; build: number }>;
+}
+
+const Versie = registerPlugin<VersiePlugin>('Versie');
+
+/**
+ * Versie van de geïnstalleerde Android-app (VersiePlugin.java), los van de
+ * webcode die live van de site komt. Undefined in de browser; "ouder dan
+ * 0.311" bij een app van vóór het versienummer.
+ */
+export async function nativeAppVersion(): Promise<string | undefined> {
+  if (!isNativeApp) return undefined;
+  try {
+    const { versie } = await Versie.info();
+    return versie;
+  } catch {
+    return 'ouder dan 0.311';
+  }
+}

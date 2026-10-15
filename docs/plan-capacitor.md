@@ -60,7 +60,7 @@ Elke fase is één à twee PR's en wordt op een wandeling getest voordat de volg
 - Capacitor toevoegen (`@capacitor/core`, `@capacitor/cli`, `@capacitor/android`), met `capacitor.config.ts` (`server.url`, app-ID) en de map `android/` in git.
 - **Eigen plugin `Trillen`** in Java (zoals de `MainActivity` van Capacitor; Kotlin vraagt een extra Gradle-plugin), in `android/`: trilpatronen via `VibrationEffect.createWaveform`. Daarbij het gebruik "communicatieverzoek" in plaats van "aanraking", zodat de instelling "Touch feedback" er niet meer toe doet. "Melding" werd in de stille stand tegengehouden (getest 14 okt). `vibrate()` in `src/lib/feedback.ts` gebruikt de plugin als die er is, anders `navigator.vibrate`.
 - Toestemmingen in het manifest: microfoon, locatie. Capacitor vraagt ze, wanneer de webcode `getUserMedia` of de geolocatie gebruikt.
-- Herkenbaar maken in het gebeurtenissenlog en de export: platform (`android-app` of `web`) en de versie van de app.
+- Herkenbaar maken in het gebeurtenissenlog en de export: platform (`android-app` of `web`) en de versie van de app. De native versie komt uit git (`0.<aantal commits> (<hash>)`, `android/app/build.gradle`), staat bij Instellingen en in het log (`native_version`); een app van vóór 15 okt meldt "ouder dan 0.311".
 - **Klaar als:** de app staat op de telefoon, een wandeling werkt precies als in Chrome, en de trilpatronen komen door met "Touch feedback" uit.
 
 ### Fase 2: doorwerken op de achtergrond

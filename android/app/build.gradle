@@ -1,5 +1,21 @@
 apply plugin: 'com.android.application'
 
+// Versie uit git, zodat elke build vanzelf een hoger nummer krijgt: het aantal
+// commits (versionCode, moet voor Google Play steeds hoger worden) en de
+// korte commit-hash. Te zien bij Instellingen in de app en in Android onder
+// Apps → Fluistervink. Zonder git (bv. een los archief) blijft het 1.
+def git(String... args) {
+    try {
+        def proc = (['git'] + args.toList()).execute(null, rootProject.projectDir)
+        proc.waitFor()
+        return proc.exitValue() == 0 ? proc.text.trim() : null
+    } catch (ignored) {
+        return null
+    }
+}
+def commitCount = git('rev-list', '--count', 'HEAD')?.toInteger() ?: 1
+def commitHash = git('rev-parse', '--short', 'HEAD') ?: 'onbekend'
+
 android {
     namespace = "nl.hegmus.fluistervink"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,8 +23,8 @@ android {
         applicationId "nl.hegmus.fluistervink"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode commitCount
+        versionName "0.${commitCount} (${commitHash})"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
