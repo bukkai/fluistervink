@@ -1,0 +1,57 @@
+# Bij een tag (bv. v0.1): een ondertekende release-AAB van de Android-app voor
+# de interne test van Google Play. De AAB staat daarna als artifact bij de run
+# (tabblad Actions); uploaden naar Play gaat voorlopig met de hand.
+# Wat er vooraf moet (upload-key, secrets): docs/google-play.md.
+name: Release Android
+
+on:
+  push:
+    tags: ['v0.*']
+  workflow_dispatch:
+
+jobs:
+  aab:
+    runs-on: ubuntu-latest
+    steps:
+      # Volledige geschiedenis: versionCode is het aantal commits (build.gradle).
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx cap sync android
+      # Gradle 8.14 draait op Java 21 (android/gradle/gradle-daemon-jvm.properties).
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Upload-key klaarzetten
+        env:
+          UPLOAD_KEYSTORE_BASE64: ${{ secrets.UPLOAD_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$UPLOAD_KEYSTORE_BASE64" ]; then
+            echo "::error::Secret UPLOAD_KEYSTORE_BASE64 ontbreekt, zie docs/google-play.md"
+            exit 1
+          fi
+          echo "$UPLOAD_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/upload.jks"
+          echo "UPLOAD_KEYSTORE_FILE=$RUNNER_TEMP/upload.jks" >> "$GITHUB_ENV"
+      - name: AAB bouwen
+        working-directory: android
+        env:
+          UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
+          UPLOAD_KEY_ALIAS: ${{ secrets.UPLOAD_KEY_ALIAS }}
+          UPLOAD_KEY_PASSWORD: ${{ secrets.UPLOAD_KEY_PASSWORD }}
+        run: ./gradlew bundleRelease
+      - name: Controleren dat de AAB ondertekend is
+        # jarsigner geeft ook bij een niet-ondertekend bestand exit 0, dus op de tekst letten (grep faalt als die er niet staat).
+        run: jarsigner -verify android/app/build/outputs/bundle/release/app-release.aab | grep 'jar verified'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fluistervink-${{ github.ref_name }}
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
