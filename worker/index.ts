@@ -365,7 +365,10 @@ async function sharedNotes(env: WorkerEnv): Promise<SharedNote[]> {
         }));
     }),
   );
-  return notes.flat().sort((a, b) => b.recordedAt - a.recordedAt);
+  // Dezelfde feedback kan in twee bestanden staan (losse feedback onder de oude
+  // vaste id én onder die van het apparaat, zie share.ts): één keer tonen
+  const unique = new Map(notes.flat().map((n) => [n.id, n]));
+  return [...unique.values()].sort((a, b) => b.recordedAt - a.recordedAt);
 }
 
 /** Wat de app deelt (src/lib/share.ts), voor zover de proxy het leest. */

@@ -16,6 +16,8 @@ import { APP_VERSION, logEvent } from './log';
 const ENABLED_KEY = 'fluistervink.share';
 const AUDIO_KEY = 'fluistervink.shareAudio';
 const SENT_KEY = 'fluistervink.shared';
+/** Willekeurige id van dit apparaat (deze database), voor de losse feedback. */
+const DEVICE_KEY = 'fluistervink.device';
 const SENT_AT_KEY = 'fluistervink.sharedAt';
 
 interface Sent {
@@ -129,8 +131,20 @@ async function snapshot(sessionId: string) {
 /** Zo ver terug gaat het log mee bij losse feedback, om te zien wat eraan voorafging. */
 const LOOSE_EVENTS_MS = 30 * 60_000;
 
-/** Id waaronder losse feedback (buiten een wandeling) gedeeld wordt. */
-const LOOSE_ID = 'losse-feedback';
+/**
+ * Id waaronder losse feedback (buiten een wandeling) gedeeld wordt, per
+ * apparaat. Eerst was het één vaste id per tester; dan overschreef de
+ * Android-app wat de PWA in Chrome had gedeeld (elk een eigen database), en
+ * andersom.
+ */
+function looseId(): string {
+  let device = read<string | null>(DEVICE_KEY, null);
+  if (!device) {
+    device = crypto.randomUUID().slice(0, 8);
+    write(DEVICE_KEY, device);
+  }
+  return `losse-feedback-${device}`;
+}
 
 /**
  * Feedback die buiten een wandeling getypt is (devNotes.ts), met het log van
@@ -233,14 +247,15 @@ async function run(): Promise<ShareResult> {
     }
     // Losse feedback: ook versturen als hij leeg is geworden (alles verwijderd),
     // zodat de verwijdering doorkomt
+    const looseKey = looseId();
     const loose = await looseSnapshot();
     const looseVersion = await hash(JSON.stringify(loose));
     if (
-      sent.sessions[LOOSE_ID] !== looseVersion &&
-      (loose.utterances.length || sent.sessions[LOOSE_ID])
+      sent.sessions[looseKey] !== looseVersion &&
+      (loose.utterances.length || sent.sessions[looseKey])
     ) {
       await putShared(
-        `sessions/${LOOSE_ID}`,
+        `sessions/${looseKey}`,
         new Blob(
           [
             JSON.stringify({
@@ -253,10 +268,10 @@ async function run(): Promise<ShareResult> {
           { type: 'application/json' },
         ),
       );
-      sent.sessions[LOOSE_ID] = looseVersion;
+      sent.sessions[looseKey] = looseVersion;
       result.sessions++;
     }
-    if (sent.sessions[LOOSE_ID] === looseVersion) markNotes(sent, loose.utterances);
+    if (sent.sessions[looseKey] === looseVersion) markNotes(sent, loose.utterances);
     write(SENT_KEY, sent);
 
     write(SENT_AT_KEY, Date.now());

@@ -146,6 +146,8 @@ function combine() {
         merged.utterances.push(u);
       }
     }
+    // Losse feedback kan dubbel staan (oude vaste id en id per apparaat)
+    merged.utterances = [...new Map(merged.utterances.map((u) => [u.id, u])).values()];
     writeJson(join(OUT, `${tester.name}.json`), merged);
     summary[tester.name] = { sessions: merged.sessions.length, audio: audioIds.size };
   }
