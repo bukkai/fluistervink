@@ -25,9 +25,13 @@
   window.addEventListener(SHARE_CHANGED, onShareChanged);
   onDestroy(() => window.removeEventListener(SHARE_CHANGED, onShareChanged));
 
-  // Met delen aan: nieuwe feedback bovenaan, verstuurde ingeklapt
-  let fresh = $derived(sharing ? ($notes ?? []).filter((n) => !sent.has(n.id)) : ($notes ?? []));
-  let earlier = $derived(sharing ? ($notes ?? []).filter((n) => sent.has(n.id)) : []);
+  // Met delen aan: verstuurde feedback ingeklapt, maar pas na een dag. Anders
+  // verdwijnt wat je net typte zodra het (automatisch) verstuurd is, en lijkt
+  // het of de volgende het overschreef.
+  const RECENT_MS = 24 * 60 * 60_000;
+  const isEarlier = (n: Utterance) => sent.has(n.id) && n.recordedAt < Date.now() - RECENT_MS;
+  let fresh = $derived(sharing ? ($notes ?? []).filter((n) => !isEarlier(n)) : ($notes ?? []));
+  let earlier = $derived(sharing ? ($notes ?? []).filter(isEarlier) : []);
 
   // Getypte feedback hoort bij de lopende wandeling, als die er is
   const active = liveQuery(() => db.sessions.where('status').equals('active').first());
@@ -83,7 +87,7 @@
   <button class="btn" disabled={!text.trim()}>Toevoegen</button>
 </form>
 
-{#snippet list(items: Utterance[], isSent: boolean)}
+{#snippet list(items: Utterance[])}
   <ul class="card">
     {#each items as note (note.id)}
       <li>
@@ -103,7 +107,7 @@
             {/if}
             {#if sharing}
               ·
-              {#if isSent}
+              {#if sent.has(note.id)}
                 verstuurd ✓
               {:else if note.sessionId && note.sessionId === $active?.id}
                 gaat mee na de wandeling
@@ -120,7 +124,7 @@
 {/snippet}
 
 {#if fresh.length}
-  {@render list(fresh, false)}
+  {@render list(fresh)}
 {:else if $notes && !earlier.length}
   <p class="muted">Nog geen feedback.</p>
 {:else if $notes}
@@ -130,7 +134,7 @@
 {#if earlier.length}
   <details class="earlier">
     <summary>Eerder verstuurd ({earlier.length})</summary>
-    {@render list(earlier, true)}
+    {@render list(earlier)}
   </details>
 {/if}
 
