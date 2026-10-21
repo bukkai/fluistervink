@@ -138,6 +138,21 @@
 
   const dateFormat = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'short' });
 
+  const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+  /** "3 wandelingen · 41 uitspraken · 2× feedback · laatst 20 okt" */
+  function usageText(usage: Tester['usage']): string {
+    if (!usage) return 'nog niets gedeeld';
+    return [
+      count(usage.walks, 'wandeling', 'wandelingen'),
+      count(usage.utterances, 'uitspraak', 'uitspraken'),
+      `${usage.notes}× feedback`,
+      usage.lastActivity ? `laatst ${dateFormat.format(usage.lastActivity)}` : undefined,
+    ]
+      .filter(Boolean)
+      .join(' · ');
+  }
+
   let importMessage = $state('');
 
   async function importData(event: Event) {
@@ -300,6 +315,7 @@
                     ? `· ${dateFormat.format(tester.invitedAt)}`
                     : ''}
               </span>
+              <span class="usage muted">{usageText(tester.usage)}</span>
             </span>
             {#if tester.source === 'app' && tester.code}
               <button class="link" onclick={() => copyLink(tester.name, inviteLink(tester.code!))}>
@@ -375,6 +391,11 @@
   .testers .name {
     flex: 1;
     min-width: 0;
+  }
+
+  .testers .usage {
+    display: block;
+    font-size: 0.85rem;
   }
 
   .error {

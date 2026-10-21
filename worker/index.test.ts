@@ -506,6 +506,33 @@ describe('/api/feedback/notes (feedback inzien)', () => {
     ]);
   });
 
+  it('neemt de gebiedsnaam van de wandeling mee', async () => {
+    await share('w2', {
+      sessions: [{ place: { name: 'Gulperberg' }, startedAt: 4000, endedAt: 5000 }],
+      utterances: [{ id: 'n3', recordedAt: 4500, kind: 'dev_note', transcript: 'Feedback: ok' }],
+    });
+    expect(await notes()).toContainEqual(
+      expect.objectContaining({ id: 'n3', sessionName: 'Gulperberg' }),
+    );
+  });
+
+  it('telt per tester wandelingen, uitspraken, feedback en de laatste actie', async () => {
+    await share('w2', {
+      sessions: [{ startedAt: 4000, endedAt: 5000 }],
+      utterances: [{ id: 'u2', recordedAt: 4500, transcript: 'Vink' }],
+    });
+    const response = await call('/api/testers', { code: OWNER_CODE });
+    const { testers } = (await response.json()) as {
+      testers: { name: string; usage?: object }[];
+    };
+    expect(testers.find((t) => t.name === 'anna')?.usage).toEqual({
+      walks: 2,
+      utterances: 2,
+      notes: 2,
+      lastActivity: 5000,
+    });
+  });
+
   it('onthoudt welke feedback verwerkt is, en kan dat terugdraaien', async () => {
     expect((await markProcessed(['n1', 'n2'], true)).status).toBe(200);
     expect((await notes()).map((n) => n.processed)).toEqual([true, true]);
