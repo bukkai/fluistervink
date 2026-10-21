@@ -284,16 +284,16 @@
 
   .top {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     justify-content: space-between;
     gap: 0.5rem;
   }
 
+  /* Lange gebiedsnamen lopen door op een tweede regel, naast het label */
   .top strong {
-    overflow: hidden;
+    min-width: 0;
     font-size: 1.05rem;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
   }
 
   .when {
