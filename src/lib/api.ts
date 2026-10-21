@@ -221,7 +221,10 @@ export interface SharedNote {
 
 /** Alle gedeelde feedback, nieuwste eerst (alleen voor de eigenaar). */
 export async function listSharedNotes(): Promise<SharedNote[]> {
-  return (await request<{ notes: SharedNote[] }>('/api/feedback/notes')).notes;
+  const { notes } = await request<{ notes: SharedNote[] }>('/api/feedback/notes');
+  // Eén keer per id, ook als de proxy dezelfde feedback dubbel geeft: de lijst
+  // op Developer is daarop gesleuteld en loopt anders vast
+  return [...new Map(notes.map((n) => [n.id, n])).values()];
 }
 
 /** Feedback als (niet) verwerkt markeren (alleen voor de eigenaar). */

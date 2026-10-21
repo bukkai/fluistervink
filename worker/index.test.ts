@@ -462,9 +462,9 @@ describe('/api/feedback/notes (feedback inzien)', () => {
     });
   }
 
-  async function notes(): Promise<{ processed: boolean }[]> {
+  async function notes(): Promise<{ id: string; processed: boolean }[]> {
     const response = await call('/api/feedback/notes', { code: OWNER_CODE });
-    return ((await response.json()) as { notes: { processed: boolean }[] }).notes;
+    return ((await response.json()) as { notes: { id: string; processed: boolean }[] }).notes;
   }
 
   function markProcessed(ids: string[], processed: boolean, code = OWNER_CODE) {
@@ -504,6 +504,14 @@ describe('/api/feedback/notes (feedback inzien)', () => {
         processed: false,
       },
     ]);
+  });
+
+  it('toont feedback die in twee bestanden staat maar één keer', async () => {
+    await share('losse-feedback-a1b2c3d4', {
+      sessions: [],
+      utterances: [{ id: 'n2', recordedAt: 3000, kind: 'dev_note', transcript: 'Getypt' }],
+    });
+    expect((await notes()).map((n) => n.id)).toEqual(['n2', 'n1']);
   });
 
   it('neemt de gebiedsnaam van de wandeling mee', async () => {
