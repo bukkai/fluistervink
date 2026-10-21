@@ -180,6 +180,13 @@ export interface Tester {
   source: 'app' | 'secret';
   code?: string;
   invitedAt?: number;
+  /** Wat de tester gedeeld heeft; leeg als er (nog) niets gedeeld is */
+  usage?: {
+    walks: number;
+    utterances: number;
+    notes: number;
+    lastActivity?: number;
+  };
 }
 
 /** Alle testers (alleen voor de eigenaar). */

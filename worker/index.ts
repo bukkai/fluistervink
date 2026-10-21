@@ -360,7 +360,7 @@ async function sharedNotes(env: WorkerEnv): Promise<SharedNote[]> {
           recordedAt: u.recordedAt,
           text: devNoteText(u.transcript ?? '') || (u.transcript ?? ''),
           appVersion: u.metrics?.appVersion ?? data?.appVersion,
-          sessionName: data?.sessions?.[0]?.name,
+          sessionName: data?.sessions?.[0]?.place?.name ?? data?.sessions?.[0]?.name,
           processed: done.has(u.id),
         }));
     }),
@@ -374,7 +374,8 @@ async function sharedNotes(env: WorkerEnv): Promise<SharedNote[]> {
 /** Wat de app deelt (src/lib/share.ts), voor zover de proxy het leest. */
 interface SharedSession {
   appVersion?: string;
-  sessions?: { name?: string }[];
+  /** `name` is de oude plek van de gebiedsnaam, nu `place.name` */
+  sessions?: { name?: string; place?: { name?: string }; startedAt?: number; endedAt?: number }[];
   utterances?: {
     id: string;
     recordedAt: number;
@@ -382,6 +383,65 @@ interface SharedSession {
     transcript?: string;
     metrics?: { appVersion?: string };
   }[];
+}
+
+/** Hoeveel een tester gedeeld heeft, om te zien of de app echt gebruikt wordt. */
+export interface TesterUsage {
+  walks: number;
+  utterances: number;
+  notes: number;
+  /** Laatste uitspraak, feedback of einde van een wandeling */
+  lastActivity?: number;
+}
+
+/**
+ * Gebruik per tester, uit wat er gedeeld is (share.ts): alleen gestopte
+ * wandelingen en losse feedback, en alleen van testers die delen aan hebben.
+ */
+async function testerUsage(env: WorkerEnv): Promise<Map<string, TesterUsage>> {
+  const keys: string[] = [];
+  let cursor: string | undefined;
+  do {
+    const page = await env.FEEDBACK.list({ cursor });
+    keys.push(...page.keys.map((k) => k.name).filter((name) => name.includes('/sessions/')));
+    cursor = page.list_complete ? undefined : page.cursor;
+  } while (cursor);
+
+  const files = await Promise.all(
+    keys.map(async (key) => ({
+      tester: key.split('/')[0],
+      data: await env.FEEDBACK.get<SharedSession>(key, 'json').catch(() => null),
+    })),
+  );
+  type Entry = { walks: number; utterances: Map<string, boolean>; lastActivity?: number };
+  const perTester = new Map<string, Entry>();
+  for (const { tester, data } of files) {
+    const entry: Entry = perTester.get(tester) ?? { walks: 0, utterances: new Map() };
+    perTester.set(tester, entry);
+    entry.walks += data?.sessions?.length ?? 0;
+    const times = [
+      ...(data?.utterances ?? []).map((u) => u.recordedAt),
+      ...(data?.sessions ?? []).map((s) => s.endedAt ?? s.startedAt ?? 0),
+    ];
+    // Op id, want losse feedback kan in twee bestanden staan
+    for (const u of data?.utterances ?? []) entry.utterances.set(u.id, u.kind === 'dev_note');
+    if (times.length) entry.lastActivity = Math.max(entry.lastActivity ?? 0, ...times);
+  }
+
+  return new Map(
+    [...perTester].map(([tester, { walks, utterances, lastActivity }]) => {
+      const notes = [...utterances.values()].filter(Boolean).length;
+      return [
+        tester,
+        {
+          walks,
+          utterances: utterances.size - notes,
+          notes,
+          lastActivity: lastActivity || undefined,
+        },
+      ];
+    }),
+  );
 }
 
 async function processedNotes(env: WorkerEnv): Promise<Set<string>> {
@@ -412,7 +472,10 @@ async function testers(request: Request, env: WorkerEnv, tester: string): Promis
       code,
       invitedAt,
     }));
-    return json({ testers: [...fromSecret, ...fromApp] });
+    const usage = await testerUsage(env);
+    return json({
+      testers: [...fromSecret, ...fromApp].map((t) => ({ ...t, usage: usage.get(t.name) })),
+    });
   }
   if (request.method === 'POST') {
     const { name } = (await request.json()) as { name?: unknown };
