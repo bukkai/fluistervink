@@ -1,7 +1,8 @@
 apply plugin: 'com.android.application'
 
 // Versie uit git, zodat elke build vanzelf een hoger nummer krijgt: het aantal
-// commits (versionCode, moet voor Google Play steeds hoger worden) en de
+// commits (versionCode, moet voor Google Play steeds hoger worden; ×2 voor
+// beta en stabiel, zie hieronder) en de
 // korte commit-hash. Te zien bij Instellingen in de app en in Android onder
 // Apps → Fluistervink. Zonder git (bv. een los archief) blijft het 1.
 def git(String... args) {
@@ -22,6 +23,13 @@ def commitHash = git('rev-parse', '--short', 'HEAD') ?: 'onbekend'
 // assembleDebug gewoon werken met de debug-sleutel.
 def uploadKeystore = System.getenv('UPLOAD_KEYSTORE_FILE')
 
+// Beta of stabiel (docs/omgevingen.md). De release-workflow bouwt bij elke tag
+// beide; de webcode komt van het adres in capacitor.config.ts (CAP_SERVER_URL).
+// Eén app in Play: de beta gaat naar de interne test, de stabiele naar de
+// gesloten test of productie. De beta krijgt het hogere versionCode, zodat
+// testers die in beide lijsten staan de beta houden. Lokaal: beta.
+def stable = System.getenv('FLUISTERVINK_KANAAL') == 'stable'
+
 android {
     namespace = "nl.hegmus.fluistervink"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -29,8 +37,10 @@ android {
         applicationId "nl.hegmus.fluistervink"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode commitCount
+        versionCode commitCount * 2 + (stable ? 0 : 1)
         versionName "0.${commitCount} (${commitHash})"
+        resValue "string", "app_name", stable ? "Fluistervink" : "Fluistervink Beta"
+        resValue "string", "title_activity_main", stable ? "Fluistervink" : "Fluistervink Beta"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

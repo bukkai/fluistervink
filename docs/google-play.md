@@ -1,6 +1,8 @@
 # Google Play: interne test (fase 4)
 
-Android-testers krijgen de app via de **interne test** van Google Play, in plaats van losse APK's. Een release bouwt GitHub Actions bij een tag (`.github/workflows/release.yml`): een ondertekende AAB (Android App Bundle, het formaat dat Play wil), als artifact bij de run. Plan: `docs/plan-capacitor.md`, fase 4.
+Android-testers krijgen de app via de **interne test** van Google Play, in plaats van losse APK's. Een release bouwt GitHub Actions bij een tag (`.github/workflows/release.yml`): twee ondertekende AAB's (Android App Bundle, het formaat dat Play wil), als artifacts bij de run. Plan: `docs/plan-capacitor.md`, fase 4.
+
+**Beta en stabiel** (`docs/omgevingen.md`): één app in Play, twee builds. De **beta** (`fluistervink-<tag>-beta`, heet "Fluistervink Beta", laadt de webcode van workers.dev) gaat naar de interne test. De **stabiele** (`fluistervink-<tag>-stable`, heet "Fluistervink", laadt `fluistervink.nl`) gaat naar een gesloten test, later productie. Wie in beide lijsten staat, krijgt de beta: die heeft bij dezelfde tag het hogere `versionCode`. Upload daarom bij elke tag **allebei**; anders kan een tester via een nieuwere stabiele build ongemerkt op `fluistervink.nl` belanden, zonder zijn wandelingen (die horen bij het adres).
 
 ## Hoe het ondertekenen werkt
 
@@ -54,25 +56,26 @@ Op GitHub: repository → **Settings → Secrets and variables → Actions → N
    ```
 
    (Of op GitHub bij Actions → "Release Android" → **Run workflow**.)
-2. Op GitHub bij **Actions** wacht je tot de run groen is (een paar minuten), en download je onderaan het artifact `fluistervink-v0.1` (een zip met `app-release.aab`). Uitpakken.
-3. In de Play Console: **Testen → Interne tests → Nieuwe release maken**, de `.aab` uploaden, een releasenaam (mag de tag zijn) en kort wat er nieuw is. Opslaan en **Uitrollen naar interne test**.
-4. Play vraagt eenmalig nog wat gegevens voordat je kunt uitrollen (onder **Dashboard → App instellen**): privacybeleid (de link naar `#privacy` van de site), app-toegang, advertenties (nee), contentclassificatie, doelgroep, gegevensveiligheid. De interne test werkt al voordat alles hiervan af is; Play laat zien wat verplicht is.
+2. Op GitHub bij **Actions** wacht je tot de run groen is (een paar minuten), en download je onderaan de artifacts `fluistervink-v0.1-beta` en `fluistervink-v0.1-stable` (elk een zip met `app-release.aab`). Uitpakken.
+3. In de Play Console: **Testen → Interne tests → Nieuwe release maken**, de `.aab` van **beta** uploaden, een releasenaam (mag de tag zijn) en kort wat er nieuw is. Opslaan en **Uitrollen naar interne test**.
+4. Zodra er mensen op de stabiele versie zitten: **Testen → Gesloten tests** (track aanmaken, bv. "Stabiel"), daar de `.aab` van **stable** uploaden en uitrollen.
+5. Play vraagt eenmalig nog wat gegevens voordat je kunt uitrollen (onder **Dashboard → App instellen**): privacybeleid (de link naar `#privacy` van de site), app-toegang, advertenties (nee), contentclassificatie, doelgroep, gegevensveiligheid. De interne test werkt al voordat alles hiervan af is; Play laat zien wat verplicht is.
 
 ### 6. Testers toevoegen
 
-1. **Testen → Interne tests → Testers**: een e-maillijst maken met de Google-accounts (Gmail-adressen) van de Android-testers. Hooguit 100.
+1. **Testen → Interne tests → Testers**: een e-maillijst maken met de Google-accounts (Gmail-adressen) van de Android-testers (beta). Hooguit 100. Gebruikers van de stabiele versie gaan in de lijst van de gesloten test, met een eigen link.
 2. Daar staat ook de **link voor deelname**. Die gaat in de uitnodigingsmail, naast de toegangscode (uitnodigen vanaf het scherm Developer).
 3. De tester opent de link op de telefoon, accepteert, en installeert de app vanuit Play.
 
-Jijzelf: de debug-APK die je nu hebt, is met een andere sleutel ondertekend. Verwijder die eerst; daarna installeer je de app uit Play, net als de testers.
+Jijzelf: de debug-APK die je nu hebt, is met een andere sleutel ondertekend. Verwijder die eerst; daarna installeer je de app uit Play, net als de testers. **Let op:** verwijderen wist de wandelingen in de app. Maak eerst een JSON-export (met opnames) en importeer die daarna in de app uit Play.
 
 ## Een nieuwe versie
 
 Alleen nodig bij wijzigingen in `android/` of `capacitor.config.ts`; webwijzigingen staan meteen in de app.
 
 1. Mergen naar `main`, dan `git tag v0.2 && git push origin v0.2` (elke tag een hoger nummer).
-2. Artifact downloaden en in de Play Console een nieuwe interne release maken (stap 5.3).
+2. Beide artifacts downloaden en in de Play Console een nieuwe release maken: beta naar de interne test, stable naar de gesloten test (stap 5.3 en 5.4).
 
-Het versienummer komt vanzelf uit git (`versionCode` = aantal commits), dus het is altijd hoger dan het vorige. Play weigert een AAB met een `versionCode` die al eerder is geüpload; dat gebeurt als je de workflow twee keer op dezelfde commit draait.
+Het versienummer komt vanzelf uit git (`versionCode` = 2 × aantal commits, +1 voor de beta), dus het is altijd hoger dan het vorige. Play weigert een AAB met een `versionCode` die al eerder is geüpload; dat gebeurt als je de workflow twee keer op dezelfde commit draait.
 
 Later kan het uploaden ook automatisch vanuit de workflow (met een serviceaccount van Google Cloud); voor af en toe een release is met de hand eenvoudiger.

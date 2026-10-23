@@ -8,6 +8,13 @@ import { nativeAppVersion } from './native';
 
 export const APP_VERSION = __APP_VERSION__;
 
+/**
+ * Welke omgeving: de stabiele versie op fluistervink.nl wordt gebouwd met
+ * `--mode stable` (npm run build:stable), al het andere is beta. Zie
+ * docs/omgevingen.md.
+ */
+export const CHANNEL: 'stable' | 'beta' = import.meta.env.MODE === 'stable' ? 'stable' : 'beta';
+
 export interface LogEvent {
   id?: number;
   at: number;
@@ -43,6 +50,7 @@ export function wasHiddenSince(since: number): boolean {
 export function startLogging(): void {
   logEvent('app_start', {
     version: APP_VERSION,
+    channel: CHANNEL,
     userAgent: navigator.userAgent,
     online: navigator.onLine,
     standalone: matchMedia('(display-mode: standalone)').matches,

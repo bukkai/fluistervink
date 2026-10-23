@@ -14,6 +14,7 @@
   import ActiveSession from './lib/ActiveSession.svelte';
   import { getAccessCode, getTester, ping, takeInvite } from './lib/api';
   import { listDevNotes } from './lib/devNotes';
+  import { CHANNEL } from './lib/log';
   import { vibrate } from './lib/feedback';
   import { instance } from './lib/instance.svelte';
   import { processQueue } from './lib/observations';
@@ -219,6 +220,7 @@
     <a class="brand" href="#/">
       <img src="/icon.svg" alt="" width="32" height="32" />
       Fluistervink
+      {#if CHANNEL === 'beta'}<span class="channel">beta</span>{/if}
     </a>
     <button
       class="menu-button"
@@ -403,6 +405,18 @@
   .brand img {
     border-radius: 0.5rem;
     box-shadow: 0 0 0 2px rgb(255 255 255 / 0.35);
+  }
+
+  /* Alleen in de beta: zo zie je meteen welke versie je open hebt */
+  .channel {
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    background: var(--breast-strong);
+    color: #ffffff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
   .menu-button {
