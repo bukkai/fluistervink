@@ -171,7 +171,7 @@ describe('meer wandelingen in één export', () => {
     await db.sessions.add(session);
     const draft = observation();
     const unsure = observation({ uncertain: true, uncertainReason: 'vink of keep?' });
-    const exported = observation({ status: 'exported' });
+    const exported = observation({ status: 'exported', uncertain: true });
     const elsewhere = observation({ sessionId: 'andere' });
     await db.observations.bulkAdd([draft, unsure, exported, elsewhere]);
 
@@ -186,9 +186,11 @@ describe('meer wandelingen in één export', () => {
     ]);
     expect(a?.status).toBe('reviewed');
     expect(a?.editedAt).toBeUndefined();
-    // Onzeker blijft onzeker; dat zeg je per waarneming met "Klopt"
-    expect(b).toMatchObject({ status: 'reviewed', uncertain: true });
-    expect(c?.status).toBe('exported');
+    // Onzeker wordt zeker, zoals met "Klopt"
+    expect(b).toMatchObject({ status: 'reviewed', uncertain: false });
+    expect(b?.uncertainReason).toBeUndefined();
+    expect(b?.editedAt).toBeDefined();
+    expect(c).toMatchObject({ status: 'exported', uncertain: true });
     expect(d?.status).toBe('draft');
   });
 });

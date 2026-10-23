@@ -119,8 +119,8 @@
         </p>
       {:else}
         <p>
-          Overgeslagen: {uncertain.length === 1 ? 'die gaat' : 'die gaan'} mee als "niet zeker", of pas
-          {uncertain.length === 1 ? 'hem' : 'ze'} aan in de lijst.
+          Overgeslagen. Pas {uncertain.length === 1 ? 'hem' : 'ze'} aan in de lijst, of bevestig
+          {uncertain.length === 1 ? 'hem' : 'ze'} onderaan met "Alles klopt".
         </p>
         <button class="btn secondary block" onclick={() => (skipped = [])}
           >Opnieuw langslopen</button

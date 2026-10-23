@@ -55,13 +55,15 @@
   /** Uitkomst van de laatste export, om onder de knop te tonen */
   let exportResult = $state<string>();
 
-  /** "Alles klopt": de rest geldt als nagelopen, en de wandeling staat klaar */
+  /** "Alles klopt": de rest geldt als nagelopen (ook de onzekere), en de wandeling staat klaar */
   async function ready() {
     if (
       uncertainCount > 0 &&
       !confirm(
         `Nog ${uncertainCount === 1 ? '1 onzekere waarneming' : `${uncertainCount} onzekere waarnemingen`}. ` +
-          'Die gaan mee als "niet zeker". Toch klaarzetten?',
+          (uncertainCount === 1
+            ? 'Klopt die ook? Dan wordt hij zeker.'
+            : 'Kloppen die ook? Dan worden ze zeker.'),
       )
     )
       return;
