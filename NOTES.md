@@ -91,6 +91,7 @@ Nog niet gepland; eerst overleggen.
   - Cloudflare zit in het gratis plan; hooguit tonen hoe dicht we bij de limieten van Workers en KV zitten.
 - **"Delen met de ontwikkelaar" naar Instellingen** (idee eigenaar, 24 okt): de schakelaars (`src/lib/ShareSettings.svelte`) staan nu onderaan het Feedback-scherm (`DevNotes.svelte`), maar delen gaat over veel meer dan feedback: hele wandelingen, transcripten, locaties en eventueel opnames. Dat is een privacykeuze en hoort bij Instellingen. Klein werk:
   - `<ShareSettings />` van `DevNotes.svelte` naar `Settings.svelte`; op het Feedback-scherm één regel laten staan ("Wordt gedeeld met de ontwikkelaar · wijzigen bij Instellingen"), want daar wil je zien of je feedback aankomt (de status per bericht blijft daar).
+  - De uitleg onderaan het Feedback-scherm blijft ("Typ hierboven, of spreek het in tijdens het vogelen: begin een uitspraak met "feedback" …"); "als delen aanstaat" daarin laten linken naar Instellingen. Eventueel de uitleg hoger zetten (boven de lijst, of in "Nog geen feedback"), zodat een nieuwe tester hem meteen ziet.
   - Links bijwerken die nu naar `#feedback` wijzen voor het delen: `App.svelte` (toestemmingsvraag op het hoofdscherm), `Privacy.svelte` (2×), `Settings.svelte` (verwijst nu naar Feedback; vervalt), `HowItWorks.svelte` (nagaan of die over delen gaat of over feedback geven). En de beschrijving in `CLAUDE.md` ("aan/uit op het Feedback-scherm").
 
 ## Android-app
