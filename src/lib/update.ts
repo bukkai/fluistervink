@@ -10,6 +10,9 @@ import { getActiveSession } from './sessions';
  * De nieuwe versie staat dan klaar (service worker "waiting") en wordt geladen
  * zodra er geen wandeling loopt: meteen bij het opstarten, of anders zodra je
  * na de wandeling de app verlaat (niemand ziet het herladen).
+ *
+ * Een nieuwe versie wordt alleen bij het opstarten gevonden (geen periodieke
+ * controle), dus testen: deploy, app helemaal afsluiten en opnieuw openen.
  */
 let waiting = false;
 
