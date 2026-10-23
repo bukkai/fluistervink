@@ -37,14 +37,13 @@ Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de a
    - Kosten per wandeling in het testset-script.
 3. **Klaar voor vreemden:**
    - Twee omgevingen (stabiel en beta, zie Ideeën voor later).
-   - Back-up / nieuwe telefoon: alles staat lokaal; niet-geëxporteerde wandelingen zijn weg als de telefoon kwijt is. Export naar bestand, of automatisch via de proxy zoals het delen.
    - Welkom en uitleg voor wie geen uitnodiging kreeg: toestemming voor microfoon en GPS, eerste wandeling stap voor stap.
 4. **Thuis meer waarde dan alleen exporteren** (zolang de API van waarneming.nl wacht):
    - Kaart clusteren (voorstel onder Ideeën voor later).
    - Snellere review: alleen de onzekere langslopen, "alles klopt" met één tik.
 5. **Bewust niet in v1.0:** API van waarneming.nl (v1.0 levert juist de gebruikers op die de aanvraag sterker maken), GPS-track, accounts, BirdNET, wake word.
 
-Volgorde: (a) nu de kleine open punten, betatesters uitnodigen en een wandeling; (b) Capacitor: trillen, foreground service, eventueel volumeknop; (c) twee omgevingen en back-up, dan twee à drie testers erbij; (d) voorjaar: veldtest met veel soorten, prompt bijwerken, daarna v1.0 in de Play Store.
+Volgorde: (a) nu de kleine open punten, betatesters uitnodigen en een wandeling; (b) Capacitor: trillen, foreground service, eventueel volumeknop; (c) twee omgevingen, dan twee à drie testers erbij; (d) voorjaar: veldtest met veel soorten, prompt bijwerken, daarna v1.0 in de Play Store.
 
 ## Open punten
 
@@ -59,6 +58,8 @@ Volgorde: (a) nu de kleine open punten, betatesters uitnodigen en een wandeling;
 ## Ideeën voor later
 
 Nog niet gepland; eerst overleggen.
+
+- **Back-up / nieuwe telefoon** (24 okt op de lange baan: twijfel of mensen het gebruiken; eerst invoeren makkelijker maken): alles staat lokaal. Voorstel was een kaart "Back-up" in Instellingen die `exportAllJson` (met opnames) en `importJson` hergebruikt, met de datum van de laatste back-up. Automatisch via de proxy of naar Drive via het deelmenu (native plugin) pas daarna.
 
 - **Nocmig met een tijd** (13 okt: niet nu, te niche volgens de eigenaar): "vannacht een waterral overvliegend, half 3 een roepje" krijgt de tijd van de uitspraak. Idee: optioneel tijdveld in `add_observation` (model krijgt datum en tijd mee, app rekent om).
 - **Trillen zonder Touch feedback:** Chrome trilt alleen als Touch feedback van Android aan staat (uitleg en tip staan op `#uitleg`). Alternatief: een melding met trilpatroon via de service worker (werkt ook op de achtergrond), of Capacitor.
