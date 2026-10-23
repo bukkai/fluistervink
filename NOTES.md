@@ -27,7 +27,6 @@ Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de a
 1. **Veldgebruik afmaken met de native laag (Capacitor), de kern van v1.0:**
    - Trillen op de achtergrond en met het scherm uit (grootste ergernis van de eerste wandeling).
    - Opnemen met het scherm uit via een foreground service; microfoon loslaten als Merlin hem wil.
-   - Audiofocus zelf regelen (waarschijnlijk ook de oplossing voor de haperende podcast via Bluetooth).
    - Verspreiden via de Play Store (eerst interne test).
    - Te overwegen: volumeknop of Bluetooth-afstandsbediening als push-to-talk (handschoenen, telefoon in de zak).
    - Wake word **buiten v1.0**: de knop bevalt, en een wake word brengt eigen valse meldingen mee.
@@ -40,25 +39,21 @@ Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de a
    - Twee omgevingen (stabiel en beta, zie Ideeën voor later).
    - Back-up / nieuwe telefoon: alles staat lokaal; niet-geëxporteerde wandelingen zijn weg als de telefoon kwijt is. Export naar bestand, of automatisch via de proxy zoals het delen.
    - Welkom en uitleg voor wie geen uitnodiging kreeg: toestemming voor microfoon en GPS, eerste wandeling stap voor stap.
-   - Ruwe randen: uitnodigingsmail vanuit Developer, nieuwe versie pas laden buiten een wandeling (#65), undo van een undo (#93).
+   - Ruwe randen: nieuwe versie pas laden buiten een wandeling (#65).
 4. **Thuis meer waarde dan alleen exporteren** (zolang de API van waarneming.nl wacht):
    - Kaart clusteren (voorstel onder Ideeën voor later).
-   - Overzicht per wandeling en over wandelingen heen: soortenlijst, aantallen, jaarlijst.
    - Snellere review: alleen de onzekere langslopen, "alles klopt" met één tik.
 5. **Bewust niet in v1.0:** API van waarneming.nl (v1.0 levert juist de gebruikers op die de aanvraag sterker maken), GPS-track, accounts, BirdNET, wake word.
 
-Volgorde: (a) nu de kleine open punten, betatesters uitnodigen en een wandeling; (b) Capacitor: trillen, foreground service, audiofocus, eventueel volumeknop; (c) twee omgevingen en back-up, dan twee à drie testers erbij; (d) voorjaar: veldtest met veel soorten, prompt bijwerken, daarna v1.0 in de Play Store.
+Volgorde: (a) nu de kleine open punten, betatesters uitnodigen en een wandeling; (b) Capacitor: trillen, foreground service, eventueel volumeknop; (c) twee omgevingen en back-up, dan twee à drie testers erbij; (d) voorjaar: veldtest met veel soorten, prompt bijwerken, daarna v1.0 in de Play Store.
 
 ## Open punten
 
 - **App hing op het laadscherm na een deploy** (14 okt): de service worker had een oude `index.html` naast nieuwe JavaScript in zijn cache (deploy tijdens het openen). Op de telefoon hersteld via de WebView-devtools (adb, `webview_devtools_remote_<pid>`); PR #97 herstelt het voortaan zelf (`public/herstel.js`, log `cache_recovered`). Workers Builds heeft nu build watch paths: `*.md` en `docs/*` deployen niet meer.
 
-- **Uitnodiging vanuit Developer** (PR #91, 13 okt): na "Code maken" opent een aparte knop "Mail openen" de mail-app (Chrome opende hem niet na het wachten op de proxy). De mail noemt nu ook iPhone/Safari (zonder trillen). Nog nagaan op de telefoon of de mail-app opent.
-- **Podcast pauzeert bij inspreken** (13 okt, in de auto via Bluetooth): pauze tijdens de opname, dan even verder, dan weer stil. Vermoeden: de microfoon zet Bluetooth in belmodus (HFP), en het terugschakelen naar muziek (A2DP) hapert. Trillen vraagt geen audio aan. Nog na te gaan: gebeurt het ook zonder Bluetooth, en helpt het om de microfoon van de telefoon te kiezen (`deviceId` uit `enumerateDevices`)? Anders oplossen in Capacitor (audiofocus zelf regelen).
 - **Nieuwe versie pas laden als er geen wandeling loopt** (#65): op de telefoon nalopen (`update_deferred` / `update_applied` in het log).
 - **Korte spookopnames** (PR #92, 13 okt): grens van `isAccidental` naar 3,5 s en < 0,3 woord/s, zodat ook de Bosuil (3,9 s) onzeker wordt. Bewust klein gehouden; geen verdere moeite nodig volgens de eigenaar.
 - **STT gaf één keer zelf antwoord** in plaats van te transcriberen ("Sorry, ik kan niet voldoen aan het verzoek …", 11 okt) en liet daarbij het woord "feedback" weg. Onschuldig, maar in de gaten houden.
-- **Undo terugdraaien** (PR #93, 13 okt): nieuwe tool `redo` ("toch niet ongedaan maken"); een undo bewaart wat hij terugdraaide (`undid`). Nog met het echte model proberen.
 - Cloudflare-previews: vermoedelijk onthoudt Cloudflare het deploy-commando per branch vanaf de eerste build. Bij problemen: nieuwe branch maken.
 - Een branch-regel op `main` met verplichte check kan niet: GitHub biedt dat niet voor privérepo's zonder Pro. De check draait wel bij elke PR.
 
