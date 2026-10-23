@@ -16,6 +16,8 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 1. Een paar echte betatesters uitnodigen (de eigenaar regelt ze) en nog een wandeling van jezelf met de huidige versie; daarna Capacitor (trillen en achtergrond eerst, wake word later). Zie de roadmap naar v1.0 hieronder.
 2. Bij elke nieuwe gedeelde wandeling `npm run feedback -- pull` en `npm run testset` draaien, eventueel ook met `--model claude-sonnet-5-5`.
 3. Prompt verbeteren met wat de testset laat zien ("tortelduif"), telkens nagaan met de testset.
+   - **Waar correcties vandaan komen** (analyse 24 okt, 15 nagelopen wandelingen, 229 waarnemingen van het model): 81% nooit aangeraakt; de meeste stemcorrecties zijn aanvullingen ("nog drie erbij"). Echte fouten: ~10 soorten verkeerd verstaan door de spraakherkenning (vaak korte uitspraken met één soort, verward met een andere echte vogelnaam: kraai/gaai, smient/vink, kuifmees/koolmees), 1–2 keer het model, 4 keer een detail (geslacht, leeftijd). Het model is dus niet het knelpunt.
+   - **STT-prompt blijft zoals hij is** (proef 24 okt, 153 opnames, elke variant drie keer): korte lijst, eigen soorten vooraan (eerlijk getest: lijst uit de wandelingen tot 16 okt, gemeten vanaf 17 okt), andere voorbeeldzinnen en lijst achteraan zitten allemaal binnen de ruis (dezelfde prompt schommelt ±3 soorten per run; eigen lijst +1 op 114). Zonder soortenlijst duidelijk slechter (88,6% tegen 94%). De hardnekkige fouten zitten in de opname zelf, deels mogelijk een afgekapt begin (microfoon gaat pas aan na het drukken); eigenaar vindt het goed zo.
 4. Later: kostenoverzicht per wandeling in het testset-script (uit het `usage`-blok van Anthropic, plus minuten audio voor OpenAI).
 
 ## Roadmap naar v1.0 (13 okt)
