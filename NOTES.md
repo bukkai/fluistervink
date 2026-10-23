@@ -47,6 +47,10 @@ Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de a
 
 Volgorde: (a) nu de kleine open punten, betatesters uitnodigen en een wandeling; (b) Capacitor: trillen, foreground service, eventueel volumeknop; (c) twee omgevingen, dan twee à drie testers erbij; (d) voorjaar: veldtest met veel soorten, prompt bijwerken, daarna v1.0 in de Play Store.
 
+## Twee omgevingen (24 okt)
+
+PR #112: beta blijft op workers.dev (branch `main`), stabiel op `fluistervink.nl` (branch `stable`, `npm run release`). KV en geheimen gedeeld, veld `channel` in gedeelde wandelingen. Eén Play-app: beta-AAB naar de interne test, stabiele naar een gesloten test. Na het mergen nog te doen door de eigenaar: domein naar Cloudflare (nameservers bij TransIP), `npm run release`, tweede Workers Builds-project, geheimen met `--env stable` (zie `docs/omgevingen.md`). Debug-APK `apk/fluistervink-0.348-beta.apk`.
+
 ## Open punten
 
 - **App hing op het laadscherm na een deploy** (14 okt): de service worker had een oude `index.html` naast nieuwe JavaScript in zijn cache (deploy tijdens het openen). Op de telefoon hersteld via de WebView-devtools (adb, `webview_devtools_remote_<pid>`); PR #97 herstelt het voortaan zelf (`public/herstel.js`, log `cache_recovered`). Workers Builds heeft nu build watch paths: `*.md` en `docs/*` deployen niet meer.
@@ -65,11 +69,7 @@ Nog niet gepland; eerst overleggen.
 
 - **Nocmig met een tijd** (13 okt: niet nu, te niche volgens de eigenaar): "vannacht een waterral overvliegend, half 3 een roepje" krijgt de tijd van de uitspraak. Idee: optioneel tijdveld in `add_observation` (model krijgt datum en tijd mee, app rekent om).
 - **Trillen zonder Touch feedback:** Chrome trilt alleen als Touch feedback van Android aan staat (uitleg en tip staan op `#uitleg`). Alternatief: een melding met trilpatroon via de service worker (werkt ook op de achtergrond), of Capacitor.
-- **Twee omgevingen** vóór een echte release: stabiel op `fluistervink.heg-mus.nl`, beta blijft op workers.dev (testers zitten daar al).
-  - Domein: DNS van heg-mus.nl staat bij TransIP; voor een Custom Domain moeten de nameservers naar Cloudflare (eerst alle records overnemen, vooral mail: MX, SPF, DKIM).
-  - Tweede Worker (bv. `env.production` in `wrangler.jsonc`), deployt vanaf een branch `release`. Per omgeving eigen geheimen, KV en een omgevingskeuze in `npm run tester` / `npm run feedback`.
-  - Gegevens zijn per adres (IndexedDB, geïnstalleerde PWA): overzetten via JSON-export/-import; nagaan dat prod een export van een nieuwere db-versie netjes weigert.
-  - Beta herkenbaar maken: label en andere naam/kleur in het manifest.
+- **Twee omgevingen**: uitgewerkt in PR #112 (zie boven).
 - **Inzenden via de API van waarneming.nl** — op de lange baan (13 okt): toegang is niet vanzelfsprekend; pas aanvragen als blijkt dat er interesse in de app is (meer gebruikers = sterkere aanvraag). Tot die tijd de gebundelde CSV-export. (Uitgezocht 13 okt; de officiële documentatie op `waarneming.nl/api/docs/*.md` gaf ons een 403, dus gecontroleerd in de TypeScript-client [observation-js](https://github.com/robbeverhelst/observation-js); nog na te lopen in de documentatie, ingelogd):
   - De API kan wel waarnemingen invoeren (niet via het importformulier). `POST /api/v1/observations/create/` ("one-way sync") neemt een lijst waarnemingen en geeft per waarneming de URL of de fouten; een fout houdt de rest niet tegen; `external_id` voorkomt dubbel invoeren (bestaande wordt bijgewerkt). `create-single/` is voor één waarneming met foto's/geluid.
   - Velden passen op wat we bewaren: `species` (ID), `date`, `time`, `point` (GeoJSON of WKT), `accuracy`, `number`, `sex`, `activity`, `life_stage`, `method`, `counting_method`, `is_certain`, `notes`, `uuid`.
