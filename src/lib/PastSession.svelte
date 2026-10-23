@@ -6,7 +6,8 @@
   import { deleteSessions, formatDuration, resumeSession } from './sessions';
   import ObservationMap from './ObservationMap.svelte';
   import SessionLog from './SessionLog.svelte';
-  import { IMPORT_URL, exportForWaarneming, markReady } from './waarnemingExport';
+  import UncertainReview from './UncertainReview.svelte';
+  import { IMPORT_URL, approveSession, exportForWaarneming, markReady } from './waarnemingExport';
 
   // Een afgelopen wandeling nalopen en klaarzetten voor waarneming.nl (de
   // export zelf gaat voor alle klaarstaande wandelingen tegelijk, op het
@@ -54,16 +55,19 @@
   /** Uitkomst van de laatste export, om onder de knop te tonen */
   let exportResult = $state<string>();
 
+  /** "Alles klopt": de rest geldt als nagelopen (ook de onzekere), en de wandeling staat klaar */
   async function ready() {
     if (
       uncertainCount > 0 &&
       !confirm(
         `Nog ${uncertainCount === 1 ? '1 onzekere waarneming' : `${uncertainCount} onzekere waarnemingen`}. ` +
-          'Die gaan mee als "niet zeker". Toch klaarzetten?',
+          (uncertainCount === 1
+            ? 'Klopt die ook? Dan wordt hij zeker.'
+            : 'Kloppen die ook? Dan worden ze zeker.'),
       )
     )
       return;
-    await markReady(session.id, true);
+    await approveSession(session.id);
   }
 
   async function exportOnlyThis() {
@@ -117,6 +121,10 @@
   </dl>
 {/if}
 
+{#if !session.exportedAt}
+  <UncertainReview {session} />
+{/if}
+
 <ObservationMap {session} focus={mapFocus} onselect={(ids) => (listFocus = { ids })} />
 
 <SessionLog {session} focus={listFocus} onshowonmap={(id) => (mapFocus = { id })} />
@@ -151,13 +159,14 @@
         <p class="warning">
           Nog {uncertainCount === 1
             ? '1 onzekere waarneming'
-            : `${uncertainCount} onzekere waarnemingen`}. Tik erop om aan te passen, of gebruik
-          "Klopt" of "Weg".
+            : `${uncertainCount} onzekere waarnemingen`}. Loop ze bovenaan na, of tik erop in de
+          lijst.
         </p>
       {/if}
-      <button class="btn block large" onclick={ready}>Klaar voor waarneming.nl</button>
+      <button class="btn block large" onclick={ready}>Alles klopt, klaar voor waarneming.nl</button>
       <p class="muted">
-        Klaargezette wandelingen exporteer je later in één bestand, bij
+        De waarnemingen gelden dan als nagelopen. Klaargezette wandelingen exporteer je later in één
+        bestand, bij
         <a class="link" href="#wandelingen">Wandelingen</a>.
       </p>
     {/if}

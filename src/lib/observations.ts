@@ -113,6 +113,11 @@ export async function editObservation(id: string, patch: Partial<Observation>): 
   await db.observations.update(id, { ...patch, editedAt: Date.now(), status: 'reviewed' });
 }
 
+/** Onzekere waarneming nagelopen en goed bevonden ("Klopt") */
+export async function confirmObservation(id: string): Promise<void> {
+  await editObservation(id, { uncertain: false, uncertainReason: undefined });
+}
+
 /**
  * Waarneming wel of niet meenemen in de export. Telt niet als correctie
  * (geen `editedAt`), want de waarneming zelf verandert niet.

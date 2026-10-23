@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { HOUTDUIF, VINK, observation, unzipStored } from '../test-helpers';
 import { db, type Session } from './db';
 import {
+  approveSession,
   buildExport,
   exportForWaarneming,
   markExported,
@@ -164,6 +165,33 @@ describe('meer wandelingen in één export', () => {
 
     const ready = readyForExport(await db.sessions.toArray());
     expect(ready.map((s) => s.id)).toEqual([session.id]);
+  });
+
+  it('"Alles klopt" zet de wandeling klaar en de waarnemingen op nagelopen', async () => {
+    await db.sessions.add(session);
+    const draft = observation();
+    const unsure = observation({ uncertain: true, uncertainReason: 'vink of keep?' });
+    const exported = observation({ status: 'exported', uncertain: true });
+    const elsewhere = observation({ sessionId: 'andere' });
+    await db.observations.bulkAdd([draft, unsure, exported, elsewhere]);
+
+    await approveSession(session.id);
+
+    expect((await db.sessions.get(session.id))?.readyAt).toBeDefined();
+    const [a, b, c, d] = await db.observations.bulkGet([
+      draft.id,
+      unsure.id,
+      exported.id,
+      elsewhere.id,
+    ]);
+    expect(a?.status).toBe('reviewed');
+    expect(a?.editedAt).toBeUndefined();
+    // Onzeker wordt zeker, zoals met "Klopt"
+    expect(b).toMatchObject({ status: 'reviewed', uncertain: false });
+    expect(b?.uncertainReason).toBeUndefined();
+    expect(b?.editedAt).toBeDefined();
+    expect(c).toMatchObject({ status: 'exported', uncertain: true });
+    expect(d?.status).toBe('draft');
   });
 });
 
