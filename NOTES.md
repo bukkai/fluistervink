@@ -49,7 +49,7 @@ Volgorde: (a) nu de kleine open punten, betatesters uitnodigen en een wandeling;
 
 ## Twee omgevingen (24 okt)
 
-PR #112: beta blijft op workers.dev (branch `main`), stabiel op `fluistervink.nl` (branch `stable`, `npm run release`). KV en geheimen gedeeld, veld `channel` in gedeelde wandelingen. Eén Play-app: beta-AAB naar de interne test, stabiele naar een gesloten test. Na het mergen nog te doen door de eigenaar: domein naar Cloudflare (nameservers bij TransIP), `npm run release`, tweede Workers Builds-project, geheimen met `--env stable` (zie `docs/omgevingen.md`). Debug-APK `apk/fluistervink-0.348-beta.apk`.
+PR #112: beta blijft op workers.dev (branch `main`), stabiel op `fluistervink.nl` (branch `stable`, `npm run release`). KV en geheimen gedeeld, veld `channel` in gedeelde wandelingen. Eén Play-app: beta-AAB naar de interne test, stabiele naar een gesloten test. Gemerged 24 okt. Stand 24 okt avond: `fluistervink.nl` toegevoegd aan Cloudflare (Free); parkeerrecords van TransIP (A, AAAA, www, MX) verwijderd, SPF `-all` en DMARC `p=reject` (geen mail op dit domein); nameservers bij TransIP aangepast, wachten tot Cloudflare het domein actief noemt. Nog te doen: `npm run release`, tweede Workers Builds-project, geheimen met `--env stable`, proef op `fluistervink.nl` (zie `docs/omgevingen.md`). Debug-APK `apk/fluistervink-0.348-beta.apk`.
 
 ## Open punten
 
