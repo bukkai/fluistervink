@@ -10,7 +10,7 @@ De naam is een woordgrap op "luistervink": je fluistert je waarnemingen in, en d
 2. Iets gezien of gehoord → knop indrukken (MVP) of later het wake word "Fluistervink" zeggen, en de waarneming inspreken.
 3. Elke uitspraak wordt verwerkt en verschijnt in het overzicht. Bevestiging via trillen, zodat de gebruiker niet naar het scherm hoeft te kijken.
 4. Correcties kunnen in het veld met de stem: "nee, keep in plaats van vink", "nog drie erbij", "die laatste weg".
-5. Thuis: review van soort, aantal, gedrag en locatie, nalopen van onzekere waarnemingen, audio terugluisteren.
+5. Thuis: review van soort, aantal, gedrag en locatie, nalopen van onzekere waarnemingen, audio terugluisteren. Snel nalopen: bovenaan de onzekere één voor één (Klopt, Weg, Aanpassen, Overslaan; `src/lib/UncertainReview.svelte`), daarna "Alles klopt" (`approveSession`): de rest geldt als nagelopen en de wandeling staat klaar.
 6. Een nagelopen wandeling zet je "klaar voor waarneming.nl". Wanneer het uitkomt, exporteer je alle klaarstaande wandelingen in één bestand (scherm Wandelingen; CSV in de browser, xlsx in de Android-app, omdat Android een .csv een type geeft dat het uploadveld van waarneming.nl uitgrijst; `src/lib/xlsx.ts`) en importeer je die bij waarneming.nl; ze zijn dan "geëxporteerd". Eén wandeling los exporteren kan ook. Later via de API (`/api/v1/observations/create/`, zie `NOTES.md`).
 
 ## Vastgelegde ontwerpkeuzes

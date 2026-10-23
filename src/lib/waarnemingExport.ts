@@ -118,6 +118,22 @@ export async function markReady(sessionId: string, ready: boolean): Promise<void
   await db.sessions.update(sessionId, { readyAt: ready ? Date.now() : undefined });
 }
 
+/**
+ * "Alles klopt": alle waarnemingen die nog niet nagelopen waren gelden als
+ * nagelopen, en de wandeling staat klaar. Telt niet als correctie (geen
+ * `editedAt`). Onzekere blijven onzeker: die gaan mee als "niet zeker".
+ */
+export async function approveSession(sessionId: string): Promise<void> {
+  await db.transaction('rw', db.sessions, db.observations, async () => {
+    await db.observations
+      .where('sessionId')
+      .equals(sessionId)
+      .filter((obs) => obs.status === 'draft')
+      .modify({ status: 'reviewed' });
+    await markReady(sessionId, true);
+  });
+}
+
 /** Wandelingen die klaarstaan en nog niet geëxporteerd zijn. */
 export function readyForExport(sessions: Session[]): Session[] {
   return sessions.filter((s) => s.readyAt && !s.exportedAt);

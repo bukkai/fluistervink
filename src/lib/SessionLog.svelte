@@ -7,9 +7,9 @@
   import ObservationEditor from './ObservationEditor.svelte';
   import RarityMark from './RarityMark.svelte';
   import {
+    confirmObservation,
     countSpecies,
     deleteObservation,
-    editObservation,
     listDeleted,
     listObservations,
     listUtterances,
@@ -118,11 +118,6 @@
   });
 
   const deletedByLabel = { hand: 'met de hand', voice: 'met de stem', undo: 'ongedaan gemaakt' };
-
-  /** Onzekere waarneming nagelopen en goed bevonden */
-  function confirmObservation(obs: Observation) {
-    editObservation(obs.id, { uncertain: false, uncertainReason: undefined });
-  }
 
   const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
 
@@ -332,7 +327,7 @@
                     <button class="small discard" onclick={() => deleteObservation(obs.id)}
                       >Weg</button
                     >
-                    <button class="small confirm" onclick={() => confirmObservation(obs)}
+                    <button class="small confirm" onclick={() => confirmObservation(obs.id)}
                       >Klopt</button
                     >
                   {/if}

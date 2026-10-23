@@ -102,10 +102,11 @@
   <div class="card-body">
     <h3>Thuis</h3>
     <p>
-      Na "Stop" zie je de wandeling op een kaart en in een lijst. Loop de onzekere waarnemingen na,
-      luister zo nodig de opname terug, en zet de wandeling klaar voor waarneming.nl. Wanneer het je
-      uitkomt, exporteer je alle klaarstaande wandelingen in één bestand (bij Wandelingen) en
-      importeer je dat bij waarneming.nl.
+      Na "Stop" zie je de wandeling op een kaart en in een lijst. Bovenaan staan de onzekere
+      waarnemingen één voor één, met wat je zei: tik Klopt, Weg of Aanpassen, en luister zo nodig de
+      opname terug. Klopt de rest, dan zet "Alles klopt" de wandeling met één tik klaar voor
+      waarneming.nl. Wanneer het je uitkomt, exporteer je alle klaarstaande wandelingen in één
+      bestand (bij Wandelingen) en importeer je dat bij waarneming.nl.
     </p>
     <p>
       Vergeten op Stop te drukken? Heb je een uur niets ingesproken, dan vraagt de app bij het
