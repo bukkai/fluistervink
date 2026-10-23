@@ -16,6 +16,12 @@ def git(String... args) {
 def commitCount = git('rev-list', '--count', 'HEAD')?.toInteger() ?: 1
 def commitHash = git('rev-parse', '--short', 'HEAD') ?: 'onbekend'
 
+// Ondertekenen met de upload-key voor Google Play (fase 4, docs/google-play.md).
+// GitHub Actions zet deze variabelen uit de secrets (.github/workflows/release.yml).
+// Zonder (lokaal) wordt de release-build niet ondertekend en blijft
+// assembleDebug gewoon werken met de debug-sleutel.
+def uploadKeystore = System.getenv('UPLOAD_KEYSTORE_FILE')
+
 android {
     namespace = "nl.hegmus.fluistervink"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -32,8 +38,21 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (uploadKeystore) {
+            upload {
+                storeFile file(uploadKeystore)
+                storePassword System.getenv('UPLOAD_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('UPLOAD_KEY_ALIAS')
+                keyPassword System.getenv('UPLOAD_KEY_PASSWORD')
+            }
+        }
+    }
     buildTypes {
         release {
+            if (uploadKeystore) {
+                signingConfig signingConfigs.upload
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

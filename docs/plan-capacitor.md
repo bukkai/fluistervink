@@ -89,6 +89,7 @@ Dan neemt de service zelf op (native, met de microfoon van de telefoon, dus ook 
 - Play Console-account en een interne test, met het ondertekenen door Google (Play App Signing).
 - Een release bouwen in GitHub Actions (AAB) bij een tag, zodat het niet van één computer afhangt.
 - Uitnodigingsmail: Android-testers krijgen de link naar de interne test plus hun toegangscode. iPhone-testers houden de PWA.
+- **Stand (15 okt): build klaar, account nog niet.** `.github/workflows/release.yml` bouwt bij een tag `v0.*` een AAB, ondertekend met de upload-key uit de GitHub-secrets (`signingConfig` in `android/app/build.gradle`, alleen als die er zijn). Wat de eigenaar zelf moet doen (Play Console, upload-key, secrets, eerste upload, testers): `docs/google-play.md`.
 
 ## Risico's en open vragen
 
