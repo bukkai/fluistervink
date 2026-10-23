@@ -7,7 +7,7 @@ import {
   type Utterance,
 } from './db';
 import { getTester, type Area } from './api';
-import { APP_VERSION, logEvent } from './log';
+import { APP_VERSION, CHANNEL, logEvent } from './log';
 import { PLATFORM, isNativeApp, saveFileNative, type SaveResult } from './native';
 
 // Ruwe export van alle gegevens, als vangnet tijdens de ontwikkeling, en het
@@ -43,6 +43,7 @@ export async function exportAllJson({ withAudio = false } = {}): Promise<Blob> {
   const data = {
     exportedAt: new Date().toISOString(),
     appVersion: APP_VERSION,
+    channel: CHANNEL,
     platform: PLATFORM,
     tester: getTester(),
     sessions,

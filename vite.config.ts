@@ -19,6 +19,10 @@ function appVersion(): string {
   }
 }
 
+// Stabiel (npm run build:stable, op fluistervink.nl) heet gewoon Fluistervink,
+// de rest is beta. Zie docs/omgevingen.md.
+const appName = process.env.CLOUDFLARE_ENV === 'stable' ? 'Fluistervink' : 'Fluistervink Beta';
+
 // https://vite.dev/config/
 export default defineConfig({
   define: {
@@ -43,8 +47,8 @@ export default defineConfig({
       },
       includeAssets: ['icon.svg', 'logo.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Fluistervink',
-        short_name: 'Fluistervink',
+        name: appName,
+        short_name: appName,
         description: 'Spraakgestuurde vogelwaarnemingen',
         lang: 'nl',
         display: 'standalone',

@@ -15,7 +15,9 @@
     "types": "wrangler types worker/worker-configuration.d.ts",
     "testset": "node scripts/testset.mjs",
     "tester": "node scripts/tester.mjs",
-    "feedback": "node scripts/feedback.mjs"
+    "feedback": "node scripts/feedback.mjs",
+    "build:stable": "CLOUDFLARE_ENV=stable vite build --mode stable",
+    "release": "git fetch origin main && git push origin origin/main:refs/heads/stable"
   },
   "devDependencies": {
     "@capacitor/cli": "8.5.3",

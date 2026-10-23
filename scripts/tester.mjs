@@ -7,7 +7,7 @@
 //   npm run tester -- add anna       code maken, naar Cloudflare, link tonen
 //   npm run tester -- remove anna    tester afsluiten
 //   npm run tester -- list           testers met hun uitnodigingslink
-//   npm run tester -- push           de lijst opnieuw naar Cloudflare sturen (productie en previews)
+//   npm run tester -- push           de lijst opnieuw naar Cloudflare sturen (beta, previews en stabiel)
 //   npm run tester -- url <url>      ander adres van de app in de links (bv. een preview)
 
 import { spawnSync } from 'node:child_process';
@@ -64,6 +64,11 @@ function push(data) {
       '\nLet op: productie is bijgewerkt, de previews niet. Opnieuw: `npm run tester -- push`,',
     );
     console.error('of met de hand in het dashboard onder Variables and Secrets → Previews Base.');
+  }
+  // De stabiele versie (fluistervink.nl) kent dezelfde testers, zie docs/omgevingen.md
+  if (!put(['--env', 'stable'])) {
+    console.error('\nLet op: de beta is bijgewerkt, de stabiele versie niet. Opnieuw:');
+    console.error('`npm run tester -- push` (bestaat de Worker fluistervink-stable al?).');
   }
 }
 

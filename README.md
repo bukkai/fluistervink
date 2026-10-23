@@ -48,7 +48,7 @@ Native code staat in `android/app/src/main/java/nl/hegmus/fluistervink/` (Java, 
 
 ## Deploy
 
-Eén Cloudflare Worker serveert de app en de `/api`-routes. Workers Builds bouwt en deployt automatisch bij elke push naar GitHub.
+Eén Cloudflare Worker serveert de app en de `/api`-routes. Workers Builds bouwt en deployt automatisch bij elke push naar GitHub. Er zijn twee omgevingen: de **beta** (branch `main`, workers.dev, voor testers) en de **stabiele** versie (branch `stable`, `fluistervink.nl`, bijwerken met `npm run release`). Hieronder de beta; de stabiele staat in `docs/omgevingen.md`.
 
 Eenmalig instellen in het Cloudflare-dashboard:
 
@@ -71,7 +71,7 @@ npm run tester -- remove anna             # tester afsluiten
 npm run tester -- url https://…           # ander adres in de links (standaard productie)
 ```
 
-Het script houdt de codes bij in `.testers.json` (niet in git) en zet ze als geheim `ACCESS_CODES` in Cloudflare, via `wrangler` (eenmalig `npx wrangler login`): in productie én in de Previews Base, want previews erven geen geheimen van productie. Een bestaande preview krijgt de nieuwe lijst pas bij zijn volgende deploy. Werk je op een andere computer, kopieer `.testers.json` dan mee (of bewaar hem in de wachtwoordmanager); anders begint de lijst daar leeg en overschrijft `add` de testers die er al waren.
+Het script houdt de codes bij in `.testers.json` (niet in git) en zet ze als geheim `ACCESS_CODES` in Cloudflare, via `wrangler` (eenmalig `npx wrangler login`): in productie (beta), in de stabiele versie én in de Previews Base, want previews erven geen geheimen van productie. Een bestaande preview krijgt de nieuwe lijst pas bij zijn volgende deploy. Werk je op een andere computer, kopieer `.testers.json` dan mee (of bewaar hem in de wachtwoordmanager); anders begint de lijst daar leeg en overschrijft `add` de testers die er al waren.
 
 Stuur de tester de link. Op Android: de link in Chrome openen (de app bewaart de code en heet de tester welkom op het hoofdscherm), daarna pas "Toevoegen aan startscherm". Jouw eigen `ACCESS_CODE` blijft gewoon werken, als tester "eigenaar". In Workers Logs staat bij elk verzoek welke tester het deed.
 

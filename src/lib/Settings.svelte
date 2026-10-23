@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { ApiError, getAccessCode, getTester, ping, setAccessCode } from './api';
-  import { APP_VERSION } from './log';
+  import { APP_VERSION, CHANNEL } from './log';
   import { nativeAppVersion } from './native';
   import { shareAudio, shareEnabled } from './share';
 
@@ -76,7 +76,8 @@
 </section>
 
 <p class="version">
-  Fluistervink · versie {APP_VERSION}{#if appVersion}<br />Android-app {appVersion}{/if}
+  Fluistervink{CHANNEL === 'beta' ? ' beta' : ''} · versie {APP_VERSION}{#if appVersion}<br
+    />Android-app {appVersion}{/if}
 </p>
 
 <style>

@@ -1,7 +1,7 @@
 import { getTester, putShared } from './api';
 import { db, type Utterance } from './db';
 import { NO_SESSION } from './devNotes';
-import { APP_VERSION, logEvent } from './log';
+import { APP_VERSION, CHANNEL, logEvent } from './log';
 
 // Delen met de ontwikkelaar: gestopte wandelingen (uitspraken, transcripten,
 // uitvoer van het model, de nagelopen waarnemingen, feedback en het log van
@@ -219,6 +219,7 @@ async function run(): Promise<ShareResult> {
               JSON.stringify({
                 sharedAt: new Date().toISOString(),
                 appVersion: APP_VERSION,
+                channel: CHANNEL,
                 tester: getTester(),
                 ...data,
               }),
@@ -261,6 +262,7 @@ async function run(): Promise<ShareResult> {
             JSON.stringify({
               sharedAt: new Date().toISOString(),
               appVersion: APP_VERSION,
+              channel: CHANNEL,
               tester: getTester(),
               ...loose,
             }),
