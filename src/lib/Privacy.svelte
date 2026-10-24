@@ -61,8 +61,8 @@
       <dt>Anthropic</dt>
       <dd>
         De tekst van je uitspraak plus de laatste waarnemingen van de wandeling (zodat "nog drie
-        erbij" werkt). Geen opname, geen locatie. Anthropic wist dit binnen 30 dagen en gebruikt het
-        niet voor training.
+        erbij" werkt), met hoe ver die van je af zijn ("300 m hiervandaan"). Geen opname en geen
+        coördinaten. Anthropic wist dit binnen 30 dagen en gebruikt het niet voor training.
       </dd>
       <dt>Waarneming.nl</dt>
       <dd>
@@ -77,8 +77,9 @@
       <dt>Google</dt>
       <dd>
         Installeer je de Android-app via Google Play, dan weet Google dat je hem hebt, zoals bij
-        elke app. De app zelf stuurt niets naar Google. Sla je een export op in Google Drive, dan
-        staat dat bestand bij Google.
+        elke app. De app zelf stuurt niets naar Google. Tik je op een link naar een plek (zoals "±8
+        m" of "kaarten-app"), dan opent Google Maps met die plek. Sla je een export op in Google
+        Drive, dan staat dat bestand bij Google.
       </dd>
     </dl>
   </div>
