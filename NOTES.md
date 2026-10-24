@@ -51,6 +51,10 @@ Volgorde: (a) nu de kleine open punten, betatesters uitnodigen en een wandeling;
 
 PR #112: beta blijft op workers.dev (branch `main`), stabiel op `fluistervink.nl` (branch `stable`, `npm run release`). KV en geheimen gedeeld, veld `channel` in gedeelde wandelingen. Eén Play-app: beta-AAB naar de interne test, stabiele naar een gesloten test. Gemerged 24 okt. **Live op 24 okt:** `fluistervink.nl` bij Cloudflare (Free; parkeerrecords van TransIP weg, geen mail: SPF `-all`, DMARC `p=reject`), branch `stable` aangemaakt, Workers Builds-project `fluistervink-stable` (build `npm run build:stable`, branch `stable`), vier geheimen gezet. `/api/ping` met de eigenaarscode geeft 200. Proefopname op de telefoon via `https://fluistervink.nl/#code=…` geslaagd. "Always Use HTTPS" staat aan; `www.fluistervink.nl` stuurt door naar `fluistervink.nl` (AAAA `100::` proxied plus redirect-regel, 301). Debug-APK `apk/fluistervink-0.348-beta.apk`.
 
+## Kwaliteitsronde (24 okt)
+
+PR #113: `docs/kwaliteitsronde.md` (direct na een release naar stable een ronde op de beta, met logboek), `npm run release` toont de laatste ronde en vraagt eerst, Dependabot (`.github/dependabot.yml`; meldingen en beveiligingsupdates in de repo aangezet), `npm audit --omit=dev` in de check. Nog geen ronde vastgelegd; de eerste kan nu (release naar stable was 24 okt). Eerste kandidaat: happy-dom naar 21 (hoog lek, alleen in de tests).
+
 ## Open punten
 
 - **App hing op het laadscherm na een deploy** (14 okt): de service worker had een oude `index.html` naast nieuwe JavaScript in zijn cache (deploy tijdens het openen). Op de telefoon hersteld via de WebView-devtools (adb, `webview_devtools_remote_<pid>`); PR #97 herstelt het voortaan zelf (`public/herstel.js`, log `cache_recovered`). Workers Builds heeft nu build watch paths: `*.md` en `docs/*` deployen niet meer.
