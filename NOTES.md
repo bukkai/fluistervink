@@ -18,7 +18,7 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 3. Prompt verbeteren met wat de testset laat zien ("tortelduif"), telkens nagaan met de testset.
    - **Waar correcties vandaan komen** (analyse 24 okt, 15 nagelopen wandelingen, 229 waarnemingen van het model): 81% nooit aangeraakt; de meeste stemcorrecties zijn aanvullingen ("nog drie erbij"). Echte fouten: ~10 soorten verkeerd verstaan door de spraakherkenning (vaak korte uitspraken met één soort, verward met een andere echte vogelnaam: kraai/gaai, smient/vink, kuifmees/koolmees), 1–2 keer het model, 4 keer een detail (geslacht, leeftijd). Het model is dus niet het knelpunt.
    - **STT-prompt blijft zoals hij is** (proef 24 okt, 153 opnames, elke variant drie keer): korte lijst, eigen soorten vooraan (eerlijk getest: lijst uit de wandelingen tot 16 okt, gemeten vanaf 17 okt), andere voorbeeldzinnen en lijst achteraan zitten allemaal binnen de ruis (dezelfde prompt schommelt ±3 soorten per run; eigen lijst +1 op 114). Zonder soortenlijst duidelijk slechter (88,6% tegen 94%). De hardnekkige fouten zitten in de opname zelf, deels mogelijk een afgekapt begin (microfoon gaat pas aan na het drukken); eigenaar vindt het goed zo.
-4. Later: kostenoverzicht per wandeling in het testset-script (uit het `usage`-blok van Anthropic, plus minuten audio voor OpenAI).
+4. Kosten per wandeling: staan op Developer zodra PR #133 gemerged is (zie Kostenoverzicht onder Ideeën voor later); niet meer apart in het testset-script.
 
 ## Roadmap naar v1.0 (13 okt)
 
@@ -36,7 +36,7 @@ Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de a
    - Meer sprekers: twee à drie echte betatesters met een echte wandeling. Tim is een alter ego van de eigenaar, dus alle gegevens tot nu toe komen van één spreker.
    - Voorjaarsronde (april/mei): veel meer soorten, zang, broedgedrag, paartjes. Reden om v1.0 niet vóór het voorjaar te noemen.
    - Open punten: korte spookopnames (#92); nocmig: niet nu. "Pijl" en "vaaltje" werken al (bijnamen, proef 11 okt).
-   - Kosten per wandeling in het testset-script.
+   - Kosten per wandeling: op Developer (PR #133).
 3. **Klaar voor vreemden:**
    - Twee omgevingen (stabiel en beta, zie Ideeën voor later).
    - Welkom en uitleg voor wie geen uitnodiging kreeg: toestemming voor microfoon en GPS, eerste wandeling stap voor stap.
@@ -78,11 +78,11 @@ Nog niet gepland; eerst overleggen.
   - Eerst een client-ID aanvragen via het contactformulier (concept in de sessie van 13 okt: app, nalopen vóór inzenden, vaste soortenlijst, 88% goed; vragen: inlogmethode, client secret, testaccount op waarneming-test.nl, `create/` met `external_id` en welke scope, redirect-URL). Daarna: account koppelen bij Instellingen, route `/api/waarneming` in de proxy (CORS, secret), knop "Inzenden" voor de klaarstaande wandelingen, ID/link van waarneming.nl bewaren, `#privacy` en `#uitleg` bijwerken.
 - **Soortenstatistieken over alle gebruikers:** tellen per soort-ID wat het model koos, wat met de hand gecorrigeerd werd en wat het niet kon plaatsen, om de soortenlijst, bijnamen en STT-prompt bij te stellen. Kan in de proxy (Analytics Engine of D1); alleen geaggregeerd, en op `#privacy` vermelden. Pas relevant bij meer gebruikers; tot die tijd geeft de testset hetzelfde beeld.
 - Foto koppelen aan een waarneming via tijd en locatie.
-- **Kostenoverzicht op Developer** (idee eigenaar, 24 okt): wat kosten OpenAI en Anthropic, totaal, per tester en per wandeling. Sluit aan bij "kosten per wandeling in het testset-script" (Volgende stappen 4) en bij de vraag wie later de API-kosten betaalt. Twee bronnen, het best samen:
-  1. **Zelf tellen in de proxy:** Anthropic geeft bij elk antwoord een `usage`-blok (invoer, uitvoer, uit de cache gelezen en naar de cache geschreven tokens); voor OpenAI telt de duur van de audio (de app kent `audioDurationMs`; de proxy kan het meesturen of de transcriptie-`usage` lezen, nagaan wat `gpt-4o-transcribe` teruggeeft). De proxy telt per tester per dag in KV (`TESTERS` of een nieuwe `USAGE`), zodat ook niet-gedeelde wandelingen meetellen. Developer rekent met een prijstabel in de code (met datum en bron, prijzen veranderen) om naar euro's: vandaag, deze maand, per tester, gemiddeld per uitspraak en per wandeling.
-  2. **De echte rekening bij de aanbieders:** beide hebben een kosten-API met een aparte beheersleutel (Anthropic: Admin API, usage/cost report; OpenAI: Costs API). Geeft het werkelijke bedrag, maar niet per tester. Nagaan of het met een persoonlijk account kan, en de beheersleutel alleen als geheim in de proxy (route alleen voor de eigenaar).
-  - Weergave: kaart "Kosten" op Developer met het maandtotaal (geteld vs. echte rekening, als controle op de prijstabel), een balk per tester en een lijstje van de duurste wandelingen. Eventueel een waarschuwing boven een zelf gekozen maandbedrag, en later een limiet per tester (vanaf dan relevant voor een openbare release).
-  - Cloudflare zit in het gratis plan; hooguit tonen hoe dicht we bij de limieten van Workers en KV zitten.
+- **Kostenoverzicht op Developer** (idee eigenaar, 24 okt): wat kosten OpenAI en Anthropic, totaal, per tester en per wandeling.
+  1. **Zelf tellen:** gebouwd in PR #133 (24 okt). De proxy telt de tokens (bij `whisper-1` seconden) per dag, tester, omgeving, wandeling en model in D1 (`fluistervink-usage`). De kaart Kosten op Developer rekent dat met de prijstabel in `src/lib/costs.ts` om naar dollars. Er wordt pas geteld vanaf de merge; oudere wandelingen staan er niet in.
+  2. **De echte rekening (nog te doen, aparte PR):** OpenAI (Costs API) en Anthropic (Admin API, usage/cost report) hebben elk een beheersleutel nodig, alleen als geheim in de proxy, met een route alleen voor de eigenaar. Op de kaart het maandtotaal "geteld" naast "echte rekening", als controle op de prijstabel. Nagaan: de Admin API van Anthropic werkt voor zover bekend alleen met een organisatie, niet met een persoonlijk account.
+  - Later eventueel: een waarschuwing boven een zelf gekozen maandbedrag, een limiet per tester (bij een openbare release) en hoe dicht we bij de limieten van Cloudflare zitten.
+  - Opgemerkt op 24 okt: de modelpagina van OpenAI noemt `gpt-4o-transcribe` "Deprecated".
 
 ## Android-app
 
