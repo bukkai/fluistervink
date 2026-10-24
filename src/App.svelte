@@ -344,7 +344,7 @@
           <p>
             Fluistervink is nog in ontwikkeling. Mag de app na elke wandeling je uitspraken (als
             tekst), wat de app ervan maakte, je correcties en feedback, en de locaties van je
-            waarnemingen naar de ontwikkelaar sturen? Opnames niet, tenzij je dat bij Feedback
+            waarnemingen naar de ontwikkelaar sturen? Opnames niet, tenzij je dat bij Instellingen
             aanzet. Alleen de ontwikkelaar kan het lezen; je kunt het altijd weer uitzetten.
             <a href="#privacy">Meer over privacy</a>
           </p>

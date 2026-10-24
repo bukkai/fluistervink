@@ -92,7 +92,7 @@
       Fluistervink is nog in ontwikkeling. Zeg je ja tegen delen, dan gaan na elke wandeling je
       uitspraken als tekst, wat de app ervan maakte, je correcties bij het nalopen, je feedback, het
       logboek van die wandeling en de locaties van je waarnemingen naar de ontwikkelaar. Opnames
-      alleen als je dat bij <a href="#feedback">Feedback</a> aanzet.
+      alleen als je dat bij <a href="#instellingen">Instellingen</a> aanzet.
     </p>
     <p>
       Het staat bij Cloudflare onder je testernaam. Alleen de ontwikkelaar kan het lezen, en
@@ -106,7 +106,9 @@
   <div class="card-body">
     <h3>Wat je zelf kunt doen</h3>
     <ul>
-      <li>Delen aan- of uitzetten, met of zonder opnames: <a href="#feedback">Feedback</a>.</li>
+      <li>
+        Delen aan- of uitzetten, met of zonder opnames: <a href="#instellingen">Instellingen</a>.
+      </li>
       <li>
         Een wandeling verwijderen, met alle opnames: bij <a href="#wandelingen"
           >Vorige wandelingen</a

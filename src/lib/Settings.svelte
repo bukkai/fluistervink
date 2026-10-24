@@ -3,7 +3,7 @@
   import { ApiError, getAccessCode, getTester, ping, setAccessCode } from './api';
   import { APP_VERSION, CHANNEL } from './log';
   import { nativeAppVersion } from './native';
-  import { shareAudio, shareEnabled } from './share';
+  import ShareSettings from './ShareSettings.svelte';
 
   let code = $state(getAccessCode());
   let status = $state<'idle' | 'busy' | 'ok' | 'error'>('idle');
@@ -40,9 +40,6 @@
           : 'Proxy niet bereikbaar.';
     }
   }
-
-  const sharing = shareEnabled();
-  const sharingAudio = shareAudio();
 </script>
 
 <a class="back" href="#/">Terug</a>
@@ -65,15 +62,7 @@
   </form>
 </section>
 
-<section class="card">
-  <div class="card-head"><h2>Delen met de ontwikkelaar</h2></div>
-  <div class="card-body stack">
-    <p class="hint">
-      {sharing ? 'Staat aan' : 'Staat uit'}{sharing && sharingAudio ? ', met opnames' : ''}. Aan- of
-      uitzetten bij <a href="#feedback">Feedback</a>; zie ook <a href="#privacy">Privacy</a>.
-    </p>
-  </div>
-</section>
+<ShareSettings />
 
 <p class="version">
   Fluistervink{CHANNEL === 'beta' ? ' beta' : ''} · versie {APP_VERSION}{#if appVersion}<br
@@ -81,8 +70,7 @@
 </p>
 
 <style>
-  form,
-  .stack {
+  form {
     display: grid;
     gap: 0.75rem;
   }
@@ -99,15 +87,6 @@
     font-weight: 400;
   }
 
-  .check {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.95rem;
-    font-weight: 400;
-    color: var(--fg);
-  }
-
   .message {
     margin: 0;
   }
@@ -116,10 +95,6 @@
     margin: 0;
     font-size: 0.85rem;
     color: var(--muted);
-  }
-
-  .hint a {
-    color: inherit;
   }
 
   .version {

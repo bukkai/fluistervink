@@ -11,7 +11,6 @@
   import { db, type Utterance } from './db';
   import { onDestroy } from 'svelte';
   import { SHARE_CHANGED, sentNoteIds, shareEnabled } from './share';
-  import ShareSettings from './ShareSettings.svelte';
 
   const notes = liveQuery(listDevNotes);
 
@@ -78,6 +77,15 @@
   {/if}
 </div>
 
+<p class="intro">
+  Spreek het in tijdens het vogelen: begin een uitspraak met <em>"feedback"</em>, bijvoorbeeld
+  <em>"feedback, hij herkende blako niet, terwijl dat toch echt bladkoning betekent"</em>. Of typ
+  het hieronder. Feedback gaat na de wandeling mee naar de ontwikkelaar,
+  {sharing ? 'want delen staat aan' : 'als je delen aanzet'} (<a href="#instellingen"
+    >Instellingen</a
+  >). Verstuurde feedback blijft hier staan; weghalen kan altijd.
+</p>
+
 <form class="card add" onsubmit={add}>
   <textarea
     bind:value={text}
@@ -138,16 +146,6 @@
   </details>
 {/if}
 
-<p class="muted">
-  Typ hierboven, of spreek het in tijdens het vogelen: begin een uitspraak met
-  <em>"feedback"</em>, bijvoorbeeld
-  <em>"feedback, hij herkende blako niet, terwijl dat toch echt bladkoning betekent"</em>. Feedback
-  gaat na de wandeling mee naar de ontwikkelaar, als delen aanstaat. Verstuurde feedback blijft hier
-  staan; weghalen kan altijd.
-</p>
-
-<ShareSettings />
-
 <style>
   .title {
     display: flex;
@@ -159,6 +157,12 @@
   .title .btn {
     padding: 0.45rem 0.8rem;
     font-size: 0.85rem;
+  }
+
+  .intro {
+    margin: 0 0 0.75rem;
+    font-size: 0.9rem;
+    color: var(--muted);
   }
 
   .muted {
