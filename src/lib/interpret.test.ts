@@ -62,6 +62,20 @@ describe('parseResponse', () => {
     expect(rejected).toHaveLength(2);
   });
 
+  it('weigert een aantal dat geen heel getal is, en een onbekend geslacht', () => {
+    const { actions, rejected } = parseResponse(
+      toolResponse(
+        ['add_observation', { species_id: VINK, count: 2.5 }],
+        ['add_observation', { species_id: VINK, count: '3' }],
+        ['add_observation', { species_id: VINK, count: 1, sex: 'beide' }],
+        ['update_observation', { ref: 1, add_count: 'drie' }],
+      ),
+      [observation()],
+    );
+    expect(actions).toEqual([]);
+    expect(rejected).toHaveLength(4);
+  });
+
   it('weigert een toevoeging zonder aantal', () => {
     const { rejected } = parseResponse(toolResponse(['add_observation', { species_id: VINK }]), []);
     expect(rejected).toEqual(['add_observation: soort of aantal ontbreekt']);

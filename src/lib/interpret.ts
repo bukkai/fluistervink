@@ -523,10 +523,15 @@ function toAction(
   if (fields.speciesId !== undefined && !isPromptSpecies(fields.speciesId)) {
     return `${block.name}: onbekende soort-ID ${fields.speciesId}`;
   }
-  if (fields.count !== undefined && fields.count < 1) {
+  // Hele getallen: het schema vraagt dat, maar het model houdt zich er niet altijd aan
+  if (fields.count !== undefined && (!Number.isInteger(fields.count) || fields.count < 1)) {
     return `${block.name}: ongeldig aantal ${fields.count}`;
   }
+  if (input.add_count !== undefined && !Number.isInteger(input.add_count)) {
+    return `${block.name}: ongeldig aantal erbij ${input.add_count}`;
+  }
   if (
+    (fields.sex !== undefined && fields.sex !== 'male' && fields.sex !== 'female') ||
     !validCode(countingMethods, fields.countingMethodId) ||
     !validCode(activities, fields.activityId) ||
     !validCode(methods, fields.methodId) ||
