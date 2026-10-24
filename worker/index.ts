@@ -320,8 +320,8 @@ async function usage(request: Request, env: WorkerEnv, tester: string): Promise<
 async function billing(env: WorkerEnv, tester: string): Promise<Response> {
   if (tester !== OWNER) return json({ error: 'Alleen voor de eigenaar' }, 403);
   const [openai, anthropic] = await Promise.all([
-    bill(env.TESTERS, 'openai', env.OPENAI_ADMIN_KEY),
-    bill(env.TESTERS, 'anthropic', env.ANTHROPIC_ADMIN_KEY),
+    bill(env.TESTERS, 'openai', env.OPENAI_ADMIN_KEY, env.OPENAI_PROJECT_ID),
+    bill(env.TESTERS, 'anthropic', env.ANTHROPIC_ADMIN_KEY, env.ANTHROPIC_WORKSPACE_ID),
   ]);
   return json({ openai, anthropic });
 }

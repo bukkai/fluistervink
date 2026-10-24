@@ -511,10 +511,10 @@
     <p class="hint">
       Geteld door de proxy sinds 24 oktober 2026, voor alle testers en beide omgevingen; de testset
       telt mee bij de eigenaar, zonder wandeling. In dollars, met de prijzen van 24 oktober 2026. De
-      rekening is wat OpenAI en Anthropic in rekening brengen voor de hele organisatie (ook ander
-      gebruik met dezelfde sleutels), per dag in UTC en hooguit een uur oud; vergeleken vanaf de
-      eerste getelde dag van de maand. Wijkt die flink af, kijk dan de prijstabel in
-      src/lib/costs.ts na.
+      rekening is wat OpenAI en Anthropic in rekening brengen voor het project of de workspace van
+      Fluistervink (zonder die instelling de hele organisatie), per dag in UTC en hooguit een uur
+      oud; vergeleken vanaf de eerste getelde dag van de maand. Wijkt die flink af, kijk dan de
+      prijstabel in src/lib/costs.ts na.
     </p>
   </div>
 </section>
