@@ -23,7 +23,7 @@ Alles gaat eerst via `main` en de beta. Is de beta een tijdje goed bevallen:
 npm run release
 ```
 
-Dat zet `stable` gelijk aan `origin/main` (alleen vooruit; is `stable` ooit apart veranderd, dan weigert git). Workers Builds deployt daarna `fluistervink.nl`. Een fix voor de stabiele versie gaat dus ook via een PR naar `main`, en daarna `npm run release`.
+Dat laat zien welke commits meegaan en wanneer de laatste kwaliteitsronde was, vraagt of je door wilt, en zet dan `stable` gelijk aan `origin/main` (alleen vooruit; is `stable` ooit apart veranderd, dan weigert het). Workers Builds deployt daarna `fluistervink.nl`. Een fix voor de stabiele versie gaat dus ook via een PR naar `main`, en daarna `npm run release`. Na de release is het tijd voor een kwaliteitsronde op de beta (`docs/kwaliteitsronde.md`).
 
 De Android-app laadt de webcode van zijn adres, dus een nieuwe stabiele webversie staat meteen ook in de stabiele app. Alleen bij wijzigingen in `android/` een nieuwe app-versie, zie hieronder.
 

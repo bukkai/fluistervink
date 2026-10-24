@@ -1,0 +1,30 @@
+# Dependabot: elke maandag een PR met updates, zodat pakketten niet stilletjes
+# verouderen. Kleine updates (minor en patch) gebundeld in één PR per soort;
+# grote (major) los, want die kunnen iets breken. Een update voor een bekend
+# lek komt meteen, los van dit schema (repo-instelling "Dependabot security
+# updates"). Zie docs/kwaliteitsronde.md.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      klein:
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      actions:
+        patterns: ['*']
+  - package-ecosystem: gradle
+    directory: /android
+    schedule:
+      interval: monthly
+    groups:
+      gradle:
+        patterns: ['*']
