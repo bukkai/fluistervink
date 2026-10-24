@@ -29,7 +29,7 @@ Export van deze wandeling: `testset/wandeling-2026-10-12-middag.json` (12 uitspr
 - **Roodhalsfuut = broekzakopname** (20 s geritsel, bevestigd door de eigenaar). Elke poging gaf een andere vogel. Ook de **Bosuil uit de bus** was vermoedelijk rommel (opnieuw verstaan: "Houtsnip", "Witoog", "Nog drie erbij"). Gemeten: volume werkt niet als signaal (geritsel −28 dB, goed verstane "Grote gele" −43 dB), en de zekerheid van OpenAI (logprobs) schommelt met `language=nl` te veel per poging. Wat wel scheidt: lang en bijna geen tekst (broekzak 0,05 woord/s; echte lange uitspraken ≥ 0,52). → **PR #76**: ≥ 8 s en < 0,2 woord/s maakt de uitkomst onzeker; zekerheid wordt wel bewaard (`transcription.confidence`) om later opnieuw te bekijken.
 - **Wilde eend** was ruis in het script ("totaal drie, waarvan twee vrouwtjes" werd teruggerekend naar de eerdere uitspraak). → **PR #77**: latere correcties met de stem tellen alleen mee voor de soort.
 
-## Tweede wandeling (11 okt, Arnhem, versie 97084fc)
+## Tweede wandeling (11 okt, versie 97084fc)
 
 Export `fluistervink-2026-10-11.json`. 18:06–18:19, kort: telefoon ging uit (accu leeg) midden in een dev note. 10 uitspraken: 7 waarnemingen, 3 dev notes. Wandeling staat nog op actief.
 
@@ -47,7 +47,7 @@ Export `fluistervink-2026-10-11.json`. 18:06–18:19, kort: telefoon ging uit (a
 
 **Voorstel PR:** (1) Web Locks (`navigator.locks`) om de wachtrij, zodat maar één exemplaar verwerkt en een tweede niet de uitspraken van het eerste terugzet. (2) Melding "Fluistervink is al open in een ander venster". (3) Meten: moment van opslaan, tijd per stap (database, spraak, model) en een id per exemplaar in elke gebeurtenis.
 
-## Eerste echte wandeling (10 okt, Arnhem, versie 6e80882)
+## Eerste echte wandeling (10 okt, versie 6e80882)
 
 Export `thijsse-2026-10-10.json` geanalyseerd. 14:39–16:12, 55 uitspraken: 33 waarnemingen/correcties, 19 dev notes, 3 genegeerd. 30 waarnemingen over.
 
@@ -56,7 +56,7 @@ Export `thijsse-2026-10-10.json` geanalyseerd. 14:39–16:12, 55 uitspraken: 33 
 - Spraakherkenning vrijwel foutloos, ook "grobo", "blako", "KBV'tje". Uitzonderingen: "kpv'tje" (KBV'tje) → Koperwiek onzeker; "roofbouwt" (ruigpoot).
 - Correcties werkten: "nee, twee", "nee correctie drie zwarte kraaien", "nog een paartje erbij", "die boomkruiper mag weg", "die laatste is een KBV'tje", "die buizerd een hele tijd terug was een ruigpoot" (ref 7).
 - Vliegtuigmodus: 3 uitspraken netjes bewaard, verwerkt na "Opnieuw". App afsluiten en telefoon herstarten: alles bewaard, wandeling liep door.
-- GPS buiten meestal 3–20 m, een paar verse metingen 55–75 m. Gebied van waarneming.nl klopt (Lombok, Mariëndaal, Klingelbeek).
+- GPS buiten meestal 3–20 m, een paar verse metingen 55–75 m. Gebied van waarneming.nl klopt.
 - Knop indrukken bevalt; wake word misschien niet eens nodig.
 
 **Fouten en verklaringen**

@@ -86,6 +86,6 @@ Zie `docs/google-play.md`. Kort: één app, twee tracks. De beta-AAB naar de **i
 
 ## Waar staat wie
 
-- De eigenaar en Maarten blijven op de beta (workers.dev); hun gegevens staan daar.
+- De eigenaar en de eerste tester blijven op de beta (workers.dev); hun gegevens staan daar.
 - Nieuwe mensen die alleen willen vogelen: uitnodigen vanaf het scherm Developer **op `fluistervink.nl`** (de link gebruikt het adres waarop je het scherm opent).
 - Uitnodigingen voor de beta: vanaf het scherm Developer op workers.dev, zoals nu.

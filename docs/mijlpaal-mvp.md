@@ -12,15 +12,15 @@ In `CLAUDE.md` staat: *na drie à vier echte wandelingen is het grootste deel va
 
 Wat overblijft, ligt vooral buiten het model: verstaanfouten bij jargon, en opnames die per ongeluk gemaakt zijn.
 
-**Kanttekeningen:** het zijn maar drie wandelingen in het veld, alle drie van de eigenaar, in de omgeving van Arnhem, in oktober (weinig soorten, ±50 waarnemingen). Tim heeft alleen een minuut thuis getest. En de huidige prompt is maar op één wandeling getest.
+**Kanttekeningen:** het zijn maar drie wandelingen in het veld, alle drie van de eigenaar, in één omgeving, in oktober (weinig soorten, ±50 waarnemingen). Tim heeft alleen een minuut thuis getest. En de huidige prompt is maar op één wandeling getest.
 
 ## De wandelingen
 
 | | Datum | Duur | Uitspraken | Nagelopen? |
 |---|---|---|---|---|
-| 1. Mariëndaal | 10 okt | 94 min | 55 (20 feedback) | Nee, in de app niet. Fouten met de hand geanalyseerd (`docs/veldtests.md`) |
-| 2. Lombok | 11 okt | 35 min | 10 (3 feedback) | Ja, deels |
-| 3. Biljoen | 12 okt | 28 min | 12 | Ja, en geëxporteerd |
+| 1 | 10 okt | 94 min | 55 (20 feedback) | Nee, in de app niet. Fouten met de hand geanalyseerd (`docs/veldtests.md`) |
+| 2 | 11 okt | 35 min | 10 (3 feedback) | Ja, deels |
+| 3 | 12 okt | 28 min | 12 | Ja, en geëxporteerd |
 | (Bus) | 12 okt | 32 min | 6 | Getypt, op één opname na. Telt niet mee voor spraak |
 
 Thuisproeven (11 okt, avond) en Tims proef tellen niet mee voor het percentage, wel voor de correcties.
@@ -29,9 +29,9 @@ Thuisproeven (11 okt, avond) en Tims proef tellen niet mee voor het percentage, 
 
 | Wandeling | Goed | Fouten |
 |---|---|---|
-| Mariëndaal | 23 / 27 | "kpv'tje" → Koperwiek (onzeker); nieuwe buizerd gemist in een zin die ook iets verwijderde; wilde eenden met geslacht in de opmerking in plaats van gesplitst; vermoeden "klinkt als een winterkoning" genegeerd |
-| Lombok | 6 / 6 | "Tortelduif" → Turkse Tortel, terecht onzeker |
-| Biljoen | 8 / 9 | "Landkop" (glanskop) → Vogel onbekend, onzeker |
+| 1 | 23 / 27 | "kpv'tje" → Koperwiek (onzeker); nieuwe buizerd gemist in een zin die ook iets verwijderde; wilde eenden met geslacht in de opmerking in plaats van gesplitst; vermoeden "klinkt als een winterkoning" genegeerd |
+| 2 | 6 / 6 | "Tortelduif" → Turkse Tortel, terecht onzeker |
+| 3 | 8 / 9 | "Landkop" (glanskop) → Vogel onbekend, onzeker |
 | **Totaal** | **37 / 42 (88%)** | |
 
 Ook goed: aantallen, gedrag, methode en kleed klopten bij de juiste soort vrijwel altijd. Jargon werd goed herkend ("grobo", "blako", "tuto", "ekkies", "KBV'tje").
@@ -55,8 +55,8 @@ Mislukt: Tims "die kei van net vloog richting het westen". Dat werd een nieuwe k
 
 ## Snelheid en betrouwbaarheid
 
-- Van einde opname tot waarneming: mediaan **4–5 s** (Mariëndaal 4,3 s, Biljoen 4,5 s).
-- Lombok: mediaan 112 s, doordat er twee exemplaren van de app tegelijk open stonden. Opgelost met het slot op de wachtrij (#72). Sindsdien elke keer direct.
+- Van einde opname tot waarneming: mediaan **4–5 s** (wandeling 1: 4,3 s, wandeling 3: 4,5 s).
+- Wandeling 2: mediaan 112 s, doordat er twee exemplaren van de app tegelijk open stonden. Opgelost met het slot op de wachtrij (#72). Sindsdien elke keer direct.
 - Niets kwijtgeraakt: niet met vliegtuigmodus, niet bij een herstart en niet toen de accu leeg was.
 
 ## Wat dit betekent voor de volgende stap
