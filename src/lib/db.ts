@@ -40,7 +40,7 @@ export interface Session {
   readyAt?: number;
   /** Laatst geëxporteerd voor waarneming.nl */
   exportedAt?: number;
-  /** Naam van de wandeling ("Landgoed Mariëndaal"), zie `area.ts` */
+  /** Naam van de wandeling ("Amsterdamse Waterleidingduinen"), zie `area.ts` */
   place?: SessionPlace;
 }
 

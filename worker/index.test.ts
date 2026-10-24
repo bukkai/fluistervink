@@ -391,14 +391,19 @@ describe('/api/area (waarneming.nl)', () => {
     upstream.mockResolvedValue(
       Response.json({
         features: [
-          { properties: { id: 1234, title: 'Landgoed Mariëndaal', area: 'groot' }, geometry: {} },
+          {
+            properties: { id: 1234, title: 'Amsterdamse Waterleidingduinen', area: 'groot' },
+            geometry: {},
+          },
         ],
       }),
     );
-    const response = await call('/api/area?lat=51.98&lon=5.88');
-    expect(await response.json()).toEqual({ area: { id: 1234, name: 'Landgoed Mariëndaal' } });
+    const response = await call('/api/area?lat=52.36&lon=4.92');
+    expect(await response.json()).toEqual({
+      area: { id: 1234, name: 'Amsterdamse Waterleidingduinen' },
+    });
     expect(upstream.mock.calls[0][0]).toBe(
-      'https://waarneming.nl/api/v1/locations/geojson/?coordinates=51.98,5.88',
+      'https://waarneming.nl/api/v1/locations/geojson/?coordinates=52.36,4.92',
     );
   });
 
@@ -527,7 +532,7 @@ describe('/api/feedback/notes (feedback inzien)', () => {
   beforeEach(async () => {
     await share('w1', {
       appVersion: 'abc123',
-      sessions: [{ name: 'Mariëndaal' }],
+      sessions: [{ name: 'Waterleidingduinen' }],
       utterances: [
         { id: 'u1', recordedAt: 1000, transcript: 'Twee houtduiven' },
         { id: 'n1', recordedAt: 2000, kind: 'dev_note', transcript: 'Feedback: de kaart is traag' },
@@ -548,7 +553,7 @@ describe('/api/feedback/notes (feedback inzien)', () => {
         recordedAt: 2000,
         text: 'de kaart is traag',
         appVersion: 'abc123',
-        sessionName: 'Mariëndaal',
+        sessionName: 'Waterleidingduinen',
         processed: false,
       },
     ]);
