@@ -53,7 +53,7 @@ PR #112: beta blijft op workers.dev (branch `main`), stabiel op `fluistervink.nl
 
 ## Kwaliteitsronde (24 okt)
 
-PR #113: `docs/kwaliteitsronde.md` (direct na een release naar stable een ronde op de beta, met logboek), `npm run release` toont de laatste ronde en vraagt eerst, Dependabot (`.github/dependabot.yml`; meldingen en beveiligingsupdates in de repo aangezet), `npm audit --omit=dev` in de check. Nog geen ronde vastgelegd; de eerste kan nu (release naar stable was 24 okt). Eerste kandidaat: happy-dom naar 21 (hoog lek, alleen in de tests).
+PR #113: `docs/kwaliteitsronde.md` (direct na een release naar stable een ronde op de beta, met logboek), `npm run release` toont de laatste ronde en vraagt eerst, Dependabot (`.github/dependabot.yml`; meldingen en beveiligingsupdates in de repo aangezet), `npm audit --omit=dev` in de check. Eerste ronde gedaan op 24 okt (logboek in `docs/kwaliteitsronde.md`): PR's #121 (snelheidslimiet proxy, Content-Type), #122 (validatie aantallen), #123 (contrast, `#privacy`). Dependabot opende meteen #118 (@types/node), #119 (TypeScript 7, faalt) en #120 (happy-dom, het hoge lek). Open voorstel: Inspreken-knop lager, in de duimzone (andere indeling, eerst overleggen).
 
 ## Open punten
 

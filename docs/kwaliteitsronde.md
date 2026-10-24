@@ -37,3 +37,4 @@ Nieuwste bovenaan. `npm run release` leest de bovenste regel (datum en commit), 
 
 | Datum | Commit | Gevonden en opgelost | Bewust laten liggen (waarom) |
 | --- | --- | --- | --- |
+| 2026-10-24 | fbd31fb | Proxy zonder snelheidslimiet (#121, 60/min per tester op AI); Content-Type van gedeelde bestanden door tester te kiezen (#121); aantal en "erbij" niet als heel getal gecontroleerd, geslacht niet (#122); "Weg" 4,49:1 (#123, nu 5,02); `#privacy` miste de afstand naar Anthropic en de Google Maps-links (#123) | happy-dom (hoog lek, alleen tests): Dependabot #120; TypeScript 7 (#119) faalt in de check, apart bekijken; Inspreken-knop staat in de bovenste helft (buiten de duimzone), vraagt een andere indeling: eerst overleggen; kleine doelen thuis ("±8 m" 31×19 px, filterknop 32 px hoog): niet in het veld nodig; bronnen van `#privacy` (11 okt) niet opnieuw nagekeken: volgende ronde |
