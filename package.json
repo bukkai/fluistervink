@@ -25,6 +25,7 @@
     "@sveltejs/vite-plugin-svelte": "^7.3.0",
     "@tsconfig/svelte": "^5.0.8",
     "@types/leaflet": "^1.9.22",
+    "@types/leaflet.markercluster": "^1.5.6",
     "@types/node": "^24.13.3",
     "fake-indexeddb": "^6.2.5",
     "happy-dom": "^20.14.6",
@@ -43,6 +44,7 @@
     "@capacitor/android": "8.5.3",
     "@capacitor/core": "8.5.3",
     "dexie": "^4.4.6",
-    "leaflet": "^1.9.4"
+    "leaflet": "^1.9.4",
+    "leaflet.markercluster": "^1.5.3"
   }
 }
