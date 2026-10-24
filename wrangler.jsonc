@@ -41,7 +41,11 @@
   // OPENAI_PROJECT_ID en ANTHROPIC_WORKSPACE_ID: alleen de kosten van
   // Fluistervink in de echte rekening op Developer (worker/billing.ts). Geen
   // geheim. Vars erft env.stable niet, dus daar nog eens.
-  "vars": { "CHANNEL": "beta", "OPENAI_PROJECT_ID": "proj_CvUygMTZvZOPx4zIo446b4EQ" },
+  "vars": {
+    "CHANNEL": "beta",
+    "OPENAI_PROJECT_ID": "proj_CvUygMTZvZOPx4zIo446b4EQ",
+    "ANTHROPIC_WORKSPACE_ID": "wrkspc_01LXLhkhjpBw2JuKbtJpVKAW",
+  },
   // Snelheidslimiet op spraakherkenning en model, per tester (zie worker/index.ts):
   // een doorgestuurde uitnodigingslink kan zo niet in korte tijd het tegoed
   // opmaken. Een uitspraak kost 2 verzoeken, dus 60 per minuut is ruim. De
@@ -86,7 +90,11 @@
           "database_id": "b0ef6e17-df02-4af5-ae26-b80e4e4f8e38",
         },
       ],
-      "vars": { "CHANNEL": "stable", "OPENAI_PROJECT_ID": "proj_CvUygMTZvZOPx4zIo446b4EQ" },
+      "vars": {
+        "CHANNEL": "stable",
+        "OPENAI_PROJECT_ID": "proj_CvUygMTZvZOPx4zIo446b4EQ",
+        "ANTHROPIC_WORKSPACE_ID": "wrkspc_01LXLhkhjpBw2JuKbtJpVKAW",
+      },
       "ratelimits": [
         { "name": "AI_LIMIT", "namespace_id": "1001", "simple": { "limit": 60, "period": 60 } },
       ],
