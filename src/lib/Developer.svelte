@@ -1,17 +1,20 @@
 <script lang="ts">
   // Alleen voor de eigenaar (menu en route in App.svelte): feedback van testers
-  // lezen, testers uitnodigen, exporteren voor de testset en importeren. Afgeschermd in de interface; de
+  // lezen, testers uitnodigen, kosten bekijken, exporteren voor de testset en importeren. Afgeschermd in de interface; de
   // proxy staat het beheer van testers ook alleen de eigenaar toe.
   import {
     addTester,
     inviteLink,
     listSharedNotes,
     listTesters,
+    listUsage,
     markNotesProcessed,
     removeTester,
     type SharedNote,
     type Tester,
   } from './api';
+  import { startOfLastMonth, summarize, type CostSummary, type WalkCost } from './costs';
+  import { db } from './db';
   import { exportAllJson, importJson, saveFile } from './export';
 
   let testers = $state<Tester[]>();
@@ -63,6 +66,53 @@
     hour: '2-digit',
     minute: '2-digit',
   });
+
+  // Verbruik zoals de proxy het telt (worker/usage.ts), in dollars met de
+  // prijstabel in costs.ts. Vanaf het begin van de vorige maand.
+  let costs = $state<CostSummary>();
+  let costsError = $state('');
+  /** Namen van eigen wandelingen; die van testers staan niet op dit apparaat */
+  let walkNames = $state<Record<string, string>>({});
+
+  async function loadCosts() {
+    try {
+      costs = summarize(await listUsage(startOfLastMonth(new Date())));
+      costsError = '';
+      const sessions = await db.sessions.bulkGet(costs.topWalks.map((w) => w.session));
+      walkNames = Object.fromEntries(
+        sessions.flatMap((session) => (session?.place ? [[session.id, session.place.name]] : [])),
+      );
+    } catch (error) {
+      costsError = `Kosten ophalen mislukt: ${error instanceof Error ? error.message : error}`;
+    }
+  }
+  loadCosts();
+
+  const centsFormat = new Intl.NumberFormat('nl-NL', {
+    style: 'currency',
+    currency: 'USD',
+    currencyDisplay: 'narrowSymbol',
+  });
+  // Een uitspraak kost een fractie van een cent
+  const smallFormat = new Intl.NumberFormat('nl-NL', {
+    style: 'currency',
+    currency: 'USD',
+    currencyDisplay: 'narrowSymbol',
+    maximumSignificantDigits: 2,
+  });
+  const money = (amount: number) =>
+    (amount > 0 && amount < 0.01 ? smallFormat : centsFormat).format(amount);
+  /** "anna · 24 okt · 42 uitspraken" (de tester alleen als de naam van de wandeling ervoor staat) */
+  function walkMeta(walk: WalkCost): string {
+    return [
+      walkNames[walk.session] ? walk.tester : undefined,
+      dateFormat.format(new Date(walk.day)),
+      walk.utterances ? count(walk.utterances, 'uitspraak', 'uitspraken') : undefined,
+    ]
+      .filter(Boolean)
+      .join(' · ');
+  }
+  const maxTesterCost = $derived(Math.max(...(costs?.perTester.map((t) => t.cost) ?? []), 0));
 
   let name = $state('');
   let email = $state('');
@@ -331,6 +381,85 @@
 </section>
 
 <section class="card">
+  <div class="card-head"><h2>Kosten</h2></div>
+  <div class="card-body stack">
+    {#if costsError}
+      <p class="message error">{costsError}</p>
+    {/if}
+    {#if costs}
+      <dl class="totals">
+        <div>
+          <dt>Vandaag</dt>
+          <dd>{money(costs.today)}</dd>
+        </div>
+        <div>
+          <dt>Deze maand</dt>
+          <dd>{money(costs.thisMonth)}</dd>
+        </div>
+        <div>
+          <dt>Vorige maand</dt>
+          <dd>{money(costs.lastMonth)}</dd>
+        </div>
+      </dl>
+      <p class="hint">
+        Deze maand: OpenAI {money(costs.openai)} · Anthropic {money(
+          costs.anthropic,
+        )}{costs.perUtterance !== undefined
+          ? ` · ${money(costs.perUtterance)} per uitspraak`
+          : ''}{costs.perWalk !== undefined ? ` · ${money(costs.perWalk)} per wandeling` : ''}
+      </p>
+      {#if costs.perTester.length}
+        <h3>Per tester, deze maand</h3>
+        <ul class="bars">
+          {#each costs.perTester as tester (tester.tester)}
+            <li>
+              <div class="bar-label">
+                <span>{tester.tester}</span>
+                <span class="muted">
+                  {money(tester.cost)}{tester.utterances
+                    ? ` · ${count(tester.utterances, 'uitspraak', 'uitspraken')}`
+                    : ''}
+                </span>
+              </div>
+              <div class="bar">
+                <span style:width={`${maxTesterCost ? (tester.cost / maxTesterCost) * 100 : 0}%`}
+                ></span>
+              </div>
+            </li>
+          {/each}
+        </ul>
+      {/if}
+      {#if costs.topWalks.length}
+        <h3>Duurste wandelingen</h3>
+        <ul class="walks">
+          {#each costs.topWalks as walk (`${walk.tester}/${walk.session}`)}
+            <li>
+              <span>
+                {walkNames[walk.session] ?? walk.tester}
+                <span class="muted">· {walkMeta(walk)}</span>
+              </span>
+              <span>{money(walk.cost)}</span>
+            </li>
+          {/each}
+        </ul>
+      {/if}
+      {#if costs.unknownModels.length}
+        <p class="message error">
+          Geen prijs voor {costs.unknownModels.join(', ')}; die tellen niet mee. Vul de prijstabel
+          aan in src/lib/costs.ts.
+        </p>
+      {/if}
+    {:else if !costsError}
+      <p class="hint">Bezig met ophalen…</p>
+    {/if}
+    <p class="hint">
+      Geteld door de proxy sinds 24 oktober 2026, voor alle testers en beide omgevingen; de testset
+      telt mee bij de eigenaar, zonder wandeling. In dollars, met de prijzen van 24 oktober 2026.
+    </p>
+  </div>
+</section>
+
+<section class="card">
   <div class="card-head"><h2>Gegevens</h2></div>
   <div class="card-body stack">
     <label class="check">
@@ -400,6 +529,70 @@
 
   .error {
     color: var(--red);
+  }
+
+  h3 {
+    margin: 0.25rem 0 0;
+    font-size: 0.95rem;
+  }
+
+  .totals {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .totals dt {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .totals dd {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bars,
+  .walks {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .bar-label,
+  .walks li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bar-label .muted {
+    font-size: 0.85rem;
+  }
+
+  .walks .muted {
+    font-size: 0.85rem;
+  }
+
+  .bar {
+    margin-top: 0.2rem;
+    height: 0.5rem;
+    border-radius: 0.25rem;
+    background: var(--border);
+    overflow: hidden;
+  }
+
+  .bar span {
+    display: block;
+    height: 100%;
+    background: var(--brand);
   }
 
   .notes {

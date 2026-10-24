@@ -25,6 +25,20 @@
     { "binding": "FEEDBACK", "id": "e7c6372ecd0f402fb1fe455a62d73f11" },
     { "binding": "TESTERS", "id": "b04f6350b8c64b26865823a93c096352" },
   ],
+  // Verbruik van OpenAI en Anthropic per dag, tester en wandeling, voor het
+  // kostenoverzicht op Developer (worker/usage.ts). D1 en geen KV: KV kan niet
+  // veilig optellen en heeft in het gratis plan ~1000 schrijfacties per dag.
+  // Aangemaakt met `npx wrangler d1 create fluistervink-usage --location weur`;
+  // de tabel maakt de Worker zelf aan.
+  "d1_databases": [
+    {
+      "binding": "USAGE",
+      "database_name": "fluistervink-usage",
+      "database_id": "b0ef6e17-df02-4af5-ae26-b80e4e4f8e38",
+    },
+  ],
+  // Welke omgeving dit is (beta of stable), voor het verbruik
+  "vars": { "CHANNEL": "beta" },
   // Snelheidslimiet op spraakherkenning en model, per tester (zie worker/index.ts):
   // een doorgestuurde uitnodigingslink kan zo niet in korte tijd het tegoed
   // opmaken. Een uitspraak kost 2 verzoeken, dus 60 per minuut is ruim. De
@@ -43,7 +57,7 @@
   // Hierboven is de beta (branch main, op workers.dev, voor de testers).
   // Hieronder de stabiele versie op fluistervink.nl (branch stable), zie
   // docs/omgevingen.md. Bouwen met `npm run build:stable` (CLOUDFLARE_ENV kiest
-  // deze omgeving). Zelfde KV, dus dezelfde testers en gedeelde feedback;
+  // deze omgeving). Zelfde KV en D1, dus dezelfde testers en gedeelde feedback;
   // geheimen apart zetten met `npx wrangler secret put <NAAM> --env stable`.
   "env": {
     "stable": {
@@ -53,12 +67,21 @@
       "routes": [{ "pattern": "fluistervink.nl", "custom_domain": true }],
       "workers_dev": false,
       "preview_urls": false,
-      // KV, snelheidslimiet en observability erven niet van boven, dus herhaald
+      // KV, D1, variabelen, snelheidslimiet en observability erven niet van
+      // boven, dus herhaald
       "observability": { "enabled": true, "logs": { "invocation_logs": false } },
       "kv_namespaces": [
         { "binding": "FEEDBACK", "id": "e7c6372ecd0f402fb1fe455a62d73f11" },
         { "binding": "TESTERS", "id": "b04f6350b8c64b26865823a93c096352" },
       ],
+      "d1_databases": [
+        {
+          "binding": "USAGE",
+          "database_name": "fluistervink-usage",
+          "database_id": "b0ef6e17-df02-4af5-ae26-b80e4e4f8e38",
+        },
+      ],
+      "vars": { "CHANNEL": "stable" },
       "ratelimits": [
         { "name": "AI_LIMIT", "namespace_id": "1001", "simple": { "limit": 60, "period": 60 } },
       ],

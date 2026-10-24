@@ -324,7 +324,7 @@ async function processUtterance(utterance: Utterance): Promise<void> {
     ]);
     const here = fresh?.position;
     contextMs = Date.now() - contextStart;
-    interpretation = await interpret(transcript, recent, { here });
+    interpretation = await interpret(transcript, recent, { here, sessionId: utterance.sessionId });
     if (interpretation.warnings.length) {
       logEvent('species_id_fixed', { warnings: interpretation.warnings }, ids);
     }
@@ -417,7 +417,9 @@ async function finishWithout(
 
 /** Zet de opname om in tekst en slaat het transcript op. */
 async function transcribeUtterance(utterance: Utterance): Promise<Utterance> {
-  const { text, confidence, timing } = await transcribe(utterance.audio!);
+  const { text, confidence, timing } = await transcribe(utterance.audio!, {
+    sessionId: utterance.sessionId,
+  });
   const changes = {
     transcript: text,
     transcription: {

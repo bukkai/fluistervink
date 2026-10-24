@@ -1,8 +1,10 @@
 // @vitest-environment node
+import { DatabaseSync } from 'node:sqlite';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import worker from './index';
 
-// De proxy in Node, met een nep-KV in het geheugen en een nagebootste fetch
+// De proxy in Node, met een nep-KV in het geheugen, D1 als SQLite in het
+// geheugen (zodat de echte SQL getest wordt) en een nagebootste fetch
 // naar OpenAI, Anthropic en waarneming.nl: er gaat nooit iets naar buiten.
 // (Cloudflare's eigen testomgeving, vitest-pool-workers, werkt nog niet met
 // Vitest 5.)
@@ -54,6 +56,23 @@ function memoryKv() {
   };
 }
 
+/** D1 met alleen wat de proxy gebruikt: prepare, bind, run en all. */
+function memoryD1() {
+  const db = new DatabaseSync(':memory:');
+  type Value = string | number | null;
+  const statement = (sql: string, values: Value[] = []) => ({
+    bind: (...next: Value[]) => statement(sql, next),
+    async run() {
+      db.prepare(sql).run(...values);
+      return { success: true };
+    },
+    async all() {
+      return { results: db.prepare(sql).all(...values) };
+    },
+  });
+  return { prepare: (sql: string) => statement(sql) };
+}
+
 let kv: ReturnType<typeof memoryKv>;
 let testersKv: ReturnType<typeof memoryKv>;
 let env: Record<string, unknown>;
@@ -73,6 +92,8 @@ beforeEach(() => {
     ANTHROPIC_API_KEY: 'sk-ant-geheim',
     FEEDBACK: kv,
     TESTERS: testersKv,
+    USAGE: memoryD1(),
+    CHANNEL: 'beta',
     AI_LIMIT: {
       async limit({ key }: { key: string }) {
         const count = (limited.counts.get(key) ?? 0) + 1;
@@ -96,15 +117,22 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-/** Een verzoek aan de proxy, standaard met de code van Anna. */
-function call(
+/**
+ * Een verzoek aan de proxy, standaard met de code van Anna. Wacht ook op wat
+ * de proxy na het antwoord nog doet (ctx.waitUntil, zoals het verbruik tellen).
+ */
+async function call(
   path: string,
   { code = ANNA_CODE, ...init }: RequestInit & { code?: string | null } = {},
 ): Promise<Response> {
   const headers = new Headers(init.headers);
   if (code) headers.set('Authorization', `Bearer ${code}`);
   const request = new Request(`https://fluistervink.test${path}`, { ...init, headers });
-  return worker.fetch(request as never, env as never);
+  const pending: Promise<unknown>[] = [];
+  const ctx = { waitUntil: (promise: Promise<unknown>) => pending.push(promise) };
+  const response = await worker.fetch(request as never, env as never, ctx as never);
+  await Promise.all(pending);
+  return response;
 }
 
 describe('toegangscode', () => {
@@ -609,5 +637,144 @@ describe('/api/feedback/notes (feedback inzien)', () => {
   it("weigert ongeldige id's", async () => {
     expect((await markProcessed([42 as unknown as string], true)).status).toBe(400);
     expect((await markProcessed(['../x'], true)).status).toBe(400);
+  });
+});
+
+describe('/api/usage (verbruik)', () => {
+  const message = (usage: object) => ({
+    id: 'msg_1',
+    type: 'message',
+    role: 'assistant',
+    model: 'claude-haiku-5-5',
+    content: [],
+    stop_reason: 'end_turn',
+    stop_sequence: null,
+    usage,
+  });
+
+  function interpret(session?: string) {
+    return call('/api/messages', {
+      method: 'POST',
+      headers: session ? { 'X-Session': session } : {},
+      body: JSON.stringify({ model: 'claude-haiku-5-5', max_tokens: 10, messages: [] }),
+    });
+  }
+
+  function transcribe(model: string, session = 'wandeling-1') {
+    const form = new FormData();
+    form.set('audio', new File([new Uint8Array(100)], 'opname.webm', { type: 'audio/webm' }));
+    form.set('model', model);
+    return call('/api/transcribe', {
+      method: 'POST',
+      headers: { 'X-Session': session },
+      body: form,
+    });
+  }
+
+  async function rows() {
+    const response = await call('/api/usage?from=2000-01-01', { code: OWNER_CODE });
+    expect(response.status).toBe(200);
+    return ((await response.json()) as { rows: Record<string, unknown>[] }).rows;
+  }
+
+  it('telt de tokens van Anthropic op per tester, wandeling en model', async () => {
+    upstream.mockImplementation(async () =>
+      Response.json(
+        message({
+          input_tokens: 100,
+          output_tokens: 20,
+          cache_creation_input_tokens: 5000,
+          cache_read_input_tokens: 0,
+        }),
+      ),
+    );
+    await interpret('wandeling-1');
+    upstream.mockImplementation(async () =>
+      Response.json(
+        message({
+          input_tokens: 110,
+          output_tokens: 30,
+          cache_creation_input_tokens: 0,
+          cache_read_input_tokens: 5000,
+        }),
+      ),
+    );
+    await interpret('wandeling-1');
+    await interpret('wandeling-2');
+
+    expect(await rows()).toEqual([
+      expect.objectContaining({
+        tester: 'anna',
+        channel: 'beta',
+        session: 'wandeling-1',
+        model: 'claude-haiku-5-5',
+        requests: 2,
+        inputTokens: 210,
+        outputTokens: 50,
+        cacheWriteTokens: 5000,
+        cacheReadTokens: 5000,
+        audioSeconds: 0,
+      }),
+      expect.objectContaining({ session: 'wandeling-2', requests: 1 }),
+    ]);
+    expect((await rows())[0].day).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it('telt tokens bij gpt-4o-transcribe en seconden bij whisper-1', async () => {
+    upstream.mockImplementation(async () =>
+      Response.json({
+        text: 'vink',
+        usage: { type: 'tokens', input_tokens: 80, output_tokens: 3, total_tokens: 83 },
+      }),
+    );
+    await transcribe('gpt-4o-transcribe');
+    upstream.mockImplementation(async () =>
+      Response.json({ text: 'vink', usage: { type: 'duration', seconds: 4 } }),
+    );
+    await transcribe('whisper-1');
+
+    expect(await rows()).toEqual([
+      expect.objectContaining({ model: 'gpt-4o-transcribe', inputTokens: 80, outputTokens: 3 }),
+      expect.objectContaining({ model: 'whisper-1', audioSeconds: 4, inputTokens: 0 }),
+    ]);
+  });
+
+  it('telt een ongeldig of ontbrekend wandeling-id als "geen wandeling"', async () => {
+    upstream.mockImplementation(async () =>
+      Response.json(message({ input_tokens: 1, output_tokens: 1 })),
+    );
+    await interpret();
+    await interpret('../../iets anders');
+    expect(await rows()).toEqual([expect.objectContaining({ session: '', requests: 2 })]);
+  });
+
+  it('telt niets als OpenAI of Anthropic een fout geeft', async () => {
+    upstream.mockResolvedValue(Response.json({ error: { message: 'kapot' } }, { status: 500 }));
+    await transcribe('gpt-4o-transcribe');
+    expect(await rows()).toEqual([]);
+  });
+
+  it('laat de uitspraak niet mislukken als tellen niet lukt', async () => {
+    env.USAGE = {
+      prepare: () => {
+        throw new Error('D1 ligt eruit');
+      },
+    };
+    upstream.mockResolvedValue(Response.json({ text: 'vink' }));
+    expect((await transcribe('gpt-4o-transcribe')).status).toBe(200);
+  });
+
+  it('geeft alleen regels vanaf de gevraagde datum', async () => {
+    upstream.mockImplementation(async () =>
+      Response.json(message({ input_tokens: 1, output_tokens: 1 })),
+    );
+    await interpret('wandeling-1');
+    const response = await call('/api/usage?from=2999-01-01', { code: OWNER_CODE });
+    expect(await response.json()).toEqual({ rows: [] });
+  });
+
+  it('is alleen voor de eigenaar, met een geldige datum', async () => {
+    expect((await call('/api/usage?from=2026-10-01')).status).toBe(403);
+    expect((await call('/api/usage?from=gisteren', { code: OWNER_CODE })).status).toBe(400);
   });
 });

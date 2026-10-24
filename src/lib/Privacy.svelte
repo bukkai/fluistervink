@@ -49,8 +49,9 @@
     <h3>Wat de app verstuurt</h3>
     <p>
       Alles gaat eerst langs de eigen server van Fluistervink. Die bewaart niets, behalve wat je
-      deelt (hieronder). Wel houdt hij een paar dagen bij wanneer je de app gebruikte en of er iets
-      misging.
+      deelt (hieronder) en hoeveel je liet verwerken: per dag en per wandeling het aantal uitspraken
+      en hoe lang die waren, zonder wat je zei, om de kosten bij te houden. Wel houdt hij een paar
+      dagen bij wanneer je de app gebruikte en of er iets misging.
     </p>
     <dl>
       <dt>OpenAI</dt>

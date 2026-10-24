@@ -30,11 +30,14 @@ export const transcribePromptVersion: Promise<string> = crypto.subtle
     [...new Uint8Array(hash).slice(0, 4)].map((b) => b.toString(16).padStart(2, '0')).join(''),
   );
 
-/** `model`: alleen anders voor de testset (scripts/testset.mjs) */
+/**
+ * `model`: alleen anders voor de testset (scripts/testset.mjs). `sessionId`:
+ * voor het verbruik per wandeling.
+ */
 export async function transcribe(
   audio: Blob,
-  model = TRANSCRIBE_MODEL,
+  { model = TRANSCRIBE_MODEL, sessionId }: { model?: string; sessionId?: string } = {},
 ): Promise<{ text: string; confidence?: number; timing: Timing }> {
-  const { data, timing } = await transcribeAudio(audio, { model, prompt: PROMPT });
+  const { data, timing } = await transcribeAudio(audio, { model, prompt: PROMPT, sessionId });
   return { text: data.text.trim(), confidence: data.confidence, timing };
 }
