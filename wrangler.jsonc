@@ -25,6 +25,13 @@
     { "binding": "FEEDBACK", "id": "e7c6372ecd0f402fb1fe455a62d73f11" },
     { "binding": "TESTERS", "id": "b04f6350b8c64b26865823a93c096352" },
   ],
+  // Snelheidslimiet op spraakherkenning en model, per tester (zie worker/index.ts):
+  // een doorgestuurde uitnodigingslink kan zo niet in korte tijd het tegoed
+  // opmaken. Een uitspraak kost 2 verzoeken, dus 60 per minuut is ruim. De
+  // eigenaar (testset) telt niet mee. Zelfde namespace in beta en stabiel.
+  "ratelimits": [
+    { "name": "AI_LIMIT", "namespace_id": "1001", "simple": { "limit": 60, "period": 60 } },
+  ],
   // Previews: een eigen versie per branch (Workers Builds draait daarvoor
   // `wrangler preview`). Leeg, want app en assets gebruiken de instellingen
   // hierboven. Previews erven géén geheimen van productie: die staan apart in
@@ -46,11 +53,14 @@
       "routes": [{ "pattern": "fluistervink.nl", "custom_domain": true }],
       "workers_dev": false,
       "preview_urls": false,
-      // KV en observability erven niet van boven, dus herhaald
+      // KV, snelheidslimiet en observability erven niet van boven, dus herhaald
       "observability": { "enabled": true, "logs": { "invocation_logs": false } },
       "kv_namespaces": [
         { "binding": "FEEDBACK", "id": "e7c6372ecd0f402fb1fe455a62d73f11" },
         { "binding": "TESTERS", "id": "b04f6350b8c64b26865823a93c096352" },
+      ],
+      "ratelimits": [
+        { "name": "AI_LIMIT", "namespace_id": "1001", "simple": { "limit": 60, "period": 60 } },
       ],
     },
   },

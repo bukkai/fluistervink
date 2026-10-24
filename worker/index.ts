@@ -74,6 +74,12 @@ export default {
       if (pathname === '/api/area' && request.method === 'GET') {
         return await area(request);
       }
+      if (
+        (pathname === '/api/transcribe' || pathname === '/api/messages') &&
+        !(await withinLimit(env, tester))
+      ) {
+        return json({ error: 'Te veel verzoeken achter elkaar; probeer het zo opnieuw' }, 429);
+      }
       if (pathname === '/api/transcribe' && request.method === 'POST') {
         return await transcribe(request, env);
       }
@@ -96,6 +102,15 @@ export default {
     }
   },
 } satisfies ExportedHandler<WorkerEnv>;
+
+/**
+ * Snelheidslimiet op wat ons tegoed kost (AI_LIMIT in wrangler.jsonc), per
+ * tester. De eigenaar valt erbuiten: de testset stuurt veel tegelijk.
+ */
+async function withinLimit(env: WorkerEnv, tester: string): Promise<boolean> {
+  if (tester === OWNER) return true;
+  return (await env.AI_LIMIT.limit({ key: tester })).success;
+}
 
 /**
  * Spraak naar tekst via OpenAI.
@@ -262,7 +277,12 @@ async function feedback(request: Request, env: WorkerEnv, tester: string): Promi
     const body = await readBody(request, kind === 'sessions' ? MAX_SESSION_BYTES : MAX_AUDIO_BYTES);
     if (body instanceof Response) return body;
     if (body.byteLength === 0) return json({ error: 'Leeg' }, 400);
-    const contentType = request.headers.get('Content-Type') ?? 'application/octet-stream';
+    // Alleen de typen die de app stuurt: de eigenaar haalt het later op, en
+    // een tester mag niet bepalen hoe dat geopend wordt (bv. als HTML)
+    const sent = request.headers.get('Content-Type') ?? '';
+    const contentType = /^(application\/json|audio\/[\w.+-]+)(;.*)?$/.test(sent)
+      ? sent
+      : 'application/octet-stream';
     await env.FEEDBACK.put(`${tester}/${kind}/${id}`, body, {
       metadata: { contentType, uploadedAt: Date.now(), bytes: body.byteLength },
     });
@@ -282,7 +302,10 @@ async function feedback(request: Request, env: WorkerEnv, tester: string): Promi
     return json({ notes: await sharedNotes(env) });
   }
   if (request.method === 'POST' && kind === 'processed') {
-    const { ids, processed } = (await request.json()) as { ids?: unknown; processed?: unknown };
+    const { ids, processed } = (await request.json().catch(() => ({}))) as {
+      ids?: unknown;
+      processed?: unknown;
+    };
     const valid =
       Array.isArray(ids) &&
       ids.length <= MAX_PROCESSED_IDS &&
@@ -316,7 +339,10 @@ async function feedback(request: Request, env: WorkerEnv, tester: string): Promi
     );
     if (!value) return json({ error: 'Niet gevonden' }, 404);
     return new Response(value, {
-      headers: { 'Content-Type': metadata?.contentType ?? 'application/octet-stream' },
+      headers: {
+        'Content-Type': metadata?.contentType ?? 'application/octet-stream',
+        'X-Content-Type-Options': 'nosniff',
+      },
     });
   }
   return json({ error: 'Niet gevonden' }, 404);
@@ -339,13 +365,7 @@ export interface SharedNote {
  * gedeelde wandeling (zonder opnames); bij een handvol testers is dat genoeg.
  */
 async function sharedNotes(env: WorkerEnv): Promise<SharedNote[]> {
-  const keys: string[] = [];
-  let cursor: string | undefined;
-  do {
-    const page = await env.FEEDBACK.list({ cursor });
-    keys.push(...page.keys.map((k) => k.name).filter((name) => name.includes('/sessions/')));
-    cursor = page.list_complete ? undefined : page.cursor;
-  } while (cursor);
+  const keys = await sharedSessionKeys(env);
 
   const done = await processedNotes(env);
   const notes = await Promise.all(
@@ -399,13 +419,7 @@ export interface TesterUsage {
  * wandelingen en losse feedback, en alleen van testers die delen aan hebben.
  */
 async function testerUsage(env: WorkerEnv): Promise<Map<string, TesterUsage>> {
-  const keys: string[] = [];
-  let cursor: string | undefined;
-  do {
-    const page = await env.FEEDBACK.list({ cursor });
-    keys.push(...page.keys.map((k) => k.name).filter((name) => name.includes('/sessions/')));
-    cursor = page.list_complete ? undefined : page.cursor;
-  } while (cursor);
+  const keys = await sharedSessionKeys(env);
 
   const files = await Promise.all(
     keys.map(async (key) => ({
@@ -442,6 +456,18 @@ async function testerUsage(env: WorkerEnv): Promise<Map<string, TesterUsage>> {
       ];
     }),
   );
+}
+
+/** Sleutels van alle gedeelde wandelingen (`<tester>/sessions/<id>`), zonder opnames. */
+async function sharedSessionKeys(env: WorkerEnv): Promise<string[]> {
+  const keys: string[] = [];
+  let cursor: string | undefined;
+  do {
+    const page = await env.FEEDBACK.list({ cursor });
+    keys.push(...page.keys.map((k) => k.name).filter((name) => name.includes('/sessions/')));
+    cursor = page.list_complete ? undefined : page.cursor;
+  } while (cursor);
+  return keys;
 }
 
 async function processedNotes(env: WorkerEnv): Promise<Set<string>> {
