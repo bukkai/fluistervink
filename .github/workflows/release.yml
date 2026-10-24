@@ -28,10 +28,10 @@ jobs:
       CAP_SERVER_URL: ${{ matrix.url }}
     steps:
       # Volledige geschiedenis: versionCode is het aantal commits (build.gradle).
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -39,11 +39,11 @@ jobs:
       - run: npm run ${{ matrix.build }}
       - run: npx cap sync android
       # Gradle 8.14 draait op Java 21 (android/gradle/gradle-daemon-jvm.properties).
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - name: Upload-key klaarzetten
         env:
           UPLOAD_KEYSTORE_BASE64: ${{ secrets.UPLOAD_KEYSTORE_BASE64 }}
@@ -64,7 +64,7 @@ jobs:
       - name: Controleren dat de AAB ondertekend is
         # jarsigner geeft ook bij een niet-ondertekend bestand exit 0, dus op de tekst letten (grep faalt als die er niet staat).
         run: jarsigner -verify android/app/build/outputs/bundle/release/app-release.aab | grep 'jar verified'
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: fluistervink-${{ github.ref_name }}-${{ matrix.kanaal }}
           path: android/app/build/outputs/bundle/release/app-release.aab
