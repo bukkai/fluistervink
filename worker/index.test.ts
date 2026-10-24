@@ -57,10 +57,13 @@ function memoryKv() {
 let kv: ReturnType<typeof memoryKv>;
 let testersKv: ReturnType<typeof memoryKv>;
 let env: Record<string, unknown>;
+/** Nagebootste snelheidslimiet: per tester het aantal verzoeken, met een grens */
+let limited: { counts: Map<string, number>; max: number };
 /** Nagebootste fetch: alle verzoeken naar buiten komen hier binnen */
 let upstream: ReturnType<typeof vi.fn<(url: string, init?: RequestInit) => Promise<Response>>>;
 
 beforeEach(() => {
+  limited = { counts: new Map(), max: 60 };
   kv = memoryKv();
   testersKv = memoryKv();
   env = {
@@ -70,6 +73,13 @@ beforeEach(() => {
     ANTHROPIC_API_KEY: 'sk-ant-geheim',
     FEEDBACK: kv,
     TESTERS: testersKv,
+    AI_LIMIT: {
+      async limit({ key }: { key: string }) {
+        const count = (limited.counts.get(key) ?? 0) + 1;
+        limited.counts.set(key, count);
+        return { success: count <= limited.max };
+      },
+    },
   };
   upstream = vi.fn(async () => {
     throw new Error('onverwacht verzoek naar buiten');
@@ -128,6 +138,24 @@ describe('toegangscode', () => {
   it('gaat zonder geldige code nooit naar buiten', async () => {
     await call('/api/messages', { code: 'geraden', method: 'POST', body: '{}' });
     expect(upstream).not.toHaveBeenCalled();
+  });
+
+  it('begrenst spraakherkenning en model per tester, niet voor de eigenaar', async () => {
+    limited.max = 0;
+    const anna = await call('/api/messages', { method: 'POST', body: '{}' });
+    expect(anna.status).toBe(429);
+    expect(upstream).not.toHaveBeenCalled();
+    expect(limited.counts.get('anna')).toBe(1);
+    // De eigenaar komt wel door (hier tot de controle van het verzoek zelf)
+    const owner = await call('/api/messages', { code: OWNER_CODE, method: 'POST', body: '{}' });
+    expect(owner.status).toBe(400);
+    expect(limited.counts.has('eigenaar')).toBe(false);
+  });
+
+  it('telt andere verzoeken niet mee voor de limiet', async () => {
+    limited.max = 0;
+    expect((await call('/api/ping')).status).toBe(200);
+    expect(limited.counts.size).toBe(0);
   });
 
   it('geeft 404 bij een onbekend adres', async () => {
@@ -427,6 +455,26 @@ describe('/api/feedback (gedeelde gegevens)', () => {
     expect((await call('/api/feedback/file?key=bestaat/niet', { code: OWNER_CODE })).status).toBe(
       404,
     );
+  });
+
+  it('bewaart alleen de typen die de app stuurt, en laat de browser niet raden', async () => {
+    const send = (id: string, type: string) =>
+      call(`/api/feedback/audio/${id}`, {
+        method: 'PUT',
+        body: 'x',
+        headers: { 'Content-Type': type },
+      });
+    await send('opname', 'audio/webm;codecs=opus');
+    await send('html', 'text/html');
+    expect(kv.store.get('anna/audio/opname')?.metadata).toMatchObject({
+      contentType: 'audio/webm;codecs=opus',
+    });
+    expect(kv.store.get('anna/audio/html')?.metadata).toMatchObject({
+      contentType: 'application/octet-stream',
+    });
+    const file = await call('/api/feedback/file?key=anna/audio/html', { code: OWNER_CODE });
+    expect(file.headers.get('Content-Type')).toBe('application/octet-stream');
+    expect(file.headers.get('X-Content-Type-Options')).toBe('nosniff');
   });
 
   it('wist alles van één tester, en niets van de anderen', async () => {
