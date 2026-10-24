@@ -51,8 +51,10 @@
   // hierboven. Previews erven géén geheimen van productie: die staan apart in
   // het dashboard onder Variables and Secrets → Previews Base.
   "previews": {},
-  // Geheimen (ACCESS_CODE, OPENAI_API_KEY, ANTHROPIC_API_KEY): lokaal in
-  // .dev.vars, in productie via `npx wrangler secret put <NAAM>`.
+  // Geheimen (ACCESS_CODE, OPENAI_API_KEY, ANTHROPIC_API_KEY, en optioneel de
+  // beheersleutels OPENAI_ADMIN_KEY en ANTHROPIC_ADMIN_KEY voor de echte
+  // rekening op Developer): lokaal in .dev.vars, in productie via
+  // `npx wrangler secret put <NAAM>`.
   //
   // Hierboven is de beta (branch main, op workers.dev, voor de testers).
   // Hieronder de stabiele versie op fluistervink.nl (branch stable), zie

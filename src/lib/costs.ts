@@ -63,7 +63,7 @@ export function rowCost(row: UsageRow): number | undefined {
 }
 
 /** Spraakherkenning: één verzoek per opgenomen uitspraak. */
-const isTranscription = (row: UsageRow) => !row.model.startsWith('claude-');
+export const isTranscription = (row: UsageRow) => !row.model.startsWith('claude-');
 
 export interface WalkCost {
   session: string;
@@ -180,4 +180,50 @@ export function summarize(rows: UsageRow[], now = new Date()): CostSummary {
   summary.topWalks = [...walks.values()].sort((a, b) => b.cost - a.cost).slice(0, 5);
   summary.unknownModels = [...unknown];
   return summary;
+}
+
+export type Provider = 'openai' | 'anthropic';
+
+/** De echte rekening van een aanbieder (worker/billing.ts, /api/billing). */
+export interface Bill {
+  /** Maand in UTC, `2026-10` */
+  month: string;
+  /** Dollars per dag in UTC (`2026-10-24`) */
+  days: Record<string, number>;
+  /** Wanneer de proxy hem ophaalde (ms) */
+  fetchedAt: number;
+}
+
+/** Per aanbieder; null als de proxy geen beheersleutel heeft. */
+export type Billing = Record<Provider, Bill | { error: string } | null>;
+
+export interface BillCheck {
+  /** Vanaf deze dag vergeleken: het begin van de maand, of de eerste getelde dag */
+  since: string;
+  counted: number;
+  billed: number;
+}
+
+/**
+ * Wat de proxy telde naast de rekening, deze maand, vanaf de eerste dag dat er
+ * geteld is (het tellen begon op 24 okt 2026; de rekening gaat verder terug).
+ * De proxy telt in Nederlandse tijd, de rekening in UTC: een paar uur verschil
+ * aan het begin van de periode.
+ */
+export function checkBill(rows: UsageRow[], bill: Bill, provider: Provider): BillCheck {
+  const counted = rows.filter((row) => row.day.startsWith(bill.month));
+  const since = counted.reduce(
+    (first, row) => (row.day < first ? row.day : first),
+    `${bill.month}-31`,
+  );
+  const from = counted.length ? since : `${bill.month}-01`;
+  return {
+    since: from,
+    counted: counted
+      .filter((row) => (provider === 'openai') === isTranscription(row))
+      .reduce((sum, row) => sum + (rowCost(row) ?? 0), 0),
+    billed: Object.entries(bill.days)
+      .filter(([day]) => day >= from)
+      .reduce((sum, [, amount]) => sum + amount, 0),
+  };
 }

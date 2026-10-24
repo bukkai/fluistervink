@@ -4,6 +4,7 @@
   // proxy staat het beheer van testers ook alleen de eigenaar toe.
   import {
     addTester,
+    fetchBilling,
     inviteLink,
     listSharedNotes,
     listTesters,
@@ -13,7 +14,16 @@
     type SharedNote,
     type Tester,
   } from './api';
-  import { startOfLastMonth, summarize, type CostSummary, type WalkCost } from './costs';
+  import {
+    checkBill,
+    startOfLastMonth,
+    summarize,
+    type Billing,
+    type CostSummary,
+    type Provider,
+    type UsageRow,
+    type WalkCost,
+  } from './costs';
   import { db } from './db';
   import { exportAllJson, importJson, saveFile } from './export';
 
@@ -70,13 +80,18 @@
   // Verbruik zoals de proxy het telt (worker/usage.ts), in dollars met de
   // prijstabel in costs.ts. Vanaf het begin van de vorige maand.
   let costs = $state<CostSummary>();
+  let usageRows = $state<UsageRow[]>([]);
   let costsError = $state('');
+  // De echte rekening (worker/billing.ts), als controle op de prijstabel
+  let billing = $state<Billing>();
+  let billingError = $state('');
   /** Namen van eigen wandelingen; die van testers staan niet op dit apparaat */
   let walkNames = $state<Record<string, string>>({});
 
   async function loadCosts() {
     try {
-      costs = summarize(await listUsage(startOfLastMonth(new Date())));
+      usageRows = await listUsage(startOfLastMonth(new Date()));
+      costs = summarize(usageRows);
       costsError = '';
       const sessions = await db.sessions.bulkGet(costs.topWalks.map((w) => w.session));
       walkNames = Object.fromEntries(
@@ -87,6 +102,32 @@
     }
   }
   loadCosts();
+
+  async function loadBilling() {
+    try {
+      billing = await fetchBilling();
+    } catch (error) {
+      billingError = `Rekening ophalen mislukt: ${error instanceof Error ? error.message : error}`;
+    }
+  }
+  loadBilling();
+
+  const providers: { id: Provider; name: string }[] = [
+    { id: 'openai', name: 'OpenAI' },
+    { id: 'anthropic', name: 'Anthropic' },
+  ];
+  /** "geteld $1,20 · rekening $1,32 (+10%) vanaf 24 okt", of waarom er geen rekening is */
+  function billText(provider: Provider): string {
+    const bill = billing?.[provider];
+    if (bill === undefined) return '';
+    if (bill === null) return 'geen beheersleutel ingesteld';
+    if ('error' in bill) return bill.error;
+    const check = checkBill(usageRows, bill, provider);
+    const diff = check.counted
+      ? ` (${check.billed >= check.counted ? '+' : '−'}${Math.round((Math.abs(check.billed - check.counted) / check.counted) * 100)}%)`
+      : '';
+    return `geteld ${money(check.counted)} · rekening ${money(check.billed)}${diff} vanaf ${dateFormat.format(new Date(check.since))}`;
+  }
 
   const centsFormat = new Intl.NumberFormat('nl-NL', {
     style: 'currency',
@@ -443,6 +484,21 @@
           {/each}
         </ul>
       {/if}
+      <h3>Rekening, deze maand</h3>
+      {#if billingError}
+        <p class="message error">{billingError}</p>
+      {:else if billing}
+        <ul class="walks">
+          {#each providers as provider (provider.id)}
+            <li>
+              <span>{provider.name}</span>
+              <span class="muted">{billText(provider.id)}</span>
+            </li>
+          {/each}
+        </ul>
+      {:else}
+        <p class="hint">Bezig met ophalen…</p>
+      {/if}
       {#if costs.unknownModels.length}
         <p class="message error">
           Geen prijs voor {costs.unknownModels.join(', ')}; die tellen niet mee. Vul de prijstabel
@@ -454,7 +510,11 @@
     {/if}
     <p class="hint">
       Geteld door de proxy sinds 24 oktober 2026, voor alle testers en beide omgevingen; de testset
-      telt mee bij de eigenaar, zonder wandeling. In dollars, met de prijzen van 24 oktober 2026.
+      telt mee bij de eigenaar, zonder wandeling. In dollars, met de prijzen van 24 oktober 2026. De
+      rekening is wat OpenAI en Anthropic in rekening brengen voor de hele organisatie (ook ander
+      gebruik met dezelfde sleutels), per dag in UTC en hooguit een uur oud; vergeleken vanaf de
+      eerste getelde dag van de maand. Wijkt die flink af, kijk dan de prijstabel in
+      src/lib/costs.ts na.
     </p>
   </div>
 </section>

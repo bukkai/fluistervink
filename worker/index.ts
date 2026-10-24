@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { devNoteText } from '../src/lib/devNotePrefix';
+import { bill, type BillingKeys } from './billing';
 import { recordUsage, sessionFrom, usageSince, type Usage } from './usage';
 
 // Proxy tussen de app en de API's van OpenAI (spraak naar tekst), Anthropic
@@ -7,7 +8,9 @@ import { recordUsage, sessionFrom, usageSince, type Usage } from './usage';
 // toegangscode mee, zodat niet iedereen die de URL vindt ons tegoed opmaakt.
 // Daarnaast bewaart de proxy wat testers delen (wandelingen, feedback,
 // eventueel opnames) in KV, zodat de eigenaar het kan ophalen (/api/feedback),
-// en telt hij het verbruik van OpenAI en Anthropic in D1 (/api/usage).
+// en telt hij het verbruik van OpenAI en Anthropic in D1 (/api/usage). Met
+// een beheersleutel per aanbieder haalt hij ook de echte rekening op
+// (/api/billing, worker/billing.ts).
 //
 // Toegangscodes: ACCESS_CODE is die van de eigenaar; ACCESS_CODES bevat er één
 // per tester als JSON, `{"anna": "…", "piet": "…"}`. Zo kun je één tester
@@ -22,7 +25,7 @@ interface Secrets {
   ANTHROPIC_API_KEY: string;
 }
 
-type WorkerEnv = Env & Secrets;
+type WorkerEnv = Env & Secrets & BillingKeys;
 
 /** Naam van de eigenaar (ACCESS_CODE); alleen die mag gedeelde gegevens ophalen. */
 const OWNER = 'eigenaar';
@@ -90,6 +93,9 @@ export default {
       }
       if (pathname === '/api/usage' && request.method === 'GET') {
         return await usage(request, env, tester);
+      }
+      if (pathname === '/api/billing' && request.method === 'GET') {
+        return await billing(env, tester);
       }
       if (pathname.startsWith('/api/feedback/')) {
         return await feedback(request, env, tester);
@@ -308,6 +314,16 @@ async function usage(request: Request, env: WorkerEnv, tester: string): Promise<
   const from = new URL(request.url).searchParams.get('from') ?? '';
   if (!/^\d{4}-\d{2}-\d{2}$/.test(from)) return json({ error: 'Ongeldige datum' }, 400);
   return json({ rows: await usageSince(env.USAGE, from) });
+}
+
+/** De echte rekening van deze maand per aanbieder (worker/billing.ts), alleen voor de eigenaar. */
+async function billing(env: WorkerEnv, tester: string): Promise<Response> {
+  if (tester !== OWNER) return json({ error: 'Alleen voor de eigenaar' }, 403);
+  const [openai, anthropic] = await Promise.all([
+    bill(env.TESTERS, 'openai', env.OPENAI_ADMIN_KEY),
+    bill(env.TESTERS, 'anthropic', env.ANTHROPIC_ADMIN_KEY),
+  ]);
+  return json({ openai, anthropic });
 }
 
 /**
