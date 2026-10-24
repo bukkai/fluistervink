@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { rowCost, startOfLastMonth, summarize, type UsageRow } from './costs';
+import { checkBill, rowCost, startOfLastMonth, summarize, type UsageRow } from './costs';
 
 function row(fields: Partial<UsageRow>): UsageRow {
   return {
@@ -108,5 +108,31 @@ describe('startOfLastMonth', () => {
   it('rekent in Nederlandse tijd', () => {
     // 1 nov 00:30 in Nederland is nog 31 okt in UTC
     expect(startOfLastMonth(new Date('2026-10-31T23:30:00Z'))).toBe('2026-10-01');
+  });
+});
+
+describe('checkBill', () => {
+  const bill = {
+    month: '2026-10',
+    days: { '2026-10-02': 5, '2026-10-23': 0.3, '2026-10-24': 0.2 },
+    fetchedAt: 0,
+  };
+
+  it('vergelijkt vanaf de eerste getelde dag, per aanbieder', () => {
+    const rows = [
+      row({ day: '2026-10-23', inputTokens: 1_000_000 }),
+      row({ day: '2026-10-24', outputTokens: 1_000_000 }),
+      row({ day: '2026-10-24', model: 'whisper-1', audioSeconds: 600 }),
+      row({ day: '2026-09-30', inputTokens: 10_000_000 }),
+    ];
+    const check = checkBill(rows, bill, 'anthropic');
+    expect(check.since).toBe('2026-10-23');
+    expect(check.counted).toBeCloseTo(0.6);
+    expect(check.billed).toBeCloseTo(0.5);
+    expect(checkBill(rows, bill, 'openai').counted).toBeCloseTo(0.06);
+  });
+
+  it('neemt de hele maand als er nog niets geteld is', () => {
+    expect(checkBill([], bill, 'openai')).toEqual({ since: '2026-10-01', counted: 0, billed: 5.5 });
   });
 });

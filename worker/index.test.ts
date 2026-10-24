@@ -778,3 +778,134 @@ describe('/api/usage (verbruik)', () => {
     expect((await call('/api/usage?from=gisteren', { code: OWNER_CODE })).status).toBe(400);
   });
 });
+
+describe('/api/billing (echte rekening)', () => {
+  beforeEach(() => {
+    env.OPENAI_ADMIN_KEY = 'sk-admin-openai';
+    env.ANTHROPIC_ADMIN_KEY = 'sk-ant-admin01-geheim';
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-24T12:00:00Z'));
+  });
+  afterEach(() => vi.useRealTimers());
+
+  const day = (date: string) => Date.parse(`${date}T00:00:00Z`) / 1000;
+
+  /** OpenAI in dollars, Anthropic in centen als tekst; Anthropic in twee pagina's. */
+  function bills() {
+    upstream.mockImplementation(async (url) => {
+      const { origin, pathname, searchParams } = new URL(url);
+      if (origin === 'https://api.openai.com' && pathname === '/v1/organization/costs') {
+        return Response.json({
+          object: 'page',
+          data: [
+            {
+              start_time: day('2026-10-23'),
+              results: [{ amount: { value: 0.25, currency: 'usd' } }],
+            },
+            {
+              start_time: day('2026-10-24'),
+              results: [
+                { amount: { value: 0.5, currency: 'usd' } },
+                { amount: { value: 0.25, currency: 'usd' } },
+              ],
+            },
+          ],
+          has_more: false,
+          next_page: null,
+        });
+      }
+      if (origin === 'https://api.anthropic.com' && pathname === '/v1/organizations/cost_report') {
+        const first = !searchParams.has('page');
+        return Response.json({
+          data: [
+            {
+              starting_at: first ? '2026-10-23T00:00:00Z' : '2026-10-24T00:00:00Z',
+              results: [{ amount: first ? '150.5' : '20', currency: 'USD' }],
+            },
+          ],
+          has_more: first,
+          next_page: first ? 'page_2' : null,
+        });
+      }
+      throw new Error(`onverwacht verzoek naar ${url}`);
+    });
+  }
+
+  async function billing() {
+    const response = await call('/api/billing', { code: OWNER_CODE });
+    expect(response.status).toBe(200);
+    return (await response.json()) as Record<string, { days?: object; error?: string } | null>;
+  }
+
+  it('telt de rekening van deze maand per dag op, in dollars', async () => {
+    bills();
+    const { openai, anthropic } = await billing();
+    expect(openai).toMatchObject({
+      month: '2026-10',
+      days: { '2026-10-23': 0.25, '2026-10-24': 0.75 },
+    });
+    expect(anthropic).toMatchObject({ days: { '2026-10-23': 1.505, '2026-10-24': 0.2 } });
+
+    const [openaiUrl, openaiInit] = upstream.mock.calls[0];
+    expect(new URL(openaiUrl).searchParams.get('start_time')).toBe(String(day('2026-10-01')));
+    expect(new Headers(openaiInit?.headers).get('Authorization')).toBe('Bearer sk-admin-openai');
+    const anthropicCalls = upstream.mock.calls.filter(([url]) => url.includes('anthropic'));
+    expect(anthropicCalls).toHaveLength(2);
+    expect(new URL(anthropicCalls[0][0]).searchParams.get('starting_at')).toBe(
+      '2026-10-01T00:00:00.000Z',
+    );
+    expect(new URL(anthropicCalls[1][0]).searchParams.get('page')).toBe('page_2');
+    expect(new Headers(anthropicCalls[0][1]?.headers).get('x-api-key')).toBe(
+      'sk-ant-admin01-geheim',
+    );
+  });
+
+  it('bewaart de rekening een uur', async () => {
+    bills();
+    await billing();
+    const calls = upstream.mock.calls.length;
+    vi.setSystemTime(new Date('2026-10-24T12:59:00Z'));
+    await billing();
+    expect(upstream.mock.calls.length).toBe(calls);
+    vi.setSystemTime(new Date('2026-10-24T13:01:00Z'));
+    await billing();
+    expect(upstream.mock.calls.length).toBe(calls * 2);
+  });
+
+  it('haalt hem in een nieuwe maand opnieuw op', async () => {
+    bills();
+    await billing();
+    const calls = upstream.mock.calls.length;
+    vi.setSystemTime(new Date('2026-11-01T00:10:00Z'));
+    await billing();
+    expect(upstream.mock.calls.length).toBe(calls * 2);
+  });
+
+  it('slaat een aanbieder zonder beheersleutel over', async () => {
+    delete env.ANTHROPIC_ADMIN_KEY;
+    bills();
+    const { anthropic } = await billing();
+    expect(anthropic).toBeNull();
+    expect(upstream.mock.calls.every(([url]) => !url.includes('anthropic'))).toBe(true);
+  });
+
+  it('geeft de fout van een aanbieder door, en bewaart die niet', async () => {
+    upstream.mockImplementation(async (url) =>
+      url.includes('anthropic')
+        ? Response.json(
+            { type: 'error', error: { type: 'permission_error', message: 'Geen organisatie' } },
+            { status: 403 },
+          )
+        : Response.json({ data: [], has_more: false, next_page: null }),
+    );
+    const { openai, anthropic } = await billing();
+    expect(openai).toMatchObject({ days: {} });
+    expect(anthropic).toEqual({ error: 'Anthropic 403: Geen organisatie' });
+    expect(testersKv.store.has('billing/anthropic')).toBe(false);
+  });
+
+  it('is alleen voor de eigenaar', async () => {
+    expect((await call('/api/billing')).status).toBe(403);
+    expect(upstream).not.toHaveBeenCalled();
+  });
+});

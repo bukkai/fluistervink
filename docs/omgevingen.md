@@ -74,6 +74,16 @@ npx wrangler secret put OPENAI_API_KEY --env stable
 npx wrangler secret put ANTHROPIC_API_KEY --env stable
 ```
 
+Optioneel, voor de echte rekening op Developer (beheersleutels, zie `worker/billing.ts`):
+
+```bash
+npx wrangler secret put OPENAI_ADMIN_KEY --env stable
+```
+
+```bash
+npx wrangler secret put ANTHROPIC_ADMIN_KEY --env stable
+```
+
 ```bash
 npm run tester -- push
 ```
