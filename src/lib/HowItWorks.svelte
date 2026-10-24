@@ -39,6 +39,12 @@
       <li>"mogelijk een woudaap" (wordt onzeker)</li>
     </ul>
     <p>Vogelaarsjargon werkt ook: "tova", "KBV", "grobo".</p>
+    <p>
+      Meerdere soorten in één keer kan ook: "zes houtduiven en een vink" wordt twee waarnemingen,
+      met dezelfde tijd en plek. Noem je dezelfde soort twee keer ("vijf houtduiven ... nog twee
+      houtduiven"), dan telt de app ze op. Je kunt er zelfs een verbetering bij zeggen: "buizerd
+      overvliegend, en die ruigpoot van daarnet mag weg".
+    </p>
   </div>
 </section>
 
