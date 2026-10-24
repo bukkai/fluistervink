@@ -901,7 +901,36 @@ describe('/api/billing (echte rekening)', () => {
     const { openai, anthropic } = await billing();
     expect(openai).toMatchObject({ days: {} });
     expect(anthropic).toEqual({ error: 'Anthropic 403: Geen organisatie' });
-    expect(testersKv.store.has('billing/anthropic')).toBe(false);
+    expect([...testersKv.store.keys()].some((key) => key.includes('anthropic'))).toBe(false);
+  });
+
+  it('telt alleen het project en de workspace van Fluistervink', async () => {
+    env.OPENAI_PROJECT_ID = 'proj_fluistervink';
+    env.ANTHROPIC_WORKSPACE_ID = 'wrkspc_fluistervink';
+    upstream.mockImplementation(async (url) =>
+      url.includes('anthropic')
+        ? Response.json({
+            data: [
+              {
+                starting_at: '2026-10-24T00:00:00Z',
+                results: [
+                  { amount: '100', currency: 'USD', workspace_id: 'wrkspc_fluistervink' },
+                  { amount: '900', currency: 'USD', workspace_id: 'wrkspc_masterstock' },
+                  { amount: '500', currency: 'USD', workspace_id: null },
+                ],
+              },
+            ],
+            has_more: false,
+            next_page: null,
+          })
+        : Response.json({ data: [], has_more: false, next_page: null }),
+    );
+    const { anthropic } = await billing();
+    expect(anthropic).toMatchObject({ days: { '2026-10-24': 1 } });
+    const [openaiUrl] = upstream.mock.calls.find(([url]) => url.includes('openai'))!;
+    expect(new URL(openaiUrl).searchParams.get('project_ids')).toBe('proj_fluistervink');
+    const [anthropicUrl] = upstream.mock.calls.find(([url]) => url.includes('anthropic'))!;
+    expect(new URL(anthropicUrl).searchParams.get('group_by[]')).toBe('workspace_id');
   });
 
   it('is alleen voor de eigenaar', async () => {
