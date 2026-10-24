@@ -1,5 +1,6 @@
-# Bij elke pull request (en elke push naar main): opmaak, typecheck, tests en
-# een proefbuild. Het deployen zelf doet Cloudflare (Workers Builds).
+# Bij elke pull request (en elke push naar main): opmaak, typecheck, tests, een
+# proefbuild en een controle op bekende lekken. Het deployen zelf doet
+# Cloudflare (Workers Builds).
 name: Check
 
 on:
@@ -21,3 +22,7 @@ jobs:
       - run: npm run check
       - run: npm test
       - run: npm run build
+      # Alleen de pakketten die meegaan naar de telefoon en de Worker; lekken in
+      # ontwikkelpakketten (tests, wrangler) komen via Dependabot en de
+      # kwaliteitsronde (docs/kwaliteitsronde.md)
+      - run: npm audit --omit=dev --audit-level=high
