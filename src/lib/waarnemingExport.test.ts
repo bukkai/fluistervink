@@ -25,7 +25,7 @@ const session: Session = {
   startedAt: Date.parse('2026-10-11T14:00:00'),
   status: 'ended',
 };
-const position = { lat: 51.9789, lon: 5.8812346, accuracy: 7.6, fixedAt: 0 };
+const position = { lat: 52.3601, lon: 4.9212346, accuracy: 7.6, fixedAt: 0 };
 
 async function csvLines(): Promise<string[]> {
   const { file } = await buildExport([session]);
@@ -60,7 +60,7 @@ describe('buildExport', () => {
       'date,time,scientific name,lat,lng,accuracy,number,notes,sex,is certain,activity,life stage,method,counting method,uuid',
     );
     expect(lines[1]).toBe(
-      `2026-10-11,14:05,Fringilla coelebs,51.978900,5.881235,8,2,"zat op het hek, ""met ring""",M,False,,,seen,real count,${earlier.id}`,
+      `2026-10-11,14:05,Fringilla coelebs,52.360100,4.921235,8,2,"zat op het hek, ""met ring""",M,False,,,seen,real count,${earlier.id}`,
     );
     expect(lines[2]).toMatch(/^2026-10-11,14:20,Columba palumbus,.*,6,,U,True,/);
     // Afsluitende CRLF
@@ -105,8 +105,8 @@ describe('buildExport', () => {
     expect(sheet).toContain(
       '<c r="A2" t="inlineStr"><is><t xml:space="preserve">2026-10-11</t></is></c>',
     );
-    expect(sheet).toContain('<c r="D2" t="n"><v>51.9789</v></c>');
-    expect(sheet).toContain('<c r="E2" t="n"><v>5.881235</v></c>');
+    expect(sheet).toContain('<c r="D2" t="n"><v>52.3601</v></c>');
+    expect(sheet).toContain('<c r="E2" t="n"><v>4.921235</v></c>');
     expect(sheet).toContain('<c r="F2" t="n"><v>8</v></c>');
   });
 });

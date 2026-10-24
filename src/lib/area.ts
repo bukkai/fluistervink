@@ -65,7 +65,7 @@ export async function fillMissingAreas(sessionId: string): Promise<void> {
 // is meestal waar je echt gewandeld hebt (start je in een woonwijk, dan wint
 // het natuurgebied verderop). Een zelf ingevulde naam blijft altijd staan.
 
-/** "Arnhem - Heijenoord/Lombok (14)" → "Arnhem - Heijenoord/Lombok" */
+/** "Amsterdam - Oost (14)" → "Amsterdam - Oost" */
 export function placeName(area: Area): string {
   return area.name.replace(/\s*\(\d+\)$/, '');
 }
