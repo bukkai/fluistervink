@@ -1,11 +1,13 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { devNoteText } from '../src/lib/devNotePrefix';
+import { recordUsage, sessionFrom, usageSince, type Usage } from './usage';
 
 // Proxy tussen de app en de API's van OpenAI (spraak naar tekst), Anthropic
 // (interpretatie) en waarneming.nl (gebiedsnamen). De API-sleutels blijven hier; de app stuurt alleen een
 // toegangscode mee, zodat niet iedereen die de URL vindt ons tegoed opmaakt.
 // Daarnaast bewaart de proxy wat testers delen (wandelingen, feedback,
-// eventueel opnames) in KV, zodat de eigenaar het kan ophalen (/api/feedback).
+// eventueel opnames) in KV, zodat de eigenaar het kan ophalen (/api/feedback),
+// en telt hij het verbruik van OpenAI en Anthropic in D1 (/api/usage).
 //
 // Toegangscodes: ACCESS_CODE is die van de eigenaar; ACCESS_CODES bevat er één
 // per tester als JSON, `{"anna": "…", "piet": "…"}`. Zo kun je één tester
@@ -57,7 +59,7 @@ interface InvitedTester {
 }
 
 export default {
-  async fetch(request, env): Promise<Response> {
+  async fetch(request, env, ctx): Promise<Response> {
     const { pathname } = new URL(request.url);
 
     const tester = await authorize(request, env);
@@ -81,10 +83,13 @@ export default {
         return json({ error: 'Te veel verzoeken achter elkaar; probeer het zo opnieuw' }, 429);
       }
       if (pathname === '/api/transcribe' && request.method === 'POST') {
-        return await transcribe(request, env);
+        return await transcribe(request, env, meter(request, env, ctx, tester));
       }
       if (pathname === '/api/messages' && request.method === 'POST') {
-        return await messages(request, env);
+        return await messages(request, env, meter(request, env, ctx, tester));
+      }
+      if (pathname === '/api/usage' && request.method === 'GET') {
+        return await usage(request, env, tester);
       }
       if (pathname.startsWith('/api/feedback/')) {
         return await feedback(request, env, tester);
@@ -112,12 +117,30 @@ async function withinLimit(env: WorkerEnv, tester: string): Promise<boolean> {
   return (await env.AI_LIMIT.limit({ key: tester })).success;
 }
 
+/** Telt het verbruik van één verzoek aan OpenAI of Anthropic. */
+type Meter = (model: string, usage: Partial<Usage>) => void;
+
+/**
+ * Telt in D1 (worker/usage.ts) na het antwoord, zodat de app er niet op
+ * wacht; lukt het niet, dan mislukt de uitspraak daar niet door. De app stuurt
+ * het id van de wandeling mee in `X-Session`.
+ */
+function meter(request: Request, env: WorkerEnv, ctx: ExecutionContext, tester: string): Meter {
+  const key = { tester, channel: env.CHANNEL, session: sessionFrom(request) };
+  return (model, usage) =>
+    ctx.waitUntil(
+      recordUsage(env.USAGE, { ...key, model }, usage).catch((error) =>
+        console.error('Verbruik niet opgeslagen', error),
+      ),
+    );
+}
+
 /**
  * Spraak naar tekst via OpenAI.
  * Verwacht multipart/form-data met `audio` (bestand), optioneel `model` en
  * `prompt` (bv. soortnamen, om de herkenning te sturen).
  */
-async function transcribe(request: Request, env: WorkerEnv): Promise<Response> {
+async function transcribe(request: Request, env: WorkerEnv, meter: Meter): Promise<Response> {
   // Ruimte voor de andere velden (model, prompt met soortnamen) naast de audio
   if (declaredTooLarge(request, MAX_AUDIO_BYTES + 256 * 1024)) return tooLarge();
   const form = await request.formData();
@@ -150,6 +173,7 @@ async function transcribe(request: Request, env: WorkerEnv): Promise<Response> {
   const result = (await response.json()) as {
     text?: string;
     logprobs?: { logprob: number }[];
+    usage?: TranscriptionUsage;
     error?: { message: string };
   };
   if (!response.ok) {
@@ -158,11 +182,25 @@ async function transcribe(request: Request, env: WorkerEnv): Promise<Response> {
       upstreamStatus(response.status),
     );
   }
+  meter(model, transcriptionUsage(result.usage));
   return json(
     { text: result.text ?? '', model, confidence: confidence(result.logprobs) },
     200,
     Date.now() - start,
   );
+}
+
+/** De gpt-4o-modellen rekenen per token, whisper-1 per seconde audio. */
+type TranscriptionUsage =
+  | { type: 'tokens'; input_tokens: number; output_tokens: number }
+  | { type: 'duration'; seconds: number };
+
+function transcriptionUsage(usage: TranscriptionUsage | undefined): Partial<Usage> {
+  if (usage?.type === 'duration') return { audioSeconds: usage.seconds };
+  if (usage?.type === 'tokens') {
+    return { inputTokens: usage.input_tokens, outputTokens: usage.output_tokens };
+  }
+  return {};
 }
 
 /**
@@ -181,7 +219,7 @@ function confidence(logprobs: { logprob: number }[] | undefined): number | undef
  * tools samen; de proxy laat alleen door wat de app zelf gebruikt (zie
  * checkMessage), zodat een toegangscode geen vrije toegang tot ons tegoed is.
  */
-async function messages(request: Request, env: WorkerEnv): Promise<Response> {
+async function messages(request: Request, env: WorkerEnv, meter: Meter): Promise<Response> {
   const raw = await readBody(request, MAX_MESSAGE_BYTES);
   if (raw instanceof Response) return raw;
   let parsed: Record<string, unknown>;
@@ -204,6 +242,13 @@ async function messages(request: Request, env: WorkerEnv): Promise<Response> {
     ...body,
     stream: false,
     max_tokens: Math.min(body.max_tokens ?? MAX_OUTPUT_TOKENS, MAX_OUTPUT_TOKENS),
+  });
+  // Op de naam zoals de app hem stuurt, die ook in de prijstabel staat
+  meter(body.model, {
+    inputTokens: message.usage.input_tokens,
+    outputTokens: message.usage.output_tokens,
+    cacheWriteTokens: message.usage.cache_creation_input_tokens ?? 0,
+    cacheReadTokens: message.usage.cache_read_input_tokens ?? 0,
   });
   return json(message, 200, Date.now() - start);
 }
@@ -252,6 +297,17 @@ function checkMessage(body: Record<string, unknown>): string | undefined {
     }
   }
   return undefined;
+}
+
+/**
+ * Verbruik per dag, tester, wandeling en model (worker/usage.ts), alleen voor
+ * de eigenaar: `GET /api/usage?from=2026-09-01`.
+ */
+async function usage(request: Request, env: WorkerEnv, tester: string): Promise<Response> {
+  if (tester !== OWNER) return json({ error: 'Alleen voor de eigenaar' }, 403);
+  const from = new URL(request.url).searchParams.get('from') ?? '';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(from)) return json({ error: 'Ongeldige datum' }, 400);
+  return json({ rows: await usageSince(env.USAGE, from) });
 }
 
 /**

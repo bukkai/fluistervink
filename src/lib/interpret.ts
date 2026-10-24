@@ -402,32 +402,35 @@ export function parseResponse(
  * @param options `here`: positie van de uitspraak, voor de afstand tot eerdere
  *   waarnemingen. `model` en `contextText` alleen voor de testset
  *   (scripts/testset.mjs): een ander model, of de context precies zoals hij
- *   destijds was
+ *   destijds was. `sessionId`: voor het verbruik per wandeling
  */
 export async function interpret(
   transcript: string,
   recent: Observation[],
-  options: { here?: Position; model?: string; contextText?: string } = {},
+  options: { here?: Position; model?: string; contextText?: string; sessionId?: string } = {},
 ): Promise<Interpretation> {
   const context = recent.slice(0, CONTEXT_SIZE);
   const contextText = options.contextText ?? describeContext(context, options.here);
 
-  const { data: response, timing } = await createMessage<Anthropic.Message>({
-    model: options.model ?? MODEL,
-    max_tokens: 4096,
-    // Weinig nadenken: snelheid telt in het veld, en de taak is eenvoudig
-    output_config: { effort: 'low' },
-    tools: TOOLS,
-    // Tools en systeemprompt veranderen nooit; met dit cachepunt worden ze na
-    // de eerste aanroep goedkoop en sneller ingelezen.
-    system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
-    messages: [
-      {
-        role: 'user',
-        content: `Recente waarnemingen in deze wandeling (#1 = meest recent):\n${contextText}\n\nUitspraak: "${transcript}"`,
-      },
-    ],
-  } satisfies Anthropic.MessageCreateParamsNonStreaming);
+  const { data: response, timing } = await createMessage<Anthropic.Message>(
+    {
+      model: options.model ?? MODEL,
+      max_tokens: 4096,
+      // Weinig nadenken: snelheid telt in het veld, en de taak is eenvoudig
+      output_config: { effort: 'low' },
+      tools: TOOLS,
+      // Tools en systeemprompt veranderen nooit; met dit cachepunt worden ze na
+      // de eerste aanroep goedkoop en sneller ingelezen.
+      system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
+      messages: [
+        {
+          role: 'user',
+          content: `Recente waarnemingen in deze wandeling (#1 = meest recent):\n${contextText}\n\nUitspraak: "${transcript}"`,
+        },
+      ],
+    } satisfies Anthropic.MessageCreateParamsNonStreaming,
+    options.sessionId,
+  );
 
   if (response.stop_reason === 'refusal') {
     throw new Error('Het model weigerde de uitspraak te verwerken');

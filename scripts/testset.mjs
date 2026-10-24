@@ -309,7 +309,7 @@ async function run(item) {
   const { u, context } = item;
   const result = { transcript: u.transcript };
   if (opts.stt !== 'opgeslagen') {
-    const { text, timing } = await transcribe(fromDataUrl(u.audioData), opts.stt);
+    const { text, timing } = await transcribe(fromDataUrl(u.audioData), { model: opts.stt });
     result.transcript = text;
     result.sttMs = timing.requestMs;
     if (devNoteText(text) !== undefined) return { ...result, actions: [{ type: 'dev_note' }] };

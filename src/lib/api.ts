@@ -2,6 +2,8 @@
 // ingevuld (of via een uitnodigingslink meegegeven) en daarna in localStorage
 // bewaard, samen met de naam van de tester die de proxy erbij teruggeeft.
 
+import type { UsageRow } from './costs';
+
 const ACCESS_CODE_KEY = 'fluistervink.accessCode';
 const TESTER_KEY = 'fluistervink.tester';
 
@@ -119,11 +121,21 @@ export interface TranscribeOptions {
   model?: string;
   /** Tekst die de herkenning stuurt, bv. een lijst soortnamen */
   prompt?: string;
+  /** Wandeling waar de uitspraak bij hoort, voor het verbruik (zie sessionHeader) */
+  sessionId?: string;
+}
+
+/**
+ * De proxy telt het verbruik per wandeling (kostenoverzicht op Developer).
+ * Alleen het id; zonder (testset) telt het als "geen wandeling".
+ */
+function sessionHeader(sessionId: string | undefined): HeadersInit {
+  return sessionId ? { 'X-Session': sessionId } : {};
 }
 
 export async function transcribe(
   audio: Blob,
-  { model, prompt }: TranscribeOptions = {},
+  { model, prompt, sessionId }: TranscribeOptions = {},
 ): Promise<{ data: { text: string; model: string; confidence?: number }; timing: Timing }> {
   const form = new FormData();
   // OpenAI herkent het formaat aan de extensie: "audio/webm;codecs=opus" → .webm
@@ -131,16 +143,21 @@ export async function transcribe(
   form.set('audio', audio, `opname.${extension}`);
   if (model) form.set('model', model);
   if (prompt) form.set('prompt', prompt);
-  return timedRequest('/api/transcribe', { method: 'POST', body: form });
+  return timedRequest('/api/transcribe', {
+    method: 'POST',
+    headers: sessionHeader(sessionId),
+    body: form,
+  });
 }
 
 /** Stuurt een verzoek door naar de Messages API van Anthropic. */
 export async function createMessage<T = unknown>(
   params: object,
+  sessionId?: string,
 ): Promise<{ data: T; timing: Timing }> {
   return timedRequest('/api/messages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...sessionHeader(sessionId) },
     body: JSON.stringify(params),
   });
 }
@@ -169,6 +186,11 @@ export async function fetchArea(lat: number, lon: number): Promise<Area | null> 
     `/api/area?lat=${lat.toFixed(6)}&lon=${lon.toFixed(6)}`,
   );
   return area;
+}
+
+/** Verbruik van OpenAI en Anthropic vanaf `from` (alleen voor de eigenaar). */
+export async function listUsage(from: string): Promise<UsageRow[]> {
+  return (await request<{ rows: UsageRow[] }>(`/api/usage?from=${from}`)).rows;
 }
 
 /**
