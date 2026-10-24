@@ -13,6 +13,14 @@ updates:
     groups:
       klein:
         update-types: [minor, patch]
+    ignore:
+      # TypeScript 7 pas als svelte-check het ondersteunt (nu alleen ^5 of ^6)
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+      # Hoort bij de versie van Node waarop we draaien (22, zie check.yml),
+      # niet bij de nieuwste: tegelijk ophogen met de Node-versie
+      - dependency-name: '@types/node'
+        update-types: [version-update:semver-major]
   - package-ecosystem: github-actions
     directory: /
     schedule:
