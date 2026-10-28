@@ -1,7 +1,7 @@
 <script lang="ts">
   import { liveQuery } from 'dexie';
   import { tick, untrack } from 'svelte';
-  import type { Observation, Session, Utterance } from './db';
+  import { audioBlob, type Observation, type Session, type Utterance } from './db';
   import { fillMissingAreas } from './area';
   import { mapsUrl } from './devNotes';
   import ObservationEditor from './ObservationEditor.svelte';
@@ -180,7 +180,7 @@
       return;
     }
     stopPlayer();
-    const url = URL.createObjectURL(u.audio!);
+    const url = URL.createObjectURL(audioBlob(u.audio!));
     const audio = new Audio(url);
     audio.onplay = () => (playingId = u.id);
     audio.onpause = () => {

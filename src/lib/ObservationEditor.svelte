@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Observation, Utterance } from './db';
+  import { audioBlob, type Observation, type Utterance } from './db';
   import { deleteObservation, editObservation } from './observations';
   import type { Code } from './vocab';
   import {
@@ -67,7 +67,7 @@
 
   /** Speelt de opname af waaruit deze waarneming kwam. */
   function play() {
-    const url = URL.createObjectURL(utterance!.audio!);
+    const url = URL.createObjectURL(audioBlob(utterance!.audio!));
     const audio = new Audio(url);
     audio.onended = () => URL.revokeObjectURL(url);
     audio.play();
