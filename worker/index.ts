@@ -1,11 +1,25 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { devNoteText } from '../src/lib/devNotePrefix';
 import { bill, type BillingKeys } from './billing';
+import {
+  getInstall,
+  INSTALL_ID,
+  installName,
+  isInstallToken,
+  listInstalls,
+  putInstall,
+  signInstallToken,
+  verifyInstallToken,
+  verifyPlayIntegrity,
+  verifyTurnstile,
+  type InstallSecrets,
+} from './install';
 import { recordUsage, sessionFrom, usageSince, type Usage } from './usage';
 
 // Proxy tussen de app en de API's van OpenAI (spraak naar tekst), Anthropic
 // (interpretatie) en waarneming.nl (gebiedsnamen). De API-sleutels blijven hier; de app stuurt alleen een
-// toegangscode mee, zodat niet iedereen die de URL vindt ons tegoed opmaakt.
+// toegangscode of het token van zijn installatie mee (worker/install.ts),
+// zodat niet iedereen die de URL vindt ons tegoed opmaakt.
 // Daarnaast bewaart de proxy wat testers delen (wandelingen, feedback,
 // eventueel opnames) in KV, zodat de eigenaar het kan ophalen (/api/feedback),
 // en telt hij het verbruik van OpenAI en Anthropic in D1 (/api/usage). Met
@@ -17,6 +31,8 @@ import { recordUsage, sessionFrom, usageSince, type Usage } from './usage';
 // afsluiten zonder de anderen, en zie je in de logs wie wat gebruikt.
 // Testers die de eigenaar vanuit de app uitnodigt (scherm Developer) staan in
 // KV (TESTERS), zie /api/testers; die werken op dezelfde manier.
+// Zonder code meldt de app zich aan als installatie (/api/install); die heet
+// dan "app-3f9a2b1c" en werkt verder ook als een tester.
 
 interface Secrets {
   ACCESS_CODE?: string;
@@ -25,7 +41,7 @@ interface Secrets {
   ANTHROPIC_API_KEY: string;
 }
 
-type WorkerEnv = Env & Secrets & BillingKeys;
+type WorkerEnv = Env & Secrets & BillingKeys & InstallSecrets;
 
 /** Naam van de eigenaar (ACCESS_CODE); alleen die mag gedeelde gegevens ophalen. */
 const OWNER = 'eigenaar';
@@ -65,9 +81,19 @@ export default {
   async fetch(request, env, ctx): Promise<Response> {
     const { pathname } = new URL(request.url);
 
+    // Aanmelden kan zonder code: dat is juist waar het voor is
+    if (pathname === '/api/install') {
+      try {
+        return await install(request, env);
+      } catch (error) {
+        console.error(error);
+        return json({ error: 'Interne fout in de proxy' }, 500);
+      }
+    }
+
     const tester = await authorize(request, env);
     if (!tester) {
-      return json({ error: 'Ongeldige of ontbrekende toegangscode' }, 401);
+      return json({ error: 'Ongeldige of ontbrekende toegangscode of installatie' }, 401);
     }
     // In Workers Logs (observability), om gebruik per tester te kunnen zien
     console.log({ tester, path: pathname });
@@ -121,6 +147,56 @@ export default {
 async function withinLimit(env: WorkerEnv, tester: string): Promise<boolean> {
   if (tester === OWNER) return true;
   return (await env.AI_LIMIT.limit({ key: tester })).success;
+}
+
+/**
+ * Aanmelden zonder code (worker/install.ts).
+ *
+ * - GET /api/install   wat de app nodig heeft om te bewijzen dat hij echt is:
+ *   de site key van Turnstile en het projectnummer voor Play Integrity
+ * - POST /api/install  { id, integrity? , turnstile? }  geeft { token, tester }
+ */
+async function install(request: Request, env: WorkerEnv): Promise<Response> {
+  if (request.method === 'GET') {
+    return json({
+      turnstileSiteKey: env.TURNSTILE_SITE_KEY || undefined,
+      playProjectNumber: env.PLAY_PROJECT_NUMBER || undefined,
+    });
+  }
+  if (request.method !== 'POST') return json({ error: 'Niet gevonden' }, 404);
+  if (!env.INSTALL_SECRET) return json({ error: 'Aanmelden staat uit' }, 503);
+
+  // Turnstile en Play Integrity houden scripts tegen; dit nog per adres
+  const ip = request.headers.get('CF-Connecting-IP');
+  if (!(await env.AI_LIMIT.limit({ key: `install:${ip}` })).success) {
+    return json({ error: 'Te veel aanmeldingen achter elkaar; probeer het zo opnieuw' }, 429);
+  }
+
+  const body = (await request.json().catch(() => ({}))) as {
+    id?: unknown;
+    integrity?: unknown;
+    turnstile?: unknown;
+  };
+  const id = typeof body.id === 'string' && INSTALL_ID.test(body.id) ? body.id : null;
+  if (!id) return json({ error: 'Ongeldig id' }, 400);
+
+  const existing = await getInstall(env.TESTERS, id);
+  if (existing?.blocked) return json({ error: 'Deze installatie is afgesloten' }, 403);
+
+  let via: 'play' | 'turnstile' | undefined;
+  if (typeof body.integrity === 'string' && env.PLAY_SERVICE_ACCOUNT) {
+    if (await verifyPlayIntegrity(body.integrity, id, env.PLAY_SERVICE_ACCOUNT)) via = 'play';
+  } else if (typeof body.turnstile === 'string' && env.TURNSTILE_SECRET) {
+    if (await verifyTurnstile(body.turnstile, env.TURNSTILE_SECRET, ip)) via = 'turnstile';
+  }
+  if (!via) return json({ error: 'De app kon niet bewijzen dat hij echt is' }, 403);
+
+  const name = installName(id);
+  if (!existing) {
+    await putInstall(env.TESTERS, id, { name, registeredAt: Date.now(), via });
+  }
+  console.log({ tester: name, path: '/api/install', via });
+  return json({ token: await signInstallToken(id, env.INSTALL_SECRET), tester: name });
 }
 
 /** Telt het verbruik van één verzoek aan OpenAI of Anthropic. */
@@ -550,11 +626,12 @@ async function processedNotes(env: WorkerEnv): Promise<Set<string>> {
  * Testers beheren vanuit de app (alleen de eigenaar). Uitgenodigde testers
  * staan als één JSON-object in KV: `{ "anna": { code, invitedAt } }`. Testers
  * uit het geheim ACCESS_CODES (scripts/tester.mjs) komen ook in de lijst, maar
- * zijn hier niet te wijzigen.
+ * zijn hier niet te wijzigen. Installaties zonder code (/api/install) staan er
+ * ook in, en zijn net zo af te sluiten.
  *
- * - GET /api/testers               alle testers
+ * - GET /api/testers               alle testers en installaties
  * - POST /api/testers  { name }    nieuwe tester; geeft de code terug
- * - DELETE /api/testers?name=…     uitgenodigde tester afsluiten
+ * - DELETE /api/testers?name=…     uitgenodigde tester of installatie afsluiten
  */
 async function testers(request: Request, env: WorkerEnv, tester: string): Promise<Response> {
   if (tester !== OWNER) return json({ error: 'Alleen voor de eigenaar' }, 403);
@@ -570,15 +647,30 @@ async function testers(request: Request, env: WorkerEnv, tester: string): Promis
       code,
       invitedAt,
     }));
+    const fromInstall = (await listInstalls(env.TESTERS)).map(
+      ({ name, registeredAt, via, blocked }) => ({
+        name,
+        source: 'install' as const,
+        invitedAt: registeredAt,
+        via,
+        blocked: blocked || undefined,
+      }),
+    );
     const usage = await testerUsage(env);
     return json({
-      testers: [...fromSecret, ...fromApp].map((t) => ({ ...t, usage: usage.get(t.name) })),
+      testers: [...fromSecret, ...fromApp, ...fromInstall].map((t) => ({
+        ...t,
+        usage: usage.get(t.name),
+      })),
     });
   }
   if (request.method === 'POST') {
     const { name } = (await request.json()) as { name?: unknown };
     if (typeof name !== 'string' || !TESTER_NAME.test(name)) {
       return json({ error: 'Naam zonder spaties of accenten, hooguit 32 tekens' }, 400);
+    }
+    if (name.startsWith('app-')) {
+      return json({ error: 'Namen met "app-" zijn voor installaties zonder code' }, 400);
     }
     const taken = name === OWNER || name in invited || secretCodes(env).some(([n]) => n === name);
     if (taken) return json({ error: `${name} bestaat al` }, 409);
@@ -593,6 +685,14 @@ async function testers(request: Request, env: WorkerEnv, tester: string): Promis
   }
   if (request.method === 'DELETE') {
     const name = new URL(request.url).searchParams.get('name') ?? '';
+    if (name.startsWith('app-')) {
+      // Het token blijft geldig, maar authorize() weigert het daarna
+      const found = (await listInstalls(env.TESTERS)).find((i) => i.name === name);
+      if (!found) return json({ error: 'Niet gevonden' }, 404);
+      const { id, ...record } = found;
+      await putInstall(env.TESTERS, id, { ...record, blocked: true });
+      return json({ ok: true });
+    }
     if (!(name in invited)) return json({ error: 'Niet gevonden' }, 404);
     delete invited[name];
     await env.TESTERS.put(INVITED_KEY, JSON.stringify(invited));
@@ -679,6 +779,19 @@ async function authorize(request: Request, env: WorkerEnv): Promise<string | nul
   const header = request.headers.get('Authorization') ?? '';
   const code = header.startsWith('Bearer ') ? header.slice(7) : '';
   if (!code) return null;
+
+  if (isInstallToken(code)) {
+    if (!env.INSTALL_SECRET) return null;
+    const id = await verifyInstallToken(code, env.INSTALL_SECRET);
+    if (!id) return null;
+    try {
+      if ((await getInstall(env.TESTERS, id))?.blocked) return null;
+    } catch (error) {
+      // KV even niet te lezen: het token zelf is geldig
+      console.error('Installatie niet te lezen', error);
+    }
+    return installName(id);
+  }
 
   const encoder = new TextEncoder();
   const hash = (text: string) => crypto.subtle.digest('SHA-256', encoder.encode(text));

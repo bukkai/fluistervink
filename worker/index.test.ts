@@ -2,6 +2,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import worker from './index';
+import { integrityNonce } from './install';
 
 // De proxy in Node, met een nep-KV in het geheugen, D1 als SQLite in het
 // geheugen (zodat de echte SQL getest wordt) en een nagebootste fetch
@@ -188,6 +189,202 @@ describe('toegangscode', () => {
 
   it('geeft 404 bij een onbekend adres', async () => {
     expect((await call('/api/bestaat-niet')).status).toBe(404);
+  });
+});
+
+describe('/api/install (aanmelden zonder code)', () => {
+  const ID = '3f9a2b1c-0000-4000-8000-000000000001';
+
+  beforeEach(() => {
+    env.INSTALL_SECRET = 'geheim-voor-tokens';
+    env.TURNSTILE_SECRET = 'turnstile-geheim';
+    env.TURNSTILE_SITE_KEY = '0x-site-key';
+  });
+
+  /** Turnstile zegt ja bij token "goed", met de actie "install" */
+  function turnstileAnswers() {
+    upstream.mockImplementation(async (url, init) => {
+      if (!url.startsWith('https://challenges.cloudflare.com/')) throw new Error(url);
+      const form = init?.body as FormData;
+      expect(form.get('secret')).toBe('turnstile-geheim');
+      const ok = form.get('response') === 'goed';
+      return Response.json({ success: ok, action: 'install' });
+    });
+  }
+
+  async function register(body: object) {
+    return call('/api/install', { code: null, method: 'POST', body: JSON.stringify(body) });
+  }
+
+  it('rekent dezelfde nonce uit als de app (zelfde waarde in src/lib/install.test.ts)', () => {
+    expect(integrityNonce(ID)).toBe('M2Y5YTJiMWMtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAx');
+  });
+
+  it('geeft de openbare instellingen zonder code', async () => {
+    const response = await call('/api/install', { code: null });
+    expect(await response.json()).toEqual({ turnstileSiteKey: '0x-site-key' });
+  });
+
+  it('meldt een installatie aan na Turnstile, en het token werkt daarna', async () => {
+    turnstileAnswers();
+    const response = await register({ id: ID, turnstile: 'goed' });
+    expect(response.status).toBe(200);
+    const { token, tester } = (await response.json()) as { token: string; tester: string };
+    expect(tester).toBe('app-3f9a2b1c');
+    expect(await (await call('/api/ping', { code: token })).json()).toEqual({
+      ok: true,
+      tester: 'app-3f9a2b1c',
+    });
+  });
+
+  it('weigert zonder geldig bewijs', async () => {
+    turnstileAnswers();
+    expect((await register({ id: ID, turnstile: 'fout' })).status).toBe(403);
+    expect((await register({ id: ID })).status).toBe(403);
+    expect(testersKv.store.size).toBe(0);
+  });
+
+  it('weigert een ongeldig id', async () => {
+    expect((await register({ id: 'eigenaar', turnstile: 'goed' })).status).toBe(400);
+  });
+
+  it('staat uit zonder INSTALL_SECRET', async () => {
+    delete env.INSTALL_SECRET;
+    expect((await register({ id: ID, turnstile: 'goed' })).status).toBe(503);
+  });
+
+  it('weigert een vervalst of gewijzigd token', async () => {
+    turnstileAnswers();
+    const { token } = (await (await register({ id: ID, turnstile: 'goed' })).json()) as {
+      token: string;
+    };
+    const other = token.replace(ID, '3f9a2b1c-0000-4000-8000-000000000002');
+    expect((await call('/api/ping', { code: other })).status).toBe(401);
+    env.INSTALL_SECRET = 'ander-geheim';
+    expect((await call('/api/ping', { code: token })).status).toBe(401);
+  });
+
+  it('laat de eigenaar een installatie afsluiten', async () => {
+    turnstileAnswers();
+    const { token } = (await (await register({ id: ID, turnstile: 'goed' })).json()) as {
+      token: string;
+    };
+    const list = await call('/api/testers', { code: OWNER_CODE });
+    const { testers } = (await list.json()) as { testers: { name: string; source: string }[] };
+    expect(testers).toContainEqual(
+      expect.objectContaining({ name: 'app-3f9a2b1c', source: 'install', via: 'turnstile' }),
+    );
+
+    const removed = await call('/api/testers?name=app-3f9a2b1c', {
+      code: OWNER_CODE,
+      method: 'DELETE',
+    });
+    expect(removed.status).toBe(200);
+    expect((await call('/api/ping', { code: token })).status).toBe(401);
+    // Opnieuw aanmelden met hetzelfde id helpt niet
+    expect((await register({ id: ID, turnstile: 'goed' })).status).toBe(403);
+  });
+
+  it('geeft een installatie geen toegang tot beheer', async () => {
+    turnstileAnswers();
+    const { token } = (await (await register({ id: ID, turnstile: 'goed' })).json()) as {
+      token: string;
+    };
+    expect((await call('/api/testers', { code: token })).status).toBe(403);
+  });
+
+  it('laat geen tester aanmaken met een naam als een installatie', async () => {
+    const response = await call('/api/testers', {
+      code: OWNER_CODE,
+      method: 'POST',
+      body: JSON.stringify({ name: 'app-3f9a2b1c' }),
+    });
+    expect(response.status).toBe(400);
+  });
+
+  describe('Play Integrity', () => {
+    let verdict: Record<string, unknown>;
+
+    beforeEach(async () => {
+      const keys = (await crypto.subtle.generateKey(
+        {
+          name: 'RSASSA-PKCS1-v1_5',
+          modulusLength: 2048,
+          publicExponent: new Uint8Array([1, 0, 1]),
+          hash: 'SHA-256',
+        },
+        true,
+        ['sign', 'verify'],
+      )) as CryptoKeyPair;
+      const pkcs8 = Buffer.from(
+        (await crypto.subtle.exportKey('pkcs8', keys.privateKey)) as ArrayBuffer,
+      );
+      env.PLAY_SERVICE_ACCOUNT = JSON.stringify({
+        client_email: 'fluistervink@project.iam.gserviceaccount.com',
+        private_key: `-----BEGIN PRIVATE KEY-----\n${pkcs8.toString('base64')}\n-----END PRIVATE KEY-----\n`,
+      });
+      verdict = {
+        requestDetails: {
+          requestPackageName: 'nl.hegmus.fluistervink',
+          nonce: Buffer.from(ID).toString('base64url'),
+          timestampMillis: String(Date.now()),
+        },
+        appIntegrity: { appRecognitionVerdict: 'PLAY_RECOGNIZED' },
+        deviceIntegrity: { deviceRecognitionVerdict: ['MEETS_DEVICE_INTEGRITY'] },
+      };
+      upstream.mockImplementation(async (url, init) => {
+        if (url === 'https://oauth2.googleapis.com/token') {
+          const assertion = (init?.body as URLSearchParams).get('assertion') ?? '';
+          const [header, claims, signature] = assertion.split('.');
+          const valid = await crypto.subtle.verify(
+            'RSASSA-PKCS1-v1_5',
+            keys.publicKey,
+            Buffer.from(signature, 'base64url'),
+            new TextEncoder().encode(`${header}.${claims}`),
+          );
+          return valid
+            ? Response.json({ access_token: 'google-token', expires_in: 3600 })
+            : new Response('', { status: 400 });
+        }
+        if (url.startsWith('https://playintegrity.googleapis.com/v1/nl.hegmus.fluistervink:')) {
+          expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer google-token');
+          return Response.json({ tokenPayloadExternal: verdict });
+        }
+        throw new Error(url);
+      });
+    });
+
+    it('meldt een echte app uit Play aan', async () => {
+      const response = await register({ id: ID, integrity: 'verklaring' });
+      expect(response.status).toBe(200);
+      const list = await call('/api/testers', { code: OWNER_CODE });
+      const { testers } = (await list.json()) as { testers: { via?: string }[] };
+      expect(testers).toContainEqual(expect.objectContaining({ via: 'play' }));
+    });
+
+    it('weigert een verklaring voor een andere installatie', async () => {
+      verdict.requestDetails = {
+        ...(verdict.requestDetails as object),
+        nonce: Buffer.from('iets-anders').toString('base64url'),
+      };
+      expect((await register({ id: ID, integrity: 'verklaring' })).status).toBe(403);
+    });
+
+    it('weigert een app die niet uit Play komt of een oude verklaring', async () => {
+      verdict.appIntegrity = { appRecognitionVerdict: 'UNRECOGNIZED_VERSION' };
+      expect((await register({ id: ID, integrity: 'verklaring' })).status).toBe(403);
+      verdict.appIntegrity = { appRecognitionVerdict: 'PLAY_RECOGNIZED' };
+      verdict.requestDetails = {
+        ...(verdict.requestDetails as object),
+        timestampMillis: String(Date.now() - 60 * 60 * 1000),
+      };
+      expect((await register({ id: ID, integrity: 'verklaring' })).status).toBe(403);
+    });
+
+    it('weigert een toestel zonder integriteit', async () => {
+      verdict.deviceIntegrity = {};
+      expect((await register({ id: ID, integrity: 'verklaring' })).status).toBe(403);
+    });
   });
 });
 
