@@ -226,7 +226,7 @@ describe('/api/messages (Anthropic)', () => {
 
     const [url, init] = upstream.mock.calls[0];
     expect(url).toBe('https://api.anthropic.com/v1/messages');
-    expect(new Headers(init?.headers).get('x-api-key')).toBe('sk-ant-geheim');
+    expect(new Headers(init?.headers).get('authorization')).toBe('Bearer sk-ant-geheim');
     expect(JSON.parse(String(init?.body))).toMatchObject({ max_tokens: 4096, stream: false });
   });
 
