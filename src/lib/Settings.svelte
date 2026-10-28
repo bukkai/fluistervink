@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { ApiError, getAccessCode, getTester, ping, setAccessCode } from './api';
   import { APP_VERSION, CHANNEL } from './log';
-  import { nativeAppVersion } from './native';
+  import { isNativeApp, nativeAppVersion } from './native';
   import ShareSettings from './ShareSettings.svelte';
 
   let code = $state(getAccessCode());
@@ -53,7 +53,11 @@
       <input type="password" bind:value={code} autocomplete="off" required />
     </label>
     {#if !code}
-      <p class="hint">Gekregen via een uitnodigingslink? Open die link dan in Chrome.</p>
+      <p class="hint">
+        {isNativeApp
+          ? 'De code staat in je uitnodigingsmail.'
+          : 'Gekregen via een uitnodigingslink? Open die link dan in Chrome.'}
+      </p>
     {/if}
     <button class="btn" disabled={status === 'busy'}>Opslaan en testen</button>
     {#if message}
