@@ -119,3 +119,27 @@ export async function nativeAppVersion(): Promise<string | undefined> {
     return 'ouder dan 0.311';
   }
 }
+
+interface IntegriteitPlugin {
+  verklaring(options: { nonce: string; project?: string }): Promise<{ token: string }>;
+}
+
+const Integriteit = registerPlugin<IntegriteitPlugin>('Integriteit');
+
+/**
+ * Verklaring van Google Play dat dit de echte app is (IntegriteitPlugin.java),
+ * om zonder toegangscode een token van de proxy te krijgen (install.ts).
+ * Undefined in de browser, in een app van vóór de plugin, of als Google
+ * weigert; de app probeert het dan met Turnstile.
+ */
+export async function playIntegrityToken(
+  nonce: string,
+  project?: string,
+): Promise<string | undefined> {
+  if (!isNativeApp) return undefined;
+  try {
+    return (await Integriteit.verklaring({ nonce, project })).token;
+  } catch {
+    return undefined;
+  }
+}

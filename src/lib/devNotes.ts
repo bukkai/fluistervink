@@ -1,4 +1,4 @@
-import { getTester } from './api';
+import { getDisplayName, getTester } from './api';
 import { db, type Utterance } from './db';
 import { devNoteText } from './observations';
 
@@ -104,6 +104,7 @@ export async function devNotesMarkdown(notes: Utterance[]): Promise<string> {
     }),
   );
   const tester = getTester();
-  const header = tester ? `Van: ${tester}\n\n` : '';
+  const name = getDisplayName();
+  const header = tester ? `Van: ${name ? `${name} (${tester})` : tester}\n\n` : '';
   return `# Feedback Fluistervink\n\n${header}${sections.join('\n')}`;
 }

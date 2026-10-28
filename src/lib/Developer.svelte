@@ -42,6 +42,15 @@
   }
   loadTesters();
 
+  /** "Anna (app-3f9a2b1c)" als een installatie een eigen naam opgaf, anders de naam zelf */
+  const displayNames = $derived(
+    new Map((testers ?? []).filter((t) => t.displayName).map((t) => [t.name, t.displayName!])),
+  );
+  function who(name: string): string {
+    const display = displayNames.get(name);
+    return display ? `${display} (${name})` : name;
+  }
+
   // Feedback van alle testers, zoals de proxy hem heeft. Komt pas binnen als de
   // app van de tester deelt (na het stoppen van een wandeling). Verwerkt = in
   // een ontwikkelsessie bekeken; de gegevens zelf blijven staan (testset).
@@ -148,7 +157,7 @@
   /** "anna · 24 okt · 42 uitspraken" (de tester alleen als de naam van de wandeling ervoor staat) */
   function walkMeta(walk: WalkCost): string {
     return [
-      walkNames[walk.session] ? walk.tester : undefined,
+      walkNames[walk.session] ? who(walk.tester) : undefined,
       dateFormat.format(new Date(walk.day)),
       walk.utterances ? count(walk.utterances, 'uitspraak', 'uitspraken') : undefined,
     ]
@@ -207,7 +216,8 @@
   }
 
   async function remove(tester: Tester) {
-    if (!confirm(`${tester.name} afsluiten? De code werkt daarna niet meer.`)) return;
+    const what = tester.source === 'install' ? 'De app' : 'De code';
+    if (!confirm(`${who(tester.name)} afsluiten? ${what} werkt daarna niet meer.`)) return;
     try {
       await removeTester(tester.name);
       if (invited?.name === tester.name) invited = undefined;
@@ -295,7 +305,7 @@
             <li class:processed={note.processed}>
               <div class="note-meta muted">
                 <span>
-                  {note.tester} · {noteDateFormat.format(note.recordedAt)}{note.sessionName
+                  {who(note.tester)} · {noteDateFormat.format(note.recordedAt)}{note.sessionName
                     ? ` · ${note.sessionName}`
                     : ''}
                 </span>
@@ -382,7 +392,7 @@
 </section>
 
 <section class="card">
-  <div class="card-head"><h2>Testers</h2></div>
+  <div class="card-head"><h2>Testers en installaties</h2></div>
   <div class="card-body stack">
     {#if testersError}
       <p class="message error">{testersError}</p>
@@ -394,13 +404,17 @@
         {#each testers as tester (tester.name)}
           <li>
             <span class="name">
-              {tester.name}
+              {who(tester.name)}
               <span class="muted">
                 {tester.source === 'secret'
                   ? '· via npm run tester'
                   : tester.invitedAt
                     ? `· ${dateFormat.format(tester.invitedAt)}`
                     : ''}
+                {tester.source === 'install'
+                  ? `· zonder code (${tester.via === 'play' ? 'Play' : 'browser'})`
+                  : ''}
+                {tester.blocked ? '· afgesloten' : ''}
               </span>
               <span class="usage muted">{usageText(tester.usage)}</span>
             </span>
@@ -408,6 +422,8 @@
               <button class="link" onclick={() => copyLink(tester.name, inviteLink(tester.code!))}>
                 {copied === tester.name ? 'Gekopieerd' : 'Link'}
               </button>
+              <button class="link danger" onclick={() => remove(tester)}>Afsluiten</button>
+            {:else if tester.source === 'install' && !tester.blocked}
               <button class="link danger" onclick={() => remove(tester)}>Afsluiten</button>
             {/if}
           </li>
@@ -451,7 +467,7 @@
           {#each costs.perTester as tester (tester.tester)}
             <li>
               <div class="bar-label">
-                <span>{tester.tester}</span>
+                <span>{who(tester.tester)}</span>
                 <span class="muted">
                   {money(tester.cost)}{tester.utterances
                     ? ` · ${count(tester.utterances, 'uitspraak', 'uitspraken')}`
@@ -472,7 +488,7 @@
           {#each costs.topWalks as walk (`${walk.tester}/${walk.session}`)}
             <li>
               <span>
-                {walkNames[walk.session] ?? walk.tester}
+                {walkNames[walk.session] ?? who(walk.tester)}
                 <span class="muted">· {walkMeta(walk)}</span>
               </span>
               <span>{money(walk.cost)}</span>

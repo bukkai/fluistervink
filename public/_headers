@@ -10,11 +10,15 @@
 # (kleuren via classes, zie src/lib/rarity.ts). Svelte en Leaflet zetten
 # stijlen via element.style, en dat mag wel.
 #
+# Uitzondering: Cloudflare Turnstile (script en iframe van
+# challenges.cloudflare.com), de controle bij aanmelden zonder code
+# (src/lib/install.ts).
+#
 # Referrer-Policy: OpenStreetMap wil weten van welke site tegels komen; alleen
 # het domein, nooit het pad of de #code=.
 
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: https://tile.openstreetmap.org; media-src 'self' blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; style-src 'self'; img-src 'self' data: blob: https://tile.openstreetmap.org; media-src 'self' blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
   Permissions-Policy: microphone=(self), geolocation=(self), camera=(), payment=(), usb=()
   Referrer-Policy: strict-origin-when-cross-origin
   X-Content-Type-Options: nosniff

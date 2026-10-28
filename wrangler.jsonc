@@ -41,10 +41,15 @@
   // OPENAI_PROJECT_ID en ANTHROPIC_WORKSPACE_ID: alleen de kosten van
   // Fluistervink in de echte rekening op Developer (worker/billing.ts). Geen
   // geheim. Vars erft env.stable niet, dus daar nog eens.
+  // TURNSTILE_SITE_KEY en PLAY_PROJECT_NUMBER: aanmelden zonder code
+  // (worker/install.ts, docs/plan-laagdrempelig.md). Openbaar; de app haalt ze
+  // op bij /api/install. Leeg = die weg staat uit.
   "vars": {
     "CHANNEL": "beta",
     "OPENAI_PROJECT_ID": "proj_CvUygMTZvZOPx4zIo446b4EQ",
     "ANTHROPIC_WORKSPACE_ID": "wrkspc_01LXLhkhjpBw2JuKbtJpVKAW",
+    "TURNSTILE_SITE_KEY": "0x4AAAAAAFqFUoFgcw_Rkpjc",
+    "PLAY_PROJECT_NUMBER": "566211548329",
   },
   // Snelheidslimiet op spraakherkenning en model, per tester (zie worker/index.ts):
   // een doorgestuurde uitnodigingslink kan zo niet in korte tijd het tegoed
@@ -60,7 +65,8 @@
   "previews": {},
   // Geheimen (ACCESS_CODE, OPENAI_API_KEY, ANTHROPIC_API_KEY, en optioneel de
   // beheersleutels OPENAI_ADMIN_KEY en ANTHROPIC_ADMIN_KEY voor de echte
-  // rekening op Developer): lokaal in .dev.vars, in productie via
+  // rekening op Developer; INSTALL_SECRET, TURNSTILE_SECRET en
+  // PLAY_SERVICE_ACCOUNT voor aanmelden zonder code): lokaal in .dev.vars, in productie via
   // `npx wrangler secret put <NAAM>`.
   //
   // Hierboven is de beta (branch main, op workers.dev, voor de testers).
@@ -94,6 +100,8 @@
         "CHANNEL": "stable",
         "OPENAI_PROJECT_ID": "proj_CvUygMTZvZOPx4zIo446b4EQ",
         "ANTHROPIC_WORKSPACE_ID": "wrkspc_01LXLhkhjpBw2JuKbtJpVKAW",
+        "TURNSTILE_SITE_KEY": "0x4AAAAAAFqFUoFgcw_Rkpjc",
+        "PLAY_PROJECT_NUMBER": "566211548329",
       },
       "ratelimits": [
         { "name": "AI_LIMIT", "namespace_id": "1001", "simple": { "limit": 60, "period": 60 } },

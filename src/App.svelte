@@ -12,7 +12,8 @@
     type StaleCheck,
   } from './lib/sessions';
   import ActiveSession from './lib/ActiveSession.svelte';
-  import { getAccessCode, getTester, ping, takeInvite } from './lib/api';
+  import { ApiError, getAccessCode, getTester, ping, takeInvite } from './lib/api';
+  import { getInstallToken } from './lib/install';
   import { listDevNotes } from './lib/devNotes';
   import { CHANNEL } from './lib/log';
   import { vibrate } from './lib/feedback';
@@ -99,20 +100,27 @@
 
   let menuOpen = $state(false);
 
-  // Zonder toegangscode werkt de verwerking niet; dan op het hoofdscherm een
-  // verwijzing naar de instellingen. De code staat in localStorage (geen
-  // state), dus opnieuw lezen bij elke schermwissel.
-  let hasAccessCode = $derived.by(() => {
-    void route;
-    void welcome;
-    return !!getAccessCode();
-  });
+  // Zonder toegangscode meldt de app zich meteen aan als installatie
+  // (install.ts), zodat een eventuele controle van Cloudflare nu op het
+  // hoofdscherm komt en niet midden in de eerste uitspraak. Geen verbinding:
+  // dan bij het eerste verzoek opnieuw, zonder melding.
+  let installProblem = $state<string>();
+  async function ensureAccess() {
+    if (getAccessCode() || getInstallToken()) return;
+    try {
+      await ping();
+    } catch (error) {
+      if (error instanceof ApiError && error.status !== 0) installProblem = error.message;
+    }
+  }
+  ensureAccess();
 
   // Het scherm Developer (export, import) alleen voor de eigenaar. De naam komt
-  // van de proxy (ping), net als hasAccessCode opnieuw lezen per scherm.
+  // van de proxy (ping); in localStorage, dus opnieuw lezen per scherm.
   let isOwner = $derived.by(() => {
     void route;
     void welcome;
+    void installProblem;
     return getTester() === 'eigenaar';
   });
 
@@ -325,9 +333,10 @@
           De code uit de uitnodigingslink werkt niet (of er is geen verbinding). Kijk bij
           <a href="#instellingen">Instellingen</a>.
         </p>
-      {:else if !hasAccessCode}
+      {:else if installProblem}
         <p class="notice">
-          Vul eerst de toegangscode in bij <a href="#instellingen">Instellingen</a>.
+          De app kon zich niet aanmelden ({installProblem}). Probeer het later opnieuw, of vul een
+          testercode in bij <a href="#instellingen">Instellingen</a>.
         </p>
       {/if}
       {#if stale?.kind === 'stopped'}
@@ -338,7 +347,7 @@
           <button class="link" onclick={() => (stale = undefined)}>Oké</button>
         </p>
       {/if}
-      {#if hasAccessCode && askShare}
+      {#if askShare}
         <div class="consent card">
           <strong>Delen met de ontwikkelaar?</strong>
           <p>

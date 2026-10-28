@@ -78,9 +78,22 @@
       <dt>Google</dt>
       <dd>
         Installeer je de Android-app via Google Play, dan weet Google dat je hem hebt, zoals bij
-        elke app. De app zelf stuurt niets naar Google. Tik je op een link naar een plek (zoals "±8
-        m" of "kaarten-app"), dan opent Google Maps met die plek. Sla je een export op in Google
-        Drive, dan staat dat bestand bij Google.
+        elke app. Bij de eerste keer openen vraagt de app Google Play te bevestigen dat het de echte
+        app is, op een echt toestel (Play Integrity). Daarvoor gaat er een willekeurig nummer van
+        deze installatie naar Google, geen waarnemingen. Verder stuurt de app niets naar Google. Tik
+        je op een link naar een plek (zoals "±8 m" of "kaarten-app"), dan opent Google Maps met die
+        plek. Sla je een export op in Google Drive, dan staat dat bestand bij Google.
+      </dd>
+      <dt>Cloudflare</dt>
+      <dd>
+        De app heeft geen account of code nodig. Om te voorkomen dat iemand met een programma de
+        server misbruikt, controleert Cloudflare Turnstile bij de eerste keer openen of er een echte
+        browser achter zit (in de Android-app alleen als Google Play het niet bevestigt). Turnstile
+        kijkt daarvoor onder andere naar je IP-adres en browser, volgens Cloudflare alleen om robots
+        tegen te houden en niet om je te volgen. Daarna krijgt de app een willekeurige naam (zoals
+        "app-3f9a2b1c"), zonder iets wat naar jou verwijst. Vul je bij
+        <a href="#instellingen">Instellingen</a> je naam in (niet verplicht), dan staat die erbij, zodat
+        de ontwikkelaar weet van wie gebruik en feedback komen.
       </dd>
     </dl>
   </div>
@@ -96,9 +109,11 @@
       alleen als je dat bij <a href="#instellingen">Instellingen</a> aanzet.
     </p>
     <p>
-      Het staat bij Cloudflare onder je testernaam. Alleen de ontwikkelaar kan het lezen, en
-      gebruikt het alleen om de herkenning en de app te verbeteren. Niet doorgeven, niet publiceren.
-      Wil je dat het weg is, vraag het aan wie je heeft uitgenodigd: dan wordt alles van jou gewist.
+      Het staat bij Cloudflare onder je testernaam, of zonder code onder de willekeurige naam van je
+      installatie. Alleen de ontwikkelaar kan het lezen, en gebruikt het alleen om de herkenning en
+      de app te verbeteren. Niet doorgeven, niet publiceren. Wil je dat het weg is, vraag het aan
+      wie je heeft uitgenodigd (of stuur het als feedback in de app): dan wordt alles van jou
+      gewist.
     </p>
   </div>
 </section>
@@ -145,6 +160,14 @@
     href="https://developers.cloudflare.com/workers/observability/logs/workers-logs/"
     target="_blank"
     rel="noopener">Cloudflare</a
+  >; op 28 oktober 2026:
+  <a href="https://www.cloudflare.com/turnstile-privacy-policy/" target="_blank" rel="noopener"
+    >Turnstile</a
+  >,
+  <a
+    href="https://developer.android.com/google/play/integrity/overview"
+    target="_blank"
+    rel="noopener">Play Integrity</a
   >.
 </p>
 
