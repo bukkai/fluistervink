@@ -10,7 +10,7 @@
  * de mail noemt Play niet en stuurt Android-testers naar Chrome, zoals vroeger.
  */
 export const PLAY_TEST_LINKS: Record<'beta' | 'stable', string> = {
-  beta: '',
+  beta: 'https://play.google.com/apps/internaltest/4701242842814722001',
   stable: '',
 };
 
