@@ -62,6 +62,17 @@ export class ApiError extends Error {
  */
 const TIMEOUT_MS = 30_000;
 
+/**
+ * Een opname mag langer uploaden: een seconde extra per 50 kB, zodat ook een
+ * lange opname bij zwak bereik (±50 kB/s omhoog) binnen de time-out past.
+ */
+const UPLOAD_BYTES_PER_EXTRA_S = 50_000;
+
+/** Time-out voor de spraakherkenning, naar de grootte van de opname. */
+export function transcribeTimeout(bytes: number): number {
+  return TIMEOUT_MS + Math.ceil(bytes / UPLOAD_BYTES_PER_EXTRA_S) * 1000;
+}
+
 export interface Timing {
   /** Duur van het hele verzoek, gezien vanuit de app */
   requestMs: number;
@@ -76,6 +87,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 async function timedRequest<T>(
   path: string,
   init: RequestInit = {},
+  timeoutMs = TIMEOUT_MS,
 ): Promise<{ data: T; timing: Timing }> {
   const headers = new Headers(init.headers);
   headers.set('Authorization', `Bearer ${getAccessCode()}`);
@@ -83,10 +95,10 @@ async function timedRequest<T>(
   const start = performance.now();
   let response: Response;
   try {
-    response = await fetch(path, { ...init, headers, signal: AbortSignal.timeout(TIMEOUT_MS) });
+    response = await fetch(path, { ...init, headers, signal: AbortSignal.timeout(timeoutMs) });
   } catch (error) {
     if (error instanceof DOMException && error.name === 'TimeoutError') {
-      throw new ApiError(`Time-out: geen antwoord binnen ${TIMEOUT_MS / 1000} s`, 0);
+      throw new ApiError(`Time-out: geen antwoord binnen ${timeoutMs / 1000} s`, 0);
     }
     throw new ApiError(navigator.onLine ? 'Proxy niet bereikbaar' : 'Geen internetverbinding', 0);
   }
@@ -143,11 +155,11 @@ export async function transcribe(
   form.set('audio', audio, `opname.${extension}`);
   if (model) form.set('model', model);
   if (prompt) form.set('prompt', prompt);
-  return timedRequest('/api/transcribe', {
-    method: 'POST',
-    headers: sessionHeader(sessionId),
-    body: form,
-  });
+  return timedRequest(
+    '/api/transcribe',
+    { method: 'POST', headers: sessionHeader(sessionId), body: form },
+    transcribeTimeout(audio.size),
+  );
 }
 
 /** Stuurt een verzoek door naar de Messages API van Anthropic. */

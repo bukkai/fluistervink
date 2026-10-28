@@ -43,7 +43,9 @@
       Meerdere soorten in één keer kan ook: "zes houtduiven en een vink" wordt twee waarnemingen,
       met dezelfde tijd en plek. Noem je dezelfde soort twee keer ("vijf houtduiven ... nog twee
       houtduiven"), dan telt de app ze op. Je kunt er zelfs een verbetering bij zeggen: "buizerd
-      overvliegend, en die ruigpoot van daarnet mag weg".
+      overvliegend, en die ruigpoot van daarnet mag weg". In een vogelhut kun je zo een hele lijst
+      achter elkaar inspreken; na drie minuten stopt de opname vanzelf, en dan begin je gewoon een
+      nieuwe.
     </p>
   </div>
 </section>
