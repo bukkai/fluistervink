@@ -107,6 +107,19 @@ export async function putInstall(kv: KVNamespace, id: string, record: InstallRec
   await kv.put(KEY_PREFIX + id, '', { metadata: record });
 }
 
+/**
+ * De installatie met deze naam ("app-3f9a2b1c"), via het begin van het id:
+ * één verzoek, zonder alle installaties langs te gaan.
+ */
+export async function findInstall(
+  kv: KVNamespace,
+  name: string,
+): Promise<(InstallRecord & { id: string }) | null> {
+  const page = await kv.list<InstallRecord>({ prefix: KEY_PREFIX + name.slice('app-'.length) });
+  const key = page.keys.find((k) => k.metadata?.name === name);
+  return key?.metadata ? { ...key.metadata, id: key.name.slice(KEY_PREFIX.length) } : null;
+}
+
 /** Alle installaties, met hun id. */
 export async function listInstalls(kv: KVNamespace): Promise<(InstallRecord & { id: string })[]> {
   const installs: (InstallRecord & { id: string })[] = [];

@@ -244,6 +244,15 @@ describe('/api/install (aanmelden zonder code)', () => {
     expect(testersKv.store.size).toBe(0);
   });
 
+  it('weigert een tweede id met hetzelfde begin, want dat geeft dezelfde naam', async () => {
+    turnstileAnswers();
+    expect((await register({ id: ID, turnstile: 'goed' })).status).toBe(200);
+    const twin = '3f9a2b1c-ffff-4000-8000-000000000009';
+    expect((await register({ id: twin, turnstile: 'goed' })).status).toBe(409);
+    // Hetzelfde id opnieuw aanmelden mag wel
+    expect((await register({ id: ID, turnstile: 'goed' })).status).toBe(200);
+  });
+
   it('weigert een ongeldig id', async () => {
     expect((await register({ id: 'eigenaar', turnstile: 'goed' })).status).toBe(400);
   });

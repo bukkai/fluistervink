@@ -61,7 +61,15 @@ let pending: Promise<{ token: string; tester: string }> | undefined;
  * verzoek probeert het dan opnieuw.
  */
 export function register(): Promise<{ token: string; tester: string }> {
-  pending ??= registerOnce().finally(() => (pending = undefined));
+  pending ??= registerOnce()
+    .catch((error) => {
+      // Een andere installatie heeft al een id dat net zo begint (zelfde
+      // naam): met een nieuw id opnieuw
+      if (!(error instanceof InstallError) || error.status !== 409) throw error;
+      localStorage.removeItem(ID_KEY);
+      return registerOnce();
+    })
+    .finally(() => (pending = undefined));
   return pending;
 }
 

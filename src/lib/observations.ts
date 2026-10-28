@@ -267,7 +267,7 @@ async function runQueue(): Promise<void> {
   const stuck = await db.utterances.where('status').equals('processing').toArray();
   const dbMs = Date.now() - dbStart;
   if (dbMs >= SLOW_MS) logEvent('queue_db_slow', { dbMs });
-  await (audioMigration ??= migrateAudio());
+  await (audioMigration ??= migrateOnce());
   for (const u of stuck) {
     logEvent('requeued', undefined, { sessionId: u.sessionId, utteranceId: u.id });
     await db.utterances
@@ -301,13 +301,40 @@ function queueError(error: unknown, u: Utterance, step: 'requeue' | 'process' | 
 
 let audioMigration: Promise<void> | undefined;
 
+/** Gezet als alle opnames bytes zijn; nieuwe opnames zijn dat altijd. */
+const AUDIO_MIGRATED_KEY = 'fluistervink.audioMigrated';
+
+/**
+ * `migrateAudio` één keer per apparaat: daarna hoeft de app niet bij elke
+ * start alle opnames te lezen. Mislukt het, dan loopt de wachtrij gewoon door
+ * en probeert de volgende ronde het opnieuw.
+ */
+async function migrateOnce(): Promise<void> {
+  try {
+    if (localStorage.getItem(AUDIO_MIGRATED_KEY)) return;
+    if (await migrateAudio()) localStorage.setItem(AUDIO_MIGRATED_KEY, '1');
+  } catch (error) {
+    audioMigration = undefined;
+    logEvent('queue_error', {
+      step: 'migrate',
+      message: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
 /**
  * Zet opnames die nog als Blob in de database staan om (zie `StoredAudio` in
  * db.ts), één keer per start. Is een Blob niet meer te lezen, dan gaat hij
  * eruit: zonder opname kan de uitspraak niet meer verwerkt worden, maar houdt
- * hij de rest van de wachtrij ook niet meer op.
+ * hij de rest van de wachtrij ook niet meer op. Geeft false als er een
+ * opname niet weggeschreven kon worden (dan de volgende start opnieuw).
  */
-export async function migrateAudio(): Promise<void> {
+export async function migrateAudio(): Promise<boolean> {
+  let complete = true;
+  const failed = (error: unknown, u: Utterance) => {
+    queueError(error, u, 'migrate');
+    complete = false;
+  };
   const ids = await db.utterances.filter((u) => !!u.audio && !isStoredAudio(u.audio)).primaryKeys();
   for (const id of ids) {
     const u = await db.utterances.get(id);
@@ -323,11 +350,12 @@ export async function migrateAudio(): Promise<void> {
           audio: undefined,
           ...(waiting && { status: 'failed', error: 'Opname niet meer te lezen' }),
         })
-        .catch((error) => queueError(error, u, 'migrate'));
+        .catch((error) => failed(error, u));
       continue;
     }
-    await db.utterances.update(id, { audio }).catch((error) => queueError(error, u, 'migrate'));
+    await db.utterances.update(id, { audio }).catch((error) => failed(error, u));
   }
+  return complete;
 }
 
 /**

@@ -3,6 +3,7 @@ import { devNoteText } from '../src/lib/devNotePrefix';
 import { bill, type BillingKeys } from './billing';
 import {
   cleanDisplayName,
+  findInstall,
   getInstall,
   INSTALL_ID,
   installIdFrom,
@@ -198,6 +199,10 @@ async function install(request: Request, env: WorkerEnv): Promise<Response> {
 
   const name = installName(id);
   if (!existing) {
+    // De naam is het begin van het id, en dat kiest de app: twee installaties
+    // met dezelfde naam zouden gedeelde gegevens en verbruik door elkaar halen.
+    // De app kiest dan een nieuw id (install.ts).
+    if (await findInstall(env.TESTERS, name)) return json({ error: 'Id al in gebruik' }, 409);
     await putInstall(env.TESTERS, id, { name, registeredAt: Date.now(), via });
   }
   console.log({ tester: name, path: '/api/install', via });
@@ -710,7 +715,7 @@ async function testers(request: Request, env: WorkerEnv, tester: string): Promis
     const name = new URL(request.url).searchParams.get('name') ?? '';
     if (name.startsWith('app-')) {
       // Het token blijft geldig, maar authorize() weigert het daarna
-      const found = (await listInstalls(env.TESTERS)).find((i) => i.name === name);
+      const found = await findInstall(env.TESTERS, name);
       if (!found) return json({ error: 'Niet gevonden' }, 404);
       const { id, ...record } = found;
       await putInstall(env.TESTERS, id, { ...record, blocked: true });
