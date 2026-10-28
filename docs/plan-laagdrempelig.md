@@ -1,6 +1,6 @@
 # Plan: de app gebruiken zonder toegangscode
 
-Voorstel van 28 okt 2026, nog niet goedgekeurd. Volgt op het besluit van 13 okt in `NOTES.md` (roadmap naar v1.0): v1.0 voorlopig voor een besloten kring met toegangscodes; openbaar pas als duidelijk is wie de API-kosten betaalt en hoe misbruik wordt afgevangen. Dit plan werkt dat tweede deel uit.
+Voorstel van 28 okt 2026, dezelfde dag goedgekeurd met deze keuzes: de eigenaar betaalt voorlopig alles; plafond en daglimiet stelt hij in bij de consoles van OpenAI en Anthropic (fase 1 en de daglimiet per installatie vervallen dus; de snelheidslimiet per installatie blijft); ook de PWA zonder code; openbaar in Play pas na genoeg testen. Fase 2 tot 4 gebouwd in één PR. Volgt op het besluit van 13 okt in `NOTES.md` (roadmap naar v1.0): v1.0 voorlopig voor een besloten kring met toegangscodes; openbaar pas als duidelijk is wie de API-kosten betaalt en hoe misbruik wordt afgevangen. Dit plan werkt dat tweede deel uit.
 
 ## Doel
 
@@ -76,3 +76,18 @@ Elke fase is één à twee PR's. Fase 1 staat los van de rest en kan meteen.
 ## Voorstel
 
 Fase 1 nu, als losse PR: het is een kleine wijziging in de proxy en een goedkope verzekering, ook zolang de codes blijven. Fase 2 tot 4 pas als besloten is om (een deel van) de app openbaar te maken.
+
+## Instellen (eigenaar, eenmalig)
+
+Zonder deze instellingen staat aanmelden zonder code uit: wie een code heeft, merkt niets; wie geen code heeft, ziet op het hoofdscherm dat aanmelden niet lukt. Elk geheim voor beide omgevingen zetten (`--env stable` voor de stabiele).
+
+1. **Token-geheim:** een lange willekeurige tekst, bv. `openssl rand -base64 32`, met `npx wrangler secret put INSTALL_SECRET`. Verander je hem later, dan melden alle installaties zich vanzelf opnieuw aan.
+2. **Turnstile** (Cloudflare-dashboard → Turnstile → Add widget): hostnamen `fluistervink.stephanmullernl.workers.dev` en `fluistervink.nl`, modus *Managed* (meestal onzichtbaar, alleen bij twijfel een vinkje). De site key in `wrangler.jsonc` bij `TURNSTILE_SITE_KEY` (beide omgevingen), de secret key met `npx wrangler secret put TURNSTILE_SECRET`.
+3. **Play Integrity** (alleen de Android-app; zonder valt die terug op Turnstile):
+   - Play Console → Test en release → App-integriteit → Play Integrity API: een Google Cloud-project koppelen (of laten aanmaken).
+   - In dat Cloud-project: de Play Integrity API aanzetten; onder IAM → Serviceaccounts een serviceaccount maken en daarvan een JSON-sleutel downloaden.
+   - `npx wrangler secret put PLAY_SERVICE_ACCOUNT < sleutel.json`, daarna het bestand weggooien.
+   - Het projectnummer (Cloud-dashboard, "Project number") in `wrangler.jsonc` bij `PLAY_PROJECT_NUMBER`.
+   - Een nieuwe app-versie (tag `v0.*`): de plugin zit in de native code. Een debug-APK krijgt van Google geen goedkeuring en gebruikt Turnstile.
+   - Play Console → App-inhoud → Gegevensveiligheid nalopen (installatie-id naar Google voor de controle).
+4. **Lokaal** (`.dev.vars`): de testsleutels van Turnstile die altijd slagen, site key `1x00000000000000000000AA` en secret `1x0000000000000000000000000000000AA`, plus een willekeurig `INSTALL_SECRET`.
