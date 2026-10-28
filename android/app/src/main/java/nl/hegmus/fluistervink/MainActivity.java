@@ -13,6 +13,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(WandelingPlugin.class);
         registerPlugin(BestandPlugin.class);
         registerPlugin(VersiePlugin.class);
+        registerPlugin(IntegriteitPlugin.class);
         super.onCreate(savedInstanceState);
 
         // Terugknop: een pagina terug in de app (de schermen zijn #-adressen),
