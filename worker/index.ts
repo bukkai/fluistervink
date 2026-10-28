@@ -113,6 +113,12 @@ export default {
       ) {
         return json({ error: 'Te veel verzoeken achter elkaar; probeer het zo opnieuw' }, 429);
       }
+      // Schrijven in KV: sinds aanmelden zonder code kan iedereen met een
+      // browser dat, dus ook hier een grens. Delen gaat één voor één en gaat
+      // bij een fout later verder (share.ts).
+      if (request.method === 'PUT' && !(await withinLimit(env, tester, 'share'))) {
+        return json({ error: 'Te veel verzoeken achter elkaar; probeer het zo opnieuw' }, 429);
+      }
       if (pathname === '/api/transcribe' && request.method === 'POST') {
         return await transcribe(request, env, meter(request, env, ctx, tester));
       }
@@ -147,11 +153,12 @@ export default {
 
 /**
  * Snelheidslimiet op wat ons tegoed kost (AI_LIMIT in wrangler.jsonc), per
- * tester. De eigenaar valt erbuiten: de testset stuurt veel tegelijk.
+ * tester. De eigenaar valt erbuiten: de testset stuurt veel tegelijk. Met
+ * `kind` een aparte teller met dezelfde grens, bv. voor het delen.
  */
-async function withinLimit(env: WorkerEnv, tester: string): Promise<boolean> {
+async function withinLimit(env: WorkerEnv, tester: string, kind?: string): Promise<boolean> {
   if (tester === OWNER) return true;
-  return (await env.AI_LIMIT.limit({ key: tester })).success;
+  return (await env.AI_LIMIT.limit({ key: kind ? `${kind}:${tester}` : tester })).success;
 }
 
 /**

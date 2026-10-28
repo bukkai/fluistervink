@@ -55,6 +55,8 @@
   // een doorgestuurde uitnodigingslink kan zo niet in korte tijd het tegoed
   // opmaken. Een uitspraak kost 2 verzoeken, dus 60 per minuut is ruim. De
   // eigenaar (testset) telt niet mee. Zelfde namespace in beta en stabiel.
+  // Ook gebruikt met een eigen sleutel per soort verzoek: delen (`share:<tester>`)
+  // en aanmelden (`install:<adres>`).
   "ratelimits": [
     { "name": "AI_LIMIT", "namespace_id": "1001", "simple": { "limit": 60, "period": 60 } },
   ],
