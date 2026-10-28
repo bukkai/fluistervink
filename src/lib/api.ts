@@ -1,8 +1,11 @@
-// Client voor de proxy in worker/index.ts. De toegangscode wordt één keer
-// ingevuld (of via een uitnodigingslink meegegeven) en daarna in localStorage
-// bewaard, samen met de naam van de tester die de proxy erbij teruggeeft.
+// Client voor de proxy in worker/index.ts. Zonder toegangscode meldt de app
+// zich vanzelf aan als installatie (install.ts). Een code (van de eigenaar of
+// een tester) kan nog steeds: één keer ingevuld of via een uitnodigingslink
+// meegegeven, en daarna in localStorage bewaard, samen met de naam van de
+// tester die de proxy erbij teruggeeft.
 
 import type { Billing, UsageRow } from './costs';
+import { forgetInstallToken, getInstallToken, register } from './install';
 
 const ACCESS_CODE_KEY = 'fluistervink.accessCode';
 const TESTER_KEY = 'fluistervink.tester';
@@ -11,13 +14,18 @@ export function getAccessCode(): string {
   return localStorage.getItem(ACCESS_CODE_KEY) ?? '';
 }
 
+/** Leeg: geen code meer, de app gebruikt dan zijn installatie. */
 export function setAccessCode(code: string): void {
-  localStorage.setItem(ACCESS_CODE_KEY, code.trim());
+  if (code.trim()) localStorage.setItem(ACCESS_CODE_KEY, code.trim());
+  else localStorage.removeItem(ACCESS_CODE_KEY);
   // Hoort bij de vorige code; ping() vult hem opnieuw
   localStorage.removeItem(TESTER_KEY);
 }
 
-/** Naam van de tester bij de toegangscode ("eigenaar", "anna"), als bekend. */
+/**
+ * Naam van de tester bij de toegangscode ("eigenaar", "anna") of van de
+ * installatie ("app-3f9a2b1c"), als bekend.
+ */
 export function getTester(): string | undefined {
   return localStorage.getItem(TESTER_KEY) ?? undefined;
 }
@@ -90,7 +98,8 @@ async function timedRequest<T>(
   timeoutMs = TIMEOUT_MS,
 ): Promise<{ data: T; timing: Timing }> {
   const headers = new Headers(init.headers);
-  headers.set('Authorization', `Bearer ${getAccessCode()}`);
+  const credential = await getCredential();
+  headers.set('Authorization', `Bearer ${credential}`);
 
   const start = performance.now();
   let response: Response;
@@ -108,9 +117,28 @@ async function timedRequest<T>(
     upstreamMs: upstreamDuration(response),
   };
   if (!response.ok) {
+    // Afgesloten of het geheim van de proxy veranderd: opnieuw aanmelden
+    if (response.status === 401 && credential === getInstallToken()) forgetInstallToken();
     throw new ApiError(body.error ?? `HTTP ${response.status}`, response.status);
   }
   return { data: body as T, timing };
+}
+
+/**
+ * De toegangscode als die er is, anders het token van deze installatie; dat
+ * wordt zo nodig eerst aangevraagd (install.ts).
+ */
+async function getCredential(): Promise<string> {
+  const code = getAccessCode() || getInstallToken();
+  if (code) return code;
+  try {
+    const { token, tester } = await register();
+    localStorage.setItem(TESTER_KEY, tester);
+    return token;
+  } catch (error) {
+    const status = (error as { status?: number }).status ?? 0;
+    throw new ApiError(error instanceof Error ? error.message : String(error), status);
+  }
 }
 
 /** Leest `Server-Timing: upstream;dur=1234` uit de respons van de proxy. */
@@ -211,14 +239,19 @@ export async function fetchBilling(): Promise<Billing> {
 }
 
 /**
- * Tester in de proxy: uitgenodigd vanuit de app (`app`, met code) of via
- * `npm run tester` in het geheim ACCESS_CODES (`secret`, alleen de naam).
+ * Tester in de proxy: uitgenodigd vanuit de app (`app`, met code), via
+ * `npm run tester` in het geheim ACCESS_CODES (`secret`, alleen de naam), of
+ * een installatie zonder code (`install`, worker/install.ts).
  */
 export interface Tester {
   name: string;
-  source: 'app' | 'secret';
+  source: 'app' | 'secret' | 'install';
   code?: string;
+  /** Uitgenodigd, of bij een installatie: aangemeld */
   invitedAt?: number;
+  /** Hoe een installatie bewees dat hij echt is */
+  via?: 'play' | 'turnstile';
+  blocked?: boolean;
   /** Wat de tester gedeeld heeft; leeg als er (nog) niets gedeeld is */
   usage?: {
     walks: number;
@@ -242,7 +275,7 @@ export async function addTester(name: string): Promise<{ name: string; code: str
   });
 }
 
-/** Uitgenodigde tester afsluiten: de code werkt daarna niet meer. */
+/** Uitgenodigde tester of installatie afsluiten: de code of het token werkt daarna niet meer. */
 export async function removeTester(name: string): Promise<void> {
   await request(`/api/testers?name=${encodeURIComponent(name)}`, { method: 'DELETE' });
 }

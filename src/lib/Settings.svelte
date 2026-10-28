@@ -21,9 +21,9 @@
     await test();
   }
 
-  // Meteen laten zien of de code werkt
+  // Meteen laten zien of de toegang werkt (met code of als installatie)
   onMount(() => {
-    if (code) test();
+    test();
   });
 
   async function test() {
@@ -35,9 +35,11 @@
     } catch (error) {
       status = 'error';
       message =
-        error instanceof ApiError && error.status === 401
-          ? 'Toegangscode klopt niet.'
-          : 'Proxy niet bereikbaar.';
+        error instanceof ApiError && error.status === 401 && getAccessCode()
+          ? 'Testercode klopt niet.'
+          : error instanceof ApiError && error.status !== 0
+            ? `Aanmelden lukt niet: ${error.message}`
+            : 'Proxy niet bereikbaar.';
     }
   }
 </script>
@@ -49,16 +51,14 @@
   <div class="card-head"><h2>Toegang</h2></div>
   <form class="card-body" onsubmit={save}>
     <label>
-      Toegangscode
-      <input type="password" bind:value={code} autocomplete="off" required />
+      Testercode (niet nodig)
+      <input type="password" bind:value={code} autocomplete="off" />
     </label>
-    {#if !code}
-      <p class="hint">
-        {isNativeApp
-          ? 'De code staat in je uitnodigingsmail.'
-          : 'Gekregen via een uitnodigingslink? Open die link dan in Chrome.'}
-      </p>
-    {/if}
+    <p class="hint">
+      De app werkt zonder code. Heb je een testercode gekregen, vul hem dan hier in{isNativeApp
+        ? ' (hij staat in je uitnodigingsmail)'
+        : ', of open de uitnodigingslink in Chrome'}. Leeg laten en opslaan haalt de code weg.
+    </p>
     <button class="btn" disabled={status === 'busy'}>Opslaan en testen</button>
     {#if message}
       <p class="message {status}">{message}</p>

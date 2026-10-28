@@ -207,7 +207,8 @@
   }
 
   async function remove(tester: Tester) {
-    if (!confirm(`${tester.name} afsluiten? De code werkt daarna niet meer.`)) return;
+    const what = tester.source === 'install' ? 'De app' : 'De code';
+    if (!confirm(`${tester.name} afsluiten? ${what} werkt daarna niet meer.`)) return;
     try {
       await removeTester(tester.name);
       if (invited?.name === tester.name) invited = undefined;
@@ -382,7 +383,7 @@
 </section>
 
 <section class="card">
-  <div class="card-head"><h2>Testers</h2></div>
+  <div class="card-head"><h2>Testers en installaties</h2></div>
   <div class="card-body stack">
     {#if testersError}
       <p class="message error">{testersError}</p>
@@ -401,6 +402,10 @@
                   : tester.invitedAt
                     ? `· ${dateFormat.format(tester.invitedAt)}`
                     : ''}
+                {tester.source === 'install'
+                  ? `· zonder code (${tester.via === 'play' ? 'Play' : 'browser'})`
+                  : ''}
+                {tester.blocked ? '· afgesloten' : ''}
               </span>
               <span class="usage muted">{usageText(tester.usage)}</span>
             </span>
@@ -408,6 +413,8 @@
               <button class="link" onclick={() => copyLink(tester.name, inviteLink(tester.code!))}>
                 {copied === tester.name ? 'Gekopieerd' : 'Link'}
               </button>
+              <button class="link danger" onclick={() => remove(tester)}>Afsluiten</button>
+            {:else if tester.source === 'install' && !tester.blocked}
               <button class="link danger" onclick={() => remove(tester)}>Afsluiten</button>
             {/if}
           </li>
