@@ -24,7 +24,7 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 
 Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de app installeren, een hele wandeling gebruiken zonder naar het scherm te kijken, en thuis zonder gedoe naar waarneming.nl exporteren.
 
-**Besloten (13 okt): v1.0 voorlopig voor een besloten kring**, met toegangscodes zoals nu. Openbaar in de Play Store zou betekenen: bepalen wie de API-kosten betaalt (tegoed per gebruiker, eigen sleutel, limiet) en misbruik afvangen; dat komt pas later aan de orde.
+**Besloten (13 okt): v1.0 voorlopig voor een besloten kring**, met toegangscodes zoals nu. Openbaar in de Play Store zou betekenen: bepalen wie de API-kosten betaalt (tegoed per gebruiker, eigen sleutel, limiet) en misbruik afvangen; dat komt pas later aan de orde. Uitgewerkt in `docs/plan-laagdrempelig.md` (28 okt, voorstel): totaalplafond in de proxy, anonieme installaties met Play Integrity/Turnstile, daarna de code uit de app.
 
 1. **Veldgebruik afmaken met de native laag (Capacitor), de kern van v1.0:**
    - Trillen op de achtergrond en met het scherm uit (grootste ergernis van de eerste wandeling).
