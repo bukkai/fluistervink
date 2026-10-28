@@ -12,6 +12,12 @@ export interface Recording {
   durationMs: number;
 }
 
+/**
+ * Ruim genoeg voor spraak, en een kleine upload bij slecht bereik. Zonder
+ * kiest de browser zelf, op een iPhone ±220 kbit/s (1,7 MB per minuut).
+ */
+const AUDIO_BITS_PER_SECOND = 32_000;
+
 /** Kortere opnames zijn een per ongeluk aangetikte knop. */
 const MIN_DURATION_MS = 500;
 
@@ -50,7 +56,10 @@ export async function startRecording(): Promise<boolean> {
   logEvent('mic_opened', { label: track?.label, ...settings });
 
   const mimeType = MIME_TYPES.find((type) => MediaRecorder.isTypeSupported(type));
-  mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+  mediaRecorder = new MediaRecorder(stream, {
+    ...(mimeType && { mimeType }),
+    audioBitsPerSecond: AUDIO_BITS_PER_SECOND,
+  });
   chunks = [];
   mediaRecorder.ondataavailable = (event) => chunks.push(event.data);
   mediaRecorder.start();

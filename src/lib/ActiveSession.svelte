@@ -48,8 +48,12 @@
     return () => document.removeEventListener('visibilitychange', onHidden);
   });
 
-  /** Vergeten te stoppen: na een minuut stopt de opname vanzelf. */
-  const MAX_RECORDING_MS = 60_000;
+  /**
+   * Vergeten te stoppen: na drie minuten stopt de opname vanzelf. Lang genoeg
+   * voor een hele lijst in een vogelhut of bij het trektellen (een minuut was
+   * te kort, 28 okt); bij 32 kbit/s is dat ±0,7 MB.
+   */
+  const MAX_RECORDING_MS = 3 * 60_000;
 
   let lookup: Promise<PositionLookup> | undefined;
   let maxTimer: ReturnType<typeof setTimeout> | undefined;
