@@ -1,5 +1,8 @@
 import {
   db,
+  audioBlob,
+  isStoredAudio,
+  storeAudio,
   type Change,
   type DeletedObservation,
   type Observation,
@@ -61,7 +64,7 @@ export async function submitRecording(
     {
       sessionId,
       recordedAt: recording.startedAt,
-      audio: recording.audio,
+      audio: await storeAudio(recording.audio),
       audioDurationMs: recording.durationMs,
     },
     lookup,
@@ -264,16 +267,66 @@ async function runQueue(): Promise<void> {
   const stuck = await db.utterances.where('status').equals('processing').toArray();
   const dbMs = Date.now() - dbStart;
   if (dbMs >= SLOW_MS) logEvent('queue_db_slow', { dbMs });
-  for (const u of stuck)
+  await (audioMigration ??= migrateAudio());
+  for (const u of stuck) {
     logEvent('requeued', undefined, { sessionId: u.sessionId, utteranceId: u.id });
-  await db.utterances.where('status').equals('processing').modify({ status: 'pending' });
+    await db.utterances
+      .update(u.id, { status: 'pending' })
+      .catch((error) => queueError(error, u, 'requeue'));
+  }
 
+  // Uitspraken waarbij de database zelf faalde: niet steeds opnieuw, zodat
+  // de uitspraken erna toch verwerkt worden
+  const skipped = new Set<string>();
   while (true) {
-    const [next] = await db.utterances.where('status').equals('pending').sortBy('recordedAt');
+    const pending = await db.utterances.where('status').equals('pending').sortBy('recordedAt');
+    const next = pending.find((u) => !skipped.has(u.id));
     if (!next) break;
-    await processUtterance(next);
+    try {
+      await processUtterance(next);
+    } catch (error) {
+      queueError(error, next, 'process');
+      skipped.add(next.id);
+      continue;
+    }
     const processed = await db.utterances.get(next.id);
     if (processed) vibrate(utteranceFeedback(processed));
+  }
+}
+
+function queueError(error: unknown, u: Utterance, step: 'requeue' | 'process' | 'migrate'): void {
+  const message = error instanceof Error ? error.message : String(error);
+  logEvent('queue_error', { step, message }, { sessionId: u.sessionId, utteranceId: u.id });
+}
+
+let audioMigration: Promise<void> | undefined;
+
+/**
+ * Zet opnames die nog als Blob in de database staan om (zie `StoredAudio` in
+ * db.ts), één keer per start. Is een Blob niet meer te lezen, dan gaat hij
+ * eruit: zonder opname kan de uitspraak niet meer verwerkt worden, maar houdt
+ * hij de rest van de wachtrij ook niet meer op.
+ */
+export async function migrateAudio(): Promise<void> {
+  const ids = await db.utterances.filter((u) => !!u.audio && !isStoredAudio(u.audio)).primaryKeys();
+  for (const id of ids) {
+    const u = await db.utterances.get(id);
+    if (!u?.audio || isStoredAudio(u.audio)) continue;
+    let audio;
+    try {
+      audio = await storeAudio(u.audio);
+    } catch (error) {
+      queueError(error, u, 'migrate');
+      const waiting = u.transcript === undefined && u.status !== 'done';
+      await db.utterances
+        .update(id, {
+          audio: undefined,
+          ...(waiting && { status: 'failed', error: 'Opname niet meer te lezen' }),
+        })
+        .catch((error) => queueError(error, u, 'migrate'));
+      continue;
+    }
+    await db.utterances.update(id, { audio }).catch((error) => queueError(error, u, 'migrate'));
   }
 }
 
@@ -417,7 +470,7 @@ async function finishWithout(
 
 /** Zet de opname om in tekst en slaat het transcript op. */
 async function transcribeUtterance(utterance: Utterance): Promise<Utterance> {
-  const { text, confidence, timing } = await transcribe(utterance.audio!, {
+  const { text, confidence, timing } = await transcribe(audioBlob(utterance.audio!), {
     sessionId: utterance.sessionId,
   });
   const changes = {

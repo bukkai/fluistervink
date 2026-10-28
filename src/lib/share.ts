@@ -1,5 +1,5 @@
 import { getTester, putShared } from './api';
-import { db, type Utterance } from './db';
+import { audioBlob, audioSize, db, type Utterance } from './db';
 import { NO_SESSION } from './devNotes';
 import { APP_VERSION, CHANNEL, logEvent } from './log';
 
@@ -119,7 +119,7 @@ async function snapshot(sessionId: string) {
     sessions: [session],
     utterances: utterances.map(({ audio, ...u }: Utterance) => ({
       ...u,
-      audioBytes: audio?.size,
+      audioBytes: audio && audioSize(audio),
       audioType: audio?.type,
     })),
     observations,
@@ -239,7 +239,7 @@ async function run(): Promise<ShareResult> {
         if (!u.audioBytes || audioSent.has(u.id)) continue;
         const audio = (await db.utterances.get(u.id))?.audio;
         if (!audio) continue;
-        await putShared(`audio/${u.id}`, audio);
+        await putShared(`audio/${u.id}`, audioBlob(audio));
         audioSent.add(u.id);
         sent.audio = [...audioSent];
         write(SENT_KEY, sent);

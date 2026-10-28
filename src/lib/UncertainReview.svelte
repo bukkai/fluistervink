@@ -1,6 +1,6 @@
 <script lang="ts">
   import { liveQuery } from 'dexie';
-  import type { Session } from './db';
+  import { audioBlob, type Session } from './db';
   import ObservationEditor from './ObservationEditor.svelte';
   import RarityMark from './RarityMark.svelte';
   import {
@@ -60,7 +60,7 @@
 
   /** Speelt de opname af waaruit deze waarneming kwam. */
   function play() {
-    const url = URL.createObjectURL(source!.audio!);
+    const url = URL.createObjectURL(audioBlob(source!.audio!));
     const audio = new Audio(url);
     audio.onended = () => URL.revokeObjectURL(url);
     audio.play();

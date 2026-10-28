@@ -1,12 +1,14 @@
 import type Anthropic from '@anthropic-ai/sdk';
+import { Blob as NodeBlob } from 'node:buffer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FakeLockManager, HOUTDUIF, KEEP, VINK, toolResponse } from '../test-helpers';
-import { db, type Observation, type Utterance } from './db';
+import { db, storeAudio, type Observation, type Utterance } from './db';
 import { interpret } from './interpret';
 import {
   STEAL_AFTER_MS,
   isAccidental,
   listObservations,
+  migrateAudio,
   processQueue,
   retry,
 } from './observations';
@@ -317,6 +319,67 @@ describe('wachtrij', () => {
     await processQueue();
     expect((await db.utterances.get(id))?.status).toBe('done');
   });
+
+  it('een uitspraak waarbij de database faalt, houdt de rest niet op', async () => {
+    // Zoals Safari met een Blob uit IndexedDB (28 okt)
+    model.respond = () => toolResponse(['add_observation', { species_id: VINK, count: 1 }]);
+    const broken = await queue('keep');
+    const next = await queue('vink');
+    const update = db.utterances.update.bind(db.utterances);
+    const spy = vi.spyOn(db.utterances, 'update').mockImplementation((id, changes) => {
+      if (id === broken) throw new Error('Error preparing Blob/File data');
+      return update(id, changes);
+    });
+    try {
+      await processQueue();
+    } finally {
+      spy.mockRestore();
+    }
+    expect((await db.utterances.get(broken))?.status).toBe('pending');
+    expect((await db.utterances.get(next))?.status).toBe('done');
+  });
+});
+
+describe('opnames van vóór 28 okt (Blob)', () => {
+  // De Blob van happy-dom overleeft fake-indexeddb niet, die van Node wel
+  async function legacy(fields: Partial<Utterance> = {}): Promise<string> {
+    const id = crypto.randomUUID();
+    await db.utterances.add({
+      id,
+      sessionId: SESSION,
+      recordedAt: (clock += 60_000),
+      audio: new NodeBlob(['opus'], { type: 'audio/webm' }) as Blob,
+      status: 'done',
+      transcript: 'vink',
+      ...fields,
+    });
+    return id;
+  }
+
+  it('zet ze om naar bytes met het formaat', async () => {
+    const id = await legacy();
+    await migrateAudio();
+    const audio = (await db.utterances.get(id))?.audio;
+    expect(audio).toMatchObject({ type: 'audio/webm' });
+    expect(new TextDecoder().decode((audio as { data: ArrayBuffer }).data)).toBe('opus');
+  });
+
+  it('een onleesbare opname gaat eruit; een wachtende uitspraak mislukt', async () => {
+    const done = await legacy();
+    const waiting = await legacy({ status: 'processing', transcript: undefined });
+    const read = vi
+      .spyOn(NodeBlob.prototype, 'arrayBuffer')
+      .mockRejectedValue(new Error('NotReadable'));
+    try {
+      await migrateAudio();
+    } finally {
+      read.mockRestore();
+    }
+    const [a, b] = await Promise.all([db.utterances.get(done), db.utterances.get(waiting)]);
+    expect(a).toMatchObject({ status: 'done' });
+    expect(b).toMatchObject({ status: 'failed', error: 'Opname niet meer te lezen' });
+    expect([a?.audio, b?.audio]).toEqual([undefined, undefined]);
+  });
 });
 
 describe('netwerk weg', () => {
@@ -360,7 +423,7 @@ describe('netwerk weg', () => {
       id,
       sessionId: SESSION,
       recordedAt: clock,
-      audio,
+      audio: await storeAudio(audio),
       audioDurationMs: 2_000,
       status: 'pending',
     });

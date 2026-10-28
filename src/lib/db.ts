@@ -69,8 +69,11 @@ export interface Utterance {
    * Leeg = nog niet opgezocht; null = opgezocht, maar geen gebied gevonden.
    */
   area?: Area | null;
-  /** Opname bij een ingesproken uitspraak; leeg bij getypte invoer */
-  audio?: Blob;
+  /**
+   * Opname bij een ingesproken uitspraak; leeg bij getypte invoer. Een Blob
+   * alleen bij opnames van vóór 28 okt, tot `migrateAudio` ze omzet.
+   */
+  audio?: StoredAudio | Blob;
   audioDurationMs?: number;
   /** Bij een opname leeg tot de spraakherkenning klaar is */
   transcript?: string;
@@ -212,6 +215,35 @@ export interface DeletedObservation extends Observation {
 }
 
 // Let op: een andere databasenaam betekent een lege database.
+/**
+ * Opname zoals hij in de database staat: de bytes en het formaat, geen Blob.
+ * Safari (iPhone) kan een record met een Blob die uit IndexedDB komt niet
+ * opnieuw wegschrijven ("Error preparing Blob/File data"), en elke
+ * statuswijziging schrijft het hele record. Zo bleef bij een tester de
+ * wachtrij weken hangen (28 okt). Met een ArrayBuffer speelt dat niet.
+ */
+export interface StoredAudio {
+  data: ArrayBuffer;
+  type: string;
+}
+
+export async function storeAudio(blob: Blob): Promise<StoredAudio> {
+  return { data: await blob.arrayBuffer(), type: blob.type };
+}
+
+export function isStoredAudio(audio: StoredAudio | Blob): audio is StoredAudio {
+  return 'data' in audio;
+}
+
+/** De opname als Blob, om te versturen of af te spelen. */
+export function audioBlob(audio: StoredAudio | Blob): Blob {
+  return isStoredAudio(audio) ? new Blob([audio.data], { type: audio.type }) : audio;
+}
+
+export function audioSize(audio: StoredAudio | Blob): number {
+  return isStoredAudio(audio) ? audio.data.byteLength : audio.size;
+}
+
 export const db = new Dexie('fluistervink') as Dexie & {
   sessions: EntityTable<Session, 'id'>;
   utterances: EntityTable<Utterance, 'id'>;

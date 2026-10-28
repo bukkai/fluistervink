@@ -1,9 +1,12 @@
 import {
+  audioBlob,
+  audioSize,
   db,
   type DeletedObservation,
   type Observation,
   type Position,
   type Session,
+  type StoredAudio,
   type Utterance,
 } from './db';
 import { getTester, type Area } from './api';
@@ -26,10 +29,10 @@ function toDataUrl(blob: Blob): Promise<string> {
 }
 
 /** Terug naar een opname, met precies het formaat van de data-URL */
-function fromDataUrl(url: string): Blob {
+function fromDataUrl(url: string): StoredAudio {
   const [head, data] = url.split(',');
   const type = head.replace(/^data:/, '').replace(/;base64$/, '');
-  return new Blob([Uint8Array.from(atob(data), (c) => c.charCodeAt(0))], { type });
+  return { data: Uint8Array.from(atob(data), (c) => c.charCodeAt(0)).buffer, type };
 }
 
 export async function exportAllJson({ withAudio = false } = {}): Promise<Blob> {
@@ -50,8 +53,8 @@ export async function exportAllJson({ withAudio = false } = {}): Promise<Blob> {
     utterances: await Promise.all(
       utterances.map(async ({ audio, ...u }) => ({
         ...u,
-        audioBytes: audio?.size,
-        audioData: withAudio && audio ? await toDataUrl(audio) : undefined,
+        audioBytes: audio && audioSize(audio),
+        audioData: withAudio && audio ? await toDataUrl(audioBlob(audio)) : undefined,
       })),
     ),
     observations,
