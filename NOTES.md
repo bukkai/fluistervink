@@ -55,6 +55,8 @@ PR #112: beta blijft op workers.dev (branch `main`), stabiel op `fluistervink.nl
 
 PR #113: `docs/kwaliteitsronde.md` (direct na een release naar stable een ronde op de beta, met logboek), `npm run release` toont de laatste ronde en vraagt eerst, Dependabot (`.github/dependabot.yml`; meldingen en beveiligingsupdates in de repo aangezet), `npm audit --omit=dev` in de check. Eerste ronde gedaan op 24 okt (logboek in `docs/kwaliteitsronde.md`): PR's #121 (snelheidslimiet proxy, Content-Type), #122 (validatie aantallen), #123 (contrast, `#privacy`). Dependabot opende meteen #118 (@types/node), #119 (TypeScript 7, faalt) en #120 (happy-dom, het hoge lek). Open voorstel: Inspreken-knop lager, in de duimzone (andere indeling, eerst overleggen).
 
+Tweede ronde op 28 okt, direct na de release (stable bijgewerkt, tag v0.2), vanaf `1f14481`: PR's #143 (snelheidslimiet op het delen), #144 (dependencies, Capacitor 8.6; debug-APK `apk/fluistervink-0.439-beta.apk`), #145 (bevindingen code-review: unieke installatienamen, audiomigratie), #146 (`#privacy` en `#uitleg`). Wat bleef liggen staat in het logboek. Nog open uit eerdere rondes: opvolger van `gpt-4o-transcribe` ("Deprecated") uitzoeken met de testset.
+
 ## Open punten
 
 - **App hing op het laadscherm na een deploy** (14 okt): de service worker had een oude `index.html` naast nieuwe JavaScript in zijn cache (deploy tijdens het openen). Op de telefoon hersteld via de WebView-devtools (adb, `webview_devtools_remote_<pid>`); PR #97 herstelt het voortaan zelf (`public/herstel.js`, log `cache_recovered`). Workers Builds heeft nu build watch paths: `*.md` en `docs/*` deployen niet meer.
