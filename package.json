@@ -41,7 +41,7 @@
     "wrangler": "^4.151.3"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.137.0",
+    "@anthropic-ai/sdk": "^1.1.0",
     "@capacitor/android": "8.5.3",
     "@capacitor/core": "8.5.3",
     "dexie": "^4.4.7",
