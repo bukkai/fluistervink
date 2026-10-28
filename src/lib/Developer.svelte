@@ -26,6 +26,8 @@
   } from './costs';
   import { db } from './db';
   import { exportAllJson, importJson, saveFile } from './export';
+  import { inviteMail, inviteMailto, PLAY_TEST_LINKS } from './invite';
+  import { CHANNEL } from './log';
 
   let testers = $state<Tester[]>();
   let testersError = $state('');
@@ -178,7 +180,14 @@
     try {
       const tester = await addTester(name.trim());
       const link = inviteLink(tester.code);
-      invited = { name: tester.name, link, mailto: mailto(email.trim(), tester.name, link) };
+      invited = {
+        name: tester.name,
+        link,
+        mailto: inviteMailto(
+          email.trim(),
+          inviteMail(tester.name, link, tester.code, PLAY_TEST_LINKS[CHANNEL]),
+        ),
+      };
       name = '';
       email = '';
       await loadTesters();
@@ -187,25 +196,6 @@
     } finally {
       inviting = false;
     }
-  }
-
-  function mailto(to: string, name: string, link: string): string {
-    const greeting = name.charAt(0).toUpperCase() + name.slice(1);
-    const body = [
-      `Hoi ${greeting},`,
-      '',
-      'Wil je Fluistervink testen? Met deze app spreek je tijdens het vogelen je waarnemingen in, en thuis loop je ze na en zet je ze op waarneming.nl.',
-      '',
-      'Open deze link op je telefoon, op Android in Chrome en op een iPhone in Safari:',
-      link,
-      '',
-      'De link is persoonlijk, dus stuur hem niet door. Daarna kun je de app op je beginscherm zetten: in Chrome via het menu, "Toevoegen aan startscherm", in Safari via de deelknop, "Zet op beginscherm". Op een iPhone trilt de app niet; kijk dan even op het scherm of je waarneming erbij staat. In de app staat onder "Hoe werkt het?" hoe je waarnemingen inspreekt.',
-      '',
-      'Groet,',
-    ].join('\n');
-    const params = new URLSearchParams({ subject: 'Uitnodiging: Fluistervink testen', body });
-    // URLSearchParams maakt van spaties een +, wat mail-apps letterlijk tonen
-    return `mailto:${encodeURIComponent(to)}?${params.toString().replace(/\+/g, '%20')}`;
   }
 
   let copied = $state('');
@@ -382,6 +372,12 @@
       De naam komt in de feedback en de logs; het e-mailadres wordt nergens bewaard. De mail gaat
       vanaf je eigen adres.
     </p>
+    {#if PLAY_TEST_LINKS[CHANNEL]}
+      <p class="hint">
+        Android: zet het Google-account van de tester eerst op de testerslijst in de Play Console;
+        anders werkt de link voor deelname niet.
+      </p>
+    {/if}
   </form>
 </section>
 
