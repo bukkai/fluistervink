@@ -24,7 +24,7 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 
 Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de app installeren, een hele wandeling gebruiken zonder naar het scherm te kijken, en thuis zonder gedoe naar waarneming.nl exporteren.
 
-**Besloten (13 okt): v1.0 voorlopig voor een besloten kring**, met toegangscodes zoals nu. Openbaar in de Play Store zou betekenen: bepalen wie de API-kosten betaalt (tegoed per gebruiker, eigen sleutel, limiet) en misbruik afvangen; dat komt pas later aan de orde. Uitgewerkt in `docs/plan-laagdrempelig.md` (28 okt, voorstel): totaalplafond in de proxy, anonieme installaties met Play Integrity/Turnstile, daarna de code uit de app.
+**Besloten (13 okt): v1.0 voorlopig voor een besloten kring**, met toegangscodes zoals nu. Openbaar in de Play Store zou betekenen: bepalen wie de API-kosten betaalt (tegoed per gebruiker, eigen sleutel, limiet) en misbruik afvangen; dat komt pas later aan de orde. Uitgewerkt in `docs/plan-laagdrempelig.md` (28 okt, goedgekeurd): de eigenaar betaalt, plafond en daglimiet in de consoles van OpenAI en Anthropic, ook de PWA zonder code. **Gebouwd in PR #142** (aanmelden zonder code met Play Integrity/Turnstile, code optioneel); na het mergen nog instellen (geheimen, Turnstile-widget, Play Integrity, nieuwe app-versie), zie het plan onder Instellen. **v0.1-release mislukte (28 okt)**: Dependabot zette Gradle op 9.8.2 (#115), dat werkt niet met AGP 8.13; PR #141 zet hem terug op 8.14.3, daarna opnieuw taggen.
 
 1. **Veldgebruik afmaken met de native laag (Capacitor), de kern van v1.0:**
    - Trillen op de achtergrond en met het scherm uit (grootste ergernis van de eerste wandeling).
