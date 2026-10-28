@@ -64,13 +64,13 @@ PR #113: `docs/kwaliteitsronde.md` (direct na een release naar stable een ronde 
 - **STT gaf één keer zelf antwoord** in plaats van te transcriberen ("Sorry, ik kan niet voldoen aan het verzoek …", 11 okt) en liet daarbij het woord "feedback" weg. Onschuldig, maar in de gaten houden.
 - Cloudflare-previews: vermoedelijk onthoudt Cloudflare het deploy-commando per branch vanaf de eerste build. Bij problemen: nieuwe branch maken.
 - Een branch-regel op `main` met verplichte check kan niet: GitHub biedt dat niet voor privérepo's zonder Pro. De check draait wel bij elke PR.
+- **`gpt-4o-transcribe` "Deprecated"** (gezien op 24 okt op de modelpagina van OpenAI): opvolger uitzoeken en met de testset vergelijken voordat het model verdwijnt.
 
 ## Ideeën voor later
 
 Nog niet gepland; eerst overleggen.
 
 - **Back-up / nieuwe telefoon** (24 okt op de lange baan: twijfel of mensen het gebruiken; eerst invoeren makkelijker maken): alles staat lokaal. Voorstel was een kaart "Back-up" in Instellingen die `exportAllJson` (met opnames) en `importJson` hergebruikt, met de datum van de laatste back-up. Automatisch via de proxy of naar Drive via het deelmenu (native plugin) pas daarna.
-- **Twee omgevingen**: uitgewerkt in PR #112 (zie boven).
 - **Inzenden via de API van waarneming.nl** — op de lange baan (13 okt): toegang is niet vanzelfsprekend; pas aanvragen als blijkt dat er interesse in de app is (meer gebruikers = sterkere aanvraag). Tot die tijd de gebundelde CSV-export. (Uitgezocht 13 okt; de officiële documentatie op `waarneming.nl/api/docs/*.md` gaf ons een 403, dus gecontroleerd in de TypeScript-client [observation-js](https://github.com/robbeverhelst/observation-js); nog na te lopen in de documentatie, ingelogd):
   - De API kan wel waarnemingen invoeren (niet via het importformulier). `POST /api/v1/observations/create/` ("one-way sync") neemt een lijst waarnemingen en geeft per waarneming de URL of de fouten; een fout houdt de rest niet tegen; `external_id` voorkomt dubbel invoeren (bestaande wordt bijgewerkt). `create-single/` is voor één waarneming met foto's/geluid.
   - Velden passen op wat we bewaren: `species` (ID), `date`, `time`, `point` (GeoJSON of WKT), `accuracy`, `number`, `sex`, `activity`, `life_stage`, `method`, `counting_method`, `is_certain`, `notes`, `uuid`.
@@ -78,11 +78,6 @@ Nog niet gepland; eerst overleggen.
   - Eerst een client-ID aanvragen via het contactformulier (concept in de sessie van 13 okt: app, nalopen vóór inzenden, vaste soortenlijst, 88% goed; vragen: inlogmethode, client secret, testaccount op waarneming-test.nl, `create/` met `external_id` en welke scope, redirect-URL). Daarna: account koppelen bij Instellingen, route `/api/waarneming` in de proxy (CORS, secret), knop "Inzenden" voor de klaarstaande wandelingen, ID/link van waarneming.nl bewaren, `#privacy` en `#uitleg` bijwerken.
 - **Soortenstatistieken over alle gebruikers:** tellen per soort-ID wat het model koos, wat met de hand gecorrigeerd werd en wat het niet kon plaatsen, om de soortenlijst, bijnamen en STT-prompt bij te stellen. Kan in de proxy (Analytics Engine of D1); alleen geaggregeerd, en op `#privacy` vermelden. Pas relevant bij meer gebruikers; tot die tijd geeft de testset hetzelfde beeld.
 - Foto koppelen aan een waarneming via tijd en locatie.
-- **Kostenoverzicht op Developer** (idee eigenaar, 24 okt): wat kosten OpenAI en Anthropic, totaal, per tester en per wandeling.
-  1. **Zelf tellen:** gebouwd in PR #133 (24 okt). De proxy telt de tokens (bij `whisper-1` seconden) per dag, tester, omgeving, wandeling en model in D1 (`fluistervink-usage`). De kaart Kosten op Developer rekent dat met de prijstabel in `src/lib/costs.ts` om naar dollars. Er wordt pas geteld vanaf de merge; oudere wandelingen staan er niet in.
-  2. **De echte rekening:** gebouwd in PR #134 (24 okt). De proxy haalt de rekening van deze maand per dag op (`/api/billing`, `worker/billing.ts`: Costs API van OpenAI, Cost API van Anthropic) en bewaart hem een uur in KV. Op de kaart Kosten staat per aanbieder "geteld" naast "rekening", vergeleken vanaf de eerste getelde dag van de maand. Beheersleutels `OPENAI_ADMIN_KEY` en `ANTHROPIC_ADMIN_KEY` zijn gezet (beta en stable; de eerste Anthropic-sleutel is ingetrokken omdat hij in een chat stond). Na de merge nakijken of beide bedragen verschijnen; de eerste dag (24 okt) is maar half geteld, dus daar wijkt het af.
-  - Later eventueel: een waarschuwing boven een zelf gekozen maandbedrag, een limiet per tester (bij een openbare release) en hoe dicht we bij de limieten van Cloudflare zitten.
-  - Opgemerkt op 24 okt: de modelpagina van OpenAI noemt `gpt-4o-transcribe` "Deprecated".
 
 ## Android-app
 
