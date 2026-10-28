@@ -36,6 +36,25 @@ export interface InstallRecord {
   /** Hoe de app bewees dat hij echt is */
   via: 'play' | 'turnstile';
   blocked?: boolean;
+  /** Naam die de gebruiker zelf opgaf (Instellingen), zodat de eigenaar weet wie het is */
+  displayName?: string;
+}
+
+/** Een opgegeven naam: hooguit 40 tekens, geen stuurtekens. */
+const DISPLAY_NAME = /^[^\p{C}]{1,40}$/u;
+
+/** De opgegeven naam, opgeschoond; '' om hem weg te halen; null als hij niet mag. */
+export function cleanDisplayName(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const name = value.trim().replace(/\s+/g, ' ');
+  return name === '' || DISPLAY_NAME.test(name) ? name : null;
+}
+
+/** Het id uit het token in de Authorization-header, als dat een geldig token is. */
+export async function installIdFrom(request: Request, secret: string): Promise<string | null> {
+  const header = request.headers.get('Authorization') ?? '';
+  const token = header.startsWith('Bearer ') ? header.slice(7) : '';
+  return isInstallToken(token) ? verifyInstallToken(token, secret) : null;
 }
 
 /** Naam van een installatie, zoals een testernaam: "app-3f9a2b1c". */

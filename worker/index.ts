@@ -2,8 +2,10 @@ import Anthropic from '@anthropic-ai/sdk';
 import { devNoteText } from '../src/lib/devNotePrefix';
 import { bill, type BillingKeys } from './billing';
 import {
+  cleanDisplayName,
   getInstall,
   INSTALL_ID,
+  installIdFrom,
   installName,
   isInstallToken,
   listInstalls,
@@ -126,6 +128,9 @@ export default {
       if (pathname.startsWith('/api/feedback/')) {
         return await feedback(request, env, tester);
       }
+      if (pathname === '/api/install/name' && request.method === 'PUT') {
+        return await setDisplayName(request, env);
+      }
       if (pathname === '/api/testers') {
         return await testers(request, env, tester);
       }
@@ -197,6 +202,23 @@ async function install(request: Request, env: WorkerEnv): Promise<Response> {
   }
   console.log({ tester: name, path: '/api/install', via });
   return json({ token: await signInstallToken(id, env.INSTALL_SECRET), tester: name });
+}
+
+/**
+ * PUT /api/install/name  { name }: de naam die de gebruiker bij Instellingen
+ * opgaf, bij zijn installatie. Leeg haalt hem weg. Alleen voor installaties;
+ * een tester met code heeft al een naam.
+ */
+async function setDisplayName(request: Request, env: WorkerEnv): Promise<Response> {
+  const id = env.INSTALL_SECRET ? await installIdFrom(request, env.INSTALL_SECRET) : null;
+  if (!id) return json({ error: 'Alleen voor een installatie zonder code' }, 403);
+  const { name } = (await request.json().catch(() => ({}))) as { name?: unknown };
+  const displayName = cleanDisplayName(name);
+  if (displayName === null) return json({ error: 'Hooguit 40 tekens' }, 400);
+  const record = await getInstall(env.TESTERS, id);
+  if (!record) return json({ error: 'Niet gevonden' }, 404);
+  await putInstall(env.TESTERS, id, { ...record, displayName: displayName || undefined });
+  return json({ ok: true, displayName });
 }
 
 /** Telt het verbruik van één verzoek aan OpenAI of Anthropic. */
@@ -648,12 +670,13 @@ async function testers(request: Request, env: WorkerEnv, tester: string): Promis
       invitedAt,
     }));
     const fromInstall = (await listInstalls(env.TESTERS)).map(
-      ({ name, registeredAt, via, blocked }) => ({
+      ({ name, registeredAt, via, blocked, displayName }) => ({
         name,
         source: 'install' as const,
         invitedAt: registeredAt,
         via,
         blocked: blocked || undefined,
+        displayName,
       }),
     );
     const usage = await testerUsage(env);

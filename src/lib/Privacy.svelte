@@ -91,7 +91,9 @@
         browser achter zit (in de Android-app alleen als Google Play het niet bevestigt). Turnstile
         kijkt daarvoor onder andere naar je IP-adres en browser, volgens Cloudflare alleen om robots
         tegen te houden en niet om je te volgen. Daarna krijgt de app een willekeurige naam (zoals
-        "app-3f9a2b1c"), zonder iets wat naar jou verwijst.
+        "app-3f9a2b1c"), zonder iets wat naar jou verwijst. Vul je bij
+        <a href="#instellingen">Instellingen</a> je naam in (niet verplicht), dan staat die erbij, zodat
+        de ontwikkelaar weet van wie gebruik en feedback komen.
       </dd>
     </dl>
   </div>

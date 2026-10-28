@@ -285,6 +285,31 @@ describe('/api/install (aanmelden zonder code)', () => {
     expect((await register({ id: ID, turnstile: 'goed' })).status).toBe(403);
   });
 
+  it('bewaart een opgegeven naam bij de installatie', async () => {
+    turnstileAnswers();
+    const { token } = (await (await register({ id: ID, turnstile: 'goed' })).json()) as {
+      token: string;
+    };
+    const setName = (name: unknown, code: string = token) =>
+      call('/api/install/name', { code, method: 'PUT', body: JSON.stringify({ name }) });
+    expect((await setName('  Anna   de Vries ')).status).toBe(200);
+    const list = async () =>
+      (
+        (await (await call('/api/testers', { code: OWNER_CODE })).json()) as {
+          testers: { name: string; displayName?: string }[];
+        }
+      ).testers.find((t) => t.name === 'app-3f9a2b1c');
+    expect((await list())?.displayName).toBe('Anna de Vries');
+
+    expect((await setName('x'.repeat(41))).status).toBe(400);
+    expect((await setName('nee\u0000')).status).toBe(400);
+    // Een tester met code heeft al een naam
+    expect((await setName('Piet', ANNA_CODE)).status).toBe(403);
+
+    expect((await setName('')).status).toBe(200);
+    expect((await list())?.displayName).toBeUndefined();
+  });
+
   it('geeft een installatie geen toegang tot beheer', async () => {
     turnstileAnswers();
     const { token } = (await (await register({ id: ID, turnstile: 'goed' })).json()) as {

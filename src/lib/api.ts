@@ -30,6 +30,27 @@ export function getTester(): string | undefined {
   return localStorage.getItem(TESTER_KEY) ?? undefined;
 }
 
+const DISPLAY_NAME_KEY = 'fluistervink.displayName';
+
+/** Naam die de gebruiker zelf opgaf (Instellingen, alleen zonder code), of ''. */
+export function getDisplayName(): string {
+  return localStorage.getItem(DISPLAY_NAME_KEY) ?? '';
+}
+
+/**
+ * Geeft de proxy de eigen naam van deze installatie, zodat de ontwikkelaar
+ * weet van wie gebruik en feedback komen. Leeg haalt hem weg.
+ */
+export async function setDisplayName(name: string): Promise<void> {
+  const { displayName } = await request<{ displayName: string }>('/api/install/name', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+  if (displayName) localStorage.setItem(DISPLAY_NAME_KEY, displayName);
+  else localStorage.removeItem(DISPLAY_NAME_KEY);
+}
+
 const INVITE_KEY = 'fluistervink.invite';
 
 /**
@@ -252,6 +273,8 @@ export interface Tester {
   /** Hoe een installatie bewees dat hij echt is */
   via?: 'play' | 'turnstile';
   blocked?: boolean;
+  /** Naam die een installatie zelf opgaf */
+  displayName?: string;
   /** Wat de tester gedeeld heeft; leeg als er (nog) niets gedeeld is */
   usage?: {
     walks: number;
