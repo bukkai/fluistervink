@@ -87,7 +87,7 @@ Zonder deze instellingen staat aanmelden zonder code uit: wie een code heeft, me
    - Play Console → Test en release → App-integriteit → Play Integrity API: een Google Cloud-project koppelen (of laten aanmaken).
    - In dat Cloud-project: de Play Integrity API aanzetten; onder IAM → Serviceaccounts een serviceaccount maken en daarvan een JSON-sleutel downloaden.
    - `npx wrangler secret put PLAY_SERVICE_ACCOUNT < sleutel.json`, daarna het bestand weggooien.
-   - Het projectnummer (Cloud-dashboard, "Project number") in `wrangler.jsonc` bij `PLAY_PROJECT_NUMBER`.
+   - Het projectnummer (12 cijfers, Cloud-dashboard, "Project number"; niet de "Unieke ID" van 21 cijfers van het serviceaccount) mag in `wrangler.jsonc` bij `PLAY_PROJECT_NUMBER`, maar is niet nodig: voor een app uit Play gebruikt Google het gekoppelde project. Een verkeerd nummer laat Play Integrity mislukken (dan valt de app terug op Turnstile).
    - Een nieuwe app-versie (tag `v0.*`): de plugin zit in de native code. Een debug-APK krijgt van Google geen goedkeuring en gebruikt Turnstile.
    - Play Console → App-inhoud → Gegevensveiligheid nalopen (installatie-id naar Google voor de controle).
 4. **Lokaal** (`.dev.vars`): de testsleutels van Turnstile die altijd slagen, site key `1x00000000000000000000AA` en secret `1x0000000000000000000000000000000AA`, plus een willekeurig `INSTALL_SECRET`.

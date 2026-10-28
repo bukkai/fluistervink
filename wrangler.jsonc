@@ -48,7 +48,7 @@
     "CHANNEL": "beta",
     "OPENAI_PROJECT_ID": "proj_CvUygMTZvZOPx4zIo446b4EQ",
     "ANTHROPIC_WORKSPACE_ID": "wrkspc_01LXLhkhjpBw2JuKbtJpVKAW",
-    "TURNSTILE_SITE_KEY": "",
+    "TURNSTILE_SITE_KEY": "0x4AAAAAAFqFUoFgcw_Rkpjc",
     "PLAY_PROJECT_NUMBER": "",
   },
   // Snelheidslimiet op spraakherkenning en model, per tester (zie worker/index.ts):
@@ -100,7 +100,7 @@
         "CHANNEL": "stable",
         "OPENAI_PROJECT_ID": "proj_CvUygMTZvZOPx4zIo446b4EQ",
         "ANTHROPIC_WORKSPACE_ID": "wrkspc_01LXLhkhjpBw2JuKbtJpVKAW",
-        "TURNSTILE_SITE_KEY": "",
+        "TURNSTILE_SITE_KEY": "0x4AAAAAAFqFUoFgcw_Rkpjc",
         "PLAY_PROJECT_NUMBER": "",
       },
       "ratelimits": [
