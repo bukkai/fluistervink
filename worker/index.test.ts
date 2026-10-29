@@ -181,6 +181,20 @@ describe('toegangscode', () => {
     expect(limited.counts.has('eigenaar')).toBe(false);
   });
 
+  it('begrenst ook het delen, met een eigen teller', async () => {
+    limited.max = 0;
+    const put = await call('/api/feedback/sessions/abc', { method: 'PUT', body: '{"a":1}' });
+    expect(put.status).toBe(429);
+    expect(limited.counts.get('share:anna')).toBe(1);
+    expect(await kv.get('anna/sessions/abc')).toBeNull();
+    const owner = await call('/api/feedback/sessions/abc', {
+      code: OWNER_CODE,
+      method: 'PUT',
+      body: '{"a":1}',
+    });
+    expect(owner.status).toBe(200);
+  });
+
   it('telt andere verzoeken niet mee voor de limiet', async () => {
     limited.max = 0;
     expect((await call('/api/ping')).status).toBe(200);
