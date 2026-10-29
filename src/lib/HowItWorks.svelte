@@ -83,7 +83,7 @@
         Er ging iets mis, bijvoorbeeld geen bereik. De opname is bewaard en gaat niet verloren, maar
         wordt niet vanzelf opnieuw verwerkt: tik later, als je weer bereik hebt, bij de wandeling
         onder "Uitspraken" op "Opnieuw". Bij heel slecht bereik kan deze tril tot een halve minuut
-        op zich laten wachten.
+        op zich laten wachten, na een lange opname tot een minuut.
       </dd>
     </dl>
     {#if isNativeApp}

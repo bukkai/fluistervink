@@ -111,8 +111,8 @@
     <p>
       Het staat bij Cloudflare onder je testernaam, of zonder code onder de willekeurige naam van je
       installatie. Alleen de ontwikkelaar kan het lezen, en gebruikt het alleen om de herkenning en
-      de app te verbeteren. Niet doorgeven, niet publiceren. Wil je dat het weg is, vraag het aan
-      wie je heeft uitgenodigd (of stuur het als feedback in de app): dan wordt alles van jou
+      de app te verbeteren. Niet doorgeven, niet publiceren. Wil je dat het weg is, stuur dat als
+      feedback in de app (of vraag het aan wie je heeft uitgenodigd): dan wordt alles van jou
       gewist.
     </p>
   </div>
@@ -130,7 +130,10 @@
           >Vorige wandelingen</a
         >. Dat is echt weg.
       </li>
-      <li>Een kopie van al je gegevens: vraag het aan wie je heeft uitgenodigd.</li>
+      <li>
+        Een kopie van wat je gedeeld hebt: vraag het als feedback in de app (of aan wie je heeft
+        uitgenodigd).
+      </li>
       <li>
         Alles wissen: de app verwijderen, of in Chrome de sitegegevens van Fluistervink wissen.
       </li>
@@ -142,7 +145,7 @@
 </section>
 
 <p class="sources">
-  Bronnen, nagekeken op 11 oktober 2026:
+  Bronnen, nagekeken op 28 oktober 2026:
   <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noopener"
     >OpenAI</a
   >,
@@ -160,7 +163,7 @@
     href="https://developers.cloudflare.com/workers/observability/logs/workers-logs/"
     target="_blank"
     rel="noopener">Cloudflare</a
-  >; op 28 oktober 2026:
+  >,
   <a href="https://www.cloudflare.com/turnstile-privacy-policy/" target="_blank" rel="noopener"
     >Turnstile</a
   >,
