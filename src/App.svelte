@@ -347,7 +347,7 @@
           <button class="link" onclick={() => (stale = undefined)}>Oké</button>
         </p>
       {/if}
-      {#if askShare}
+      {#if askShare && !installProblem}
         <div class="consent card">
           <strong>Delen met de ontwikkelaar?</strong>
           <p>

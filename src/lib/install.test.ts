@@ -71,6 +71,26 @@ describe('aanmelden zonder code', () => {
     expect(ids[0]).toBe(ids[1]);
   });
 
+  it('kiest een nieuw id als de naam al bestaat (409)', async () => {
+    const fetch = vi.mocked(globalThis.fetch);
+    const answer = fetch.getMockImplementation()!;
+    let first = true;
+    fetch.mockImplementation(async (url, init) => {
+      if (url === '/api/install' && init?.method === 'POST' && first) {
+        first = false;
+        requests.push({ url, method: 'POST', auth: null, body: JSON.parse(String(init.body)) });
+        return Response.json({ error: 'Id al in gebruik' }, { status: 409 });
+      }
+      return answer(url, init);
+    });
+    expect(await ping()).toBe('app-3f9a2b1c');
+    const ids = requests
+      .filter((r) => r.method === 'POST')
+      .map((r) => (r.body as { id: string }).id);
+    expect(ids).toHaveLength(2);
+    expect(ids[0]).not.toBe(ids[1]);
+  });
+
   it('gebruikt een toegangscode als die er is', async () => {
     setAccessCode('code-van-anna');
     expect(await ping()).toBe('anna');
