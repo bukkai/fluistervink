@@ -20,6 +20,16 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
    - **STT-prompt blijft zoals hij is** (proef 24 okt, 153 opnames, elke variant drie keer): korte lijst, eigen soorten vooraan (eerlijk getest: lijst uit de wandelingen tot 16 okt, gemeten vanaf 17 okt), andere voorbeeldzinnen en lijst achteraan zitten allemaal binnen de ruis (dezelfde prompt schommelt ±3 soorten per run; eigen lijst +1 op 114). Zonder soortenlijst duidelijk slechter (88,6% tegen 94%). De hardnekkige fouten zitten in de opname zelf, deels mogelijk een afgekapt begin (microfoon gaat pas aan na het drukken); eigenaar vindt het goed zo.
 4. Kosten per wandeling: staan op Developer zodra PR #133 gemerged is (zie Kostenoverzicht onder Ideeën voor later); niet meer apart in het testset-script.
 
+## Testers en feedback (6 nov)
+
+Feedback opgehaald op 6 nov: 8 testers en installaties met gedeelde wandelingen (Aafje, Jurian, Maarten, 5 installaties zonder code). Kosten sinds 27 okt: $1,14, ongeveer een halve cent per uitspraak. Geen nieuwe feedback in de app; wel een lijstje van **Jurian** per bericht (wandeling 4 nov, 70 uitspraken, hardlopend):
+
+- Verstaanfouten, alle in de spraakherkenning (het model deed het goed met wat het kreeg): meerkoet → "meeuw" (2×), koperwiek → "Boerenzwaluw", "4 wilde eenden en een winterkoning" → "Hier wilde een winterkoning" (eenden kwijt, terecht onzeker). "Eén werd twee" niet teruggevonden in de data; mogelijk "Twee meeuw." (opname terugluisteren).
+- Import mislukte ("seen" niet herkend): de site moest op Engels. **PR #149: export in het Nederlands** (namen tegen `/api/v1/lookups/` en de attributen-API gecontroleerd). Na het mergen één keer echt importeren met de site op NL; eigen site terug op NL zetten.
+- Toegezegd aan Jurian: knop om alleen de opnames te wissen (wandeling blijft), waarneming kopiëren in de review, locatie met de hand wijzigen (wijkt af van "locaties verslepen: later" in `CLAUDE.md`; daar bijwerken als het gebouwd wordt).
+- Nadenken, niet gepland: locatie met de stem ("in het kanaal", "100 m oost"), geluidsherkenning (BirdNET; Merlin kan het niet), wake word met de telefoon in de zak.
+- **`npm run testset` crasht** (`$state is not defined`: `src/lib/log.ts` laadt `instance.svelte.ts` in het script). Eerst repareren, dan Jurians opnames opnieuw door de spraakherkenning.
+
 ## Roadmap naar v1.0 (13 okt)
 
 Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de app installeren, een hele wandeling gebruiken zonder naar het scherm te kijken, en thuis zonder gedoe naar waarneming.nl exporteren.
