@@ -51,7 +51,7 @@ Doel: valideren dat herkenning en interpretatie in het veld goed genoeg werken.
 - Tijd en GPS bij start van de opname
 - Local-first opslag en sequentiële verwerking in IndexedDB
 - Trilfeedback
-- Overzichtslijst met eenvoudig bewerken (soort, aantal, gedrag, verwijderen)
+- Overzichtslijst met eenvoudig bewerken (soort, aantal, gedrag, verwijderen, kopiëren: een nieuwe waarneming met dezelfde tijd, plek en bron-uitspraak, `copyObservation`)
 - CSV-export voor de bulkimport van waarneming.nl
 - Kaart in de review van een wandeling (alleen bekijken): waar is wat gezien (Leaflet + OpenStreetMap). Stippen die overlappen worden een bolletje met het aantal (`leaflet.markercluster`); tikken opent bij ≤ 5 waarnemingen een lijst, anders zoomt de kaart in
 - Proxy voor API-sleutels

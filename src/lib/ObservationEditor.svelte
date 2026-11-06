@@ -1,6 +1,6 @@
 <script lang="ts">
   import { audioBlob, type Observation, type Utterance } from './db';
-  import { deleteObservation, editObservation } from './observations';
+  import { copyObservation, deleteObservation, editObservation } from './observations';
   import type { Code } from './vocab';
   import {
     activities,
@@ -20,7 +20,14 @@
     observation,
     utterance,
     onclose,
-  }: { observation: Observation; utterance?: Utterance; onclose: () => void } = $props();
+    oncopy,
+  }: {
+    observation: Observation;
+    utterance?: Utterance;
+    onclose: () => void;
+    /** Zonder: geen knop Kopiëren (bv. bij het nalopen van de onzekere) */
+    oncopy?: (id: string) => void;
+  } = $props();
 
   // Kopie van de waarneming bij het openen; pas bij "Opslaan" naar de database
   // svelte-ignore state_referenced_locally
@@ -63,6 +70,16 @@
     // Geen bevestiging nodig: hij komt in "Verwijderd" en is terug te zetten
     await deleteObservation(original.id);
     onclose();
+  }
+
+  /**
+   * Nieuwe waarneming met dezelfde tijd, plek en velden, die meteen open gaat
+   * om aan te passen. Gekopieerd wordt de opgeslagen versie: wijzigingen die
+   * nog niet opgeslagen zijn, gaan niet mee.
+   */
+  async function copy() {
+    const id = await copyObservation(original.id);
+    if (id) oncopy?.(id);
   }
 
   /** Speelt de opname af waaruit deze waarneming kwam. */
@@ -168,7 +185,12 @@
   <div class="buttons">
     <button type="submit" class="btn" disabled={!valid}>Opslaan</button>
     <button type="button" class="btn secondary" onclick={onclose}>Annuleren</button>
-    <button type="button" class="link danger delete" onclick={remove}>Verwijderen</button>
+    <span class="more">
+      {#if oncopy}
+        <button type="button" class="link" onclick={copy}>Kopiëren</button>
+      {/if}
+      <button type="button" class="link danger" onclick={remove}>Verwijderen</button>
+    </span>
   </div>
 </form>
 
@@ -260,12 +282,16 @@
 
   .buttons {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem 0.5rem;
     margin-top: 0.25rem;
   }
 
-  .delete {
+  /* Samen naar rechts, of samen naar de volgende regel als het niet past */
+  .more {
+    display: flex;
+    gap: 1.25rem;
     margin-left: auto;
   }
 

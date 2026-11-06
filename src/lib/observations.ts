@@ -116,6 +116,28 @@ export async function editObservation(id: string, patch: Partial<Observation>): 
   await db.observations.update(id, { ...patch, editedAt: Date.now(), status: 'reviewed' });
 }
 
+/**
+ * Kopie van een waarneming, om er in de review een tweede van te maken ("4
+ * wilde eenden en een winterkoning" werd alleen een winterkoning). Zelfde
+ * tijd, locatie, bron-uitspraak en velden, maar een eigen id (gaat mee naar
+ * waarneming.nl), als concept en niet onzeker. Geeft het nieuwe id terug.
+ */
+export async function copyObservation(id: string): Promise<string | undefined> {
+  const original = await db.observations.get(id);
+  if (!original) return undefined;
+  const { editedAt: _edited, uncertainReason: _reason, skipExport: _skip, ...fields } = original;
+  const copy: Observation = {
+    ...fields,
+    id: crypto.randomUUID(),
+    // Later aangemaakt, dus in de lijst direct boven het origineel
+    createdAt: Math.max(Date.now(), original.createdAt + 1),
+    uncertain: false,
+    status: 'draft',
+  };
+  await db.observations.add(copy);
+  return copy.id;
+}
+
 /** Onzekere waarneming nagelopen en goed bevonden ("Klopt") */
 export async function confirmObservation(id: string): Promise<void> {
   await editObservation(id, { uncertain: false, uncertainReason: undefined });
