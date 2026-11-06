@@ -82,22 +82,19 @@ const species = toSpecies(all.filter(inPrompt));
 const ALL_TYPES = ['S', 'M', 'F', 'Y'];
 const allSpecies = toSpecies(all.filter((s) => inPrompt(s) || ALL_TYPES.includes(s.type)));
 
-// Ook de Engelse namen: de bulkimport van waarneming.nl herkent gedrag, methode
-// en kleed alleen aan de tekst in de taal van de site (zie docs/waarneming-nl.md).
+// De bulkimport van waarneming.nl herkent gedrag, methode en kleed alleen aan
+// de tekst in de taal van de site; de app exporteert deze Nederlandse namen
+// (zie docs/waarneming-nl.md).
 const attrs = await get(`/species-groups/${BIRDS}/attributes/`);
-const attrsEn = await get(`/species-groups/${BIRDS}/attributes/`, 'en');
-const pick = (list, listEn) =>
+const pick = (list) =>
   list
     .filter((x) => x.is_active !== false)
-    .map(({ id, text, name }) => {
-      const en = listEn.find((y) => y.id === id);
-      return { id, name: text ?? name, en: en?.text ?? en?.name };
-    });
+    .map(({ id, text, name }) => ({ id, name: text ?? name }));
 
 const attributes = {
-  activity: pick(attrs.activity, attrsEn.activity),
-  method: pick(attrs.method, attrsEn.method),
-  life_stage: pick(attrs.life_stage, attrsEn.life_stage),
+  activity: pick(attrs.activity),
+  method: pick(attrs.method),
+  life_stage: pick(attrs.life_stage),
 };
 
 await mkdir('data', { recursive: true });

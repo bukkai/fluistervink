@@ -23,14 +23,14 @@ Uitgezocht op 10 oktober 2026 (ingelogd). Waarneming.nl heeft een eigen **bulkim
 | `sex` | | `U`, `F`, `M` | `sex` |
 | `is certain` | | `True`/`False` | omgekeerde van `uncertain` |
 | `is escape` | | `True`/`False` | – |
-| `activity`, `life stage`, `method`, `counting method` | | **tekst in de taal van de site** ("flying over", "seen and heard", "real count") | Engelse naam van het ID |
+| `activity`, `life stage`, `method`, `counting method` | | **tekst in de taal van de site** ("overvliegend", "gezien en gehoord", "exact aantal") | Nederlandse naam van het ID |
 | `uuid` | | UUIDv4/v7; een uuid die al bestaat → import geweigerd | ID van de waarneming |
 | `related species`, `external reference`, `obscurity`, `embargo date`, `id` | | – | – |
 
 Gevolgen:
 
 - Gedrag, methode, kleed en telmethode komen netjes in de juiste velden, niet meer als tekst in een opmerking.
-- Die velden gaan op tekst, niet op ID, en in de taal waarop de site staat. De app exporteert Engels (`en` in `data/attributen-vogels.json`, opgehaald met `Accept-Language: en`; telmethode staat in `vocab.ts`). De site moet bij het importeren dus op Engels staan. De Engelse API-namen zijn gelijk aan die in de opzoektabel van het voorbeeldbestand.
+- Die velden gaan op tekst, niet op ID, en in de taal waarop de site staat. De app exporteert Nederlands (`name` in `data/attributen-vogels.json`; telmethode staat in `vocab.ts`, namen uit `/api/v1/lookups/`), de standaardtaal van waarneming.nl. Tot 6 nov exporteerde de app Engels en moest de site op Engels; een tester liep daarop vast ("seen" niet herkend), dus nu Nederlands. Staat de site op een andere taal, dan worden deze velden niet herkend.
 - Dankzij `uuid` kan dezelfde waarneming niet twee keer worden ingevoerd: de hele import wordt dan geweigerd.
 - Waarnemingen zonder positie kunnen niet mee (`lat`/`lng` verplicht).
 - `Location`/gebied is geen kolom: waarneming.nl bepaalt het gebied zelf uit de coördinaten.

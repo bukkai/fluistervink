@@ -7,6 +7,7 @@ import {
   allActivities,
   allLifeStages,
   allMethods,
+  codeName,
   countingMethods,
   getSpecies,
   type Code,
@@ -16,7 +17,8 @@ import { buildXlsx } from './xlsx';
 // Export van een wandeling voor de bulkimport van waarneming.nl
 // (https://waarneming.nl/import/observations/, zie docs/waarneming-nl.md).
 // Gedrag, methode, kleed en telmethode herkent de import alleen aan de tekst
-// in de taal van de site; wij exporteren in het Engels.
+// in de taal van de site; wij exporteren in het Nederlands, de standaardtaal
+// van waarneming.nl.
 
 export const IMPORT_URL = 'https://waarneming.nl/import/observations/';
 
@@ -207,10 +209,10 @@ function toRow(obs: Observation): Row {
     notes: notes(obs),
     sex: obs.sex === 'male' ? 'M' : obs.sex === 'female' ? 'F' : 'U',
     'is certain': obs.uncertain ? 'False' : 'True',
-    activity: english(allActivities, obs.activityId),
-    'life stage': english(allLifeStages, obs.lifeStageId),
-    method: english(allMethods, obs.methodId),
-    'counting method': english(countingMethods, obs.countingMethodId),
+    activity: dutch(allActivities, obs.activityId),
+    'life stage': dutch(allLifeStages, obs.lifeStageId),
+    method: dutch(allMethods, obs.methodId),
+    'counting method': dutch(countingMethods, obs.countingMethodId),
     // Waarneming.nl weigert een import met een uuid die al bestaat: zo kan
     // dezelfde waarneming niet twee keer worden ingevoerd
     uuid: obs.id,
@@ -223,8 +225,8 @@ function notes(obs: Observation): string {
   return obs.remarks ?? '';
 }
 
-function english(codes: Code[], id: number | undefined): string {
-  return codes.find((c) => c.id === id)?.en ?? '';
+function dutch(codes: Code[], id: number | undefined): string {
+  return codeName(codes, id) ?? '';
 }
 
 function toCsv(rows: Row[]): Blob {

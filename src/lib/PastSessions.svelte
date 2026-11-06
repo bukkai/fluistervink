@@ -137,8 +137,8 @@
         <p class="muted">
           Importeer het bestand bij <a href={IMPORT_URL} target="_blank" rel="noopener"
             >waarneming.nl</a
-          >. Zet de site daarbij op Engels (EN, rechtsboven): gedrag en methode staan in het Engels
-          in het bestand.
+          >, met de site in het Nederlands (NL, rechtsboven; dat is de standaard): gedrag en methode
+          staan in het Nederlands in het bestand.
         </p>
       </div>
     </section>
