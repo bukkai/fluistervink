@@ -609,16 +609,27 @@ describe('/api/transcribe (OpenAI)', () => {
     const response = await post({ audio: audio(), prompt: 'Houtduif, Vink' });
     expect(await response.json()).toMatchObject({
       text: 'zes houtduiven',
-      model: 'gpt-4o-transcribe',
+      model: 'gpt-transcribe',
     });
 
     const [url, init] = upstream.mock.calls[0];
     expect(url).toBe('https://api.openai.com/v1/audio/transcriptions');
     expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer sk-openai-geheim');
     const sent = init?.body as FormData;
-    expect(sent.get('language')).toBe('nl');
+    // gpt-transcribe: `languages` in plaats van `language`, geen logprobs
+    expect(sent.getAll('languages[]')).toEqual(['nl']);
+    expect(sent.has('language')).toBe(false);
     expect(sent.get('prompt')).toBe('Houtduif, Vink');
-    expect(sent.get('model')).toBe('gpt-4o-transcribe');
+    expect(sent.get('model')).toBe('gpt-transcribe');
+    expect(sent.has('include[]')).toBe(false);
+  });
+
+  it('vraagt bij gpt-4o-transcribe om Nederlands en de zekerheid', async () => {
+    upstream.mockResolvedValue(Response.json({ text: 'vink' }));
+    await post({ audio: audio(), model: 'gpt-4o-transcribe' });
+    const sent = upstream.mock.calls[0][1]?.body as FormData;
+    expect(sent.get('language')).toBe('nl');
+    expect(sent.has('languages[]')).toBe(false);
     expect(sent.get('include[]')).toBe('logprobs');
   });
 
@@ -965,7 +976,7 @@ describe('/api/usage (verbruik)', () => {
     expect((await rows())[0].day).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
-  it('telt tokens bij gpt-4o-transcribe en seconden bij whisper-1', async () => {
+  it('telt tokens bij gpt-4o-transcribe en seconden bij whisper-1 en gpt-transcribe', async () => {
     upstream.mockImplementation(async () =>
       Response.json({
         text: 'vink',
@@ -977,9 +988,11 @@ describe('/api/usage (verbruik)', () => {
       Response.json({ text: 'vink', usage: { type: 'duration', seconds: 4 } }),
     );
     await transcribe('whisper-1');
+    await transcribe('gpt-transcribe');
 
     expect(await rows()).toEqual([
       expect.objectContaining({ model: 'gpt-4o-transcribe', inputTokens: 80, outputTokens: 3 }),
+      expect.objectContaining({ model: 'gpt-transcribe', audioSeconds: 4, inputTokens: 0 }),
       expect.objectContaining({ model: 'whisper-1', audioSeconds: 4, inputTokens: 0 }),
     ]);
   });
