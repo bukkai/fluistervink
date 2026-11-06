@@ -1,0 +1,57 @@
+# Elke maandag de soortenlijst opnieuw ophalen bij waarneming.nl. Hernoemt
+# waarneming.nl een soort (Winterkoning werd Nannus troglodytes), dan herkent
+# de import onze export niet meer; deze workflow opent dan een pull request
+# met de nieuwe lijst en wat er veranderd is.
+#
+# Nodig: Settings → Actions → General → "Allow GitHub Actions to create and
+# approve pull requests". Een PR van deze workflow start de Check niet vanzelf
+# (zo werkt GITHUB_TOKEN); sluit en heropen hem om de Check te draaien.
+name: Soortenlijst
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: node scripts/fetch-species.mjs
+        env:
+          CHANGES_FILE: ${{ runner.temp }}/changes.md
+      - name: Pull request bij wijzigingen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHANGES: ${{ runner.temp }}/changes.md
+        run: |
+          if git diff --quiet data/; then
+            echo "Geen wijzigingen"
+            exit 0
+          fi
+          if [ -n "$(gh pr list --state open --search 'Soortenlijst bijgewerkt in:title' --json number --jq '.[].number')" ]; then
+            echo "Er staat al een pull request open voor de soortenlijst"
+            exit 0
+          fi
+          branch=soortenlijst-$(date +%Y-%m-%d)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git commit -am "Soortenlijst bijgewerkt van waarneming.nl"
+          git push -u origin "$branch"
+          {
+            echo "De soortenlijst van waarneming.nl is veranderd. Een nieuwe wetenschappelijke naam is het belangrijkst: de import herkent een soort alleen daaraan."
+            echo
+            cat "$CHANGES"
+            echo
+            echo "Na het mergen: verdwenen soorten nagaan (\`REPLACED\` in \`src/lib/vocab.ts\`, \`EXTRA_IDS\` in \`scripts/fetch-species.mjs\`)."
+          } > body.md
+          gh pr create --title "Soortenlijst bijgewerkt ($(date +%-d-%-m))" --body-file body.md

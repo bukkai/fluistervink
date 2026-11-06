@@ -3,7 +3,7 @@
 //
 // Gebruik: node scripts/fetch-species.mjs
 
-import { writeFile, mkdir } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 
 const API = 'https://waarneming.nl/api/v1';
 const REGION_LIST_NL_BIRDS = 5001; // regio 200 (Nederland) × soortgroep 1 (Vogels)
@@ -40,12 +40,13 @@ const EXOTICS = [
 ];
 
 // Soorten die buiten de filters vallen maar die je wel inspreekt: Bonte Kraai
-// (in de bron type Y), verzamelsoorten voor "een vogel" en "KBV" (klein
+// (sinds nov 2026 een ondersoort van de Zwarte Kraai, type I; vroeger soort 67,
+// zie REPLACED in src/lib/vocab.ts), verzamelsoorten voor "een vogel" en "KBV" (klein
 // bruin vogeltje), die zeldzaamheid 0 hebben, en Vale Pijlstormvogel ("vaaltje";
 // in de bron een ondersoort, zeer zeldzaam, maar jaarlijks langs de kust).
-const EXTRA_IDS = [67, 18926, 1003144, 369];
-// Heeft in de bron geen Nederlandse naam
-const NAMES = { 1003144: 'Zangvogel onbekend' };
+const EXTRA_IDS = [255102, 18926, 1003144, 369];
+// Geen of een onhandige Nederlandse naam in de bron
+const NAMES = { 1003144: 'Zangvogel onbekend', 255102: 'Bonte Kraai' };
 
 async function get(path, language = 'nl') {
   const res = await fetch(`${API}${path}`, {
@@ -58,6 +59,8 @@ async function get(path, language = 'nl') {
 const all = await get(`/region-lists/${REGION_LIST_NL_BIRDS}/species/`);
 const missing = EXOTICS.filter((name) => !all.some((s) => s.name === name));
 if (missing.length) console.warn(`Niet gevonden: ${missing.join(', ')}`);
+const missingIds = EXTRA_IDS.filter((id) => !all.some((s) => s.species === id));
+if (missingIds.length) console.warn(`EXTRA_IDS niet gevonden: ${missingIds.join(', ')}`);
 
 const toSpecies = (list) =>
   list
@@ -97,6 +100,33 @@ const attributes = {
   life_stage: pick(attrs.life_stage),
 };
 
+// Wat er veranderd is ten opzichte van de vorige lijst, voor de beschrijving
+// van de pull request (.github/workflows/soortenlijst.yml). Een nieuwe
+// wetenschappelijke naam is het belangrijkst: de import van waarneming.nl
+// herkent een soort alleen daaraan.
+const previous = JSON.parse(await readFile('data/soorten-nl-alle.json', 'utf8').catch(() => '[]'));
+const before = new Map(previous.map((s) => [s.id, s]));
+const after = new Map(allSpecies.map((s) => [s.id, s]));
+const changes = [];
+for (const s of allSpecies) {
+  const old = before.get(s.id);
+  if (!old) changes.push(`- Nieuw: ${s.name} (*${s.scientific}*)`);
+  else if (old.scientific !== s.scientific)
+    changes.push(`- ${s.name}: *${old.scientific}* → *${s.scientific}*`);
+  else if (old.name !== s.name) changes.push(`- ${old.name} → ${s.name}`);
+}
+for (const s of previous)
+  if (!after.has(s.id)) changes.push(`- Weg: ${s.name} (*${s.scientific}*)`);
+
+// Bijnamen die naar een soort verwijzen die niet meer in de prompt staat
+const aliases = JSON.parse(await readFile('data/bijnamen.json', 'utf8'));
+const promptIds = new Set(species.map((s) => s.id));
+for (const a of aliases)
+  if (!promptIds.has(a.soort))
+    changes.push(
+      `- **Let op:** bijnaam voor ${a.naam} (${a.soort}) verwijst naar een soort die niet meer in de prompt staat`,
+    );
+
 await mkdir('data', { recursive: true });
 await writeFile('data/soorten-nl.json', JSON.stringify(species, null, 1) + '\n');
 // Compact (één soort per regel): deze lijst gaat in z'n geheel mee in de app
@@ -106,6 +136,8 @@ await writeFile(
 );
 await writeFile('data/attributen-vogels.json', JSON.stringify(attributes, null, 1) + '\n');
 
+if (process.env.CHANGES_FILE) await writeFile(process.env.CHANGES_FILE, changes.join('\n') + '\n');
+if (changes.length) console.log(changes.join('\n'));
 console.log(
   `${species.length} soorten (alle: ${allSpecies.length}), ${attributes.activity.length} activiteiten, ` +
     `${attributes.method.length} methodes, ${attributes.life_stage.length} kleden`,
