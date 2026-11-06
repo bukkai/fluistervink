@@ -79,7 +79,7 @@ Soort, activiteit, methode, kleed en telmethode worden opgeslagen als **waarnemi
 
 - **Mapping van gesproken termen naar velden:** eerste voorstel in `docs/waarneming-nl.md`, verfijnen met de testset.
 
-Opgelost en vastgelegd: het importformaat van waarneming.nl (bulkimport, `docs/waarneming-nl.md`, getest op 11 okt), de soortenlijst (`scripts/fetch-species.mjs` → `data/soorten-nl.json`, bijnamen in `data/bijnamen.json`, beide in de systeemprompt) en de STT-keuze (`gpt-4o-transcribe`).
+Opgelost en vastgelegd: het importformaat van waarneming.nl (bulkimport, `docs/waarneming-nl.md`, getest op 11 okt), de soortenlijst (`scripts/fetch-species.mjs` → `data/soorten-nl.json`, bijnamen in `data/bijnamen.json`, beide in de systeemprompt; elke maandag opnieuw opgehaald door `.github/workflows/soortenlijst.yml`, die bij een wijziging een PR opent, want de import herkent een soort alleen aan de wetenschappelijke naam; door waarneming.nl vervangen soort-ID's in `REPLACED` in `src/lib/vocab.ts`) en de STT-keuze (`gpt-4o-transcribe`).
 
 ## Bouwvolgorde en mijlpaal
 
