@@ -5,7 +5,13 @@ import { aliases, species } from './vocab';
 // een paar voorbeeldzinnen voor de stijl, en de soortnamen en bijnamen, zodat
 // "tjiftjaf" of "tova" niet als iets anders verstaan worden.
 
-export const TRANSCRIBE_MODEL = 'gpt-4o-transcribe';
+/**
+ * Gekozen op 6 nov met de testset (401 opnames van vier sprekers): 85% goed
+ * tegen 82% voor gpt-4o-transcribe, dat op 26 feb 2027 verdwijnt. Sneller,
+ * goedkoper en verzint minder vaak een vogel bij geritsel. Soortnamen als
+ * `keywords` (nieuw bij dit model) maakten geen verschil.
+ */
+export const TRANSCRIBE_MODEL = 'gpt-transcribe';
 
 /**
  * Alleen gewone en vrij gewone soorten (zeldzaamheid 1–2) en geen

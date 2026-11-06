@@ -51,7 +51,12 @@ const OWNER = 'eigenaar';
 
 // Alleen deze modellen mogen via de proxy worden aangeroepen. Meerdere, zodat
 // we ze met de testset kunnen vergelijken.
-const TRANSCRIBE_MODELS = ['gpt-4o-transcribe', 'gpt-4o-mini-transcribe', 'whisper-1'];
+const TRANSCRIBE_MODELS = [
+  'gpt-transcribe',
+  'gpt-4o-transcribe',
+  'gpt-4o-mini-transcribe',
+  'whisper-1',
+];
 const CLAUDE_MODELS = ['claude-haiku-5-5', 'claude-sonnet-5-5', 'claude-opus-5-5'];
 
 /** Bovengrens voor uitvoer: een uitspraak levert maar een paar tool calls op. */
@@ -273,11 +278,13 @@ async function transcribe(request: Request, env: WorkerEnv, meter: Meter): Promi
   const upstream = new FormData();
   upstream.set('file', audio);
   upstream.set('model', model);
-  upstream.set('language', 'nl');
+  // gpt-transcribe kent meerdere talen (`languages`) in plaats van `language`
+  if (model === 'gpt-transcribe') upstream.append('languages[]', 'nl');
+  else upstream.set('language', 'nl');
   upstream.set('response_format', 'json');
   if (typeof prompt === 'string' && prompt) upstream.set('prompt', prompt);
-  // Zekerheid per stukje tekst; whisper-1 kan dat niet
-  if (model !== 'whisper-1') upstream.append('include[]', 'logprobs');
+  // Zekerheid per stukje tekst; whisper-1 en gpt-transcribe geven die niet
+  if (model.startsWith('gpt-4o')) upstream.append('include[]', 'logprobs');
 
   const start = Date.now();
   const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
@@ -306,7 +313,7 @@ async function transcribe(request: Request, env: WorkerEnv, meter: Meter): Promi
   );
 }
 
-/** De gpt-4o-modellen rekenen per token, whisper-1 per seconde audio. */
+/** De gpt-4o-modellen rekenen per token, whisper-1 en gpt-transcribe per seconde audio. */
 type TranscriptionUsage =
   | { type: 'tokens'; input_tokens: number; output_tokens: number }
   | { type: 'duration'; seconds: number };

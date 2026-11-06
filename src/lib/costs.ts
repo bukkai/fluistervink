@@ -18,7 +18,7 @@ export interface UsageRow {
   cacheWriteTokens: number;
   /** Anthropic: uit de cache gelezen */
   cacheReadTokens: number;
-  /** whisper-1 rekent per minuut audio, niet per token */
+  /** whisper-1 en gpt-transcribe rekenen per minuut audio, niet per token */
   audioSeconds: number;
 }
 
@@ -28,12 +28,12 @@ interface Price {
   output: number;
   cacheWrite?: number;
   cacheRead?: number;
-  /** Dollars per minuut audio (whisper-1) */
+  /** Dollars per minuut audio (whisper-1, gpt-transcribe) */
   perMinute?: number;
 }
 
 /**
- * Prijzen per model, nagekeken op 24 okt 2026 bij
+ * Prijzen per model, nagekeken op 24 okt 2026 (gpt-transcribe: 6 nov) bij
  * https://platform.claude.com/docs/en/about-claude/pricing en
  * https://developers.openai.com/api/docs/pricing. Prijzen veranderen: wijkt
  * het totaal flink af van de rekening, kijk ze dan na.
@@ -47,6 +47,7 @@ export const PRICES: Record<string, Price> = {
   'claude-opus-5-5': { input: 4, output: 20, cacheWrite: 5, cacheRead: 0.2 },
   'gpt-4o-transcribe': { input: 2.5, output: 10 },
   'gpt-4o-mini-transcribe': { input: 1.25, output: 5 },
+  'gpt-transcribe': { input: 0, output: 0, perMinute: 0.0045 },
   'whisper-1': { input: 0, output: 0, perMinute: 0.006 },
 };
 
