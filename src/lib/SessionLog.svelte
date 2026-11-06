@@ -321,7 +321,9 @@
                   >
                 {/if}
                 {#if obs.position}
-                  {#if positionAge(obs)}
+                  {#if obs.recordedPosition !== undefined}
+                    <span class="muted">met de hand gezet</span>
+                  {:else if positionAge(obs)}
                     <span class="reason">{positionAge(obs)}</span>
                   {/if}
                 {:else}

@@ -1,6 +1,14 @@
 <script lang="ts">
   import { audioBlob, type Observation, type Utterance } from './db';
-  import { copyObservation, deleteObservation, editObservation } from './observations';
+  import LocationPicker from './LocationPicker.svelte';
+  import {
+    copyObservation,
+    deleteObservation,
+    editObservation,
+    placeByHand,
+    recordedPlace,
+    type Place,
+  } from './observations';
   import type { Code } from './vocab';
   import {
     activities,
@@ -42,6 +50,13 @@
   let remarks = $state(original.remarks ?? '');
   let privateNote = $state(original.privateNote ?? '');
   let uncertain = $state(original.uncertain);
+  /** Plek en bewaarde GPS-plek; pas bij "Opslaan" naar de database */
+  let place = $state.raw<Place>({
+    position: original.position,
+    recordedPosition: original.recordedPosition,
+  });
+  let placing = $state(false);
+  let byHand = $derived(place.recordedPosition !== undefined);
 
   const speciesByName = new Map(allSpecies.map((s) => [s.name.toLowerCase(), s]));
   let selectedSpecies = $derived(speciesByName.get(speciesName.trim().toLowerCase()));
@@ -62,8 +77,14 @@
       privateNote: privateNote.trim() || undefined,
       uncertain,
       uncertainReason: uncertain ? original.uncertainReason : undefined,
+      position: place.position,
+      recordedPosition: place.recordedPosition,
     });
     onclose();
+  }
+
+  function setPlace(lat: number, lon: number) {
+    place = placeByHand(place, original.observedAt, lat, lon);
   }
 
   async function remove() {
@@ -167,6 +188,34 @@
     </select>
   </label>
 
+  <div class="place">
+    <span class="place-label">Locatie</span>
+    <span class="place-row">
+      <span>
+        {#if !place.position}
+          geen locatie
+        {:else if byHand}
+          met de hand gezet (±{place.position.accuracy} m)
+        {:else}
+          GPS, ±{Math.round(place.position.accuracy)} m
+        {/if}
+      </span>
+      {#if !placing}
+        <button type="button" class="link" onclick={() => (placing = true)}
+          >Locatie aanpassen</button
+        >
+      {/if}
+    </span>
+    {#if placing}
+      <LocationPicker position={place.position} sessionId={original.sessionId} onplace={setPlace} />
+    {/if}
+    {#if byHand}
+      <button type="button" class="link back" onclick={() => (place = recordedPlace(place))}>
+        Terug naar de opgenomen plek{place.recordedPosition ? '' : ' (geen locatie)'}
+      </button>
+    {/if}
+  </div>
+
   <label>
     Eigen notitie (gaat niet mee in de export)
     <textarea bind:value={privateNote} rows="2"></textarea>
@@ -265,6 +314,31 @@
   .check input {
     width: 1.25rem;
     height: 1.25rem;
+  }
+
+  .place {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .place-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  .place-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  .place .back {
+    align-self: flex-start;
   }
 
   .source {

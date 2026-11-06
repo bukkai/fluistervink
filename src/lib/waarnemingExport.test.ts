@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { HOUTDUIF, VINK, observation, unzipStored } from '../test-helpers';
 import { db, type Session } from './db';
+import { HAND_ACCURACY, placeByHand } from './observations';
 import {
   approveSession,
   buildExport,
@@ -84,6 +85,22 @@ describe('buildExport', () => {
   it('zet een onbekende nauwkeurigheid (boven 1000 m) op 999', async () => {
     await db.observations.add(observation({ position: { ...position, accuracy: 2500 } }));
     expect((await csvLines())[1].split(',')[5]).toBe('999');
+  });
+
+  it('neemt een met de hand gezette plek mee, niet de GPS-plek', async () => {
+    const obs = observation({ position });
+    await db.observations.add({
+      ...obs,
+      ...placeByHand(obs, obs.observedAt, 52.123456789, 5.1),
+    });
+    const [, lat, lng, accuracy] = (await csvLines())[1].split(',').slice(2, 6);
+    expect([lat, lng, accuracy]).toEqual(['52.123457', '5.100000', String(HAND_ACCURACY)]);
+
+    const xlsx = await buildExport([session], 'xlsx');
+    const sheet = (await unzipStored(xlsx.file)).get('xl/worksheets/sheet1.xml')!;
+    expect(sheet).toContain('<c r="D2" t="n"><v>52.123457</v></c>');
+    expect(sheet).toContain('<c r="F2" t="n"><v>10</v></c>');
+    expect(sheet).not.toContain('52.3601');
   });
 
   it('maakt in de app een xlsx met dezelfde kolommen, getallen als getal', async () => {
