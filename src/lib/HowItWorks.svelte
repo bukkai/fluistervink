@@ -60,7 +60,11 @@
       <li>"die laatste weg"</li>
       <li>"ongedaan maken" (en als dat te veel was: "toch niet ongedaan maken")</li>
     </ul>
-    <p>Thuis kun je alles nalopen en aanpassen door op een waarneming te tikken.</p>
+    <p>
+      Thuis kun je alles nalopen en aanpassen door op een waarneming te tikken. Zijn er twee soorten
+      in één keer ingesproken en is er maar één van geworden, dan maak je met Kopiëren een tweede
+      waarneming met dezelfde tijd en plek, en pas je daarvan de soort en het aantal aan.
+    </p>
   </div>
 </section>
 

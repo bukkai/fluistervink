@@ -264,7 +264,12 @@
           class:flash={flashing.includes(obs.id)}
         >
           {#if editing === obs.id}
-            <ObservationEditor observation={obs} utterance={source} onclose={closeEditor} />
+            <ObservationEditor
+              observation={obs}
+              utterance={source}
+              onclose={closeEditor}
+              oncopy={(id) => (editing = id)}
+            />
           {:else}
             <button
               class="row"

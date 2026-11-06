@@ -6,11 +6,14 @@ import { db, storeAudio, type Observation, type Utterance } from './db';
 import { interpret } from './interpret';
 import {
   STEAL_AFTER_MS,
+  copyObservation,
+  editObservation,
   isAccidental,
   listObservations,
   migrateAudio,
   processQueue,
   retry,
+  setSkipExport,
 } from './observations';
 
 // De wachtrij van begin tot eind, met een nagebootst model: wat het model
@@ -186,6 +189,44 @@ describe('corrigeren', () => {
     expect(await db.observations.count()).toBe(0);
     const [deleted] = await db.deletedObservations.toArray();
     expect(deleted).toMatchObject({ speciesId: VINK, deletedBy: 'voice' });
+  });
+});
+
+describe('kopiëren in de review', () => {
+  it('maakt een nieuwe waarneming met dezelfde tijd, plek, bron en velden', async () => {
+    await say('vier wilde eenden en een winterkoning', [
+      'add_observation',
+      { species_id: VINK, count: 1, uncertain: true, uncertain_reason: 'x', remarks: 'op het hek' },
+    ]);
+    const [original] = await listObservations(SESSION);
+    await editObservation(original.id, { count: 2 });
+    await setSkipExport(original.id, true);
+
+    const id = await copyObservation(original.id);
+    const [copy, again] = await listObservations(SESSION);
+    expect(copy.id).toBe(id);
+    expect(copy.id).not.toBe(original.id);
+    expect(copy).toMatchObject({
+      sessionId: SESSION,
+      utteranceId: original.utteranceId,
+      speciesId: VINK,
+      count: 2,
+      remarks: 'op het hek',
+      observedAt: original.observedAt,
+      position: POSITION,
+      uncertain: false,
+      status: 'draft',
+    });
+    expect(copy.uncertainReason).toBeUndefined();
+    expect(copy.editedAt).toBeUndefined();
+    expect(copy.skipExport).toBeUndefined();
+    // Het origineel blijft zoals het was
+    expect(again).toMatchObject({ id: original.id, status: 'reviewed', skipExport: true });
+  });
+
+  it('doet niets bij een onbekend id', async () => {
+    expect(await copyObservation('bestaat-niet')).toBeUndefined();
+    expect(await db.observations.count()).toBe(0);
   });
 });
 
