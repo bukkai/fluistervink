@@ -80,6 +80,7 @@ Nog niet gepland; eerst overleggen.
   - Eerst een client-ID aanvragen via het contactformulier (concept in de sessie van 13 okt: app, nalopen vóór inzenden, vaste soortenlijst, 88% goed; vragen: inlogmethode, client secret, testaccount op waarneming-test.nl, `create/` met `external_id` en welke scope, redirect-URL). Daarna: account koppelen bij Instellingen, route `/api/waarneming` in de proxy (CORS, secret), knop "Inzenden" voor de klaarstaande wandelingen, ID/link van waarneming.nl bewaren, `#privacy` en `#uitleg` bijwerken.
 - **Soortenstatistieken over alle gebruikers:** tellen per soort-ID wat het model koos, wat met de hand gecorrigeerd werd en wat het niet kon plaatsen, om de soortenlijst, bijnamen en STT-prompt bij te stellen. Kan in de proxy (Analytics Engine of D1); alleen geaggregeerd, en op `#privacy` vermelden. Pas relevant bij meer gebruikers; tot die tijd geeft de testset hetzelfde beeld.
 - Foto koppelen aan een waarneming via tijd en locatie.
+- **Korte "nee, <vogel>" als onzeker markeren** (6 nov, Jurian 4 nov): in de wind werd "Een waterhoen." verstaan als "Nee, waterhoen.", waardoor de 2 krakeenden ervoor 2 waterhoenders werden (ook gpt-4o-transcribe opnieuw hoort "Nee"). Wie echt corrigeert zegt meestal meer ("nee, dat was een keep"). Idee: een correctie van alleen "nee" + soortnaam als onzeker markeren (afwijkend trilpatroon, valt op bij het nalopen). In de testset staan uitspraak 18 en 19 van Jurian daardoor verkeerd gelabeld (2× waterhoen, moet 2× krakeend + 1× waterhoen).
 
 ## Android-app
 
