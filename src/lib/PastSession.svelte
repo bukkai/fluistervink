@@ -4,6 +4,7 @@
   import { renameSession } from './area';
   import { countSpecies, listObservations } from './observations';
   import { deleteSessions, formatDuration, resumeSession } from './sessions';
+  import { confirmDeleteText, countRecordings, deleteRecordings } from './recordings';
   import ObservationMap from './ObservationMap.svelte';
   import SessionLog from './SessionLog.svelte';
   import UncertainReview from './UncertainReview.svelte';
@@ -42,6 +43,15 @@
       return;
     await deleteSessions([session.id]);
     location.hash = 'wandelingen';
+  }
+
+  // Alleen de opnames wissen; de wandeling, de tekst en de waarnemingen blijven
+  let recordings = $derived(liveQuery(() => countRecordings(session.id)));
+
+  async function removeRecordings() {
+    const current = await countRecordings(session.id);
+    if (!current.count || !confirm(confirmDeleteText(current, 'van deze wandeling'))) return;
+    await deleteRecordings(session.id);
   }
 
   async function rename() {
@@ -182,6 +192,10 @@
 <p class="footer muted">
   {#if resumable}
     Per ongeluk gestopt? <button class="link" onclick={resume}>Wandeling voortzetten</button>
+    <br />
+  {/if}
+  {#if $recordings?.count}
+    <button class="link danger" onclick={removeRecordings}>Alleen de opnames wissen</button>
     <br />
   {/if}
   <button class="link danger" onclick={remove}>Wandeling verwijderen</button>

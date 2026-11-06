@@ -75,6 +75,8 @@ export interface Utterance {
    */
   audio?: StoredAudio | Blob;
   audioDurationMs?: number;
+  /** Moment waarop de gebruiker de opname wiste (`deleteRecordings`); de rest blijft */
+  audioDeletedAt?: number;
   /** Bij een opname leeg tot de spraakherkenning klaar is */
   transcript?: string;
   /** Meetgegevens van de spraakherkenning, voor de vergelijking van STT-opties */
