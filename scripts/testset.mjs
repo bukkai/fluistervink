@@ -15,6 +15,8 @@
 //   --max <n>         alleen de eerste n uitspraken
 //   --parallel <n>    zoveel tegelijk (standaard 4)
 //   --stil            alleen de samenvatting, niet elke fout
+//   --laadtest        alleen de code van de app laden en stoppen (zonder
+//                     export of sleutels; draait in CI, zie check.yml)
 //
 // Uitspraken met een onbruikbaar label (bv. van vóór een bewuste
 // promptwijziging) kun je uitsluiten in testset/uitsluiten.txt: per regel het
@@ -44,6 +46,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { createServer } from 'vite';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -57,10 +60,11 @@ const { values: opts, positionals } = parseArgs({
     max: { type: 'string' },
     parallel: { type: 'string', default: '4' },
     stil: { type: 'boolean', default: false },
+    laadtest: { type: 'boolean', default: false },
   },
 });
 
-if (positionals.length !== 1) {
+if (!opts.laadtest && positionals.length !== 1) {
   console.error(
     'Gebruik: npm run testset -- <export.json> [--stt …] [--model …] (zie scripts/testset.mjs)',
   );
@@ -89,7 +93,7 @@ const SNAKE = {
 // ---------------------------------------------------------------------------
 // Code van de app laden, en een proxy starten
 
-const replay = opts.model !== 'origineel' || opts.stt !== 'opgeslagen';
+const replay = !opts.laadtest && (opts.model !== 'origineel' || opts.stt !== 'opgeslagen');
 
 let proxy;
 if (replay) {
@@ -111,13 +115,24 @@ if (replay) {
   globalThis.fetch = (url, init) => realFetch(new URL(url, base), init);
 }
 
-// Alleen om modules te laden (zonder de Worker)
+// Alleen om modules te laden (zonder de Worker). Wel met de Svelte-plugin:
+// sommige modules gebruiken runes ($state in instance.svelte.ts, via log.ts).
+// Die modules kijken bij het laden ook naar window en document; in Node is
+// er geen browser, dus een minimale vervanging (zonder BroadcastChannel,
+// zodat het proces niet blijft hangen).
+globalThis.window ??= { addEventListener() {} };
+globalThis.document ??= { hidden: false, addEventListener() {} };
 const loader = await createServer({
   root: ROOT,
   configFile: false,
   logLevel: 'error',
   appType: 'custom',
-  server: { middlewareMode: true, hmr: false },
+  plugins: [svelte()],
+  define: { __APP_VERSION__: JSON.stringify('testset') },
+  // Geen voorbundeling: die scant de hele app (ook virtual:pwa-register) en
+  // geeft dan een onschuldige maar verwarrende foutmelding
+  optimizeDeps: { noDiscovery: true },
+  server: { middlewareMode: true, hmr: false, ws: false },
 });
 const { MODEL, interpret, parseResponse, promptVersion } =
   await loader.ssrLoadModule('/src/lib/interpret.ts');
@@ -125,6 +140,12 @@ const { transcribe } = await loader.ssrLoadModule('/src/lib/transcribe.ts');
 const { devNoteText } = await loader.ssrLoadModule('/src/lib/devNotePrefix.ts');
 const vocab = await loader.ssrLoadModule('/src/lib/vocab.ts');
 const { DEFAULT_ACTIVITY, DEFAULT_METHOD, DEFAULT_COUNTING_METHOD } = vocab;
+
+if (opts.laadtest) {
+  await loader.close();
+  console.log(`Code van de app geladen (model ${MODEL}, prompt ${await promptVersion}).`);
+  process.exit(0);
+}
 
 const model = opts.model === 'origineel' ? 'origineel' : (opts.model ?? MODEL);
 

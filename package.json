@@ -18,7 +18,8 @@
     "tester": "node scripts/tester.mjs",
     "feedback": "node scripts/feedback.mjs",
     "build:stable": "CLOUDFLARE_ENV=stable vite build --mode stable",
-    "release": "node scripts/release.mjs"
+    "release": "node scripts/release.mjs",
+    "testset:laadtest": "node scripts/testset.mjs --laadtest"
   },
   "devDependencies": {
     "@capacitor/cli": "8.6.0",

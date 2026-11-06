@@ -21,6 +21,9 @@ jobs:
       - run: npm run format:check
       - run: npm run check
       - run: npm test
+      # Het testset-script laadt de code van de app buiten de browser; vangt
+      # bv. runes of browser-API's die daar niet werken
+      - run: npm run testset:laadtest
       - run: npm run build
       # Alleen de pakketten die meegaan naar de telefoon en de Worker; lekken in
       # ontwikkelpakketten (tests, wrangler) komen via Dependabot en de
