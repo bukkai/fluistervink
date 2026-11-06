@@ -25,8 +25,9 @@ Werklog om tussen computers te kunnen schakelen. Werk dit bij aan het eind van e
 Feedback opgehaald op 6 nov: 8 testers en installaties met gedeelde wandelingen (Aafje, Jurian, Maarten, 5 installaties zonder code). Kosten sinds 27 okt: $1,14, ongeveer een halve cent per uitspraak. Geen nieuwe feedback in de app; wel een lijstje van **Jurian** per bericht (wandeling 4 nov, 70 uitspraken, hardlopend):
 
 - Verstaanfouten, alle in de spraakherkenning (het model deed het goed met wat het kreeg): meerkoet → "meeuw" (2×), koperwiek → "Boerenzwaluw", "4 wilde eenden en een winterkoning" → "Hier wilde een winterkoning" (eenden kwijt, terecht onzeker). "Eén werd twee" niet teruggevonden in de data; mogelijk "Twee meeuw." (opname terugluisteren).
-- Import mislukte ("seen" niet herkend): de site moest op Engels. **PR #149: export in het Nederlands** (namen tegen `/api/v1/lookups/` en de attributen-API gecontroleerd). Na het mergen één keer echt importeren met de site op NL; eigen site terug op NL zetten.
-- Toegezegd aan Jurian: knop om alleen de opnames te wissen (wandeling blijft), waarneming kopiëren in de review, locatie met de hand wijzigen (wijkt af van "locaties verslepen: later" in `CLAUDE.md`; daar bijwerken als het gebouwd wordt).
+- Import mislukte ("seen" niet herkend): de site moest op Engels. **PR #149: export in het Nederlands** (namen tegen `/api/v1/lookups/` en de attributen-API gecontroleerd). Import met de site op NL **werkt** (6 nov), alleen de Winterkoning niet: waarneming.nl heeft hem net hernoemd naar *Nannus troglodytes*. **PR #153**: soortenlijst opnieuw opgehaald (ook de gorzen hernoemd, Bonte Kraai nu ondersoort *Corvus corone cornix*, oud ID 67 wijst naar 255102) en een workflow die elke maandag de lijst ophaalt en bij wijzigingen een PR opent. Na het mergen: in GitHub Actions toestaan PR's te maken (zie PR), en bij de volgende import een Bonte Kraai meenemen.
+- Toegezegd aan Jurian: opnames wissen (#151) en waarneming kopiëren (#152) zijn gemerged. **Nog te doen: locatie met de hand wijzigen** (wijkt af van "locaties verslepen: later" in `CLAUDE.md`; daar bijwerken als het gebouwd wordt). Prompt voor een sessie staat in de sessie van 6 nov; kern: in `ObservationEditor.svelte` een kaartje (Leaflet, zoals `ObservationMap.svelte`) waar je tikt of sleept om de plek te zetten, met "Terug naar de opgenomen plek"; de nauwkeurigheid wordt dan die van de hand (bv. 10 m), de oorspronkelijke plek blijft bewaard.
+- Overgeslagen voor nu (6 nov): korte "nee, <vogel>" als onzeker markeren, Inspreken-knop in de duimzone.
 - Nadenken, niet gepland: locatie met de stem ("in het kanaal", "100 m oost"), geluidsherkenning (BirdNET; Merlin kan het niet), wake word met de telefoon in de zak.
 - **Testset opnieuw** (6 nov, na de reparatie in #150): Jurians 70 opnames 3× door `gpt-4o-transcribe` en het huidige model: 84/83/83% helemaal goed (opgeslagen antwoorden 91%). Ter vergelijking 1× `gpt-4o-mini-transcribe` 74% en `whisper-1` 71%. Opnames in de wind zijn erg wisselend: korte uitspraken krijgen per run een andere vogel. Per fout:
   - meerkoet → "meeuw": **komt terug**. "Twee meeuwen en zeven waterhoen" 3 van de 3 keer weer meeuwen (`whisper-1` hoort wel "2 meerkoeten"); "Twee meeuw." 1 van de 3 keer, 2× "twee meerkoet".
@@ -50,7 +51,6 @@ Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de a
    - Wake word **buiten v1.0**: de knop bevalt, en een wake word brengt eigen valse meldingen mee.
 2. **Herkenning breder bewijzen:** de 88% rust op drie wandelingen van één spreker, in één omgeving, in oktober.
    - Meer sprekers: twee à drie echte betatesters met een echte wandeling. Tim is een alter ego van de eigenaar, dus alle gegevens tot nu toe komen van één spreker.
-   - Voorjaarsronde (april/mei): veel meer soorten, zang, broedgedrag, paartjes. Reden om v1.0 niet vóór het voorjaar te noemen.
    - Open punten: korte spookopnames (#92); nocmig: niet nu. "Pijl" en "vaaltje" werken al (bijnamen, proef 11 okt).
    - Kosten per wandeling: op Developer (PR #133).
 3. **Klaar voor vreemden:**
@@ -61,7 +61,7 @@ Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de a
    - Snellere review: alleen de onzekere langslopen, "alles klopt" met één tik.
 5. **Bewust niet in v1.0:** API van waarneming.nl (v1.0 levert juist de gebruikers op die de aanvraag sterker maken), GPS-track, accounts, BirdNET, wake word.
 
-Volgorde: (a) nu de kleine open punten, betatesters uitnodigen en een wandeling; (b) Capacitor: trillen, foreground service, eventueel volumeknop; (c) twee omgevingen, dan twee à drie testers erbij; (d) voorjaar: veldtest met veel soorten, prompt bijwerken, daarna v1.0 in de Play Store.
+Volgorde: (a) nu de kleine open punten, betatesters uitnodigen en een wandeling; (b) Capacitor: trillen, foreground service, eventueel volumeknop; (c) twee omgevingen, dan twee à drie testers erbij; (d) ~~voorjaar~~ **besloten 6 nov: geen voorjaarsronde afwachten.** In het najaar is genoeg te testen; eerst een weekend Terschelling met de app, daarna v1.0 uitbrengen. Aanmelden zonder code (#142) is ingesteld en werkt (5 installaties).
 
 ## Twee omgevingen (24 okt)
 
@@ -71,7 +71,7 @@ PR #112: beta blijft op workers.dev (branch `main`), stabiel op `fluistervink.nl
 
 PR #113: `docs/kwaliteitsronde.md` (direct na een release naar stable een ronde op de beta, met logboek), `npm run release` toont de laatste ronde en vraagt eerst, Dependabot (`.github/dependabot.yml`; meldingen en beveiligingsupdates in de repo aangezet), `npm audit --omit=dev` in de check. Eerste ronde gedaan op 24 okt (logboek in `docs/kwaliteitsronde.md`): PR's #121 (snelheidslimiet proxy, Content-Type), #122 (validatie aantallen), #123 (contrast, `#privacy`). Dependabot opende meteen #118 (@types/node), #119 (TypeScript 7, faalt) en #120 (happy-dom, het hoge lek). Open voorstel: Inspreken-knop lager, in de duimzone (andere indeling, eerst overleggen).
 
-Tweede ronde op 28 okt, direct na de release (stable bijgewerkt, tag v0.2), vanaf `1f14481`: PR's #143 (snelheidslimiet op het delen), #144 (dependencies, Capacitor 8.6; debug-APK `apk/fluistervink-0.439-beta.apk`), #145 (bevindingen code-review: unieke installatienamen, audiomigratie), #146 (`#privacy` en `#uitleg`). Wat bleef liggen staat in het logboek. Nog open uit eerdere rondes: opvolger van `gpt-4o-transcribe` ("Deprecated") uitzoeken met de testset.
+Tweede ronde op 28 okt, direct na de release (stable bijgewerkt, tag v0.2), vanaf `1f14481`: PR's #143 (snelheidslimiet op het delen), #144 (dependencies, Capacitor 8.6; debug-APK `apk/fluistervink-0.439-beta.apk`), #145 (bevindingen code-review: unieke installatienamen, audiomigratie), #146 (`#privacy` en `#uitleg`). Wat bleef liggen staat in het logboek. Opvolger van `gpt-4o-transcribe`: PR #154.
 
 ## Open punten
 
@@ -82,7 +82,7 @@ Tweede ronde op 28 okt, direct na de release (stable bijgewerkt, tag v0.2), vana
 - **STT gaf één keer zelf antwoord** in plaats van te transcriberen ("Sorry, ik kan niet voldoen aan het verzoek …", 11 okt) en liet daarbij het woord "feedback" weg. Onschuldig, maar in de gaten houden.
 - Cloudflare-previews: vermoedelijk onthoudt Cloudflare het deploy-commando per branch vanaf de eerste build. Bij problemen: nieuwe branch maken.
 - Een branch-regel op `main` met verplichte check kan niet: GitHub biedt dat niet voor privérepo's zonder Pro. De check draait wel bij elke PR.
-- **`gpt-4o-transcribe` "Deprecated"** (gezien op 24 okt op de modelpagina van OpenAI): opvolger uitzoeken en met de testset vergelijken voordat het model verdwijnt.
+- **`gpt-4o-transcribe` verdwijnt 26 feb 2027.** Opvolger `gpt-transcribe` getest (6 nov, 401 opnames, vier sprekers): 84,5% tegen 82,0%, sneller, goedkoper; `keywords` hielpen niet. **PR #154** stapt over. Nog open: "ekster" → "extra", meerkoet → "merel" (zit in de opname).
 
 ## Ideeën voor later
 

@@ -36,8 +36,15 @@ const promptSpeciesIds = new Set(species.map((s) => s.id));
 export const allSpecies = allSpeciesList as Species[];
 const speciesById = new Map(allSpecies.map((s) => [s.id, s]));
 
+/**
+ * Soort-ID's die waarneming.nl heeft vervangen. Oude waarnemingen houden het
+ * oude ID, maar tonen en exporteren de nieuwe soort. Bonte Kraai: sinds nov
+ * 2026 een ondersoort van de Zwarte Kraai (Corvus corone cornix).
+ */
+const REPLACED: Record<number, number> = { 67: 255102 };
+
 export function getSpecies(id: number): Species | undefined {
-  return speciesById.get(id);
+  return speciesById.get(REPLACED[id] ?? id);
 }
 
 /** Naam om te tonen; "soort 123" als het ID niet (meer) in de lijst staat */

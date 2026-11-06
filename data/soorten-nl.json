@@ -266,6 +266,13 @@
   "rarity": 2
  },
  {
+  "id": 240796,
+  "name": "Duikeend (Aythya) onbekend",
+  "scientific": "Aythya spec.",
+  "type": "M",
+  "rarity": 1
+ },
+ {
   "id": 772,
   "name": "Witoogeend",
   "scientific": "Aythya nyroca",
@@ -1554,6 +1561,13 @@
   "rarity": 1
  },
  {
+  "id": 255102,
+  "name": "Bonte Kraai",
+  "scientific": "Corvus corone cornix",
+  "type": "I",
+  "rarity": 3
+ },
+ {
   "id": 1206,
   "name": "Buidelmees",
   "scientific": "Remiz pendulinus",
@@ -1885,7 +1899,7 @@
  {
   "id": 199,
   "name": "Winterkoning",
-  "scientific": "Troglodytes troglodytes",
+  "scientific": "Nannus troglodytes",
   "type": "S",
   "rarity": 1
  },
@@ -2256,14 +2270,14 @@
  {
   "id": 164,
   "name": "Rietgors",
-  "scientific": "Emberiza schoeniclus",
+  "scientific": "Schoeniclus schoeniclus",
   "type": "S",
   "rarity": 1
  },
  {
   "id": 245,
   "name": "Dwerggors",
-  "scientific": "Emberiza pusilla",
+  "scientific": "Schoeniclus pusillus",
   "type": "S",
   "rarity": 3
  },
@@ -2287,13 +2301,6 @@
   "scientific": "Emberiza citrinella",
   "type": "S",
   "rarity": 1
- },
- {
-  "id": 67,
-  "name": "Bonte Kraai",
-  "scientific": "Corvus cornix",
-  "type": "Y",
-  "rarity": 3
  },
  {
   "id": 1967,
