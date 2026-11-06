@@ -60,7 +60,7 @@ describe('buildExport', () => {
       'date,time,scientific name,lat,lng,accuracy,number,notes,sex,is certain,activity,life stage,method,counting method,uuid',
     );
     expect(lines[1]).toBe(
-      `2026-10-11,14:05,Fringilla coelebs,52.360100,4.921235,8,2,"zat op het hek, ""met ring""",M,False,,,seen,real count,${earlier.id}`,
+      `2026-10-11,14:05,Fringilla coelebs,52.360100,4.921235,8,2,"zat op het hek, ""met ring""",M,False,,,gezien,exact aantal,${earlier.id}`,
     );
     expect(lines[2]).toMatch(/^2026-10-11,14:20,Columba palumbus,.*,6,,U,True,/);
     // Afsluitende CRLF

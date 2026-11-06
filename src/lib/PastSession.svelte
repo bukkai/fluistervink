@@ -173,7 +173,8 @@
     <p class="muted">
       Of <button class="link" onclick={exportOnlyThis}>exporteer alleen deze wandeling</button>
       en importeer het bestand bij
-      <a href={IMPORT_URL} target="_blank" rel="noopener">waarneming.nl</a>, met de site op Engels.
+      <a href={IMPORT_URL} target="_blank" rel="noopener">waarneming.nl</a>, met de site in het
+      Nederlands.
     </p>
   </div>
 </section>

@@ -21,9 +21,8 @@ export interface Species {
 
 export interface Code {
   id: number;
+  /** Nederlandse naam, zoals op waarneming.nl (ook in de export) */
   name: string;
-  /** Engelse naam, voor de bulkimport van waarneming.nl */
-  en?: string;
 }
 
 /** Soorten in de prompt: het model kiest alleen hieruit */
@@ -101,13 +100,13 @@ export const methods = pick(allMethods, FIELD_METHODS);
 export const lifeStages = pick(allLifeStages, FIELD_LIFE_STAGES);
 
 /**
- * Telmethode staat niet in de attributenlijst; codes uit de API-documentatie,
- * Engelse namen uit het voorbeeldbestand van de bulkimport.
+ * Telmethode staat niet in de attributenlijst; codes en namen uit
+ * /api/v1/lookups/ van waarneming.nl (nagekeken 6 nov).
  */
 export const countingMethods: Code[] = [
-  { id: 2, name: 'exact aantal', en: 'real count' },
-  { id: 6, name: 'schatting', en: 'estimated' },
-  { id: 3, name: 'gezien, niet geteld', en: 'seen not counted' },
+  { id: 2, name: 'exact aantal' },
+  { id: 6, name: 'schatting' },
+  { id: 3, name: 'gezien niet geteld' },
 ];
 
 export const DEFAULT_ACTIVITY = 1; // ter plaatse

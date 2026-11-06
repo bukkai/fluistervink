@@ -2,467 +2,375 @@
  "activity": [
   {
    "id": 1,
-   "name": "ter plaatse",
-   "en": "present"
+   "name": "ter plaatse"
   },
   {
    "id": 3,
-   "name": "roepend",
-   "en": "calling"
+   "name": "roepend"
   },
   {
    "id": 2,
-   "name": "foeragerend",
-   "en": "foraging"
+   "name": "foeragerend"
   },
   {
    "id": 4,
-   "name": "baltsend / zingend",
-   "en": "courtship/singing"
+   "name": "baltsend / zingend"
   },
   {
    "id": 6,
-   "name": "overvliegend",
-   "en": "flying over"
+   "name": "overvliegend"
   },
   {
    "id": 3052,
-   "name": "paar in broedbiotoop",
-   "en": "pair in breeding area"
+   "name": "paar in broedbiotoop"
   },
   {
    "id": 3053,
-   "name": "adult in broedbiotoop",
-   "en": "adult in breeding area"
+   "name": "adult in broedbiotoop"
   },
   {
    "id": 3114,
-   "name": "bezet nest met eieren",
-   "en": "occupied nest with eggs"
+   "name": "bezet nest met eieren"
   },
   {
    "id": 3115,
-   "name": "bezet nest met jongen",
-   "en": "occupied nest with young"
+   "name": "bezet nest met jongen"
   },
   {
    "id": 3116,
-   "name": "transport voedsel of ontlasting",
-   "en": "transport of food or faeces"
+   "name": "transport voedsel of ontlasting"
   },
   {
    "id": 3051,
-   "name": "bezet nest",
-   "en": "occupied nest"
+   "name": "bezet nest"
   },
   {
    "id": 3117,
-   "name": "waarschijnlijke nestplaats",
-   "en": "probable nesting location"
+   "name": "waarschijnlijke nestplaats"
   },
   {
    "id": 3118,
-   "name": "baltsend paar (ook paring)",
-   "en": "pair courtship and or mating"
+   "name": "baltsend paar (ook paring)"
   },
   {
    "id": 3119,
-   "name": "nestbouw",
-   "en": "nest building"
+   "name": "nestbouw"
   },
   {
    "id": 25,
-   "name": "alarmerend",
-   "en": "alarming"
+   "name": "alarmerend"
   },
   {
    "id": 3121,
-   "name": "pas uitgevlogen/dons jongen",
-   "en": "recently fledged young"
+   "name": "pas uitgevlogen/dons jongen"
   },
   {
    "id": 3122,
-   "name": "vogel met broedvlek",
-   "en": "with brood patch"
+   "name": "vogel met broedvlek"
   },
   {
    "id": 3120,
-   "name": "recent gebruikt nest",
-   "en": "recently used nest"
+   "name": "recent gebruikt nest"
   },
   {
    "id": 3124,
-   "name": "afleidingsgedrag",
-   "en": "distraction display"
+   "name": "afleidingsgedrag"
   },
   {
    "id": 28,
-   "name": "nestindicerend gedrag",
-   "en": "territorial"
+   "name": "nestindicerend gedrag"
   },
   {
    "id": 29,
-   "name": "vastgesteld territorium",
-   "en": "territory"
+   "name": "vastgesteld territorium"
   },
   {
    "id": 30,
-   "name": "jagend",
-   "en": "hunting"
+   "name": "jagend"
   },
   {
    "id": 11,
-   "name": "overvliegend noord",
-   "en": "flying north"
+   "name": "overvliegend noord"
   },
   {
    "id": 12,
-   "name": "overvliegend zuid",
-   "en": "flying south"
+   "name": "overvliegend zuid"
   },
   {
    "id": 13,
-   "name": "overvliegend oost",
-   "en": "flying east"
+   "name": "overvliegend oost"
   },
   {
    "id": 14,
-   "name": "overvliegend west",
-   "en": "flying west"
+   "name": "overvliegend west"
   },
   {
    "id": 8,
-   "name": "overvliegend noordwest",
-   "en": "flying north-west"
+   "name": "overvliegend noordwest"
   },
   {
    "id": 7,
-   "name": "overvliegend noordoost",
-   "en": "flying north-east"
+   "name": "overvliegend noordoost"
   },
   {
    "id": 9,
-   "name": "overvliegend zuidoost",
-   "en": "flying south-east"
+   "name": "overvliegend zuidoost"
   },
   {
    "id": 10,
-   "name": "overvliegend zuidwest",
-   "en": "flying south-west"
+   "name": "overvliegend zuidwest"
   },
   {
    "id": 2016,
-   "name": "slachtoffer verkeer",
-   "en": "road kill"
+   "name": "slachtoffer verkeer"
   },
   {
    "id": 17,
-   "name": "vondst (dood)",
-   "en": "discovery (dead)"
+   "name": "vondst (dood)"
   },
   {
    "id": 3197,
-   "name": "zonnend",
-   "en": "basking in sun"
+   "name": "zonnend"
   },
   {
    "id": 3099,
-   "name": "vangst door kat",
-   "en": "caught by cat"
+   "name": "vangst door kat"
   },
   {
    "id": 3275,
-   "name": "prooi (dood)",
-   "en": "prey (dead)"
+   "name": "prooi (dood)"
   },
   {
    "id": 3158,
-   "name": "ruiend",
-   "en": "moulting"
+   "name": "ruiend"
   },
   {
    "id": 79,
-   "name": "(kleur)ringdragend",
-   "en": "(colour) ring bearing"
+   "name": "(kleur)ringdragend"
   },
   {
    "id": 26,
-   "name": "pleisterend",
-   "en": "long-term stay"
+   "name": "pleisterend"
   },
   {
    "id": 31,
-   "name": "opvliegend",
-   "en": "taking off"
+   "name": "opvliegend"
   },
   {
    "id": 3268,
-   "name": "slachtoffer verdrinking",
-   "en": "drowning victim"
+   "name": "slachtoffer verdrinking"
   },
   {
    "id": 3148,
-   "name": "slachtoffer hoogspanningsleiding",
-   "en": "powerline victim"
+   "name": "slachtoffer hoogspanningsleiding"
   },
   {
    "id": 3149,
-   "name": "slachtoffer windmolen",
-   "en": "windfarm victim"
+   "name": "slachtoffer windmolen"
   },
   {
    "id": 3154,
-   "name": "slachtoffer raambotsing",
-   "en": "window victim"
+   "name": "slachtoffer raambotsing"
   },
   {
    "id": 3144,
-   "name": "ziek/gewond",
-   "en": "sick/injured"
+   "name": "ziek/gewond"
   },
   {
    "id": 77,
-   "name": "rustend",
-   "en": "resting"
+   "name": "rustend"
   },
   {
    "id": 78,
-   "name": "slaapplaats",
-   "en": "roost"
+   "name": "slaapplaats"
   },
   {
    "id": 3273,
-   "name": "slachtoffer prikkeldraad",
-   "en": "barbed wire victim"
+   "name": "slachtoffer prikkeldraad"
   },
   {
    "id": 3354,
-   "name": "Slachtoffer olievervuiling",
-   "en": "Oil spill victim"
+   "name": "Slachtoffer olievervuiling"
   },
   {
    "id": 3265,
-   "name": "vernietigd nest",
-   "en": "destroyed nest"
+   "name": "vernietigd nest"
   }
  ],
  "method": [
   {
    "id": 47,
-   "name": "onbekend",
-   "en": "unknown"
+   "name": "onbekend"
   },
   {
    "id": 48,
-   "name": "gezien",
-   "en": "seen"
+   "name": "gezien"
   },
   {
    "id": 49,
-   "name": "gehoord",
-   "en": "heard"
+   "name": "gehoord"
   },
   {
    "id": 51,
-   "name": "gezien en gehoord",
-   "en": "seen and heard"
+   "name": "gezien en gehoord"
   },
   {
    "id": 579,
-   "name": "sporen",
-   "en": "tracks and signs"
+   "name": "sporen"
   },
   {
    "id": 27,
-   "name": "gevangen",
-   "en": "caught"
+   "name": "gevangen"
   },
   {
    "id": 585,
-   "name": "in braakbal",
-   "en": "in pellet"
+   "name": "in braakbal"
   },
   {
    "id": 795,
-   "name": "warmtekijker",
-   "en": "thermal imaging scope"
+   "name": "warmtekijker"
   },
   {
    "id": 586,
-   "name": "zichtwaarneming met zoeklicht",
-   "en": "spotlight night observation"
+   "name": "zichtwaarneming met zoeklicht"
   },
   {
    "id": 587,
-   "name": "met fotoval",
-   "en": "with camera trap"
+   "name": "met fotoval"
   },
   {
    "id": 588,
-   "name": "op geluidsrecorder",
-   "en": "sound trapped"
+   "name": "op geluidsrecorder"
   },
   {
    "id": 32,
-   "name": "verzameld (in collectie)",
-   "en": "collected"
+   "name": "verzameld (in collectie)"
   },
   {
    "id": 34,
-   "name": "telemetrie",
-   "en": "telemetry"
+   "name": "telemetrie"
   },
   {
    "id": 42,
-   "name": "(e)dna barcoding",
-   "en": "(e)dna barcoding"
+   "name": "(e)dna barcoding"
   },
   {
    "id": 589,
-   "name": "binnenshuis",
-   "en": "indoors"
+   "name": "binnenshuis"
   },
   {
    "id": 784,
-   "name": "op voederplaats",
-   "en": "on feeding place"
+   "name": "op voederplaats"
   },
   {
    "id": 815,
-   "name": "translocatie",
-   "en": "translocation"
+   "name": "translocatie"
   },
   {
    "id": 832,
-   "name": "Nest(kast)",
-   "en": "nestbox"
+   "name": "Nest(kast)"
   }
  ],
  "life_stage": [
   {
    "id": 1,
-   "name": "onbekend",
-   "en": "unknown"
+   "name": "onbekend"
   },
   {
    "id": 2,
-   "name": "adult",
-   "en": "adult"
+   "name": "adult"
   },
   {
    "id": 3,
-   "name": "adult zomerkleed",
-   "en": "adult breeding"
+   "name": "adult zomerkleed"
   },
   {
    "id": 4,
-   "name": "adult winterkleed",
-   "en": "adult non-breeding"
+   "name": "adult winterkleed"
   },
   {
    "id": 5,
-   "name": "juveniel",
-   "en": "juvenile"
+   "name": "juveniel"
   },
   {
    "id": 6,
-   "name": "subadult",
-   "en": "subadult"
+   "name": "subadult"
   },
   {
    "id": 7,
-   "name": "eerste najaar",
-   "en": "first autumn"
+   "name": "eerste najaar"
   },
   {
    "id": 8,
-   "name": "eerste winter",
-   "en": "first winter"
+   "name": "eerste winter"
   },
   {
    "id": 9,
-   "name": "eerste zomer",
-   "en": "first summer"
+   "name": "eerste zomer"
   },
   {
    "id": 10,
-   "name": "tweede winter",
-   "en": "second winter"
+   "name": "tweede winter"
   },
   {
    "id": 11,
-   "name": "tweede zomer",
-   "en": "second summer"
+   "name": "tweede zomer"
   },
   {
    "id": 12,
-   "name": "eclips",
-   "en": "eclipse"
+   "name": "eclips"
   },
   {
    "id": 13,
-   "name": "eerste jaar",
-   "en": "first year"
+   "name": "eerste jaar"
   },
   {
    "id": 14,
-   "name": "eerste kalenderjaar",
-   "en": "first calendar year"
+   "name": "eerste kalenderjaar"
   },
   {
    "id": 15,
-   "name": "tweede kalenderjaar",
-   "en": "second calendar year"
+   "name": "tweede kalenderjaar"
   },
   {
    "id": 16,
-   "name": "derde kalenderjaar",
-   "en": "third calendar year"
+   "name": "derde kalenderjaar"
   },
   {
    "id": 62,
-   "name": "derde winter",
-   "en": "third-winter"
+   "name": "derde winter"
   },
   {
    "id": 72,
-   "name": "vierde kalenderjaar",
-   "en": "fourth calendar year"
+   "name": "vierde kalenderjaar"
   },
   {
    "id": 1175,
-   "name": "vijfde kalenderjaar",
-   "en": "fifth calenderyear"
+   "name": "vijfde kalenderjaar"
   },
   {
    "id": 86,
-   "name": "afwijkend",
-   "en": "deviant"
+   "name": "afwijkend"
   },
   {
    "id": 1176,
-   "name": "melanistisch",
-   "en": "melanistic"
+   "name": "melanistisch"
   },
   {
    "id": 1009,
-   "name": "pullus",
-   "en": "nestling"
+   "name": "pullus"
   },
   {
    "id": 1010,
-   "name": "onvolwassen",
-   "en": "immature"
+   "name": "onvolwassen"
   },
   {
    "id": 1101,
-   "name": "zomerkleed",
-   "en": "summer plumage"
+   "name": "zomerkleed"
   },
   {
    "id": 1102,
-   "name": "winterkleed",
-   "en": "winter plumage"
+   "name": "winterkleed"
   }
  ]
 }
