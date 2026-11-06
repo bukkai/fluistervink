@@ -97,8 +97,11 @@ async function attachPosition(utteranceId: string, pending: Promise<PositionLook
     await db.observations
       .where('utteranceId')
       .equals(utteranceId)
-      .filter((obs) => !obs.position)
-      .modify({ position });
+      .modify((obs) => {
+        if (!obs.position) obs.position = position;
+        // Al met de hand gezet: de GPS wordt de plek om naar terug te gaan
+        else if (obs.recordedPosition === null) obs.recordedPosition = position;
+      });
   });
   await attachArea(utteranceId, position);
 }
@@ -114,6 +117,32 @@ export function spokenAt(utterance: Utterance): number {
  */
 export async function editObservation(id: string, patch: Partial<Observation>): Promise<void> {
   await db.observations.update(id, { ...patch, editedAt: Date.now(), status: 'reviewed' });
+}
+
+/** Nauwkeurigheid van een met de hand gezette plek, in meters */
+export const HAND_ACCURACY = 10;
+
+export type Place = Pick<Observation, 'position' | 'recordedPosition'>;
+
+/**
+ * Plek met de hand gezet (tikken of slepen op de kaart). De GPS-positie
+ * blijft bewaard in `recordedPosition`, ook als de plek vaker verzet wordt.
+ * Als meettijd de tijd van de waarneming, zodat er geen "positie oud" staat.
+ */
+export function placeByHand(current: Place, observedAt: number, lat: number, lon: number): Place {
+  return {
+    position: { lat, lon, accuracy: HAND_ACCURACY, fixedAt: observedAt },
+    recordedPosition:
+      current.recordedPosition !== undefined
+        ? current.recordedPosition
+        : (current.position ?? null),
+  };
+}
+
+/** Terug naar de plek van de GPS ("Terug naar de opgenomen plek") */
+export function recordedPlace(current: Place): Place {
+  if (current.recordedPosition === undefined) return current;
+  return { position: current.recordedPosition ?? undefined, recordedPosition: undefined };
 }
 
 /**

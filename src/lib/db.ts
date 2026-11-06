@@ -183,7 +183,14 @@ export interface Observation {
   observedAt: number;
   /** Volgorde van aanmaken, voor waarnemingen uit dezelfde uitspraak */
   createdAt: number;
+  /** Plek die meegaat in de export en op de kaart staat: GPS of met de hand gezet */
   position?: Position;
+  /**
+   * Alleen als de plek met de hand is gezet (in de review): de GPS-positie
+   * van de uitspraak, om terug te kunnen. `null`: er was geen GPS-positie.
+   * Leeg: `position` is nog die van de GPS.
+   */
+  recordedPosition?: Position | null;
   /** Gebied van waarneming.nl, overgenomen van de uitspraak */
   area?: Area | null;
   uncertain: boolean;
