@@ -79,6 +79,8 @@
     <p class="source">
       {#if utterance.audio}
         <button type="button" class="play" onclick={play} aria-label="Opname afspelen">▶</button>
+      {:else if utterance.audioDeletedAt}
+        <span class="muted">(opname gewist)</span>
       {/if}
       “{utterance.transcript}”
     </p>

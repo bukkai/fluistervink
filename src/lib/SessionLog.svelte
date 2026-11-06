@@ -391,6 +391,9 @@
                 >{playingId === u.id ? PAUSE : PLAY}</button
               >
             {/if}
+            {#if u.audioDeletedAt}
+              <span class="muted">(opname gewist)</span>
+            {/if}
             {#if u.transcript !== undefined}
               “{u.transcript}”
             {:else}

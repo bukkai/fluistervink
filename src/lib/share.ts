@@ -41,6 +41,11 @@ export function sentNoteIds(): Set<string> {
   return new Set(read<Sent>(SENT_KEY, { sessions: {}, audio: [] }).notes ?? []);
 }
 
+/** Uitspraken waarvan de opname al bij de ontwikkelaar is. */
+export function sharedAudioIds(): Set<string> {
+  return new Set(read<Sent>(SENT_KEY, { sessions: {}, audio: [] }).audio);
+}
+
 /**
  * Feedback in een verstuurde (of al eerder verstuurde, zelfde hash) versie
  * van een wandeling als verstuurd noteren.

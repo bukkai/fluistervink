@@ -141,6 +141,7 @@
     <ol>
       <li>
         <strong>De app</strong> noteert het tijdstip en waar je bent, en bewaart je opname op je telefoon.
+        Die kun je later wissen, de tekst en waarnemingen blijven dan staan.
       </li>
       <li>
         <strong>Spraak wordt tekst.</strong> Een programma van OpenAI (de makers van ChatGPT) schrijft

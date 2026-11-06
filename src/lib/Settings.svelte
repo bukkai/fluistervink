@@ -11,6 +11,7 @@
   } from './api';
   import { APP_VERSION, CHANNEL } from './log';
   import { isNativeApp, nativeAppVersion } from './native';
+  import RecordingSettings from './RecordingSettings.svelte';
   import ShareSettings from './ShareSettings.svelte';
 
   let code = $state(getAccessCode());
@@ -116,6 +117,8 @@
 </section>
 
 <ShareSettings />
+
+<RecordingSettings />
 
 <p class="version">
   Fluistervink{CHANNEL === 'beta' ? ' beta' : ''} · versie {APP_VERSION}{#if appVersion}<br

@@ -33,7 +33,7 @@
       De opname van elke uitspraak, de tekst, het tijdstip, de locatie (alleen op het moment dat je
       begint met inspreken), je waarnemingen en een logboek van wat de app deed (fouten,
       wachttijden) staan in de opslag van de app (of van de browser) op je telefoon. Daar blijven ze
-      tot je ze verwijdert.
+      tot je ze verwijdert. De opnames kun je ook los wissen (zie hieronder).
     </p>
     <p>
       In de Android-app staat tijdens een wandeling de melding "Wandeling loopt". Daardoor mag de
@@ -124,6 +124,12 @@
     <ul>
       <li>
         Delen aan- of uitzetten, met of zonder opnames: <a href="#instellingen">Instellingen</a>.
+      </li>
+      <li>
+        Alleen de opnames wissen: onderaan bij een wandeling, of alles in één keer bij
+        <a href="#instellingen">Instellingen</a>. De wandeling, wat je zei als tekst en de
+        waarnemingen blijven staan; terugluisteren kan dan niet meer. Opnames die je al met de
+        ontwikkelaar gedeeld had, blijven daar staan.
       </li>
       <li>
         Een wandeling verwijderen, met alle opnames: bij <a href="#wandelingen"
