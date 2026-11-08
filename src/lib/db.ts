@@ -106,6 +106,8 @@ export interface Utterance {
    * waarneming. Gaat niet naar het model. Leeg = gewone uitspraak.
    */
   kind?: 'dev_note';
+  /** Een stuk uit de trektelmodus (de app knipte zelf), niet met de knop ingesproken */
+  trektel?: true;
   /**
    * Uitkomst na verwerking; bepaalt later ook het trilpatroon.
    * `ignored`: geen waarneming in de uitspraak (of niet begrepen).

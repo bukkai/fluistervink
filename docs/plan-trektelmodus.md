@@ -1,6 +1,6 @@
 # Plan: trektelmodus
 
-Voorstel van 8 nov 2026, nog niet goedgekeurd. Aanleiding: tester Maarten doet vaak trektellen en wil langer achter elkaar kunnen inspreken. Nu stopt een opname vanzelf na 3 minuten (`MAX_RECORDING_MS` in `src/lib/ActiveSession.svelte`, op 28 okt verhoogd van 1 minuut).
+Voorstel van 8 nov 2026, dezelfde dag goedgekeurd. Fase 1 gebouwd (8 nov), met al het harde maximum van 4 uur uit punt 3 en een eigen trilpatroon als de telling vanzelf stopt. Aanleiding: tester Maarten doet vaak trektellen en wil langer achter elkaar kunnen inspreken. Nu stopt een opname vanzelf na 3 minuten (`MAX_RECORDING_MS` in `src/lib/ActiveSession.svelte`, op 28 okt verhoogd van 1 minuut).
 
 ## Doel
 

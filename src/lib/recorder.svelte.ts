@@ -16,13 +16,13 @@ export interface Recording {
  * Ruim genoeg voor spraak, en een kleine upload bij slecht bereik. Zonder
  * kiest de browser zelf, op een iPhone ±220 kbit/s (1,7 MB per minuut).
  */
-const AUDIO_BITS_PER_SECOND = 32_000;
+export const AUDIO_BITS_PER_SECOND = 32_000;
 
 /** Kortere opnames zijn een per ongeluk aangetikte knop. */
 const MIN_DURATION_MS = 500;
 
 /** Bestandsformaten in volgorde van voorkeur; Chrome op Android kan webm/opus. */
-const MIME_TYPES = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/mp4'];
+export const MIME_TYPES = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/mp4'];
 
 /** Toestand voor de interface. */
 export const recorder = $state<{
