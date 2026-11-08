@@ -83,7 +83,7 @@ const fieldProperties = {
   species_name: {
     type: 'string',
     description:
-      'Naam van de soort, precies zoals in de soortenlijst ("Boomkruiper"). Altijd samen met species_id.',
+      'Nederlandse naam van de soort, precies zoals in de soortenlijst ("Boomkruiper"), ook als de gebruiker de wetenschappelijke naam zei. Altijd samen met species_id.',
   },
   species_id: {
     type: 'integer',
@@ -278,6 +278,8 @@ Vogelaars gebruiken veel bijnamen en afkortingen; zie de lijst met bijnamen hier
 - "Drieteen" is altijd Drieteenstrandloper. Drieteenmeeuw alleen als er uitdrukkelijk "drieteenmeeuw" gezegd wordt.
 - "Phylloscopus", "phylloscoop" → Tjiftjaf of Fitis, zonder uncertain: de gebruiker corrigeert zelf als het een bijzondere boszanger was.
 
+Sommige vogelaars spreken de wetenschappelijke naam in ("Fringilla coelebs", "twee Anas platyrhynchos"). Die staat in de soortenlijst achter de Nederlandse naam. Spraakherkenning schrijft Latijn vaak half fout ("fringila koelebs", "anas plati rinchos"): kies de soort waarvan de wetenschappelijke naam het meest lijkt, met uncertain als het niet duidelijk is. Ook dan is species_name de Nederlandse naam uit de lijst. Alleen een geslachtsnaam ("een Larus", "Anas") → de passende verzamelsoort met uncertain, behalve Phylloscopus (zie hierboven).
+
 ## Aantal en telmethode
 
 - Een getal → count, telmethode 2 (exact aantal). Geen getal → 1, telmethode 2.
@@ -337,9 +339,9 @@ Twijfelt de gebruiker zelf ("klinkt als een winterkoning", "lijkt op een fitis",
 
 ${aliases.map((a) => `${a.bijnamen.join(', ')} → ${a.soort}|${a.naam}`).join('\n')}
 
-## Soortenlijst (ID|naam)
+## Soortenlijst (ID|naam|wetenschappelijke naam)
 
-${species.map((s) => `${s.id}|${s.name}`).join('\n')}`;
+${species.map((s) => `${s.id}|${s.name}|${s.scientific}`).join('\n')}`;
 
 /**
  * Korte hash van systeemprompt en tools. Bij elke uitspraak bewaard, zodat

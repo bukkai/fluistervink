@@ -38,7 +38,10 @@
       <li>"vijf wilde eenden, twee vrouwtjes en drie mannetjes"</li>
       <li>"mogelijk een woudaap" (wordt onzeker)</li>
     </ul>
-    <p>Vogelaarsjargon werkt ook: "tova", "KBV", "grobo".</p>
+    <p>
+      Vogelaarsjargon werkt ook: "tova", "KBV", "grobo". Wetenschappelijke namen ook: "Fringilla
+      coelebs".
+    </p>
     <p>
       Meerdere soorten in één keer kan ook: "zes houtduiven en een vink" wordt twee waarnemingen,
       met dezelfde tijd en plek. Noem je dezelfde soort twee keer ("vijf houtduiven ... nog twee

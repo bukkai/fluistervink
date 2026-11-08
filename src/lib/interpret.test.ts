@@ -41,6 +41,18 @@ describe('parseResponse', () => {
     expect(warnings).toHaveLength(1);
   });
 
+  it('accepteert een wetenschappelijke naam in species_name zonder waarschuwing', () => {
+    const { actions, warnings } = parseResponse(
+      toolResponse([
+        'add_observation',
+        { species_name: 'fringilla coelebs', species_id: VINK, count: 1 },
+      ]),
+      [],
+    );
+    expect(actions[0]).toMatchObject({ type: 'add', fields: { speciesId: VINK } });
+    expect(warnings).toEqual([]);
+  });
+
   it('weigert een soort-ID dat niet in de lijst staat', () => {
     const { actions, rejected } = parseResponse(
       toolResponse(['add_observation', { species_id: 999999, count: 1 }]),
