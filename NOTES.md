@@ -59,11 +59,12 @@ Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de a
    - Kosten per wandeling: op Developer (PR #133).
 3. **Klaar voor vreemden:**
    - Twee omgevingen (stabiel en beta, zie Ideeën voor later).
-   - Welkom en uitleg voor wie geen uitnodiging kreeg: toestemming voor microfoon en GPS, eerste wandeling stap voor stap.
+   - Welkom en uitleg voor wie geen uitnodiging kreeg: toestemming voor microfoon en GPS, eerste wandeling stap voor stap. **Vast voor v1.0** (besloten 8 nov).
+   - **Back-up** (besloten 8 nov: als volgende bouwen): een kaart "Back-up" bij Instellingen die alles (met opnames) als bestand bewaart en terugzet, met de datum van de laatste back-up. Bij vreemden is "telefoon kwijt of app verwijderd, niet-geëxporteerde sessies weg" de eerste pijnlijke klacht.
 4. **Thuis meer waarde dan alleen exporteren** (zolang de API van waarneming.nl wacht):
    - Kaart clusteren (voorstel onder Ideeën voor later).
    - Snellere review: alleen de onzekere langslopen, "alles klopt" met één tik.
-5. **Bewust niet in v1.0:** API van waarneming.nl (v1.0 levert juist de gebruikers op die de aanvraag sterker maken), GPS-track, accounts, BirdNET, wake word.
+5. **Bewust niet in v1.0:** API van waarneming.nl (v1.0 levert juist de gebruikers op die de aanvraag sterker maken), GPS-track, accounts, BirdNET, wake word. Overweging 8 nov: later **optioneel** een account, alleen als iemand daar zelf voor kiest bij Instellingen (bv. voor automatische back-up of een nieuwe telefoon); standaard blijft gratis en anoniem.
 
 Volgorde: (a) nu de kleine open punten, betatesters uitnodigen en een wandeling; (b) Capacitor: trillen, foreground service, eventueel volumeknop; (c) twee omgevingen, dan twee à drie testers erbij; (d) ~~voorjaar~~ **besloten 6 nov: geen voorjaarsronde afwachten.** In het najaar is genoeg te testen; eerst een weekend Terschelling met de app, daarna v1.0 uitbrengen. Aanmelden zonder code (#142) is ingesteld en werkt (5 installaties).
 
@@ -92,7 +93,7 @@ Tweede ronde op 28 okt, direct na de release (stable bijgewerkt, tag v0.2), vana
 
 Nog niet gepland; eerst overleggen.
 
-- **Back-up / nieuwe telefoon** (24 okt op de lange baan: twijfel of mensen het gebruiken; eerst invoeren makkelijker maken): alles staat lokaal. Voorstel was een kaart "Back-up" in Instellingen die `exportAllJson` (met opnames) en `importJson` hergebruikt, met de datum van de laatste back-up. Automatisch via de proxy of naar Drive via het deelmenu (native plugin) pas daarna.
+- **Back-up automatisch** (na de kaart "Back-up", zie de roadmap): via de proxy (dan met een optioneel account) of naar Drive via het deelmenu (native plugin).
 - **Inzenden via de API van waarneming.nl** — op de lange baan (13 okt): toegang is niet vanzelfsprekend; pas aanvragen als blijkt dat er interesse in de app is (meer gebruikers = sterkere aanvraag). Tot die tijd de gebundelde CSV-export. (Uitgezocht 13 okt; de officiële documentatie op `waarneming.nl/api/docs/*.md` gaf ons een 403, dus gecontroleerd in de TypeScript-client [observation-js](https://github.com/robbeverhelst/observation-js); nog na te lopen in de documentatie, ingelogd):
   - De API kan wel waarnemingen invoeren (niet via het importformulier). `POST /api/v1/observations/create/` ("one-way sync") neemt een lijst waarnemingen en geeft per waarneming de URL of de fouten; een fout houdt de rest niet tegen; `external_id` voorkomt dubbel invoeren (bestaande wordt bijgewerkt). `create-single/` is voor één waarneming met foto's/geluid.
   - Velden passen op wat we bewaren: `species` (ID), `date`, `time`, `point` (GeoJSON of WKT), `accuracy`, `number`, `sex`, `activity`, `life_stage`, `method`, `counting_method`, `is_certain`, `notes`, `uuid`.
@@ -100,7 +101,17 @@ Nog niet gepland; eerst overleggen.
   - Eerst een client-ID aanvragen via het contactformulier (concept in de sessie van 13 okt: app, nalopen vóór inzenden, vaste soortenlijst, 88% goed; vragen: inlogmethode, client secret, testaccount op waarneming-test.nl, `create/` met `external_id` en welke scope, redirect-URL). Daarna: account koppelen bij Instellingen, route `/api/waarneming` in de proxy (CORS, secret), knop "Inzenden" voor de klaarstaande wandelingen, ID/link van waarneming.nl bewaren, `#privacy` en `#uitleg` bijwerken.
 - **Soortenstatistieken over alle gebruikers:** tellen per soort-ID wat het model koos, wat met de hand gecorrigeerd werd en wat het niet kon plaatsen, om de soortenlijst, bijnamen en STT-prompt bij te stellen. Kan in de proxy (Analytics Engine of D1); alleen geaggregeerd, en op `#privacy` vermelden. Pas relevant bij meer gebruikers; tot die tijd geeft de testset hetzelfde beeld.
 - Foto koppelen aan een waarneming via tijd en locatie.
-- **Korte "nee, <vogel>" als onzeker markeren** (6 nov, Jurian 4 nov): in de wind werd "Een waterhoen." verstaan als "Nee, waterhoen.", waardoor de 2 krakeenden ervoor 2 waterhoenders werden (ook gpt-4o-transcribe opnieuw hoort "Nee"). Wie echt corrigeert zegt meestal meer ("nee, dat was een keep"). Idee: een correctie van alleen "nee" + soortnaam als onzeker markeren (afwijkend trilpatroon, valt op bij het nalopen). In de testset staan uitspraak 18 en 19 van Jurian daardoor verkeerd gelabeld (2× waterhoen, moet 2× krakeend + 1× waterhoen).
+
+**Voorstellen van Claude** (8 nov, op verzoek van de eigenaar; nog niet besproken of gepland). Voorgestelde volgorde: eerst Terschelling en wat daaruit komt, dan 1 en 2, dan welkom voor vreemden en back-up (zie de roadmap), dan een fysieke knop als push-to-talk (volumeknop of de knop op de oortjes; kleiner dan fase 3 en lost het grootste deel van Maartens fietswens op), fase 3 pas daarna, export naar trektellen.nl na de proef met Maarten.
+
+1. **Geen verzonnen soort uit de STT-prompt.** Bij een onverstaanbare opname zet `gpt-transcribe` soms een voorbeeld uit de prompt neer ("Roepje vink."): geloofwaardig en verzonnen. Een transcript dat letterlijk een voorbeeldzin is onzeker maken, of de voorbeeldzinnen zonder echte soort schrijven. Meten met de testset.
+2. **Onwaarschijnlijke soort wordt onzeker.** De meeste fouten zijn verwisselingen met een andere echte vogelnaam (kuifmees/koolmees, kraai/gaai, smient/vink). Kiest de app een zeldzame soort (zeldzaamheid van waarneming.nl staat er al), dan onzeker, zodat hij bovenaan staat bij het nalopen. Later eventueel ook seizoen en plek.
+3. **Gesproken bevestiging in de oortjes** (optioneel). De tril zegt alleen *dat* iets is opgeslagen, niet *wat*. Een korte stem ("drie houtduiven, overvliegend") maakt corrigeren in het veld mogelijk ("nee, holenduiven"). Tekst-naar-spraak van Android, geen extra API. Eerst een kort plan in `docs/`.
+4. **Samenvatting na een sessie:** soortenlijst met aantallen, "nieuw dit jaar", "eerste van het seizoen". Thuis meer waarde dan alleen exporteren.
+5. **Herinnering aan de export:** staan sessies een week klaar zonder export, dan een melding op het hoofdscherm.
+6. **"Wat zei ik?" in het veld:** tik op de laatste waarneming speelt de opname af en toont het transcript, zodat je ziet waarom iets misging ("hier" i.p.v. "vier") en meteen kunt corrigeren.
+
+(Eigen soorten vooraan in de STT-prompt was ook een idee, maar is al getest op 24 okt: binnen de ruis.)
 
 ## Android-app
 
