@@ -607,6 +607,8 @@ async function transcribeUtterance(utterance: Utterance): Promise<Utterance> {
 const ACCIDENTAL_MIN_MS = 3_500;
 /** Minder woorden per seconde dan dit = (bijna) geen spraak. */
 const ACCIDENTAL_MAX_WORDS_PER_S = 0.3;
+/** Zoveel woorden verzint de spraakherkenning niet uit geritsel */
+const ACCIDENTAL_MAX_WORDS = 6;
 
 /**
  * Een opname met bijna geen tekst voor zijn lengte is vrijwel zeker per ongeluk
@@ -615,17 +617,26 @@ const ACCIDENTAL_MAX_WORDS_PER_S = 0.3;
  * "Roodhalsfuut" (0,05 woord/s), en in de bus 3,9 s "Bosuil" (0,26 woord/s).
  * Echte uitspraken halen 0,5 of meer, ook één soortnaam ("Boomklever", 1,9 s).
  * Een echte trage uitspraak wordt hooguit onzeker, en dat zie je bij het nalopen.
+ * Niet bij een lijst van zes woorden of meer, en niet in de trektelmodus: wie
+ * naar de lucht kijkt en tussendoor soorten noemt, haalt makkelijk minder dan
+ * 0,3 woord/s (Maarten, 8 nov: 45 s, 13 woorden, alles werd onzeker). Daar
+ * houdt de spraakdetectie stille stukken al tegen.
  * Volume en de zekerheid van de spraakherkenning bleken geen goed signaal:
  * geritsel is luider dan fluisteren, en de zekerheid wisselt per poging.
  */
 export function isAccidental(
-  utterance: Pick<Utterance, 'audioDurationMs' | 'transcript' | 'audio' | 'audioDeletedAt'>,
+  utterance: Pick<
+    Utterance,
+    'audioDurationMs' | 'transcript' | 'audio' | 'audioDeletedAt' | 'trektel'
+  >,
 ): boolean {
+  if (utterance.trektel) return false;
   const ms = utterance.audioDurationMs;
   // Opgenomen (ook als de opname daarna gewist is), niet getypt
   const recorded = !!utterance.audio || utterance.audioDeletedAt !== undefined;
   if (!recorded || !ms || ms < ACCIDENTAL_MIN_MS) return false;
   const words = (utterance.transcript ?? '').split(/\s+/).filter(Boolean).length;
+  if (words >= ACCIDENTAL_MAX_WORDS) return false;
   return words / (ms / 1000) < ACCIDENTAL_MAX_WORDS_PER_S;
 }
 
