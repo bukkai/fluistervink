@@ -3,9 +3,18 @@
   // de code: elke nieuwe plek waar gegevens heen gaan, hoort hier te staan.
   // Het beleid van de aanbieders verandert; de bronnen onderaan zijn nagekeken
   // op de datum die erbij staat.
+  //
+  // Dezelfde tekst staat als losse pagina op /privacy (standalone), gemaakt bij
+  // het bouwen (build/privacyPage.ts): dat adres staat in Google Play, en daar
+  // moet hij te lezen zijn zonder de app. Links naar schermen van de app gaan
+  // dan via de voorpagina.
+  let { standalone = false }: { standalone?: boolean } = $props();
+  const app = $derived(standalone ? '/' : '');
+
+  const CONTACT = 'info@fluistervink.nl';
 </script>
 
-<a class="back" href="#/">Terug</a>
+{#if !standalone}<a class="back" href="#/">Terug</a>{/if}
 <h2 class="page-title">Privacy</h2>
 
 <section class="card">
@@ -30,6 +39,17 @@
 
 <section class="card">
   <div class="card-body">
+    <h3>Wie maakt Fluistervink</h3>
+    <p>
+      Fluistervink is een persoonlijk project van Stephan Muller. Hij is verantwoordelijk voor wat
+      er met je gegevens gebeurt. Vragen, inzage of iets laten wissen: mail naar
+      <a href="mailto:{CONTACT}">{CONTACT}</a>, of stuur feedback in de app.
+    </p>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-body">
     <h3>Op je telefoon</h3>
     <p>
       De opname van elke uitspraak, de tekst, het tijdstip, de locatie (alleen op het moment dat je
@@ -38,7 +58,7 @@
       tot je ze verwijdert. De opnames kun je ook los wissen (zie hieronder).
     </p>
     <p>
-      Maak je bij <a href="#instellingen">Instellingen</a> een back-up, dan komt alles (met de opnames
+      Maak je bij <a href="{app}#instellingen">Instellingen</a> een back-up, dan komt alles (met de opnames
       als je dat aanvinkt) in één bestand op je telefoon (in de Android-app in Downloads). Dat bestand
       gaat nergens heen, tenzij je het zelf ergens neerzet, bijvoorbeeld in Google Drive.
     </p>
@@ -99,8 +119,8 @@
         kijkt daarvoor onder andere naar je IP-adres en browser, volgens Cloudflare alleen om robots
         tegen te houden en niet om je te volgen. Daarna krijgt de app een willekeurige naam (zoals
         "app-3f9a2b1c"), zonder iets wat naar jou verwijst. Vul je bij
-        <a href="#instellingen">Instellingen</a> je naam in (niet verplicht), dan staat die erbij, zodat
-        de ontwikkelaar weet van wie gebruik en feedback komen.
+        <a href="{app}#instellingen">Instellingen</a> je naam in (niet verplicht), dan staat die erbij,
+        zodat de ontwikkelaar weet van wie gebruik en feedback komen.
       </dd>
     </dl>
   </div>
@@ -113,14 +133,14 @@
       Fluistervink is nog in ontwikkeling. Zeg je ja tegen delen, dan gaan na elke sessie je
       uitspraken als tekst, wat de app ervan maakte, je correcties bij het nalopen, je feedback, het
       logboek van die sessie en de locaties van je waarnemingen naar de ontwikkelaar. Opnames alleen
-      als je dat bij <a href="#instellingen">Instellingen</a> aanzet.
+      als je dat bij <a href="{app}#instellingen">Instellingen</a> aanzet.
     </p>
     <p>
       Het staat bij Cloudflare onder je testernaam, of zonder code onder de willekeurige naam van je
       installatie. Alleen de ontwikkelaar kan het lezen, en gebruikt het alleen om de herkenning en
       de app te verbeteren. Niet doorgeven, niet publiceren. Wil je dat het weg is, stuur dat als
-      feedback in de app (of vraag het aan wie je heeft uitgenodigd): dan wordt alles van jou
-      gewist.
+      feedback in de app of mail naar <a href="mailto:{CONTACT}">{CONTACT}</a>: dan wordt alles van
+      jou gewist.
     </p>
   </div>
 </section>
@@ -130,22 +150,20 @@
     <h3>Wat je zelf kunt doen</h3>
     <ul>
       <li>
-        Delen aan- of uitzetten, met of zonder opnames: <a href="#instellingen">Instellingen</a>.
+        Delen aan- of uitzetten, met of zonder opnames: <a href="{app}#instellingen">Instellingen</a
+        >.
       </li>
       <li>
         Alleen de opnames wissen: onderaan bij een sessie, of alles in één keer bij
-        <a href="#instellingen">Instellingen</a>. De sessie, wat je zei als tekst en de waarnemingen
-        blijven staan; terugluisteren kan dan niet meer. Opnames die je al met de ontwikkelaar
-        gedeeld had, blijven daar staan.
+        <a href="{app}#instellingen">Instellingen</a>. De sessie, wat je zei als tekst en de
+        waarnemingen blijven staan; terugluisteren kan dan niet meer. Opnames die je al met de
+        ontwikkelaar gedeeld had, blijven daar staan.
       </li>
       <li>
-        Een sessie verwijderen, met alle opnames: bij <a href="#sessies">Vorige sessies</a>. Dat is
-        echt weg.
+        Een sessie verwijderen, met alle opnames: bij <a href="{app}#sessies">Vorige sessies</a>.
+        Dat is echt weg.
       </li>
-      <li>
-        Een kopie van wat je gedeeld hebt: vraag het als feedback in de app (of aan wie je heeft
-        uitgenodigd).
-      </li>
+      <li>Een kopie van wat je gedeeld hebt: vraag het als feedback in de app of per mail.</li>
       <li>
         Alles wissen: de app verwijderen, of in Chrome de sitegegevens van Fluistervink wissen.
       </li>
@@ -156,8 +174,38 @@
   </div>
 </section>
 
+<section class="card">
+  <div class="card-body">
+    <h3>Hoe lang het blijft</h3>
+    <ul>
+      <li>Op je telefoon: tot je het zelf verwijdert.</li>
+      <li>Wat je met de ontwikkelaar deelt: tot je vraagt het te wissen.</li>
+      <li>
+        Het verbruik (aantallen en duur, zonder wat je zei): blijft bewaard, om kosten en gebruik
+        over langere tijd te kunnen zien.
+      </li>
+      <li>Het logboek van de server (wanneer, en of er iets misging): een paar dagen.</li>
+      <li>Bij OpenAI en Anthropic: zie hierboven.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-body">
+    <h3>Je rechten</h3>
+    <p>
+      Volgens de privacywet (AVG) mag je vragen wat er van jou bewaard is, het laten verbeteren of
+      wissen, en bezwaar maken. Mail daarvoor naar <a href="mailto:{CONTACT}">{CONTACT}</a>. Ben je
+      het niet eens met hoe dat gaat, dan kun je een klacht indienen bij de
+      <a href="https://autoriteitpersoonsgegevens.nl/" target="_blank" rel="noopener"
+        >Autoriteit Persoonsgegevens</a
+      >.
+    </p>
+  </div>
+</section>
+
 <p class="sources">
-  Bronnen, nagekeken op 28 oktober 2026:
+  Bijgewerkt op 8 november 2026. Bronnen, nagekeken op 28 oktober 2026:
   <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noopener"
     >OpenAI</a
   >,
