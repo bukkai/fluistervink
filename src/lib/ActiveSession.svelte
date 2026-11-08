@@ -13,6 +13,10 @@
   let { session }: { session: Session } = $props();
 
   let text = $state('');
+  /** Typen: dan staat het toetsenbord waar de knop zit */
+  let typing = $state(false);
+  /** Ruimte onder de lijst, zodat de knop de laatste waarneming niet bedekt */
+  let barHeight = $state(0);
 
   // GPS aan zolang dit scherm (de lopende wandeling) zichtbaar is
   $effect(() => {
@@ -145,38 +149,7 @@
   {/if}
 </p>
 
-<button
-  class="talk"
-  class:recording={recorder.status === 'recording'}
-  disabled={recorder.status === 'unsupported'}
-  onpointerdown={press}
-  onpointerup={release}
-  onpointercancel={cancel}
-  oncontextmenu={(event) => event.preventDefault()}
->
-  <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true">
-    {#if recorder.status === 'recording'}
-      <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
-    {:else}
-      <rect x="9" y="2.5" width="6" height="12" rx="3" fill="currentColor" />
-      <path
-        d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-      />
-    {/if}
-  </svg>
-  <span>
-    {recorder.status === 'recording' ? `Stop · ${Math.floor(elapsed / 1000)} s` : 'Inspreken'}
-  </span>
-</button>
-<p class="mic {recorder.status}">
-  {micLabels[recorder.status]}
-</p>
-
-<form onsubmit={submit}>
+<form onsubmit={submit} onfocusin={() => (typing = true)} onfocusout={() => (typing = false)}>
   <input
     bind:value={text}
     placeholder="Of typ: zes overvliegende houtduiven"
@@ -199,6 +172,46 @@
 </form>
 
 <SessionLog {session} />
+
+<!-- Onderaan, in de duimzone: bereikbaar met één hand, ook als je door de
+     lijst scrolt. Weg tijdens het typen, anders staat hij op het toetsenbord. -->
+<div class="talk-space" style:height="{barHeight}px"></div>
+<div
+  class="talk-bar"
+  class:hidden={typing && recorder.status !== 'recording'}
+  bind:clientHeight={barHeight}
+>
+  <button
+    class="talk"
+    class:recording={recorder.status === 'recording'}
+    disabled={recorder.status === 'unsupported'}
+    onpointerdown={press}
+    onpointerup={release}
+    onpointercancel={cancel}
+    oncontextmenu={(event) => event.preventDefault()}
+  >
+    <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true">
+      {#if recorder.status === 'recording'}
+        <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
+      {:else}
+        <rect x="9" y="2.5" width="6" height="12" rx="3" fill="currentColor" />
+        <path
+          d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+      {/if}
+    </svg>
+    <span>
+      {recorder.status === 'recording' ? `Stop · ${Math.floor(elapsed / 1000)} s` : 'Inspreken'}
+    </span>
+  </button>
+  <p class="mic {recorder.status}">
+    {micLabels[recorder.status]}
+  </p>
+</div>
 
 <style>
   .gps {
@@ -245,6 +258,30 @@
     background: var(--red);
   }
 
+  .talk-bar {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 10;
+    display: grid;
+    justify-items: center;
+    padding: 1.25rem 1rem calc(0.25rem + env(safe-area-inset-bottom));
+    /* De lijst schuift er zichtbaar onderdoor */
+    background: linear-gradient(transparent, var(--bg) 1.25rem);
+    pointer-events: none;
+  }
+
+  .talk-bar > * {
+    width: 100%;
+    max-width: 30rem;
+    pointer-events: auto;
+  }
+
+  .talk-bar.hidden {
+    display: none;
+  }
+
   .talk {
     position: relative;
     display: flex;
@@ -253,8 +290,7 @@
     justify-content: center;
     gap: 0.4rem;
     width: 100%;
-    min-height: 10rem;
-    margin-top: 0.75rem;
+    min-height: 8rem;
     border: none;
     border-radius: 1.25rem;
     font: inherit;
@@ -314,7 +350,7 @@
   }
 
   .mic {
-    margin: 0.5rem 0 0;
+    margin: 0.35rem 0 0;
     min-height: 1.5em;
     text-align: center;
     /* Ook foutmeldingen (geen microfoon): in het veld leesbaar, minstens 16 px */
