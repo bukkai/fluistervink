@@ -11,6 +11,7 @@
   } from './api';
   import { APP_VERSION, CHANNEL } from './log';
   import { isNativeApp, nativeAppVersion } from './native';
+  import BackupSettings from './BackupSettings.svelte';
   import RecordingSettings from './RecordingSettings.svelte';
   import ShareSettings from './ShareSettings.svelte';
   import TrektelSettings from './TrektelSettings.svelte';
@@ -116,6 +117,8 @@
     {/if}
   </form>
 </section>
+
+<BackupSettings />
 
 <ShareSettings />
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { observation } from '../test-helpers';
 import { db } from './db';
-import { importJson } from './export';
+import { describeImport, importJson } from './export';
 
 // Terugzetten van een JSON-export. Zo'n export kan van een tester komen
 // (npm run feedback -- pull), dus de import vertrouwt de inhoud niet.
@@ -25,8 +25,27 @@ function exportFile(fields: Record<string, unknown> = {}): File {
 
 describe('importJson', () => {
   it('zet een geldige export terug', async () => {
-    expect(await importJson(exportFile())).toEqual({ added: 1, skipped: 0 });
+    expect(await importJson(exportFile())).toEqual({ added: 1, skipped: 0, feedback: 1 });
     expect(await db.observations.get('o1')).toMatchObject({ count: 1, position });
+    expect(await db.utterances.get('los')).toMatchObject({ kind: 'dev_note', sessionId: '' });
+  });
+
+  it('overschrijft niets bij een tweede keer terugzetten', async () => {
+    await importJson(exportFile());
+    await db.observations.update('o1', { count: 5 });
+    await db.utterances.update('los', { transcript: 'eigen tekst' });
+    expect(await importJson(exportFile())).toEqual({ added: 0, skipped: 1, feedback: 0 });
+    expect(await db.observations.get('o1')).toMatchObject({ count: 5 });
+    expect(await db.utterances.get('los')).toMatchObject({ transcript: 'eigen tekst' });
+  });
+
+  it('beschrijft de uitkomst in een zin', () => {
+    expect(describeImport({ added: 2, skipped: 1, feedback: 1 })).toBe(
+      '2 sessies teruggezet, te vinden bij Vorige sessies. 1 stond er al. 1× losse feedback teruggezet.',
+    );
+    expect(describeImport({ added: 0, skipped: 0, feedback: 0 })).toBe(
+      'Geen nieuwe sessies gevonden.',
+    );
   });
 
   it.each([

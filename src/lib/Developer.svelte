@@ -25,7 +25,7 @@
     type WalkCost,
   } from './costs';
   import { db } from './db';
-  import { exportAllJson, importJson, saveFile } from './export';
+  import { describeImport, exportAllJson, importJson, saveFile } from './export';
   import { inviteMail, inviteMailto, PLAY_TEST_LINKS } from './invite';
   import { CHANNEL } from './log';
 
@@ -252,15 +252,7 @@
     input.value = '';
     if (!file) return;
     try {
-      const { added, skipped } = await importJson(file);
-      importMessage = [
-        added === 0
-          ? 'Geen nieuwe sessies gevonden.'
-          : `${added === 1 ? '1 sessie' : `${added} sessies`} geïmporteerd, te vinden bij Vorige sessies.`,
-        skipped > 0 && `${skipped} stond${skipped === 1 ? '' : 'en'} er al.`,
-      ]
-        .filter(Boolean)
-        .join(' ');
+      importMessage = describeImport(await importJson(file));
     } catch (error) {
       importMessage = `Importeren mislukt: ${error instanceof Error ? error.message : error}`;
     }
