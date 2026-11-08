@@ -47,14 +47,15 @@ export function isComputable(spoken: SpokenPlace): boolean {
   return spoken.distanceM !== undefined && spoken.direction !== undefined;
 }
 
-export type VoicePlace = Pick<Observation, 'position' | 'recordedPosition' | 'placedByVoice'>;
+/** Plek van een waarneming en de bewaarde GPS-plek (met de hand of volgens de uitspraak gezet) */
+export type Place = Pick<Observation, 'position' | 'recordedPosition' | 'placedByVoice'>;
 
 /**
  * De plek van de vogel volgens de uitspraak, vanaf de GPS-positie van de
  * gebruiker. Die blijft bewaard in `recordedPosition`, zoals bij een met de
  * hand gezette plek, zodat "Terug naar de opgenomen plek" werkt.
  */
-export function placeFromSpeech(gps: Position, spoken: SpokenPlace): VoicePlace {
+export function placeFromSpeech(gps: Position, spoken: SpokenPlace): Place {
   const { distanceM, direction } = spoken;
   let position: Position;
   if (distanceM !== undefined && direction !== undefined) {

@@ -87,12 +87,22 @@
     onclose();
   }
 
+  /** De app twijfelde alleen over de plek ("aan de overkant van de rivier") */
+  const onlyPlaceDoubt =
+    original.uncertain &&
+    !!original.spokenPlace &&
+    original.uncertainReason === placeReason(original.spokenPlace);
+
   function setPlace(lat: number, lon: number) {
     place = placeByHand(place, original.observedAt, lat, lon);
-    // Twijfelde de app alleen over de plek ("aan de overkant van de rivier"), dan is dat nu opgelost
-    if (original.spokenPlace && original.uncertainReason === placeReason(original.spokenPlace)) {
-      uncertain = false;
-    }
+    // Plek gezet: die twijfel is opgelost
+    if (onlyPlaceDoubt) uncertain = false;
+  }
+
+  function backToRecorded() {
+    place = recordedPlace(place);
+    // Weer de plek van de gebruiker: de twijfel over de plek komt terug
+    if (onlyPlaceDoubt) uncertain = true;
   }
 
   async function remove() {
@@ -223,7 +233,7 @@
       <LocationPicker position={place.position} sessionId={original.sessionId} onplace={setPlace} />
     {/if}
     {#if moved}
-      <button type="button" class="link back" onclick={() => (place = recordedPlace(place))}>
+      <button type="button" class="link back" onclick={backToRecorded}>
         Terug naar de opgenomen plek{place.recordedPosition ? '' : ' (geen locatie)'}
       </button>
     {/if}

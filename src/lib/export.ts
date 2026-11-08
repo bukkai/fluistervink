@@ -181,7 +181,7 @@ function checkImport(data: {
     return (
       typeof p?.text === 'string' &&
       optional(p.distanceM, isNumber) &&
-      optional(p.direction, (d) => typeof d === 'string' && d in DIRECTIONS)
+      optional(p.direction, (d) => typeof d === 'string' && Object.hasOwn(DIRECTIONS, d))
     );
   };
   const isArea = (value: unknown) => {
