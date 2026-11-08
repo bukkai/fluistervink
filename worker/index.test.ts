@@ -1037,6 +1037,63 @@ describe('/api/usage (verbruik)', () => {
   });
 });
 
+describe('/api/stats (gebruik per dag)', () => {
+  function transcribe(session?: string) {
+    const form = new FormData();
+    form.set('audio', new File([new Uint8Array(100)], 'opname.webm', { type: 'audio/webm' }));
+    form.set('model', 'gpt-transcribe');
+    return call('/api/transcribe', {
+      method: 'POST',
+      headers: session ? { 'X-Session': session } : {},
+      body: form,
+    });
+  }
+
+  it('telt sessies en uitspraken per dag en tester, zonder de testset', async () => {
+    upstream.mockImplementation(async () =>
+      Response.json({ text: 'vink', usage: { type: 'duration', seconds: 2 } }),
+    );
+    await transcribe('sessie-1');
+    await transcribe('sessie-1');
+    await transcribe('sessie-2');
+    await transcribe();
+    upstream.mockImplementation(async () =>
+      Response.json({
+        id: 'msg_1',
+        type: 'message',
+        role: 'assistant',
+        model: 'claude-haiku-5-5',
+        content: [],
+        stop_reason: 'end_turn',
+        stop_sequence: null,
+        usage: { input_tokens: 1, output_tokens: 1 },
+      }),
+    );
+    await call('/api/messages', {
+      method: 'POST',
+      headers: { 'X-Session': 'sessie-1' },
+      body: JSON.stringify({ model: 'claude-haiku-5-5', max_tokens: 10, messages: [] }),
+    });
+
+    const response = await call('/api/stats?from=2000-01-01', { code: OWNER_CODE });
+    expect(await response.json()).toEqual({
+      rows: [
+        {
+          day: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+          tester: 'anna',
+          sessions: 2,
+          utterances: 3,
+        },
+      ],
+    });
+  });
+
+  it('is alleen voor de eigenaar, met een geldige datum', async () => {
+    expect((await call('/api/stats?from=2026-10-01')).status).toBe(403);
+    expect((await call('/api/stats?from=gisteren', { code: OWNER_CODE })).status).toBe(400);
+  });
+});
+
 describe('/api/billing (echte rekening)', () => {
   beforeEach(() => {
     env.OPENAI_ADMIN_KEY = 'sk-admin-openai';

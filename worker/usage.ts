@@ -9,6 +9,7 @@
 // gratis plan maar ~1000 schrijfacties per dag.
 
 import { dayOf, type UsageRow } from '../src/lib/costs';
+import type { ActivityRow } from '../src/lib/stats';
 
 /** Wat één verzoek verbruikte. */
 export type Usage = Pick<
@@ -105,5 +106,25 @@ export async function usageSince(db: D1Database, from: string): Promise<UsageRow
     )
     .bind(from)
     .all<UsageRow>();
+  return results;
+}
+
+/**
+ * Wie op welke dag de app gebruikte (scherm Statistieken, src/lib/stats.ts), samengevat uit de usage-tabel: geen
+ * nieuw gegeven, alleen anders geteld. Verzoeken zonder sessie (de testset)
+ * tellen niet mee, anders lijkt de eigenaar elke testsetdag actief.
+ */
+export async function activitySince(db: D1Database, from: string): Promise<ActivityRow[]> {
+  await ensureTable(db);
+  const { results } = await db
+    .prepare(
+      `SELECT day, tester, COUNT(DISTINCT session) AS sessions,
+         SUM(CASE WHEN model LIKE '%transcribe%' OR model = 'whisper-1'
+           THEN requests ELSE 0 END) AS utterances
+       FROM usage WHERE day >= ? AND session != ''
+       GROUP BY day, tester ORDER BY day, tester`,
+    )
+    .bind(from)
+    .all<ActivityRow>();
   return results;
 }

@@ -35,6 +35,7 @@
   import PastSessions from './lib/PastSessions.svelte';
   import Privacy from './lib/Privacy.svelte';
   import Settings from './lib/Settings.svelte';
+  import Statistics from './lib/Statistics.svelte';
   import Zeemeeuwen from './lib/Zeemeeuwen.svelte';
 
   // Uitspraken die bij het afsluiten nog niet verwerkt waren, alsnog verwerken.
@@ -263,6 +264,7 @@
         <a href="#instellingen">Instellingen</a>
         <a href="#privacy">Privacy</a>
         {#if isOwner}
+          <a href="#statistieken">Statistieken</a>
           <a href="#developer">Developer</a>
         {/if}
       </nav>
@@ -294,6 +296,8 @@
     <HowItWorks />
   {:else if route === 'privacy'}
     <Privacy />
+  {:else if route === 'statistieken' && isOwner}
+    <Statistics />
   {:else if route === 'developer' && isOwner}
     <Developer />
   {:else if route === 'feedback' || route === 'devnotes'}
