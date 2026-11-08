@@ -1,7 +1,13 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import { createMessage, type Timing } from './api';
 import type { Observation, Position, SpokenPlace } from './db';
-import { DIRECTIONS, MAX_DISTANCE_M, describePlace, type Direction } from './spokenPlace';
+import {
+  DIRECTIONS,
+  MAX_DISTANCE_M,
+  describePlace,
+  parsePlaceText,
+  type Direction,
+} from './spokenPlace';
 import {
   activities,
   aliases,
@@ -528,6 +534,11 @@ function toSpokenPlace(
   }
   const text = input.place_description?.trim() || describePlace(distanceM, direction as Direction);
   if (!text) return undefined;
+  // Het model laat de afstand soms weg terwijl die in de omschrijving staat
+  // ("300 meter ten westen" → alleen W); dan haalt de app hem er zelf uit
+  const fromText = parsePlaceText(text);
+  distanceM ??= fromText.distanceM;
+  direction ??= fromText.direction;
   return {
     text,
     ...(distanceM !== undefined && { distanceM }),
