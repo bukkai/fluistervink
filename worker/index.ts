@@ -23,7 +23,7 @@ import { recordUsage, sessionFrom, usageSince, type Usage } from './usage';
 // (interpretatie) en waarneming.nl (gebiedsnamen). De API-sleutels blijven hier; de app stuurt alleen een
 // toegangscode of het token van zijn installatie mee (worker/install.ts),
 // zodat niet iedereen die de URL vindt ons tegoed opmaakt.
-// Daarnaast bewaart de proxy wat testers delen (wandelingen, feedback,
+// Daarnaast bewaart de proxy wat testers delen (sessies, feedback,
 // eventueel opnames) in KV, zodat de eigenaar het kan ophalen (/api/feedback),
 // en telt hij het verbruik van OpenAI en Anthropic in D1 (/api/usage). Met
 // een beheersleutel per aanbieder haalt hij ook de echte rekening op
@@ -68,7 +68,7 @@ const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
  * ~30 kB; dit is ruim, maar houdt enorme invoer op ons tegoed tegen.
  */
 const MAX_MESSAGE_BYTES = 256 * 1024;
-/** Een gedeelde wandeling zonder opnames is hooguit een paar honderd kB. */
+/** Een gedeelde sessie zonder opnames is hooguit een paar honderd kB. */
 const MAX_SESSION_BYTES = 5 * 1024 * 1024;
 
 /** KV-sleutel (in TESTERS) met alle uitgenodigde testers. */
@@ -244,7 +244,7 @@ type Meter = (model: string, usage: Partial<Usage>) => void;
 /**
  * Telt in D1 (worker/usage.ts) na het antwoord, zodat de app er niet op
  * wacht; lukt het niet, dan mislukt de uitspraak daar niet door. De app stuurt
- * het id van de wandeling mee in `X-Session`.
+ * het id van de sessie mee in `X-Session`.
  */
 function meter(request: Request, env: WorkerEnv, ctx: ExecutionContext, tester: string): Meter {
   const key = { tester, channel: env.CHANNEL, session: sessionFrom(request) };
@@ -423,7 +423,7 @@ function checkMessage(body: Record<string, unknown>): string | undefined {
 }
 
 /**
- * Verbruik per dag, tester, wandeling en model (worker/usage.ts), alleen voor
+ * Verbruik per dag, tester, sessie en model (worker/usage.ts), alleen voor
  * de eigenaar: `GET /api/usage?from=2026-09-01`.
  */
 async function usage(request: Request, env: WorkerEnv, tester: string): Promise<Response> {
@@ -449,7 +449,7 @@ async function billing(env: WorkerEnv, tester: string): Promise<Response> {
  * schrijven, en alleen onder zijn eigen naam; de eigenaar kan ook lezen
  * (scripts/feedback.mjs).
  *
- * - PUT /api/feedback/sessions/<id>  wandeling als JSON
+ * - PUT /api/feedback/sessions/<id>  sessie als JSON
  * - PUT /api/feedback/audio/<id>     opname
  * - GET /api/feedback/list?cursor=…  sleutels met metadata (eigenaar)
  * - GET /api/feedback/file?key=…     één bestand (eigenaar)
@@ -544,14 +544,14 @@ export interface SharedNote {
   /** Zonder "feedback" of "dev note" ervoor */
   text: string;
   appVersion?: string;
-  /** Naam van de wandeling; leeg bij losse feedback */
+  /** Naam van de sessie; leeg bij losse feedback */
   sessionName?: string;
   processed: boolean;
 }
 
 /**
- * Alle feedback uit de gedeelde wandelingen, nieuwste eerst. Leest elke
- * gedeelde wandeling (zonder opnames); bij een handvol testers is dat genoeg.
+ * Alle feedback uit de gedeelde sessies, nieuwste eerst. Leest elke
+ * gedeelde sessie (zonder opnames); bij een handvol testers is dat genoeg.
  */
 async function sharedNotes(env: WorkerEnv): Promise<SharedNote[]> {
   const keys = await sharedSessionKeys(env);
@@ -599,13 +599,13 @@ export interface TesterUsage {
   walks: number;
   utterances: number;
   notes: number;
-  /** Laatste uitspraak, feedback of einde van een wandeling */
+  /** Laatste uitspraak, feedback of einde van een sessie */
   lastActivity?: number;
 }
 
 /**
  * Gebruik per tester, uit wat er gedeeld is (share.ts): alleen gestopte
- * wandelingen en losse feedback, en alleen van testers die delen aan hebben.
+ * sessies en losse feedback, en alleen van testers die delen aan hebben.
  */
 async function testerUsage(env: WorkerEnv): Promise<Map<string, TesterUsage>> {
   const keys = await sharedSessionKeys(env);
@@ -647,7 +647,7 @@ async function testerUsage(env: WorkerEnv): Promise<Map<string, TesterUsage>> {
   );
 }
 
-/** Sleutels van alle gedeelde wandelingen (`<tester>/sessions/<id>`), zonder opnames. */
+/** Sleutels van alle gedeelde sessies (`<tester>/sessions/<id>`), zonder opnames. */
 async function sharedSessionKeys(env: WorkerEnv): Promise<string[]> {
   const keys: string[] = [];
   let cursor: string | undefined;

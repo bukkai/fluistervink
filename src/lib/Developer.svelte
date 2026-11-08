@@ -52,7 +52,7 @@
   }
 
   // Feedback van alle testers, zoals de proxy hem heeft. Komt pas binnen als de
-  // app van de tester deelt (na het stoppen van een wandeling). Verwerkt = in
+  // app van de tester deelt (na het stoppen van een sessie). Verwerkt = in
   // een ontwikkelsessie bekeken; de gegevens zelf blijven staan (testset).
   let notes = $state<SharedNote[]>();
   let notesError = $state('');
@@ -96,7 +96,7 @@
   // De echte rekening (worker/billing.ts), als controle op de prijstabel
   let billing = $state<Billing>();
   let billingError = $state('');
-  /** Namen van eigen wandelingen; die van testers staan niet op dit apparaat */
+  /** Namen van eigen sessies; die van testers staan niet op dit apparaat */
   let walkNames = $state<Record<string, string>>({});
 
   async function loadCosts() {
@@ -154,7 +154,7 @@
   });
   const money = (amount: number) =>
     (amount > 0 && amount < 0.01 ? smallFormat : centsFormat).format(amount);
-  /** "anna · 24 okt · 42 uitspraken" (de tester alleen als de naam van de wandeling ervoor staat) */
+  /** "anna · 24 okt · 42 uitspraken" (de tester alleen als de naam van de sessie ervoor staat) */
   function walkMeta(walk: WalkCost): string {
     return [
       walkNames[walk.session] ? who(walk.tester) : undefined,
@@ -231,11 +231,11 @@
 
   const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
-  /** "3 wandelingen · 41 uitspraken · 2× feedback · laatst 20 okt" */
+  /** "3 sessies · 41 uitspraken · 2× feedback · laatst 20 okt" */
   function usageText(usage: Tester['usage']): string {
     if (!usage) return 'nog niets gedeeld';
     return [
-      count(usage.walks, 'wandeling', 'wandelingen'),
+      count(usage.walks, 'sessie', 'sessies'),
       count(usage.utterances, 'uitspraak', 'uitspraken'),
       `${usage.notes}× feedback`,
       usage.lastActivity ? `laatst ${dateFormat.format(usage.lastActivity)}` : undefined,
@@ -255,8 +255,8 @@
       const { added, skipped } = await importJson(file);
       importMessage = [
         added === 0
-          ? 'Geen nieuwe wandelingen gevonden.'
-          : `${added === 1 ? '1 wandeling' : `${added} wandelingen`} geïmporteerd, te vinden bij Vorige wandelingen.`,
+          ? 'Geen nieuwe sessies gevonden.'
+          : `${added === 1 ? '1 sessie' : `${added} sessies`} geïmporteerd, te vinden bij Vorige sessies.`,
         skipped > 0 && `${skipped} stond${skipped === 1 ? '' : 'en'} er al.`,
       ]
         .filter(Boolean)
@@ -339,8 +339,8 @@
       <p class="hint">Bezig met ophalen…</p>
     {/if}
     <p class="hint">
-      Feedback komt binnen zodra de app van een tester deelt, na het stoppen van een wandeling.
-      Verwerkt verbergt hem alleen; de gedeelde wandelingen blijven bewaard.
+      Feedback komt binnen zodra de app van een tester deelt, na het stoppen van een sessie.
+      Verwerkt verbergt hem alleen; de gedeelde sessies blijven bewaard.
     </p>
   </div>
 </section>
@@ -459,7 +459,7 @@
           costs.anthropic,
         )}{costs.perUtterance !== undefined
           ? ` · ${money(costs.perUtterance)} per uitspraak`
-          : ''}{costs.perWalk !== undefined ? ` · ${money(costs.perWalk)} per wandeling` : ''}
+          : ''}{costs.perWalk !== undefined ? ` · ${money(costs.perWalk)} per sessie` : ''}
       </p>
       {#if costs.perTester.length}
         <h3>Per tester, deze maand</h3>
@@ -483,7 +483,7 @@
         </ul>
       {/if}
       {#if costs.topWalks.length}
-        <h3>Duurste wandelingen</h3>
+        <h3>Duurste sessies</h3>
         <ul class="walks">
           {#each costs.topWalks as walk (`${walk.tester}/${walk.session}`)}
             <li>
@@ -522,7 +522,7 @@
     {/if}
     <p class="hint">
       Geteld door de proxy sinds 24 oktober 2026, voor alle testers en beide omgevingen; de testset
-      telt mee bij de eigenaar, zonder wandeling. In dollars, met de prijzen van 24 oktober 2026. De
+      telt mee bij de eigenaar, zonder sessie. In dollars, met de prijzen van 24 oktober 2026. De
       rekening is wat OpenAI en Anthropic in rekening brengen voor het project of de workspace van
       Fluistervink (zonder die instelling de hele organisatie), per dag in UTC en hooguit een uur
       oud; vergeleken vanaf de eerste getelde dag van de maand. Wijkt die flink af, kijk dan de
@@ -544,14 +544,14 @@
       <p class="message error">{exportMessage}</p>
     {/if}
     <label class="btn secondary block file">
-      Wandelingen importeren (JSON)
+      Sessies importeren (JSON)
       <input type="file" accept="application/json,.json" onchange={importData} />
     </label>
     {#if importMessage}
       <p class="message">{importMessage}</p>
     {/if}
     <p class="hint">
-      Importeren leest een eerdere export weer in. Alleen wandelingen die er nog niet zijn; opnames
+      Importeren leest een eerdere export weer in. Alleen sessies die er nog niet zijn; opnames
       alleen als ze in de export zitten.
     </p>
   </div>

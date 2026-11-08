@@ -1,8 +1,8 @@
 import type { Position, PositionLookup } from './db';
 import { logEvent } from './log';
 
-// GPS tijdens een wandeling. Een losse meting duurt vaak 5–20 seconden voordat
-// hij nauwkeurig is; daarom houden we de GPS warm zolang er een wandeling
+// GPS tijdens een sessie. Een losse meting duurt vaak 5–20 seconden voordat
+// hij nauwkeurig is; daarom houden we de GPS warm zolang er een sessie
 // loopt en nemen bij een uitspraak de meest recente positie. De tussenliggende
 // posities bewaren we niet (een GPS-track valt buiten de MVP).
 

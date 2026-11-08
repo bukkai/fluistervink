@@ -42,10 +42,11 @@ interface WandelingPlugin {
   status(): Promise<{ draait: boolean; fout?: string; meldingen: boolean }>;
 }
 
+// De plugin heet in Java nog Wandeling (zoals in eerdere app-versies)
 const Wandeling = registerPlugin<WandelingPlugin>('Wandeling');
 
 /**
- * Foreground service met de melding "Wandeling loopt" (WandelingService.java):
+ * Foreground service met de melding "Aan het vogelen" (WandelingService.java):
  * houdt de app in leven met het scherm uit, zodat de wachtrij doorloopt en de
  * tril na het verwerken toch komt. In de browser bestaat dit niet.
  */

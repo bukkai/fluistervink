@@ -10,12 +10,12 @@
   import UncertainReview from './UncertainReview.svelte';
   import { IMPORT_URL, approveSession, exportForWaarneming, markReady } from './waarnemingExport';
 
-  // Een afgelopen wandeling nalopen en klaarzetten voor waarneming.nl (de
-  // export zelf gaat voor alle klaarstaande wandelingen tegelijk, op het
-  // scherm Wandelingen). Hier kom je ook meteen na "Stop wandeling".
+  // Een afgelopen sessie nalopen en klaarzetten voor waarneming.nl (de
+  // export zelf gaat voor alle klaarstaande sessies tegelijk, op het
+  // scherm Sessies). Hier kom je ook meteen na "Stop sessie".
 
   /**
-   * `resumable`: de meest recente wandeling, en er loopt geen andere.
+   * `resumable`: de meest recente sessie, en er loopt geen andere.
    * `justSaved`: net gestopt; dan een bevestiging bovenaan.
    */
   let {
@@ -33,30 +33,30 @@
   let listFocus = $state<{ ids: string[] }>();
 
   async function resume() {
-    if (!confirm('Deze wandeling voortzetten?')) return;
+    if (!confirm('Deze sessie voortzetten?')) return;
     if (await resumeSession(session.id)) location.hash = '';
   }
 
   async function remove() {
-    const warning = session.exportedAt ? '' : '\n\nDeze wandeling is nog niet geëxporteerd.';
-    if (!confirm(`Wandeling voorgoed verwijderen, met alle waarnemingen en opnames?${warning}`))
+    const warning = session.exportedAt ? '' : '\n\nDeze sessie is nog niet geëxporteerd.';
+    if (!confirm(`Sessie voorgoed verwijderen, met alle waarnemingen en opnames?${warning}`))
       return;
     await deleteSessions([session.id]);
-    location.hash = 'wandelingen';
+    location.hash = 'sessies';
   }
 
-  // Alleen de opnames wissen; de wandeling, de tekst en de waarnemingen blijven
+  // Alleen de opnames wissen; de sessie, de tekst en de waarnemingen blijven
   let recordings = $derived(liveQuery(() => countRecordings(session.id)));
 
   async function removeRecordings() {
     const current = await countRecordings(session.id);
-    if (!current.count || !confirm(confirmDeleteText(current, 'van deze wandeling'))) return;
+    if (!current.count || !confirm(confirmDeleteText(current, 'van deze sessie'))) return;
     await deleteRecordings(session.id);
   }
 
   async function rename() {
     const name = prompt(
-      'Naam van de wandeling (leeg laten = automatisch, uit het gebied met de meeste waarnemingen):',
+      'Naam van de sessie (leeg laten = automatisch, uit het gebied met de meeste waarnemingen):',
       session.place?.name ?? '',
     );
     if (name !== null) await renameSession(session.id, name);
@@ -65,7 +65,7 @@
   /** Uitkomst van de laatste export, om onder de knop te tonen */
   let exportResult = $state<string>();
 
-  /** "Alles klopt": de rest geldt als nagelopen (ook de onzekere), en de wandeling staat klaar */
+  /** "Alles klopt": de rest geldt als nagelopen (ook de onzekere), en de sessie staat klaar */
   async function ready() {
     if (
       uncertainCount > 0 &&
@@ -88,20 +88,20 @@
   const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
 </script>
 
-<a class="back" href="#wandelingen">Wandelingen</a>
+<a class="back" href="#sessies">Sessies</a>
 
 {#if justSaved}
   <div class="saved" role="status">
-    <strong>✓ Wandeling opgeslagen</strong>
+    <strong>✓ Sessie opgeslagen</strong>
     <p>
-      Alles staat veilig op je telefoon. Loop de waarnemingen na en zet de wandeling klaar voor
+      Alles staat veilig op je telefoon. Loop de waarnemingen na en zet de sessie klaar voor
       waarneming.nl.
     </p>
   </div>
 {/if}
 
 <header>
-  <h2 class="page-title">{session.place?.name ?? 'Wandeling'}</h2>
+  <h2 class="page-title">{session.place?.name ?? 'Vogelsessie'}</h2>
   <p class="muted">
     {dateFormat.format(session.startedAt)},
     {timeFormat.format(session.startedAt)}–{session.endedAt
@@ -158,8 +158,8 @@
       </p>
     {:else if session.readyAt}
       <p>
-        Deze wandeling staat klaar. Exporteer alle klaarstaande wandelingen in één keer bij
-        <a class="link" href="#wandelingen">Wandelingen</a>.
+        Deze sessie staat klaar. Exporteer alle klaarstaande sessies in één keer bij
+        <a class="link" href="#sessies">Sessies</a>.
       </p>
       <button class="btn secondary block" onclick={() => markReady(session.id, false)}
         >Toch nog niet klaar</button
@@ -175,13 +175,13 @@
       {/if}
       <button class="btn block large" onclick={ready}>Alles klopt, klaar voor waarneming.nl</button>
       <p class="muted">
-        De waarnemingen gelden dan als nagelopen. Klaargezette wandelingen exporteer je later in één
+        De waarnemingen gelden dan als nagelopen. Klaargezette sessies exporteer je later in één
         bestand, bij
-        <a class="link" href="#wandelingen">Wandelingen</a>.
+        <a class="link" href="#sessies">Sessies</a>.
       </p>
     {/if}
     <p class="muted">
-      Of <button class="link" onclick={exportOnlyThis}>exporteer alleen deze wandeling</button>
+      Of <button class="link" onclick={exportOnlyThis}>exporteer alleen deze sessie</button>
       en importeer het bestand bij
       <a href={IMPORT_URL} target="_blank" rel="noopener">waarneming.nl</a>, met de site in het
       Nederlands.
@@ -191,14 +191,14 @@
 
 <p class="footer muted">
   {#if resumable}
-    Per ongeluk gestopt? <button class="link" onclick={resume}>Wandeling voortzetten</button>
+    Per ongeluk gestopt? <button class="link" onclick={resume}>Sessie voortzetten</button>
     <br />
   {/if}
   {#if $recordings?.count}
     <button class="link danger" onclick={removeRecordings}>Alleen de opnames wissen</button>
     <br />
   {/if}
-  <button class="link danger" onclick={remove}>Wandeling verwijderen</button>
+  <button class="link danger" onclick={remove}>Sessie verwijderen</button>
 </p>
 
 <style>

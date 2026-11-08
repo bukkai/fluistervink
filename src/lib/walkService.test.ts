@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// De service van de Android-app volgt de lopende wandeling, en het log krijgt
+// De service van de Android-app volgt de lopende sessie, en het log krijgt
 // alleen een regel als de uitkomst verandert (niet bij elke opname).
 
 const native = vi.hoisted(() => ({
@@ -27,7 +27,7 @@ describe('syncWalkService', () => {
   // Vóór het opruimen van de database (src/test-setup.ts), die echte timers nodig heeft
   afterEach(() => vi.useRealTimers());
 
-  it('start bij een wandeling en logt dat één keer', async () => {
+  it('start bij een sessie en logt dat één keer', async () => {
     await syncWalkService('w1');
     await syncWalkService('w1');
     expect(native.startWalkService).toHaveBeenCalledTimes(2);
@@ -60,7 +60,7 @@ describe('syncWalkService', () => {
     );
   });
 
-  it('stopt zonder wandeling', async () => {
+  it('stopt zonder sessie', async () => {
     await syncWalkService('w1');
     await syncWalkService(undefined);
     expect(native.stopWalkService).toHaveBeenCalled();

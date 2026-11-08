@@ -25,7 +25,7 @@
       shareMessage =
         sessions || audio
           ? [
-              sessions && `${sessions === 1 ? '1 wandeling' : `${sessions} wandelingen`}`,
+              sessions && `${sessions === 1 ? '1 sessie' : `${sessions} sessies`}`,
               audio && `${audio === 1 ? '1 opname' : `${audio} opnames`}`,
             ]
               .filter(Boolean)
@@ -47,13 +47,13 @@
   <div class="card-head"><h2>Delen met de ontwikkelaar</h2></div>
   <div class="card-body stack">
     <p class="hint">
-      Na elke wandeling gaan de uitspraken, wat de app ervan maakte, je correcties bij het nalopen
-      en je feedback naar de ontwikkelaar, om de herkenning te verbeteren. Ook de locaties van je
+      Na elke sessie gaan de uitspraken, wat de app ervan maakte, je correcties bij het nalopen en
+      je feedback naar de ontwikkelaar, om de herkenning te verbeteren. Ook de locaties van je
       waarnemingen. Zie <a href="#privacy">Privacy</a>.
     </p>
     <label class="check">
       <input type="checkbox" bind:checked={sharing} onchange={() => setShareEnabled(sharing)} />
-      Wandelingen en feedback delen
+      Sessies en feedback delen
     </label>
     <label class="check">
       <input

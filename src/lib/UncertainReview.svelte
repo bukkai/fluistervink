@@ -25,7 +25,7 @@
   /** Het formulier staat open voor de huidige waarneming */
   let editing = $state(false);
 
-  // Oudste eerst, zoals je de wandeling liep (de lijst is nieuwste eerst)
+  // Oudste eerst, in de volgorde waarin je ze zag (de lijst is nieuwste eerst)
   let uncertain = $derived(($observations ?? []).filter((obs) => obs.uncertain).reverse());
   let todo = $derived(uncertain.filter((obs) => !skipped.includes(obs.id)));
   let current = $derived(todo[0]);

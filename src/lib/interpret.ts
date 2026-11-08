@@ -22,7 +22,7 @@ import {
 
 // Zet een uitgesproken (of getypte) uitspraak om in acties. Het model krijgt
 // een vaste systeemprompt met de soortenlijst (gecachet) en per aanroep de
-// laatste waarnemingen van de wandeling, zodat "die", "de vorige" en "nog drie"
+// laatste waarnemingen van de sessie, zodat "die", "de vorige" en "nog drie"
 // werken. Het antwoordt alleen met tool calls; de app voert ze uit.
 
 export const MODEL = 'claude-haiku-5-5';
@@ -227,7 +227,7 @@ const TOOLS: Anthropic.Tool[] = [
 
 const codeList = (codes: Code[]) => codes.map((c) => `${c.id} ${c.name}`).join('; ');
 
-const SYSTEM_PROMPT = `Je bent de interpretatielaag van Fluistervink, een app waarmee een vogelaar tijdens een wandeling waarnemingen inspreekt. Je krijgt de tekst van één uitspraak, meestal uit spraakherkenning (dus met mogelijke verhaspelingen), plus de recente waarnemingen van deze wandeling. Je antwoordt uitsluitend met tool calls; de app voert ze uit. Je kunt niets terugvragen.
+const SYSTEM_PROMPT = `Je bent de interpretatielaag van Fluistervink, een app waarmee een vogelaar tijdens het vogelen waarnemingen inspreekt. Je krijgt de tekst van één uitspraak, meestal uit spraakherkenning (dus met mogelijke verhaspelingen), plus de recente waarnemingen van deze sessie. Je antwoordt uitsluitend met tool calls; de app voert ze uit. Je kunt niets terugvragen.
 
 ## Wat je doet
 
@@ -430,11 +430,11 @@ export function parseResponse(
 
 /**
  * @param transcript De uitspraak als tekst
- * @param recent Recente waarnemingen van de wandeling, nieuwste eerst
+ * @param recent Recente waarnemingen van de sessie, nieuwste eerst
  * @param options `here`: positie van de uitspraak, voor de afstand tot eerdere
  *   waarnemingen. `model` en `contextText` alleen voor de testset
  *   (scripts/testset.mjs): een ander model, of de context precies zoals hij
- *   destijds was. `sessionId`: voor het verbruik per wandeling
+ *   destijds was. `sessionId`: voor het verbruik per sessie
  */
 export async function interpret(
   transcript: string,
@@ -457,7 +457,7 @@ export async function interpret(
       messages: [
         {
           role: 'user',
-          content: `Recente waarnemingen in deze wandeling (#1 = meest recent):\n${contextText}\n\nUitspraak: "${transcript}"`,
+          content: `Recente waarnemingen in deze sessie (#1 = meest recent):\n${contextText}\n\nUitspraak: "${transcript}"`,
         },
       ],
     } satisfies Anthropic.MessageCreateParamsNonStreaming,

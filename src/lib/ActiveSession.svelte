@@ -37,18 +37,18 @@
     return () => viewport.removeEventListener('resize', onResize);
   });
 
-  // GPS aan zolang dit scherm (de lopende wandeling) zichtbaar is
+  // GPS aan zolang dit scherm (de lopende sessie) zichtbaar is
   $effect(() => {
     startTracking();
     return () => {
       stopTracking();
-      // Wandeling gestopt tijdens een opname: microfoon uit, opname bewaren
+      // Sessie gestopt tijdens een opname: microfoon uit, opname bewaren
       if (recorder.status === 'recording') finishRecording();
       stopTrektel();
     };
   });
 
-  // Voorlopige naam van de wandeling uit de startpositie. Niet bij voortzetten.
+  // Voorlopige naam van de sessie uit de startpositie. Niet bij voortzetten.
   let naming = false;
   $effect(() => {
     if (session.place || naming) return;

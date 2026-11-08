@@ -2,7 +2,7 @@
 
 Android-testers krijgen de app via de **interne test** van Google Play, in plaats van losse APK's. Een release bouwt GitHub Actions bij een tag (`.github/workflows/release.yml`): twee ondertekende AAB's (Android App Bundle, het formaat dat Play wil), als artifacts bij de run. Plan: `docs/plan-capacitor.md`, fase 4.
 
-**Beta en stabiel** (`docs/omgevingen.md`): één app in Play, twee builds. De **beta** (`fluistervink-<tag>-beta`, heet "Fluistervink Beta", laadt de webcode van workers.dev) gaat naar de interne test. De **stabiele** (`fluistervink-<tag>-stable`, heet "Fluistervink", laadt `fluistervink.nl`) gaat naar een gesloten test, later productie. Wie in beide lijsten staat, krijgt de beta: die heeft bij dezelfde tag het hogere `versionCode`. Upload daarom bij elke tag **allebei**; anders kan een tester via een nieuwere stabiele build ongemerkt op `fluistervink.nl` belanden, zonder zijn wandelingen (die horen bij het adres).
+**Beta en stabiel** (`docs/omgevingen.md`): één app in Play, twee builds. De **beta** (`fluistervink-<tag>-beta`, heet "Fluistervink Beta", laadt de webcode van workers.dev) gaat naar de interne test. De **stabiele** (`fluistervink-<tag>-stable`, heet "Fluistervink", laadt `fluistervink.nl`) gaat naar een gesloten test, later productie. Wie in beide lijsten staat, krijgt de beta: die heeft bij dezelfde tag het hogere `versionCode`. Upload daarom bij elke tag **allebei**; anders kan een tester via een nieuwere stabiele build ongemerkt op `fluistervink.nl` belanden, zonder zijn sessies (die horen bij het adres).
 
 ## Hoe het ondertekenen werkt
 
@@ -68,7 +68,7 @@ Op GitHub: repository → **Settings → Secrets and variables → Actions → N
 3. Per tester: eerst het Google-account op de lijst van stap 1 zetten, daarna uitnodigen vanaf het scherm Developer (op de beta voor de interne test, op `fluistervink.nl` voor de gesloten test). De mail bevat voor Android de link voor deelname en de toegangscode los; voor een iPhone de persoonlijke link.
 4. De tester opent de link voor deelname op de telefoon, wordt tester, installeert de app uit Play en vult de code in bij **Instellingen**. De link met `#code=` werkt op Android niet voor de app: die opent in Chrome, en de app heeft eigen opslag, los van Chrome (zie hieronder, App Links).
 
-Jijzelf: de debug-APK die je nu hebt, is met een andere sleutel ondertekend. Verwijder die eerst; daarna installeer je de app uit Play, net als de testers. **Let op:** verwijderen wist de wandelingen in de app. Maak eerst een JSON-export (met opnames) en importeer die daarna in de app uit Play.
+Jijzelf: de debug-APK die je nu hebt, is met een andere sleutel ondertekend. Verwijder die eerst; daarna installeer je de app uit Play, net als de testers. **Let op:** verwijderen wist de sessies in de app. Maak eerst een JSON-export (met opnames) en importeer die daarna in de app uit Play.
 
 ## Later: App Links (voorstel, nog niet gebouwd)
 

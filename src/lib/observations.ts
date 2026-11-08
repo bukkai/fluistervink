@@ -38,13 +38,13 @@ import { PLATFORM } from './native';
 // Normaal is de wachtrij direct leeg; bij een fout blijft de uitspraak bewaard
 // en kan hij opnieuw.
 
-/** Waarnemingen van een wandeling, nieuwste eerst. */
+/** Waarnemingen van een sessie, nieuwste eerst. */
 export async function listObservations(sessionId: string): Promise<Observation[]> {
   const all = await db.observations.where('sessionId').equals(sessionId).toArray();
   return all.sort((a, b) => b.observedAt - a.observedAt || b.createdAt - a.createdAt);
 }
 
-/** Uitspraken van een wandeling, nieuwste eerst. */
+/** Uitspraken van een sessie, nieuwste eerst. */
 export async function listUtterances(sessionId: string): Promise<Utterance[]> {
   const all = await db.utterances.where('sessionId').equals(sessionId).sortBy('recordedAt');
   return all.reverse();
@@ -201,7 +201,7 @@ export async function setSkipExport(id: string, skip: boolean): Promise<void> {
   await db.observations.update(id, { skipExport: skip || undefined });
 }
 
-/** Verwijderde waarnemingen van een wandeling, laatst verwijderd eerst. */
+/** Verwijderde waarnemingen van een sessie, laatst verwijderd eerst. */
 export async function listDeleted(sessionId: string): Promise<DeletedObservation[]> {
   const all = await db.deletedObservations.where('sessionId').equals(sessionId).toArray();
   return all.sort((a, b) => b.deletedAt - a.deletedAt);

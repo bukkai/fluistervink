@@ -10,10 +10,10 @@ const position = { lat: 52.1, lon: 5.1, accuracy: 12, fixedAt: 1 };
 
 function exportFile(fields: Record<string, unknown> = {}): File {
   const data = {
-    sessions: [{ id: 'wandeling', startedAt: 1, endedAt: 2, status: 'ended' }],
+    sessions: [{ id: 'sessie', startedAt: 1, endedAt: 2, status: 'ended' }],
     utterances: [
-      { id: 'uitspraak', sessionId: 'wandeling', recordedAt: 1, position, status: 'done' },
-      // Losse feedback, buiten een wandeling
+      { id: 'uitspraak', sessionId: 'sessie', recordedAt: 1, position, status: 'done' },
+      // Losse feedback, buiten een sessie
       { id: 'los', sessionId: '', recordedAt: 1, kind: 'dev_note', status: 'done' },
     ],
     observations: [observation({ id: 'o1', position, area: { id: 7, name: 'Duinen' } })],
@@ -52,7 +52,7 @@ describe('importJson', () => {
       utterances: [
         {
           id: 'uitspraak',
-          sessionId: 'wandeling',
+          sessionId: 'sessie',
           recordedAt: 1,
           audioData: 'data:text/html;base64,PHNjcmlwdD4=',
         },

@@ -14,7 +14,7 @@ import {
 } from './vocab';
 import { buildXlsx } from './xlsx';
 
-// Export van een wandeling voor de bulkimport van waarneming.nl
+// Export van een sessie voor de bulkimport van waarneming.nl
 // (https://waarneming.nl/import/observations/, zie docs/waarneming-nl.md).
 // Gedrag, methode, kleed en telmethode herkent de import alleen aan de tekst
 // in de taal van de site; wij exporteren in het Nederlands, de standaardtaal
@@ -55,7 +55,7 @@ export type ExportFormat = 'csv' | 'xlsx';
 export interface WaarnemingExport {
   file: Blob;
   filename: string;
-  /** De wandelingen in het bestand */
+  /** De sessies in het bestand */
   sessions: Session[];
   /** De waarnemingen die in het bestand staan */
   exported: Observation[];
@@ -65,7 +65,7 @@ export interface WaarnemingExport {
   excluded: Observation[];
 }
 
-/** Eén CSV voor een of meer wandelingen (waarneming.nl neemt er tot 5000 tegelijk). */
+/** Eén CSV voor een of meer sessies (waarneming.nl neemt er tot 5000 tegelijk). */
 export async function buildExport(
   sessions: Session[],
   format: ExportFormat = 'csv',
@@ -90,18 +90,18 @@ export async function buildExport(
   };
 }
 
-// Eén wandeling: met de begintijd, zodat twee wandelingen op één dag niet
+// Eén sessie: met de begintijd, zodat twee sessies op één dag niet
 // hetzelfde bestand lijken (en je niet per ongeluk het verkeerde uploadt).
-// Meer wandelingen: van de eerste tot de laatste dag.
+// Meer sessies: van de eerste tot de laatste dag.
 function filename(sessions: Session[]): string {
   const first = new Date(sessions[0].startedAt);
   if (sessions.length === 1) return `waarneming-${fileTimestamp(first)}`;
   const last = new Date(sessions[sessions.length - 1].startedAt);
   const days = [isoDate(first), isoDate(last)];
-  return `waarneming-${days[0] === days[1] ? days[0] : days.join('-tot-')}-${sessions.length}-wandelingen`;
+  return `waarneming-${days[0] === days[1] ? days[0] : days.join('-tot-')}-${sessions.length}-sessies`;
 }
 
-/** Na het opslaan: waarnemingen en wandelingen markeren als geëxporteerd. */
+/** Na het opslaan: waarnemingen en sessies markeren als geëxporteerd. */
 export async function markExported(
   sessions: Session[],
   observations: Observation[],
@@ -122,7 +122,7 @@ export async function markReady(sessionId: string, ready: boolean): Promise<void
 
 /**
  * "Alles klopt": alle waarnemingen die nog niet nagelopen waren gelden als
- * nagelopen, en de wandeling staat klaar. Telt niet als correctie (geen
+ * nagelopen, en de sessie staat klaar. Telt niet als correctie (geen
  * `editedAt`), behalve bij de onzekere: die worden zeker, net als met "Klopt".
  */
 export async function approveSession(sessionId: string): Promise<void> {
@@ -143,7 +143,7 @@ export async function approveSession(sessionId: string): Promise<void> {
   });
 }
 
-/** Wandelingen die klaarstaan en nog niet geëxporteerd zijn. */
+/** Sessies die klaarstaan en nog niet geëxporteerd zijn. */
 export function readyForExport(sessions: Session[]): Session[] {
   return sessions.filter((s) => s.readyAt && !s.exportedAt);
 }
@@ -164,7 +164,7 @@ export async function exportForWaarneming(sessions: Session[]): Promise<string |
       `${uncertain} ${uncertain === 1 ? 'waarneming is' : 'waarnemingen zijn'} nog onzeker ` +
         `en ${uncertain === 1 ? 'gaat' : 'gaan'} mee als "niet zeker".`,
     earlier > 0 &&
-      `${sessions.length === 1 ? 'Deze wandeling is' : `${earlier} van deze wandelingen zijn`} ` +
+      `${sessions.length === 1 ? 'Deze sessie is' : `${earlier} van deze sessies zijn`} ` +
         'al eerder geëxporteerd. Waarneming.nl weigert de hele import als er een waarneming in ' +
         'zit die al is ingevoerd.',
   ].filter(Boolean);
@@ -183,7 +183,7 @@ export async function exportForWaarneming(sessions: Session[]): Promise<string |
   const walks = result.sessions.length;
   return [
     `${n === 1 ? '1 waarneming' : `${n} waarnemingen`}` +
-      (walks > 1 ? ` uit ${walks} wandelingen` : '') +
+      (walks > 1 ? ` uit ${walks} sessies` : '') +
       ' geëxporteerd.',
     saved.folder && `Het bestand staat in ${saved.folder}.`,
     result.skipped.length &&

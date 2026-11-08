@@ -18,7 +18,7 @@
   import { hasRarity, rarityLabels, rarityOf, raritySvg } from './rarity';
   import { speciesName } from './vocab';
 
-  // Kaart met waar elke waarneming van een wandeling is gedaan. Alleen
+  // Kaart met waar elke waarneming van een sessie is gedaan. Alleen
   // bekijken; de plek verzetten kan per waarneming in het bewerkformulier
   // (LocationPicker). Stippen die op het scherm
   // overlappen (lang op één plek, bv. een vogelhut) worden één bolletje met

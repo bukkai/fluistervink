@@ -28,8 +28,9 @@
   <div class="card-body">
     <h3>Inspreken</h3>
     <p>
-      Start een wandeling. Zie of hoor je iets, tik dan op de microfoonknop of houd hem vast, en zeg
-      wat je waarneemt. Gewoon zoals je het tegen een medevogelaar zou zeggen:
+      Start een sessie en ga vogelen: lopend, op de fiets, in een vogelhut of gewoon in de tuin. Zie
+      of hoor je iets, tik dan op de microfoonknop of houd hem vast, en zeg wat je waarneemt. Gewoon
+      zoals je het tegen een medevogelaar zou zeggen:
     </p>
     <ul class="examples">
       <li>"zes overvliegende houtduiven"</li>
@@ -103,17 +104,17 @@
       <dt>Drie korte</dt>
       <dd>
         Er ging iets mis, bijvoorbeeld geen bereik. De opname is bewaard en gaat niet verloren, maar
-        wordt niet vanzelf opnieuw verwerkt: tik later, als je weer bereik hebt, bij de wandeling
-        onder "Uitspraken" op "Opnieuw". Bij heel slecht bereik kan deze tril tot een halve minuut
-        op zich laten wachten, na een lange opname tot een minuut.
+        wordt niet vanzelf opnieuw verwerkt: tik later, als je weer bereik hebt, bij de sessie onder
+        "Uitspraken" op "Opnieuw". Bij heel slecht bereik kan deze tril tot een halve minuut op zich
+        laten wachten, na een lange opname tot een minuut.
       </dd>
     </dl>
     {#if isNativeApp}
       <p>
-        Zolang een wandeling loopt, staat er een melding "Wandeling loopt" bovenin je telefoon.
-        Daardoor werkt de app door als je scherm uit is of je een andere app opent: na het inspreken
-        mag je je telefoon gewoon wegstoppen, de tril komt vanzelf. Laat de knop wel eerst los of
-        tik op Stop, want als je het scherm uitzet tijdens het inspreken, stopt de opname. Tik op de
+        Zolang een sessie loopt, staat er een melding van Fluistervink bovenin je telefoon. Daardoor
+        werkt de app door als je scherm uit is of je een andere app opent: na het inspreken mag je
+        je telefoon gewoon wegstoppen, de tril komt vanzelf. Laat de knop wel eerst los of tik op
+        Stop, want als je het scherm uitzet tijdens het inspreken, stopt de opname. Tik op de
         melding om de app weer te openen; na "Stop" verdwijnt hij.
       </p>
     {:else}
@@ -132,15 +133,15 @@
   <div class="card-body">
     <h3>Thuis</h3>
     <p>
-      Na "Stop" zie je de wandeling op een kaart en in een lijst. Bovenaan staan de onzekere
+      Na "Stop" zie je de sessie op een kaart en in een lijst. Bovenaan staan de onzekere
       waarnemingen één voor één, met wat je zei: tik Klopt, Weg of Aanpassen, en luister zo nodig de
-      opname terug. Klopt de rest, dan zet "Alles klopt" de wandeling met één tik klaar voor
-      waarneming.nl. Wanneer het je uitkomt, exporteer je alle klaarstaande wandelingen in één
-      bestand (bij Wandelingen) en importeer je dat bij waarneming.nl.
+      opname terug. Klopt de rest, dan zet "Alles klopt" de sessie met één tik klaar voor
+      waarneming.nl. Wanneer het je uitkomt, exporteer je alle klaarstaande sessies in één bestand
+      (bij Sessies) en importeer je dat bij waarneming.nl.
     </p>
     <p>
       Vergeten op Stop te drukken? Heb je een uur niets ingesproken, dan vraagt de app bij het
-      openen of de wandeling nog loopt. Na 8 uur stopt hij vanzelf.
+      openen of de sessie nog loopt. Na 8 uur stopt hij vanzelf.
     </p>
   </div>
 </section>

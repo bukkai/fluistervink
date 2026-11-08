@@ -1,5 +1,5 @@
 // Verbruik van OpenAI en Anthropic, door de proxy zelf geteld: per dag,
-// tester, omgeving, wandeling en model de tokens (of seconden audio bij
+// tester, omgeving, sessie en model de tokens (of seconden audio bij
 // whisper-1) en het aantal verzoeken. Geen inhoud, alleen getallen. De app
 // rekent het met een prijstabel om naar dollars (src/lib/costs.ts), zodat een
 // prijswijziging geen oude cijfers raakt.
@@ -48,7 +48,7 @@ function ensureTable(db: D1Database): Promise<unknown> {
   return promise;
 }
 
-/** Een id van de app (`crypto.randomUUID()`); al het andere telt als "geen wandeling". */
+/** Een id van de app (`crypto.randomUUID()`); al het andere telt als "geen sessie". */
 const SESSION_ID = /^[\w-]{1,64}$/;
 
 export function sessionFrom(request: Request): string {

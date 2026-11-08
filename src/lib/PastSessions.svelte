@@ -8,11 +8,11 @@
 
   const counts = liveQuery(countPerSession);
 
-  /** Opruimen: wandelingen aanvinken en in één keer verwijderen */
+  /** Opruimen: sessies aanvinken en in één keer verwijderen */
   let selecting = $state(false);
   let selected = $state<Set<string>>(new Set());
 
-  /** Nagelopen wandelingen, samen in één bestand naar waarneming.nl */
+  /** Nagelopen sessies, samen in één bestand naar waarneming.nl */
   let ready = $derived(readyForExport(sessions));
   let exportResult = $state<string>();
 
@@ -24,8 +24,8 @@
 
   /**
    * Leeg: geen waarnemingen, geen feedback en geen onverwerkte uitspraken.
-   * Een wandeling met alleen feedback telt niet als leeg, want die gaan mee
-   * als de wandeling weg is; met een mislukte uitspraak (geen bereik) ook
+   * Een sessie met alleen feedback telt niet als leeg, want die gaan mee
+   * als de sessie weg is; met een mislukte uitspraak (geen bereik) ook
    * niet, want daar kan nog een waarneming in zitten.
    */
   let emptyIds = $derived(
@@ -66,7 +66,7 @@
       0,
     );
     const message = [
-      `${n === 1 ? '1 wandeling' : `${n} wandelingen`} voorgoed verwijderen, met alle waarnemingen en opnames?`,
+      `${n === 1 ? '1 sessie' : `${n} sessies`} voorgoed verwijderen, met alle waarnemingen en opnames?`,
       notExported > 0 &&
         `${notExported === 1 ? 'Eén daarvan is' : `${notExported} daarvan zijn`} nog niet geëxporteerd.`,
       devNotes > 0 &&
@@ -105,7 +105,7 @@
 
 <a class="back" href="#/">Terug</a>
 <div class="title">
-  <h2 class="page-title">Vorige wandelingen</h2>
+  <h2 class="page-title">Vorige sessies</h2>
   {#if sessions.length > 0}
     {#if selecting}
       <button class="link" onclick={stopSelecting}>Annuleren</button>
@@ -116,7 +116,7 @@
 </div>
 
 {#if sessions.length === 0}
-  <p class="muted">Nog geen wandelingen.</p>
+  <p class="muted">Nog geen sessies.</p>
 {:else}
   {#if !selecting && (ready.length > 0 || exportResult)}
     <section class="card export">
@@ -124,7 +124,7 @@
         {#if ready.length > 0}
           <p>
             <strong
-              >{ready.length === 1 ? '1 wandeling' : `${ready.length} wandelingen`} klaar voor waarneming.nl</strong
+              >{ready.length === 1 ? '1 sessie' : `${ready.length} sessies`} klaar voor waarneming.nl</strong
             >
           </p>
           <button class="btn block large" onclick={exportReady}
@@ -144,7 +144,7 @@
     </section>
   {/if}
   {#if selecting}
-    <p class="muted hint">Vink de wandelingen aan die weg mogen.</p>
+    <p class="muted hint">Vink de sessies aan die weg mogen.</p>
     <p class="quick">
       <button class="link" onclick={toggleAll}>{allSelected ? 'Niets' : 'Alles'} aanvinken</button>
       {#if exportedIds.length > 0}
@@ -172,7 +172,7 @@
             {@render content(session)}
           </label>
         {:else}
-          <a class="row" href="#wandeling/{session.id}">
+          <a class="row" href="#sessie/{session.id}">
             {@render content(session)}
             <span class="chevron" aria-hidden="true">›</span>
           </a>
@@ -190,7 +190,7 @@
       >
         {selected.size === 0
           ? 'Niets aangevinkt'
-          : `Verwijder ${selected.size === 1 ? '1 wandeling' : `${selected.size} wandelingen`}`}
+          : `Verwijder ${selected.size === 1 ? '1 sessie' : `${selected.size} sessies`}`}
       </button>
     </div>
   {/if}
@@ -199,7 +199,7 @@
 {#snippet content(session: Session)}
   <span class="text">
     <span class="top">
-      <strong>{session.place?.name ?? 'Wandeling'}</strong>
+      <strong>{session.place?.name ?? 'Vogelsessie'}</strong>
       {#if session.exportedAt}
         <span class="badge exported">geëxporteerd</span>
       {:else if session.readyAt}

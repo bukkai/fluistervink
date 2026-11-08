@@ -5,7 +5,7 @@ import { logEvent } from './log';
 // Gebiedsnaam bij een uitspraak en de waarnemingen eruit: het gebied van
 // waarneming.nl ("Noordhollands Duinreservaat - Meeuwenlekken"). Wordt
 // opgezocht zodra de positie bekend is. Lukt dat niet (geen verbinding), dan
-// blijft het veld leeg en volgt een nieuwe poging bij het openen van de wandeling.
+// blijft het veld leeg en volgt een nieuwe poging bij het openen van de sessie.
 
 /**
  * Zoekt het gebied op en zet het bij de uitspraak en zijn waarnemingen.
@@ -37,7 +37,7 @@ let filling = false;
 
 /**
  * Zoekt alsnog de gebieden op die nog ontbreken, bv. na een uitspraak zonder
- * verbinding of bij wandelingen van vóór deze functie. Eén voor één.
+ * verbinding of bij sessies van vóór deze functie. Eén voor één.
  */
 export async function fillMissingAreas(sessionId: string): Promise<void> {
   if (filling) return;
@@ -52,7 +52,7 @@ export async function fillMissingAreas(sessionId: string): Promise<void> {
       // Mislukt er één (geen verbinding), dan de rest ook; volgende keer verder
       if (!(await attachArea(u.id, u.position!))) break;
     }
-    // Bv. gestopt zonder verbinding, of een wandeling van vóór deze functie
+    // Bv. gestopt zonder verbinding, of een sessie van vóór deze functie
     const session = await db.sessions.get(sessionId);
     if (session?.status === 'ended') await nameFromWalk(sessionId);
   } finally {
@@ -60,9 +60,9 @@ export async function fillMissingAreas(sessionId: string): Promise<void> {
   }
 }
 
-// Naam van de wandeling. Bij het starten het gebied van de startpositie, als
+// Naam van de sessie. Bij het starten het gebied van de startpositie, als
 // voorlopige naam. Bij het stoppen het gebied met de meeste waarnemingen: dat
-// is meestal waar je echt gewandeld hebt (start je in een woonwijk, dan wint
+// is meestal waar je echt gevogeld hebt (start je in een woonwijk, dan wint
 // het natuurgebied verderop). Een zelf ingevulde naam blijft altijd staan.
 
 /** "Amsterdam - Oost (14)" → "Amsterdam - Oost" */
@@ -72,7 +72,7 @@ export function placeName(area: Area): string {
 
 /**
  * Zet de naam, tenzij er al een betere staat: een zelf ingevulde naam gaat
- * altijd voor, en een startnaam overschrijft geen naam van de hele wandeling.
+ * altijd voor, en een startnaam overschrijft geen naam van de hele sessie.
  */
 async function setPlace(sessionId: string, area: Area, source: 'start' | 'walk') {
   await db.transaction('rw', db.sessions, async () => {

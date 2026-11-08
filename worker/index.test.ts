@@ -707,9 +707,9 @@ describe('/api/feedback (gedeelde gegevens)', () => {
     });
   }
 
-  it('bewaart een wandeling onder de naam van de tester', async () => {
-    expect((await put('sessions/wandeling-1', '{"ok":true}')).status).toBe(200);
-    const entry = kv.store.get('anna/sessions/wandeling-1');
+  it('bewaart een sessie onder de naam van de tester', async () => {
+    expect((await put('sessions/sessie-1', '{"ok":true}')).status).toBe(200);
+    const entry = kv.store.get('anna/sessions/sessie-1');
     expect(new TextDecoder().decode(entry?.value)).toBe('{"ok":true}');
     expect(entry?.metadata).toMatchObject({ contentType: 'application/json', bytes: 11 });
   });
@@ -720,7 +720,7 @@ describe('/api/feedback (gedeelde gegevens)', () => {
     expect(kv.store.size).toBe(0);
   });
 
-  it('weigert een lege of te grote wandeling', async () => {
+  it('weigert een lege of te grote sessie', async () => {
     expect((await put('sessions/leeg', '')).status).toBe(400);
     expect((await put('sessions/groot', new Uint8Array(5 * 1024 * 1024 + 1))).status).toBe(413);
   });
@@ -851,7 +851,7 @@ describe('/api/feedback/notes (feedback inzien)', () => {
     expect((await notes()).map((n) => n.id)).toEqual(['n2', 'n1']);
   });
 
-  it('neemt de gebiedsnaam van de wandeling mee', async () => {
+  it('neemt de gebiedsnaam van de sessie mee', async () => {
     await share('w2', {
       sessions: [{ place: { name: 'Gulperberg' }, startedAt: 4000, endedAt: 5000 }],
       utterances: [{ id: 'n3', recordedAt: 4500, kind: 'dev_note', transcript: 'Feedback: ok' }],
@@ -861,7 +861,7 @@ describe('/api/feedback/notes (feedback inzien)', () => {
     );
   });
 
-  it('telt per tester wandelingen, uitspraken, feedback en de laatste actie', async () => {
+  it('telt per tester sessies, uitspraken, feedback en de laatste actie', async () => {
     await share('w2', {
       sessions: [{ startedAt: 4000, endedAt: 5000 }],
       utterances: [{ id: 'u2', recordedAt: 4500, transcript: 'Vink' }],
@@ -916,7 +916,7 @@ describe('/api/usage (verbruik)', () => {
     });
   }
 
-  function transcribe(model: string, session = 'wandeling-1') {
+  function transcribe(model: string, session = 'sessie-1') {
     const form = new FormData();
     form.set('audio', new File([new Uint8Array(100)], 'opname.webm', { type: 'audio/webm' }));
     form.set('model', model);
@@ -933,7 +933,7 @@ describe('/api/usage (verbruik)', () => {
     return ((await response.json()) as { rows: Record<string, unknown>[] }).rows;
   }
 
-  it('telt de tokens van Anthropic op per tester, wandeling en model', async () => {
+  it('telt de tokens van Anthropic op per tester, sessie en model', async () => {
     upstream.mockImplementation(async () =>
       Response.json(
         message({
@@ -944,7 +944,7 @@ describe('/api/usage (verbruik)', () => {
         }),
       ),
     );
-    await interpret('wandeling-1');
+    await interpret('sessie-1');
     upstream.mockImplementation(async () =>
       Response.json(
         message({
@@ -955,14 +955,14 @@ describe('/api/usage (verbruik)', () => {
         }),
       ),
     );
-    await interpret('wandeling-1');
-    await interpret('wandeling-2');
+    await interpret('sessie-1');
+    await interpret('sessie-2');
 
     expect(await rows()).toEqual([
       expect.objectContaining({
         tester: 'anna',
         channel: 'beta',
-        session: 'wandeling-1',
+        session: 'sessie-1',
         model: 'claude-haiku-5-5',
         requests: 2,
         inputTokens: 210,
@@ -971,7 +971,7 @@ describe('/api/usage (verbruik)', () => {
         cacheReadTokens: 5000,
         audioSeconds: 0,
       }),
-      expect.objectContaining({ session: 'wandeling-2', requests: 1 }),
+      expect.objectContaining({ session: 'sessie-2', requests: 1 }),
     ]);
     expect((await rows())[0].day).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
@@ -997,7 +997,7 @@ describe('/api/usage (verbruik)', () => {
     ]);
   });
 
-  it('telt een ongeldig of ontbrekend wandeling-id als "geen wandeling"', async () => {
+  it('telt een ongeldig of ontbrekend sessie-id als "geen sessie"', async () => {
     upstream.mockImplementation(async () =>
       Response.json(message({ input_tokens: 1, output_tokens: 1 })),
     );
@@ -1026,7 +1026,7 @@ describe('/api/usage (verbruik)', () => {
     upstream.mockImplementation(async () =>
       Response.json(message({ input_tokens: 1, output_tokens: 1 })),
     );
-    await interpret('wandeling-1');
+    await interpret('sessie-1');
     const response = await call('/api/usage?from=2999-01-01', { code: OWNER_CODE });
     expect(await response.json()).toEqual({ rows: [] });
   });

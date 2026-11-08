@@ -14,7 +14,7 @@
     onplace,
   }: {
     position?: Position;
-    /** Zonder positie: beginnen bij de andere waarnemingen van de wandeling */
+    /** Zonder positie: beginnen bij de andere waarnemingen van de sessie */
     sessionId: string;
     onplace: (lat: number, lon: number) => void;
   } = $props();

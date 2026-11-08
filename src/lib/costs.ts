@@ -2,13 +2,13 @@
 // (worker/usage.ts, /api/usage) omgerekend naar dollars. De rekeningen van
 // OpenAI en Anthropic zijn in dollars, dus geen wisselkoers.
 
-/** Verbruik per dag, tester, omgeving, wandeling en model, zoals de proxy het telt. */
+/** Verbruik per dag, tester, omgeving, sessie en model, zoals de proxy het telt. */
 export interface UsageRow {
   /** Datum in Nederlandse tijd, `2026-10-24` */
   day: string;
   tester: string;
   channel: string;
-  /** Id van de wandeling; leeg als er geen bij hoort (testset) */
+  /** Id van de sessie; leeg als er geen bij hoort (testset) */
   session: string;
   model: string;
   requests: number;
@@ -84,11 +84,11 @@ export interface CostSummary {
   anthropic: number;
   /** Deze maand, duurste eerst */
   perTester: { tester: string; cost: number; utterances: number }[];
-  /** Gemiddeld per opgenomen uitspraak in een wandeling, deze maand */
+  /** Gemiddeld per opgenomen uitspraak in een sessie, deze maand */
   perUtterance?: number;
-  /** Gemiddeld per wandeling, deze maand (zonder de testset) */
+  /** Gemiddeld per sessie, deze maand (zonder de testset) */
   perWalk?: number;
-  /** Duurste wandelingen over alle opgehaalde regels */
+  /** Duurste sessies over alle opgehaalde regels */
   topWalks: WalkCost[];
   /** Modellen zonder prijs: die tellen niet mee */
   unknownModels: string[];
@@ -126,7 +126,7 @@ export function summarize(rows: UsageRow[], now = new Date()): CostSummary {
   const testers = new Map<string, { cost: number; utterances: number }>();
   const walks = new Map<string, WalkCost>();
   const unknown = new Set<string>();
-  // Alleen wandelingen, niet de testset: die zou het gemiddelde vertekenen
+  // Alleen sessies, niet de testset: die zou het gemiddelde vertekenen
   let walkCost = 0;
   let walkUtterances = 0;
 
@@ -154,7 +154,7 @@ export function summarize(rows: UsageRow[], now = new Date()): CostSummary {
     }
     if (row.session) {
       // Per tester: twee apparaten maken nooit hetzelfde id, maar zo blijft
-      // een wandeling bij de tester die hem liep
+      // een sessie bij de tester van wie hij is
       const key = `${row.tester}/${row.session}`;
       const walk = walks.get(key) ?? {
         session: row.session,

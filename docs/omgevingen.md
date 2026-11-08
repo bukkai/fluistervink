@@ -11,9 +11,9 @@ Besloten 24 okt. Testers proberen nieuwe versies uit op de **beta**; wie gewoon 
 | In de app | label "beta" in de kop, heet "Fluistervink Beta" | heet "Fluistervink" |
 | Google Play | interne test | gesloten test, later productie |
 
-**Gedeeld:** de KV (`FEEDBACK`, `TESTERS`) en dezelfde geheimen. Eén toegangscode werkt op beide adressen, `npm run tester` zet de codes in beide Workers, en `npm run feedback -- pull` haalt alles op, waar het ook vandaan komt. Elke gedeelde wandeling en elke JSON-export heeft een veld `channel` (`beta` of `stable`).
+**Gedeeld:** de KV (`FEEDBACK`, `TESTERS`) en dezelfde geheimen. Eén toegangscode werkt op beide adressen, `npm run tester` zet de codes in beide Workers, en `npm run feedback -- pull` haalt alles op, waar het ook vandaan komt. Elke gedeelde sessie en elke JSON-export heeft een veld `channel` (`beta` of `stable`).
 
-**Gescheiden:** de gegevens op de telefoon. IndexedDB hoort bij een adres, dus wandelingen op de beta zie je niet op `fluistervink.nl` en andersom. Overstappen gaat met de JSON-export en -import (Instellingen / Developer).
+**Gescheiden:** de gegevens op de telefoon. IndexedDB hoort bij een adres, dus sessies op de beta zie je niet op `fluistervink.nl` en andersom. Overstappen gaat met de JSON-export en -import (Instellingen / Developer).
 
 ## Een nieuwe stabiele versie
 

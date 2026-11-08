@@ -84,14 +84,14 @@ export async function saveFile(blob: Blob, filename: string): Promise<SaveResult
 }
 
 export interface ImportResult {
-  /** Toegevoegde wandelingen */
+  /** Toegevoegde sessies */
   added: number;
-  /** Wandelingen die er al waren (zelfde id) en zijn overgeslagen */
+  /** Sessies die er al waren (zelfde id) en zijn overgeslagen */
   skipped: number;
 }
 
 /**
- * Leest een JSON-export (van `exportAllJson`) terug in. Alleen wandelingen die
+ * Leest een JSON-export (van `exportAllJson`) terug in. Alleen sessies die
  * er nog niet zijn, met hun uitspraken, waarnemingen en prullenbak; het
  * gebeurtenissenlog niet. Opnames alleen als de export ze bevat.
  */
@@ -119,7 +119,7 @@ export async function importJson(file: File): Promise<ImportResult> {
     await db.sessions.bulkAdd(
       fresh.map((s) => ({
         ...s,
-        // Een wandeling die bij het exporteren nog liep, komt binnen als gestopt
+        // Een sessie die bij het exporteren nog liep, komt binnen als gestopt
         status: 'ended' as const,
         endedAt: s.endedAt ?? (lastObservation(s.id) || s.startedAt),
       })),
@@ -190,12 +190,12 @@ function checkImport(data: {
   };
 
   for (const s of data.sessions as Session[]) {
-    if (!isId(s?.id) || !isNumber(s.startedAt) || !optional(s.endedAt, isNumber)) fail('wandeling');
+    if (!isId(s?.id) || !isNumber(s.startedAt) || !optional(s.endedAt, isNumber)) fail('sessie');
   }
   for (const u of data.utterances as (Utterance & { audioData?: unknown })[]) {
     const ok =
       isId(u?.id) &&
-      // Leeg bij losse feedback (buiten een wandeling)
+      // Leeg bij losse feedback (buiten een sessie)
       typeof u.sessionId === 'string' &&
       isNumber(u.recordedAt) &&
       optional(u.position, isPosition) &&

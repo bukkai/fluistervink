@@ -14,7 +14,7 @@ export const BOOMKRUIPER = 71;
 export function observation(fields: Partial<Observation> = {}): Observation {
   return {
     id: crypto.randomUUID(),
-    sessionId: 'wandeling',
+    sessionId: 'sessie',
     utteranceId: 'uitspraak',
     speciesId: VINK,
     count: 1,

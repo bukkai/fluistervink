@@ -62,7 +62,7 @@ vi.mock('./location.svelte', async (importOriginal) => ({
 }));
 vi.mock('./area', () => ({ attachArea: async () => false }));
 
-const SESSION = 'wandeling';
+const SESSION = 'sessie';
 const POSITION = { lat: 52.0, lon: 5.9, accuracy: 8, fixedAt: 0 };
 let clock: number;
 

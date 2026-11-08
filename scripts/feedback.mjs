@@ -2,7 +2,7 @@
 // Haalt op wat testers met de app gedeeld hebben (zie src/lib/share.ts en
 // /api/feedback in worker/index.ts) en zet het in testset/feedback/.
 //
-//   npm run feedback -- pull     nieuwe en gewijzigde wandelingen en opnames ophalen
+//   npm run feedback -- pull     nieuwe en gewijzigde sessies en opnames ophalen
 //   npm run feedback -- notes    nieuwe feedback als Markdown, nieuwste eerst (--alle: ook verwerkte)
 //   npm run feedback -- verwerkt   wat `notes` net toonde als verwerkt markeren
 //   npm run feedback -- wipe <tester>   alles van een tester wissen, online en hier
@@ -107,7 +107,7 @@ async function pull() {
   console.log(`${fetched} nieuw of gewijzigd, ${keys.length} in totaal.`);
   for (const [tester, n] of Object.entries(testers)) {
     console.log(
-      `  ${tester}: ${n.sessions} wandelingen, ${n.audio} opnames → testset/feedback/${tester}.json`,
+      `  ${tester}: ${n.sessions} sessies, ${n.audio} opnames → testset/feedback/${tester}.json`,
     );
   }
 }

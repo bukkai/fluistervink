@@ -11,14 +11,14 @@ import { devNoteText } from './observations';
 const CONTEXT_SIZE = 3;
 
 /**
- * `sessionId` van feedback die buiten een wandeling getypt is ("losse
+ * `sessionId` van feedback die buiten een sessie getypt is ("losse
  * feedback"). Gaat apart mee bij het delen (share.ts), zodat een tester ook
- * iets kan melden als een wandeling starten niet eens lukt.
+ * iets kan melden als een sessie starten niet eens lukt.
  */
 export const NO_SESSION = '';
 
 /**
- * Getypte feedback, op het Feedback-scherm. Hoort bij de lopende wandeling
+ * Getypte feedback, op het Feedback-scherm. Hoort bij de lopende sessie
  * als die er is, anders is het losse feedback. Gaat niet langs het model.
  */
 export async function addTypedNote(text: string, sessionId = NO_SESSION): Promise<void> {

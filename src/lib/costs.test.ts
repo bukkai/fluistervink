@@ -6,7 +6,7 @@ function row(fields: Partial<UsageRow>): UsageRow {
     day: '2026-10-24',
     tester: 'anna',
     channel: 'beta',
-    session: 'wandeling-1',
+    session: 'sessie-1',
     model: 'claude-haiku-5-5',
     requests: 1,
     inputTokens: 0,
@@ -47,19 +47,19 @@ describe('summarize', () => {
   const rows = [
     // Vorige maand
     row({ day: '2026-09-30', session: 'oud', inputTokens: 10_000_000 }), // $1
-    // Deze maand, anna: wandeling 1 (2 uitspraken), vandaag
+    // Deze maand, anna: sessie 1 (2 uitspraken), vandaag
     row({ model: 'gpt-4o-transcribe', requests: 2, inputTokens: 400_000 }), // $1
     row({ requests: 2, inputTokens: 20_000_000 }), // $2
     // piet, eerder deze maand
     row({
       day: '2026-10-02',
       tester: 'piet',
-      session: 'wandeling-2',
+      session: 'sessie-2',
       model: 'gpt-4o-transcribe',
       requests: 1,
       inputTokens: 200_000,
     }), // $0,50
-    // De testset van de eigenaar, zonder wandeling
+    // De testset van de eigenaar, zonder sessie
     row({ day: '2026-10-10', tester: 'eigenaar', session: '', inputTokens: 40_000_000 }), // $4
     row({ model: 'claude-nieuw', inputTokens: 1 }),
   ];
@@ -81,16 +81,16 @@ describe('summarize', () => {
     ]);
   });
 
-  it('middelt per uitspraak en per wandeling (zonder de testset)', () => {
+  it('middelt per uitspraak en per sessie (zonder de testset)', () => {
     expect(summary.perUtterance).toBeCloseTo((3 + 0.5) / 3);
     expect(summary.perWalk).toBeCloseTo((3 + 0.5) / 2);
   });
 
-  it('zet de duurste wandelingen bovenaan, ook die van vorige maand', () => {
+  it('zet de duurste sessies bovenaan, ook die van vorige maand', () => {
     expect(summary.topWalks.map((w) => [w.session, w.utterances])).toEqual([
-      ['wandeling-1', 2],
+      ['sessie-1', 2],
       ['oud', 0],
-      ['wandeling-2', 1],
+      ['sessie-2', 1],
     ]);
   });
 
