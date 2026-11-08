@@ -6,6 +6,7 @@
 
 import type { Billing, UsageRow } from './costs';
 import { forgetInstallToken, getInstallToken, register } from './install';
+import type { ActivityRow } from './stats';
 
 const ACCESS_CODE_KEY = 'fluistervink.accessCode';
 const TESTER_KEY = 'fluistervink.tester';
@@ -252,6 +253,11 @@ export async function fetchArea(lat: number, lon: number): Promise<Area | null> 
 /** Verbruik van OpenAI en Anthropic vanaf `from` (alleen voor de eigenaar). */
 export async function listUsage(from: string): Promise<UsageRow[]> {
   return (await request<{ rows: UsageRow[] }>(`/api/usage?from=${from}`)).rows;
+}
+
+/** Gebruik per dag en tester vanaf `from`, voor de statistieken (alleen voor de eigenaar). */
+export async function listActivity(from: string): Promise<ActivityRow[]> {
+  return (await request<{ rows: ActivityRow[] }>(`/api/stats?from=${from}`)).rows;
 }
 
 /** De echte rekening van OpenAI en Anthropic, deze maand (alleen voor de eigenaar). */

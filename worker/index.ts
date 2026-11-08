@@ -17,7 +17,7 @@ import {
   verifyTurnstile,
   type InstallSecrets,
 } from './install';
-import { recordUsage, sessionFrom, usageSince, type Usage } from './usage';
+import { activitySince, recordUsage, sessionFrom, usageSince, type Usage } from './usage';
 
 // Proxy tussen de app en de API's van OpenAI (spraak naar tekst), Anthropic
 // (interpretatie) en waarneming.nl (gebiedsnamen). De API-sleutels blijven hier; de app stuurt alleen een
@@ -133,6 +133,9 @@ export default {
       }
       if (pathname === '/api/usage' && request.method === 'GET') {
         return await usage(request, env, tester);
+      }
+      if (pathname === '/api/stats' && request.method === 'GET') {
+        return await stats(request, env, tester);
       }
       if (pathname === '/api/billing' && request.method === 'GET') {
         return await billing(env, tester);
@@ -431,6 +434,17 @@ async function usage(request: Request, env: WorkerEnv, tester: string): Promise<
   const from = new URL(request.url).searchParams.get('from') ?? '';
   if (!/^\d{4}-\d{2}-\d{2}$/.test(from)) return json({ error: 'Ongeldige datum' }, 400);
   return json({ rows: await usageSince(env.USAGE, from) });
+}
+
+/**
+ * Gebruik per dag en tester (worker/usage.ts), voor de statistieken, alleen
+ * voor de eigenaar: `GET /api/stats?from=2026-09-01`.
+ */
+async function stats(request: Request, env: WorkerEnv, tester: string): Promise<Response> {
+  if (tester !== OWNER) return json({ error: 'Alleen voor de eigenaar' }, 403);
+  const from = new URL(request.url).searchParams.get('from') ?? '';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(from)) return json({ error: 'Ongeldige datum' }, 400);
+  return json({ rows: await activitySince(env.USAGE, from) });
 }
 
 /** De echte rekening van deze maand per aanbieder (worker/billing.ts), alleen voor de eigenaar. */
