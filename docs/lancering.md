@@ -22,7 +22,7 @@ Eigenaar:
 - [ ] Play Console → Testen → **Gesloten tests**: track aanmaken (bv. "Stabiel"), de stabiele AAB van de laatste tag uploaden en uitrollen (`docs/google-play.md`, stap 5.4).
 - [ ] Deelnamelink van die track in `PLAY_TEST_LINKS.stable` (`src/lib/invite.ts`).
 - [ ] 15–20 testers werven (Gmail-adressen in de lijst van de gesloten test) en uitnodigen vanaf Developer op `fluistervink.nl`.
-- [x] Contactadres voor de Play Store en de privacypagina: `stephan@heg-mus.nl` (besloten 8 nov; geen mail op `fluistervink.nl`).
+- [x] Contactadres voor de Play Store en de privacypagina: `info@fluistervink.nl` (bestaat sinds 9 nov).
 - [ ] Plafond en daglimiet bij OpenAI en Anthropic nalopen: straks kan iedereen zonder code installeren.
 
 Claude (in PR's):
