@@ -37,6 +37,8 @@ Feedback opgehaald op 6 nov: 8 testers en installaties met gedeelde wandelingen 
   - Nieuw opgevallen: "Meerkoet." (09:53) wordt nu "Merel"/"Migo"; "Piepgeluiden." wordt "twee/drie grauwe ganzen". Mogelijk ook "Roepje vink": bij een onverstaanbare opname zet `gpt-4o-transcribe` iets uit de prompt neer.
   - **Label 18/19 verbeterd**: 2× krakeend + 1× waterhoen (`whisper-1` hoort trouwens "Eén waterhoed", bevestigt "een" i.p.v. "nee"). Labels worden afgeleid uit de gedeelde wandeling, dus de opgehaalde sessie is aangepast met `testset/label-jurian-krakeend.mjs`; opnieuw draaien als een pull Jurians wandeling ooit opnieuw binnenhaalt.
 
+- **Maarten** (8 nov): wil langer achter elkaar inspreken bij het trektellen (nu na 3 minuten gestopt). Voorstel `docs/plan-trektelmodus.md` (nog niet goedgekeurd): stukken knippen bij een pauze, stilte niet versturen, beveiligingen en een plafond per dag. Eerst de open punten met Maarten bespreken (ook: trektellen.nl).
+
 ## Roadmap naar v1.0 (13 okt)
 
 Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de app installeren, een hele wandeling gebruiken zonder naar het scherm te kijken, en thuis zonder gedoe naar waarneming.nl exporteren.
