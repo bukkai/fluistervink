@@ -19,7 +19,7 @@ public class MainActivity extends BridgeActivity {
         // Terugknop: een pagina terug in de app (de schermen zijn #-adressen),
         // zoals in Chrome. Zonder dit sloot hij de app (15 okt). Op het
         // hoofdscherm naar de achtergrond in plaats van afsluiten, zodat een
-        // lopende wandeling (wachtrij, tril) gewoon doorgaat.
+        // lopende sessie (wachtrij, tril) gewoon doorgaat.
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {

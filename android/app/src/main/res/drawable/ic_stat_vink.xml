@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Klein icoon in de statusbalk voor de melding "Wandeling loopt": een
+<!-- Klein icoon in de statusbalk voor de melding "Aan het vogelen": een
      vogeltje in één kleur (Android kleurt het zelf). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"

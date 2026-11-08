@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Alle opnames op deze telefoon in één keer wissen. Per wandeling kan het
+  // Alle opnames op deze telefoon in één keer wissen. Per sessie kan het
   // ook, onderaan de review. Zie recordings.ts.
   import { liveQuery } from 'dexie';
   import {
@@ -14,7 +14,7 @@
 
   async function removeAll() {
     const current = await countRecordings();
-    if (!current.count || !confirm(confirmDeleteText(current, 'van alle wandelingen'))) return;
+    if (!current.count || !confirm(confirmDeleteText(current, 'van alle sessies'))) return;
     const deleted = await deleteRecordings();
     message = `${deleted === 1 ? '1 opname' : `${deleted} opnames`} gewist.`;
   }
@@ -25,8 +25,8 @@
   <div class="card-body stack">
     <p class="hint">
       De app bewaart wat je inspreekt op je telefoon, zodat je het thuis kunt terugluisteren. Wis je
-      de opnames, dan blijven de wandelingen, wat je zei als tekst en de waarnemingen gewoon staan.
-      Per wandeling kan het ook, onderaan bij die wandeling.
+      de opnames, dan blijven de sessies, wat je zei als tekst en de waarnemingen gewoon staan. Per
+      sessie kan het ook, onderaan bij die sessie.
     </p>
     {#if $recordings?.count}
       <p class="hint">Op deze telefoon: {describeRecordings($recordings)}.</p>

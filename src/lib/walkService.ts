@@ -2,10 +2,10 @@ import { logEvent } from './log';
 import { isNativeApp, startWalkService, stopWalkService, walkServiceStatus } from './native';
 
 // Houdt de foreground service van de Android-app gelijk met de lopende
-// wandeling (fase 2, docs/plan-capacitor.md). Aanroepen bij elke wijziging van
-// de lopende wandeling, bij terugkomen in de app en bij het begin van een
+// sessie (fase 2, docs/plan-capacitor.md). Aanroepen bij elke wijziging van
+// de lopende sessie, bij terugkomen in de app en bij het begin van een
 // opname: de service start alleen als de app op het scherm staat en de
-// locatietoestemming er is, dus bij de eerste wandeling lukt het pas later.
+// locatietoestemming er is, dus bij de eerste sessie lukt het pas later.
 
 /** Laatst gelogde uitkomst, zodat het log niet bij elke opname een regel krijgt */
 let lastLogged = '';

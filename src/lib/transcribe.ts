@@ -21,7 +21,7 @@ export const TRANSCRIBE_MODEL = 'gpt-transcribe';
 const speciesNames = species.filter((s) => s.type === 'S' && s.rarity <= 2).map((s) => s.name);
 const aliasNames = aliases.flatMap((a) => a.bijnamen);
 
-const PROMPT = `Vogelwaarnemingen, ingesproken tijdens een wandeling. Bijvoorbeeld: "Fluistervink, zes overvliegende houtduiven." "Roepje vink." "Twee zingende tjiftjaffen." "Nee, keep in plaats van vink." "Nog drie erbij." "Die laatste weg." "Feedback: de knop reageert traag."
+const PROMPT = `Vogelwaarnemingen, ingesproken tijdens het vogelen. Bijvoorbeeld: "Fluistervink, zes overvliegende houtduiven." "Roepje vink." "Twee zingende tjiftjaffen." "Nee, keep in plaats van vink." "Nog drie erbij." "Die laatste weg." "Feedback: de knop reageert traag."
 
 Vogelnamen: ${speciesNames.join(', ')}.
 
@@ -38,7 +38,7 @@ export const transcribePromptVersion: Promise<string> = crypto.subtle
 
 /**
  * `model`: alleen anders voor de testset (scripts/testset.mjs). `sessionId`:
- * voor het verbruik per wandeling.
+ * voor het verbruik per sessie.
  */
 export async function transcribe(
   audio: Blob,

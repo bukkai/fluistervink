@@ -32,7 +32,7 @@
   let fresh = $derived(sharing ? ($notes ?? []).filter((n) => !isEarlier(n)) : ($notes ?? []));
   let earlier = $derived(sharing ? ($notes ?? []).filter(isEarlier) : []);
 
-  // Getypte feedback hoort bij de lopende wandeling, als die er is
+  // Getypte feedback hoort bij de lopende sessie, als die er is
   const active = liveQuery(() => db.sessions.where('status').equals('active').first());
 
   let text = $state('');
@@ -80,7 +80,7 @@
 <p class="intro">
   Spreek het in tijdens het vogelen: begin een uitspraak met <em>"feedback"</em>, bijvoorbeeld
   <em>"feedback, hij herkende blako niet, terwijl dat toch echt bladkoning betekent"</em>. Of typ
-  het hieronder. Feedback gaat na de wandeling mee naar de ontwikkelaar,
+  het hieronder. Feedback gaat na de sessie mee naar de ontwikkelaar,
   {sharing ? 'want delen staat aan' : 'als je delen aanzet'} (<a href="#instellingen"
     >Instellingen</a
   >). Verstuurde feedback blijft hier staan; weghalen kan altijd.
@@ -118,7 +118,7 @@
               {#if sent.has(note.id)}
                 verstuurd ✓
               {:else if note.sessionId && note.sessionId === $active?.id}
-                gaat mee na de wandeling
+                gaat mee na de sessie
               {:else}
                 nog niet verstuurd
               {/if}

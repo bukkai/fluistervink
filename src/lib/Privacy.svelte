@@ -21,7 +21,9 @@
         Delen met de ontwikkelaar doe je alleen als je daar ja op zegt, en opnames alleen als je dat
         apart aanzet.
       </li>
-      <li>Geen account, geen advertenties, geen statistieken, geen route van je wandeling.</li>
+      <li>
+        Geen account, geen advertenties, geen statistieken, geen route van waar je geweest bent.
+      </li>
     </ul>
   </div>
 </section>
@@ -36,9 +38,9 @@
       tot je ze verwijdert. De opnames kun je ook los wissen (zie hieronder).
     </p>
     <p>
-      In de Android-app staat tijdens een wandeling de melding "Wandeling loopt". Daardoor mag de
-      app doorwerken met het scherm uit, en blijft hij je locatie volgen om bij een uitspraak meteen
-      te weten waar je bent. Bewaard wordt nog steeds alleen de locatie bij het begin van een
+      In de Android-app staat tijdens een sessie een melding van Fluistervink. Daardoor mag de app
+      doorwerken met het scherm uit, en blijft hij je locatie volgen om bij een uitspraak meteen te
+      weten waar je bent. Bewaard wordt nog steeds alleen de locatie bij het begin van een
       uitspraak, geen route. Na "Stop" houdt het volgen op.
     </p>
   </div>
@@ -49,8 +51,8 @@
     <h3>Wat de app verstuurt</h3>
     <p>
       Alles gaat eerst langs de eigen server van Fluistervink. Die bewaart niets, behalve wat je
-      deelt (hieronder) en hoeveel je liet verwerken: per dag en per wandeling het aantal uitspraken
-      en hoe lang die waren, zonder wat je zei, om de kosten bij te houden. Wel houdt hij een paar
+      deelt (hieronder) en hoeveel je liet verwerken: per dag en per sessie het aantal uitspraken en
+      hoe lang die waren, zonder wat je zei, om de kosten bij te houden. Wel houdt hij een paar
       dagen bij wanneer je de app gebruikte en of er iets misging.
     </p>
     <dl>
@@ -61,8 +63,8 @@
       </dd>
       <dt>Anthropic</dt>
       <dd>
-        De tekst van je uitspraak plus de laatste waarnemingen van de wandeling (zodat "nog drie
-        erbij" werkt), met hoe ver die van je af zijn ("300 m hiervandaan"). Geen opname en geen
+        De tekst van je uitspraak plus de laatste waarnemingen van de sessie (zodat "nog drie erbij"
+        werkt), met hoe ver die van je af zijn ("300 m hiervandaan"). Geen opname en geen
         coördinaten. Anthropic wist dit binnen 30 dagen en gebruikt het niet voor training.
       </dd>
       <dt>Waarneming.nl</dt>
@@ -103,10 +105,10 @@
   <div class="card-body">
     <h3>Delen met de ontwikkelaar</h3>
     <p>
-      Fluistervink is nog in ontwikkeling. Zeg je ja tegen delen, dan gaan na elke wandeling je
+      Fluistervink is nog in ontwikkeling. Zeg je ja tegen delen, dan gaan na elke sessie je
       uitspraken als tekst, wat de app ervan maakte, je correcties bij het nalopen, je feedback, het
-      logboek van die wandeling en de locaties van je waarnemingen naar de ontwikkelaar. Opnames
-      alleen als je dat bij <a href="#instellingen">Instellingen</a> aanzet.
+      logboek van die sessie en de locaties van je waarnemingen naar de ontwikkelaar. Opnames alleen
+      als je dat bij <a href="#instellingen">Instellingen</a> aanzet.
     </p>
     <p>
       Het staat bij Cloudflare onder je testernaam, of zonder code onder de willekeurige naam van je
@@ -126,15 +128,14 @@
         Delen aan- of uitzetten, met of zonder opnames: <a href="#instellingen">Instellingen</a>.
       </li>
       <li>
-        Alleen de opnames wissen: onderaan bij een wandeling, of alles in één keer bij
-        <a href="#instellingen">Instellingen</a>. De wandeling, wat je zei als tekst en de
-        waarnemingen blijven staan; terugluisteren kan dan niet meer. Opnames die je al met de
-        ontwikkelaar gedeeld had, blijven daar staan.
+        Alleen de opnames wissen: onderaan bij een sessie, of alles in één keer bij
+        <a href="#instellingen">Instellingen</a>. De sessie, wat je zei als tekst en de waarnemingen
+        blijven staan; terugluisteren kan dan niet meer. Opnames die je al met de ontwikkelaar
+        gedeeld had, blijven daar staan.
       </li>
       <li>
-        Een wandeling verwijderen, met alle opnames: bij <a href="#wandelingen"
-          >Vorige wandelingen</a
-        >. Dat is echt weg.
+        Een sessie verwijderen, met alle opnames: bij <a href="#sessies">Vorige sessies</a>. Dat is
+        echt weg.
       </li>
       <li>
         Een kopie van wat je gedeeld hebt: vraag het als feedback in de app (of aan wie je heeft

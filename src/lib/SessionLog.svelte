@@ -28,8 +28,8 @@
     getSpecies,
   } from './vocab';
 
-  // Waarnemingen en uitspraken van één wandeling; gebruikt voor de lopende
-  // wandeling en voor eerdere wandelingen.
+  // Waarnemingen en uitspraken van één sessie; gebruikt voor de lopende
+  // sessie en voor eerdere sessies.
 
   /**
    * Bij de review staat er een kaart boven de lijst:
@@ -46,12 +46,12 @@
     onshowonmap?: (id: string) => void;
   } = $props();
 
-  // Opnieuw opvragen als de wandeling wisselt; liveQuery volgt daarna zelf de database
+  // Opnieuw opvragen als de sessie wisselt; liveQuery volgt daarna zelf de database
   let observations = $derived(liveQuery(() => listObservations(session.id)));
   let utterances = $derived(liveQuery(() => listUtterances(session.id)));
   let deleted = $derived(liveQuery(() => listDeleted(session.id)));
 
-  // Gebiedsnamen die nog ontbreken (geen verbinding, oudere wandelingen) alsnog opzoeken
+  // Gebiedsnamen die nog ontbreken (geen verbinding, oudere sessies) alsnog opzoeken
   $effect(() => {
     fillMissingAreas(session.id);
   });
@@ -145,7 +145,7 @@
   }
 
   /**
-   * Regel met locatie en knoppen. Tijdens de wandeling alleen als er iets te
+   * Regel met locatie en knoppen. Tijdens de sessie alleen als er iets te
    * doen of op te letten is, zodat de lijst rustig blijft; bij de review altijd.
    */
   function showActions(obs: Observation): boolean {
@@ -200,7 +200,7 @@
     playingId = undefined;
   }
 
-  // Stoppen bij het verlaten van de wandeling
+  // Stoppen bij het verlaten van de sessie
   $effect(() => stopPlayer);
 
   function seconds(ms: number): string {
@@ -340,7 +340,7 @@
                       >Klopt</button
                     >
                   {/if}
-                  <!-- Exporteren kan alleen bij een afgelopen wandeling -->
+                  <!-- Exporteren kan alleen bij een afgelopen sessie -->
                   {#if session.status === 'ended'}
                     <label class="export">
                       <input
@@ -584,7 +584,7 @@
     margin-left: auto;
   }
 
-  /* Weg, Klopt, Opnieuw: ook tijdens de wandeling, dus 48 px hoog (handschoenen) */
+  /* Weg, Klopt, Opnieuw: ook tijdens de sessie, dus 48 px hoog (handschoenen) */
   button.small {
     box-sizing: border-box;
     min-height: 3rem;

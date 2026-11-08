@@ -9,14 +9,14 @@ import {
   keepSession,
 } from './sessions';
 
-// Vergeten wandeling: na een uur stilte vragen, na 8 uur vanzelf stoppen.
+// Vergeten sessie: na een uur stilte vragen, na 8 uur vanzelf stoppen.
 
 const HOUR = 60 * 60_000;
 const now = Date.parse('2026-10-11T20:00:00');
 
 async function walk(startedHoursAgo: number, lastUtteranceHoursAgo?: number): Promise<Session> {
   const session: Session = {
-    id: 'wandeling',
+    id: 'sessie',
     startedAt: now - startedHoursAgo * HOUR,
     status: 'active',
   };
@@ -33,7 +33,7 @@ async function walk(startedHoursAgo: number, lastUtteranceHoursAgo?: number): Pr
 }
 
 describe('checkStaleSession', () => {
-  it('doet niets zonder lopende wandeling', async () => {
+  it('doet niets zonder lopende sessie', async () => {
     expect(await checkStaleSession(now)).toBeUndefined();
   });
 
@@ -46,7 +46,7 @@ describe('checkStaleSession', () => {
     await walk(3, 2);
     expect(await checkStaleSession(now)).toEqual({
       kind: 'ask',
-      session: expect.objectContaining({ id: 'wandeling' }),
+      session: expect.objectContaining({ id: 'sessie' }),
       lastActivityAt: now - 2 * HOUR,
     });
   });
@@ -59,7 +59,7 @@ describe('checkStaleSession', () => {
   it('stopt na 8 uur, met de laatste uitspraak als eindtijd', async () => {
     await walk(10, AUTO_STOP_AFTER_MS / HOUR);
     expect((await checkStaleSession(now))?.kind).toBe('stopped');
-    expect(await db.sessions.get('wandeling')).toMatchObject({
+    expect(await db.sessions.get('sessie')).toMatchObject({
       status: 'ended',
       endedAt: now - 8 * HOUR,
     });
@@ -67,7 +67,7 @@ describe('checkStaleSession', () => {
 
   it('"ja, ga door" telt als activiteit', async () => {
     await walk(3, 2);
-    await keepSession('wandeling');
+    await keepSession('sessie');
     expect(await checkStaleSession()).toBeUndefined();
   });
 });
@@ -76,11 +76,11 @@ describe('countPerSession', () => {
   it('telt mislukte en wachtende uitspraken als niet verwerkt', async () => {
     // Geen bereik: de opname is bewaard maar nog geen waarneming geworden
     await db.utterances.bulkAdd([
-      { id: 'a', sessionId: 'wandeling', recordedAt: now, status: 'failed' },
-      { id: 'b', sessionId: 'wandeling', recordedAt: now, status: 'pending' },
-      { id: 'c', sessionId: 'wandeling', recordedAt: now, status: 'done' },
+      { id: 'a', sessionId: 'sessie', recordedAt: now, status: 'failed' },
+      { id: 'b', sessionId: 'sessie', recordedAt: now, status: 'pending' },
+      { id: 'c', sessionId: 'sessie', recordedAt: now, status: 'done' },
     ]);
-    expect((await countPerSession()).get('wandeling')).toEqual({
+    expect((await countPerSession()).get('sessie')).toEqual({
       utterances: 3,
       observations: 0,
       devNotes: 0,

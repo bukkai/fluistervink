@@ -182,13 +182,13 @@ export interface TranscribeOptions {
   model?: string;
   /** Tekst die de herkenning stuurt, bv. een lijst soortnamen */
   prompt?: string;
-  /** Wandeling waar de uitspraak bij hoort, voor het verbruik (zie sessionHeader) */
+  /** Sessie waar de uitspraak bij hoort, voor het verbruik (zie sessionHeader) */
   sessionId?: string;
 }
 
 /**
- * De proxy telt het verbruik per wandeling (kostenoverzicht op Developer).
- * Alleen het id; zonder (testset) telt het als "geen wandeling".
+ * De proxy telt het verbruik per sessie (kostenoverzicht op Developer).
+ * Alleen het id; zonder (testset) telt het als "geen sessie".
  */
 function sessionHeader(sessionId: string | undefined): HeadersInit {
   return sessionId ? { 'X-Session': sessionId } : {};

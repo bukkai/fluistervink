@@ -81,10 +81,10 @@ Met de hand kan ook: `ACCESS_CODES` is JSON, `{"anna": "code", "piet": "code"}`,
 
 ### Wat testers delen ophalen
 
-De app deelt gestopte wandelingen (met feedback, correcties en het log) automatisch met de proxy; opnames alleen als de tester dat aanzet op het Feedback-scherm.
+De app deelt gestopte sessies (met feedback, correcties en het log) automatisch met de proxy; opnames alleen als de tester dat aanzet op het Feedback-scherm.
 
 ```bash
-npm run feedback -- pull    # nieuwe en gewijzigde wandelingen ophalen → testset/feedback/
+npm run feedback -- pull    # nieuwe en gewijzigde sessies ophalen → testset/feedback/
 npm run feedback -- notes   # alle feedback van testers als Markdown
 npm run feedback -- wipe anna   # alles van één tester wissen (online en lokaal), op verzoek
 npm run testset -- testset/feedback/anna.json

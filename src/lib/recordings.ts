@@ -2,7 +2,7 @@ import { audioSize, db, type Utterance } from './db';
 import { logEvent } from './log';
 import { sharedAudioIds } from './share';
 
-// Alleen de spraakopnames wissen, zonder de wandeling: transcripten,
+// Alleen de spraakopnames wissen, zonder de sessie: transcripten,
 // waarnemingen en de rest blijven staan. Op verzoek van een tester ("kan ik
 // de opnames makkelijk verwijderen?").
 //
@@ -28,7 +28,7 @@ function canDelete(u: Utterance): boolean {
 
 /**
  * Loopt de uitspraken met een opname die weg mag één voor één langs; zonder
- * `sessionId` van alle wandelingen. Niet alles tegelijk in het geheugen: dat
+ * `sessionId` van alle sessies. Niet alles tegelijk in het geheugen: dat
  * kunnen honderden opnames zijn, en de telling loopt opnieuw bij elke wijziging.
  */
 async function eachDeletable(
@@ -44,7 +44,7 @@ async function eachDeletable(
   });
 }
 
-/** Hoeveel opnames er gewist kunnen worden (van één wandeling of alles). */
+/** Hoeveel opnames er gewist kunnen worden (van één sessie of alles). */
 export async function countRecordings(sessionId?: string): Promise<RecordingCount> {
   const sharedIds = sharedAudioIds();
   const result: RecordingCount = { count: 0, bytes: 0, shared: 0 };
@@ -57,7 +57,7 @@ export async function countRecordings(sessionId?: string): Promise<RecordingCoun
 }
 
 /**
- * Wist de opnames (van één wandeling of alles) en geeft terug hoeveel. De
+ * Wist de opnames (van één sessie of alles) en geeft terug hoeveel. De
  * uitspraak houdt `audioDeletedAt`, zodat de review "opname gewist" kan tonen.
  */
 export async function deleteRecordings(sessionId?: string, now = Date.now()): Promise<number> {

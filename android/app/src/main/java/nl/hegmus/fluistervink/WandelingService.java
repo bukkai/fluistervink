@@ -16,8 +16,8 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.ServiceCompat;
 
 /**
- * Foreground service tijdens een wandeling (fase 2, docs/plan-capacitor.md),
- * met een vaste melding "Wandeling loopt". Doet zelf niets: hij houdt Android
+ * Foreground service tijdens een sessie (fase 2, docs/plan-capacitor.md),
+ * met een vaste melding "Aan het vogelen". Doet zelf niets: hij houdt Android
  * ervan af de app te bevriezen of te sluiten met het scherm uit, zodat de
  * wachtrij in de webcode doorloopt, de GPS warm blijft en de tril na het
  * verwerken toch komt. Gestart en gestopt door WandelingPlugin.
@@ -25,11 +25,11 @@ import androidx.core.app.ServiceCompat;
 public class WandelingService extends Service {
 
     private static final String TAG = "WandelingService";
-    private static final String CHANNEL_ID = "wandeling";
+    private static final String CHANNEL_ID = "wandeling"; // vast: een nieuw id maakt een tweede kanaal bij wie de app al heeft
     private static final int NOTIFICATION_ID = 1;
 
     /**
-     * Vangnet als de webcode het stoppen mist: net als een vergeten wandeling
+     * Vangnet als de webcode het stoppen mist: net als een vergeten sessie
      * (checkStaleSession in src/lib/sessions.ts) 8 uur na de laatste opname.
      * Elke opname start de service opnieuw, en zet deze klok terug.
      */
@@ -62,7 +62,7 @@ public class WandelingService extends Service {
         handler.removeCallbacks(stopAfterMax);
         handler.postDelayed(stopAfterMax, MAX_DURATION_MS);
         // Sluit Android de app toch, dan niet vanzelf herstarten: de webcode
-        // start de service weer bij het openen als de wandeling nog loopt
+        // start de service weer bij het openen als de sessie nog loopt
         return START_NOT_STICKY;
     }
 
@@ -84,10 +84,10 @@ public class WandelingService extends Service {
             // Laag belang: geen geluid en geen tril bij het verschijnen
             NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID,
-                "Wandeling",
+                "Sessie",
                 NotificationManager.IMPORTANCE_LOW
             );
-            channel.setDescription("Zichtbaar zolang een wandeling loopt");
+            channel.setDescription("Zichtbaar zolang een sessie loopt");
             channel.setShowBadge(false);
             manager.createNotificationChannel(channel);
         }
@@ -104,7 +104,7 @@ public class WandelingService extends Service {
 
         return new NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_vink)
-            .setContentTitle("Wandeling loopt")
+            .setContentTitle("Aan het vogelen")
             .setContentText("Tik om Fluistervink te openen")
             .setContentIntent(contentIntent)
             .setOngoing(true)

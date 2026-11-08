@@ -3,14 +3,14 @@ import { audioBlob, audioSize, db, type Utterance } from './db';
 import { NO_SESSION } from './devNotes';
 import { APP_VERSION, CHANNEL, logEvent } from './log';
 
-// Delen met de ontwikkelaar: gestopte wandelingen (uitspraken, transcripten,
+// Delen met de ontwikkelaar: gestopte sessies (uitspraken, transcripten,
 // uitvoer van het model, de nagelopen waarnemingen, feedback en het log van
 // die periode) gaan naar de proxy, die ze per tester bewaart. Zo groeit de
 // testset vanzelf, ook met andere stemmen dan die van de eigenaar. Opnames
 // alleen als de gebruiker dat aanzet.
 //
-// Een wandeling gaat opnieuw als hij veranderd is (bv. na het nalopen): de app
-// onthoudt per wandeling een hash van wat er verstuurd is. Lukt het niet, dan
+// Een sessie gaat opnieuw als hij veranderd is (bv. na het nalopen): de app
+// onthoudt per sessie een hash van wat er verstuurd is. Lukt het niet, dan
 // bij de volgende gelegenheid opnieuw (opstarten, weer online, ander scherm).
 
 const ENABLED_KEY = 'fluistervink.share';
@@ -21,7 +21,7 @@ const DEVICE_KEY = 'fluistervink.device';
 const SENT_AT_KEY = 'fluistervink.sharedAt';
 
 interface Sent {
-  /** Hash van de laatst verstuurde versie per wandeling */
+  /** Hash van de laatst verstuurde versie per sessie */
   sessions: Record<string, string>;
   /** Uitspraken waarvan de opname al verstuurd is */
   audio: string[];
@@ -48,7 +48,7 @@ export function sharedAudioIds(): Set<string> {
 
 /**
  * Feedback in een verstuurde (of al eerder verstuurde, zelfde hash) versie
- * van een wandeling als verstuurd noteren.
+ * van een sessie als verstuurd noteren.
  */
 function markNotes(sent: Sent, utterances: Pick<Utterance, 'id' | 'kind'>[]): void {
   const ids = new Set(sent.notes);
@@ -108,7 +108,7 @@ export function lastSharedAt(): number | undefined {
   return read<number | undefined>(SENT_AT_KEY, undefined);
 }
 
-/** Alles van één wandeling, in de vorm van de JSON-export (zonder opnames). */
+/** Alles van één sessie, in de vorm van de JSON-export (zonder opnames). */
 async function snapshot(sessionId: string) {
   const session = await db.sessions.get(sessionId);
   if (!session) return undefined;
@@ -117,7 +117,7 @@ async function snapshot(sessionId: string) {
     db.utterances.where('sessionId').equals(sessionId).sortBy('recordedAt'),
     db.observations.where('sessionId').equals(sessionId).toArray(),
     db.deletedObservations.where('sessionId').equals(sessionId).toArray(),
-    // Het log van de periode van de wandeling (`sessionId` heeft geen index)
+    // Het log van de periode van de sessie (`sessionId` heeft geen index)
     db.events.where('at').between(session.startedAt, until, true, true).toArray(),
   ]);
   return {
@@ -137,7 +137,7 @@ async function snapshot(sessionId: string) {
 const LOOSE_EVENTS_MS = 30 * 60_000;
 
 /**
- * Id waaronder losse feedback (buiten een wandeling) gedeeld wordt, per
+ * Id waaronder losse feedback (buiten een sessie) gedeeld wordt, per
  * apparaat. Eerst was het één vaste id per tester; dan overschreef de
  * Android-app wat de PWA in Chrome had gedeeld (elk een eigen database), en
  * andersom.
@@ -152,8 +152,8 @@ function looseId(): string {
 }
 
 /**
- * Feedback die buiten een wandeling getypt is (devNotes.ts), met het log van
- * het half uur ervoor. Zelfde vorm als een wandeling, zonder wandeling.
+ * Feedback die buiten een sessie getypt is (devNotes.ts), met het log van
+ * het half uur ervoor. Zelfde vorm als een sessie, zonder sessie.
  */
 async function looseSnapshot() {
   const notes = await db.utterances.where('sessionId').equals(NO_SESSION).sortBy('recordedAt');
@@ -209,7 +209,7 @@ async function run(): Promise<ShareResult> {
   const withAudio = shareAudio();
 
   try {
-    // Alleen gestopte wandelingen: een lopende verandert nog bij elke uitspraak
+    // Alleen gestopte sessies: een lopende verandert nog bij elke uitspraak
     const ended = await db.sessions.where('status').equals('ended').primaryKeys();
     for (const id of ended) {
       const data = await snapshot(id);
@@ -299,7 +299,7 @@ let timer: ReturnType<typeof setTimeout> | undefined;
 
 /**
  * Een ronde over een paar seconden, en dan stil: bij elke schermwissel,
- * na het stoppen van een wandeling en bij weer online. Fouten alleen in het log.
+ * na het stoppen van een sessie en bij weer online. Fouten alleen in het log.
  */
 export function scheduleShare(delayMs = 3000): void {
   clearTimeout(timer);

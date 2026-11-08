@@ -14,7 +14,7 @@ const opname = () => ({ data: new TextEncoder().encode('opus').buffer, type: 'au
 function utterance(id: string, fields: Partial<Utterance> = {}): Utterance {
   return {
     id,
-    sessionId: 'wandeling',
+    sessionId: 'sessie',
     recordedAt: 1,
     status: 'done',
     transcript: 'vink',
@@ -30,14 +30,14 @@ describe('deleteRecordings', () => {
     await db.utterances.bulkAdd([utterance('a'), utterance('b', { status: 'failed' })]);
     await db.observations.add({
       id: 'w',
-      sessionId: 'wandeling',
+      sessionId: 'sessie',
       utteranceId: 'a',
       speciesId: 1,
       count: 1,
       observedAt: 1,
     } as never);
 
-    expect(await deleteRecordings('wandeling', 42)).toBe(2);
+    expect(await deleteRecordings('sessie', 42)).toBe(2);
 
     const a = await db.utterances.get('a');
     expect(a?.audio).toBeUndefined();
@@ -51,13 +51,13 @@ describe('deleteRecordings', () => {
       utterance('bezig', { status: 'processing' }),
       utterance('mislukt', { status: 'failed', transcript: undefined }),
     ]);
-    expect(await deleteRecordings('wandeling')).toBe(0);
+    expect(await deleteRecordings('sessie')).toBe(0);
     for (const u of await db.utterances.toArray()) expect(u.audio).toBeDefined();
   });
 
-  it('alleen de gekozen wandeling, of zonder wandeling alles', async () => {
+  it('alleen de gekozen sessie, of zonder sessie alles', async () => {
     await db.utterances.bulkAdd([utterance('a'), utterance('b', { sessionId: 'andere' })]);
-    expect(await deleteRecordings('wandeling')).toBe(1);
+    expect(await deleteRecordings('sessie')).toBe(1);
     expect((await db.utterances.get('b'))?.audio).toBeDefined();
     expect(await deleteRecordings()).toBe(1);
     expect((await db.utterances.get('b'))?.audio).toBeUndefined();
@@ -78,7 +78,7 @@ describe('countRecordings', () => {
       utterance('wacht', { status: 'pending' }),
     ]);
     localStorage.setItem('fluistervink.shared', JSON.stringify({ sessions: {}, audio: ['a'] }));
-    expect(await countRecordings('wandeling')).toEqual({ count: 2, bytes: 8, shared: 1 });
+    expect(await countRecordings('sessie')).toEqual({ count: 2, bytes: 8, shared: 1 });
   });
 });
 
@@ -93,9 +93,9 @@ describe('describeRecordings', () => {
 
 describe('confirmDeleteText', () => {
   it('zegt eerlijk wat al gedeeld is', () => {
-    expect(
-      confirmDeleteText({ count: 3, bytes: 3000, shared: 0 }, 'van deze wandeling'),
-    ).not.toMatch(/gedeeld/);
+    expect(confirmDeleteText({ count: 3, bytes: 3000, shared: 0 }, 'van deze sessie')).not.toMatch(
+      /gedeeld/,
+    );
     expect(confirmDeleteText({ count: 3, bytes: 3000, shared: 1 }, 'x')).toMatch(
       /1 ervan is al gedeeld/,
     );

@@ -19,9 +19,9 @@
         Trektelmodus (proef)
       </label>
       <p class="hint">
-        Voor als je op één plek telt en de telefoon naast je legt. Tijdens een wandeling verschijnt
-        dan de knop "Trektelling starten": de app luistert daarna door en verwerkt alles wat je
-        zegt, zonder dat je steeds hoeft te drukken. Stilte wordt niet verstuurd.
+        Voor als je op één plek telt en de telefoon naast je legt. Tijdens een sessie verschijnt dan
+        de knop "Trektelling starten": de app luistert daarna door en verwerkt alles wat je zegt,
+        zonder dat je steeds hoeft te drukken. Stilte wordt niet verstuurd.
       </p>
       <p class="hint">
         Het scherm blijft aan zolang de telling loopt, dat kost accu. Ga je naar een andere app of

@@ -2,12 +2,12 @@ import { nameFromWalk } from './area';
 import { db, type Session } from './db';
 import { logEvent } from './log';
 
-/** De lopende wandeling, als die er is. */
+/** De lopende sessie, als die er is. */
 export function getActiveSession(): Promise<Session | undefined> {
   return db.sessions.where('status').equals('active').first();
 }
 
-/** Start een wandeling, of geeft de lopende terug als die er al is. */
+/** Start een sessie, of geeft de lopende terug als die er al is. */
 export async function startSession(): Promise<Session> {
   return db.transaction('rw', db.sessions, async () => {
     const active = await getActiveSession();
@@ -23,7 +23,7 @@ export async function startSession(): Promise<Session> {
   });
 }
 
-/** Stopt een wandeling. `endedAt` alleen anders dan nu als hij vergeten is. */
+/** Stopt een sessie. `endedAt` alleen anders dan nu als hij vergeten is. */
 export async function stopSession(id: string, endedAt = Date.now()): Promise<void> {
   await db.sessions.update(id, { status: 'ended', endedAt });
   await nameFromWalk(id);
@@ -34,17 +34,17 @@ export async function keepSession(id: string): Promise<void> {
   await db.sessions.update(id, { resumedAt: Date.now() });
 }
 
-/** Zo lang niets ingesproken: bij het openen van de app vragen of de wandeling nog loopt. */
+/** Zo lang niets ingesproken: bij het openen van de app vragen of de sessie nog loopt. */
 export const ASK_AFTER_MS = 60 * 60_000;
-/** Zo lang niets ingesproken: de wandeling is vergeten en stopt vanzelf. */
+/** Zo lang niets ingesproken: de sessie is vergeten en stopt vanzelf. */
 export const AUTO_STOP_AFTER_MS = 8 * 60 * 60_000;
 
 /**
- * Laatste teken van leven van een wandeling: de laatste uitspraak, of anders
+ * Laatste teken van leven van een sessie: de laatste uitspraak, of anders
  * de start of het voortzetten.
  */
 export async function lastActivityAt(session: Session): Promise<number> {
-  // Van nieuw naar oud: de uitspraken van de lopende wandeling zijn de
+  // Van nieuw naar oud: de uitspraken van de lopende sessie zijn de
   // nieuwste, dus dit stopt meteen (en leest geen oude audio)
   const last = await db.utterances
     .orderBy('recordedAt')
@@ -58,10 +58,10 @@ export type StaleCheck =
   { kind: 'stopped'; session: Session } | { kind: 'ask'; session: Session; lastActivityAt: number };
 
 /**
- * Vergeten wandeling (telefoon uitgevallen, niet op Stop gedrukt)? Na 8 uur
+ * Vergeten sessie (telefoon uitgevallen, niet op Stop gedrukt)? Na 8 uur
  * zonder uitspraken stopt hij vanzelf, met als eindtijd de laatste uitspraak.
  * Na een uur vraagt de app het. Anders deelt de app hem nooit (alleen
- * gestopte wandelingen gaan naar de ontwikkelaar) en loopt de klok door.
+ * gestopte sessies gaan naar de ontwikkelaar) en loopt de klok door.
  */
 export async function checkStaleSession(now = Date.now()): Promise<StaleCheck | undefined> {
   const session = await getActiveSession();
@@ -76,8 +76,8 @@ export async function checkStaleSession(now = Date.now()): Promise<StaleCheck | 
 }
 
 /**
- * Zet een (per ongeluk) gestopte wandeling voort. Doet niets als er al een
- * andere wandeling loopt.
+ * Zet een (per ongeluk) gestopte sessie voort. Doet niets als er al een
+ * andere sessie loopt.
  */
 export async function resumeSession(id: string): Promise<boolean> {
   return db.transaction('rw', db.sessions, async () => {
@@ -88,8 +88,8 @@ export async function resumeSession(id: string): Promise<boolean> {
 }
 
 /**
- * Verwijdert wandelingen voorgoed, met hun uitspraken (en audio), waarnemingen
- * en prullenbak. Het gebeurtenissenlog blijft staan. Een lopende wandeling
+ * Verwijdert sessies voorgoed, met hun uitspraken (en audio), waarnemingen
+ * en prullenbak. Het gebeurtenissenlog blijft staan. Een lopende sessie
  * wordt overgeslagen.
  */
 export async function deleteSessions(ids: string[]): Promise<void> {
@@ -108,7 +108,7 @@ export async function deleteSessions(ids: string[]): Promise<void> {
   logEvent('sessions_deleted', { ids: deleted });
 }
 
-/** Alle wandelingen, nieuwste eerst. */
+/** Alle sessies, nieuwste eerst. */
 export function listSessions(): Promise<Session[]> {
   return db.sessions.orderBy('startedAt').reverse().toArray();
 }
@@ -129,13 +129,13 @@ export interface SessionCounts {
   devNotes: number;
   /**
    * Uitspraken die (nog) niet verwerkt zijn: mislukt (bv. geen bereik) of nog
-   * in de wachtrij. Daar kan nog een waarneming in zitten, dus de wandeling
+   * in de wachtrij. Daar kan nog een waarneming in zitten, dus de sessie
    * is niet leeg.
    */
   unprocessed: number;
 }
 
-/** Aantal uitspraken, waarnemingen en dev notes per wandeling, voor het overzicht */
+/** Aantal uitspraken, waarnemingen en dev notes per sessie, voor het overzicht */
 export async function countPerSession(): Promise<Map<string, SessionCounts>> {
   const counts = new Map<string, SessionCounts>();
   const get = (id: string) => {

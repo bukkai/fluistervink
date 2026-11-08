@@ -22,7 +22,7 @@ vi.mock('./export', async (actual) => ({
 // 11 okt, zie docs/waarneming-nl.md). Deze tests leggen dat formaat vast.
 
 const session: Session = {
-  id: 'wandeling',
+  id: 'sessie',
   startedAt: Date.parse('2026-10-11T14:00:00'),
   status: 'ended',
 };
@@ -128,14 +128,14 @@ describe('buildExport', () => {
   });
 });
 
-describe('meer wandelingen in één export', () => {
+describe('meer sessies in één export', () => {
   const second: Session = {
     id: 'tweede',
     startedAt: Date.parse('2026-10-13T08:00:00'),
     status: 'ended',
   };
 
-  it('zet de waarnemingen van alle wandelingen in één bestand, op volgorde van tijd', async () => {
+  it('zet de waarnemingen van alle sessies in één bestand, op volgorde van tijd', async () => {
     const late = observation({
       sessionId: second.id,
       observedAt: Date.parse('2026-10-13T08:10:00'),
@@ -148,17 +148,17 @@ describe('meer wandelingen in één export', () => {
     const result = await buildExport([second, session]);
     expect(result.exported.map((o) => o.id)).toEqual([early.id, late.id]);
     expect(result.sessions.map((s) => s.id)).toEqual([session.id, second.id]);
-    expect(result.filename).toBe('waarneming-2026-10-11-tot-2026-10-13-2-wandelingen.csv');
+    expect(result.filename).toBe('waarneming-2026-10-11-tot-2026-10-13-2-sessies.csv');
     expect((await result.file.text()).split('\r\n')).toHaveLength(4);
   });
 
-  it('noemt een bestand met wandelingen van één dag naar die dag', async () => {
+  it('noemt een bestand met sessies van één dag naar die dag', async () => {
     const sameDay = { ...second, startedAt: Date.parse('2026-10-11T18:00:00') };
     const result = await buildExport([session, sameDay]);
-    expect(result.filename).toBe('waarneming-2026-10-11-2-wandelingen.csv');
+    expect(result.filename).toBe('waarneming-2026-10-11-2-sessies.csv');
   });
 
-  it('markeert na het exporteren alle wandelingen en waarnemingen', async () => {
+  it('markeert na het exporteren alle sessies en waarnemingen', async () => {
     await db.sessions.bulkAdd([session, second]);
     const obs = observation({ sessionId: second.id, position });
     await db.observations.add(obs);
@@ -169,7 +169,7 @@ describe('meer wandelingen in één export', () => {
     expect((await db.observations.get(obs.id))?.status).toBe('exported');
   });
 
-  it('exporteert alleen klaargezette wandelingen die nog niet geëxporteerd zijn', async () => {
+  it('exporteert alleen klaargezette sessies die nog niet geëxporteerd zijn', async () => {
     await db.sessions.bulkAdd([
       session,
       second,
@@ -184,7 +184,7 @@ describe('meer wandelingen in één export', () => {
     expect(ready.map((s) => s.id)).toEqual([session.id]);
   });
 
-  it('"Alles klopt" zet de wandeling klaar en de waarnemingen op nagelopen', async () => {
+  it('"Alles klopt" zet de sessie klaar en de waarnemingen op nagelopen', async () => {
     await db.sessions.add(session);
     const draft = observation();
     const unsure = observation({ uncertain: true, uncertainReason: 'vink of keep?' });

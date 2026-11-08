@@ -41,7 +41,7 @@
   // Dit exemplaar neemt de wachtrij over van een eventueel ander (tabblad).
   processQueue({ takeOver: true });
 
-  // Wandelingen en feedback delen met de ontwikkelaar (share.ts): bij het
+  // Sessies en feedback delen met de ontwikkelaar (share.ts): bij het
   // opstarten, bij elke schermwissel (bv. klaar met nalopen) en bij weer online
   scheduleShare();
   window.addEventListener('online', () => scheduleShare());
@@ -70,18 +70,23 @@
   let active = $derived($sessions?.find((s) => s.status === 'active'));
   let past = $derived($sessions?.filter((s) => s.status === 'ended') ?? []);
 
-  // Android-app: melding "Wandeling loopt" zolang er een wandeling loopt, zodat
+  // Android-app: melding zolang er een sessie loopt, zodat
   // de app met het scherm uit doorwerkt (walkService.ts). Pas na het laden.
   let activeId = $derived($sessions ? (active?.id ?? null) : undefined);
   $effect(() => {
     if (activeId !== undefined) syncWalkService(activeId ?? undefined);
   });
 
-  // Elk scherm heeft een eigen adres (#wandelingen, #wandeling/<id>,
+  // Elk scherm heeft een eigen adres (#sessies, #sessie/<id>,
   // #instellingen, #feedback), zodat de terugknop van Android teruggaat naar
   // het vorige scherm in plaats van de app te sluiten. Leeg = hoofdscherm.
   let hash = $state(location.hash);
-  let route = $derived(hash.replace(/^#\/?/, ''));
+  // Oude adressen (#wandelingen, #wandeling/<id>, van vóór november 2026) werken nog
+  let route = $derived(
+    hash
+      .replace(/^#\/?/, '')
+      .replace(/^wandeling(en)?\b/, (m) => (m === 'wandeling' ? 'sessie' : 'sessies')),
+  );
   const onHashChange = () => {
     hash = location.hash;
     checkInvite();
@@ -95,7 +100,9 @@
   onDestroy(() => window.removeEventListener('hashchange', onHashChange));
 
   let opened = $derived(
-    route.startsWith('wandeling/') ? past.find((s) => s.id === route.slice(10)) : undefined,
+    route.startsWith('sessie/')
+      ? past.find((s) => s.id === route.slice('sessie/'.length))
+      : undefined,
   );
 
   let menuOpen = $state(false);
@@ -146,7 +153,7 @@
     askShare = false;
   }
 
-  // Klok voor de looptijd van de lopende wandeling
+  // Klok voor de looptijd van de lopende sessie
   let now = $state(Date.now());
   const timer = setInterval(() => (now = Date.now()), 1000);
   onDestroy(() => clearInterval(timer));
@@ -156,7 +163,7 @@
     requestPersistentStorage();
   }
 
-  // Vergeten wandeling (sessions.ts): bij het openen van de app, en bij
+  // Vergeten sessie (sessions.ts): bij het openen van de app, en bij
   // terugkomen uit de achtergrond (Android sluit de app niet altijd)
   let stale = $state<StaleCheck>();
   async function checkStale() {
@@ -192,7 +199,7 @@
     stale = undefined;
     await stopSession(session.id, lastActivityAt);
     justStopped = session.id;
-    location.hash = `wandeling/${session.id}`;
+    location.hash = `sessie/${session.id}`;
   }
 
   /** "vandaag 14:32" of "ma 12 okt 14:32" */
@@ -202,17 +209,17 @@
     return `${day} ${timeFormat.format(at)}`;
   }
 
-  /** Net gestopte wandeling, voor de bevestiging "opgeslagen" */
+  /** Net gestopte sessie, voor de bevestiging "opgeslagen" */
   let justStopped = $state<string>();
 
-  /** Na het stoppen meteen naar het nalopen van de wandeling */
+  /** Na het stoppen meteen naar het nalopen van de sessie */
   async function stop() {
-    if (!active || !confirm('Wandeling stoppen?')) return;
+    if (!active || !confirm('Sessie stoppen?')) return;
     const id = active.id;
     await stopSession(id);
     justStopped = id;
     vibrate('saved');
-    location.hash = `wandeling/${id}`;
+    location.hash = `sessie/${id}`;
   }
 
   const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
@@ -250,7 +257,7 @@
       <button class="backdrop" aria-label="Menu sluiten" onclick={() => (menuOpen = false)}
       ></button>
       <nav>
-        <a href="#wandelingen">Vorige wandelingen</a>
+        <a href="#sessies">Vorige sessies</a>
         <a href="#uitleg">Hoe werkt het?</a>
         <a href="#feedback">Feedback{unsentNotes ? ` (${unsentNotes})` : ''}</a>
         <a href="#instellingen">Instellingen</a>
@@ -273,7 +280,7 @@
     </section>
   {:else if $sessions === undefined}
     <!-- Database wordt nog geladen -->
-  {:else if route === 'wandelingen'}
+  {:else if route === 'sessies'}
     <PastSessions sessions={past} />
   {:else if opened}
     <PastSession
@@ -294,7 +301,7 @@
   {:else if active}
     <section class="walk">
       <div class="walk-info">
-        <h1>{active.place?.name ?? 'Wandeling'}</h1>
+        <h1>{active.place?.name ?? 'Vogelsessie'}</h1>
         <p class="muted">
           Sinds {timeFormat.format(active.startedAt)} ·
           <span class="duration">{formatDuration(now - active.startedAt)}</span>
@@ -304,7 +311,7 @@
     </section>
     {#if askStillWalking}
       <div class="still-walking card">
-        <strong>Loopt deze wandeling nog?</strong>
+        <strong>Ben je nog aan het vogelen?</strong>
         <p>Sinds {formatMoment(askStillWalking.lastActivityAt)} is er niets ingesproken.</p>
         <div class="buttons">
           <button class="btn" onclick={keepWalking}>Ja, ga door</button>
@@ -318,7 +325,8 @@
       <img class="hero" src="/icon.svg" alt="" width="112" height="112" />
       <h1>Klaar om te gaan vogelen?</h1>
       <p class="intro">
-        Druk tijdens de wandeling op de knop en zeg wat je ziet of hoort, bijvoorbeeld
+        Waar je ook bent: lopend, op de fiets, in de vogelhut of in de tuin. Zie of hoor je iets,
+        druk dan op de knop en zeg het, bijvoorbeeld
         <em>"zes overvliegende houtduiven"</em> of <em>"roepje vink"</em>.
       </p>
       {#if welcome?.ok}
@@ -341,9 +349,9 @@
       {/if}
       {#if stale?.kind === 'stopped'}
         <p class="welcome">
-          Je wandeling van {formatMoment(stale.session.startedAt)} stond nog aan. Na 8 uur zonder uitspraken
+          Je sessie van {formatMoment(stale.session.startedAt)} stond nog aan. Na 8 uur zonder uitspraken
           is hij vanzelf gestopt.
-          <a href="#wandeling/{stale.session.id}">Bekijken</a> ·
+          <a href="#sessie/{stale.session.id}">Bekijken</a> ·
           <button class="link" onclick={() => (stale = undefined)}>Oké</button>
         </p>
       {/if}
@@ -351,7 +359,7 @@
         <div class="consent card">
           <strong>Delen met de ontwikkelaar?</strong>
           <p>
-            Fluistervink is nog in ontwikkeling. Mag de app na elke wandeling je uitspraken (als
+            Fluistervink is nog in ontwikkeling. Mag de app na elke sessie je uitspraken (als
             tekst), wat de app ervan maakte, je correcties en feedback, en de locaties van je
             waarnemingen naar de ontwikkelaar sturen? Opnames niet, tenzij je dat bij Instellingen
             aanzet. Alleen de ontwikkelaar kan het lezen; je kunt het altijd weer uitzetten.
@@ -363,12 +371,12 @@
           </div>
         </div>
       {/if}
-      <button class="start" onclick={start}>Start wandeling</button>
+      <button class="start" onclick={start}>Start sessie</button>
       {#if past[0]}
-        <a class="last card" href="#wandeling/{past[0].id}">
+        <a class="last card" href="#sessie/{past[0].id}">
           <span>
-            <span class="muted">Laatste wandeling</span><br />
-            <strong>{past[0].place?.name ?? 'Wandeling'}</strong>
+            <span class="muted">Laatste sessie</span><br />
+            <strong>{past[0].place?.name ?? 'Vogelsessie'}</strong>
             <span class="muted">· {dateFormat.format(past[0].startedAt)}</span>
           </span>
           <span class="chevron" aria-hidden="true">›</span>

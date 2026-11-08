@@ -16,7 +16,7 @@ import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
 
 /**
- * Zet de foreground service van een wandeling aan en uit (WandelingService),
+ * Zet de foreground service van een sessie aan en uit (WandelingService),
  * vanuit de webcode (src/lib/native.ts). Aanzetten mag vaker: dat doet niets
  * als hij al draait.
  */
