@@ -6,7 +6,6 @@
   import { describeImport, importJson } from './export';
   import { isNativeApp } from './native';
 
-  let withAudio = $state(true);
   let backedUpAt = $state(lastBackupAt());
   let status = $state<BackupStatus>();
   let busy = $state(false);
@@ -23,7 +22,7 @@
     message = '';
     failed = false;
     try {
-      const saved = await makeBackup({ withAudio });
+      const saved = await makeBackup();
       if (saved) {
         backedUpAt = lastBackupAt();
         message = saved.folder ? `Opgeslagen in ${saved.folder}.` : 'Back-up gedownload.';
@@ -57,12 +56,6 @@
 
   const dateFormat = new Intl.DateTimeFormat('nl-NL', { dateStyle: 'medium', timeStyle: 'short' });
 
-  /** Ruwe schatting: base64 maakt de opnames een derde groter */
-  function megabytes(bytes: number): string {
-    const mb = (bytes * 4) / 3 / 1_000_000;
-    return mb < 1 ? 'minder dan 1 MB' : `ongeveer ${Math.round(mb)} MB`;
-  }
-
   function sessions(n: number): string {
     return n === 1 ? '1 sessie' : `${n} sessies`;
   }
@@ -75,7 +68,8 @@
       Je sessies staan alleen op deze telefoon. Een back-up bewaart ze als bestand{isNativeApp
         ? ' in Downloads'
         : ''}, zodat je ze kunt terugzetten op een nieuwe telefoon of als de app verwijderd was. Zet
-      het bestand ergens anders neer (Drive, je computer) om echt veilig te zijn.
+      het bestand ergens anders neer (Drive, je computer) om echt veilig te zijn. Opnames gaan
+      alleen mee van sessies die je nog niet hebt nagelopen.
     </p>
     <p class="hint" class:warn={status && status.sinceBackup > 0 && status.sessions > 0}>
       {#if backedUpAt}
@@ -89,10 +83,6 @@
         Nog geen back-up gemaakt.
       {/if}
     </p>
-    <label class="check">
-      <input type="checkbox" bind:checked={withAudio} />
-      Met opnames{status && status.audioBytes > 0 ? ` (${megabytes(status.audioBytes)})` : ''}
-    </label>
     <button class="btn block" disabled={busy} onclick={backUp}>
       {busy ? 'Bezig…' : 'Back-up maken'}
     </button>
@@ -120,13 +110,6 @@
   .stack {
     display: grid;
     gap: 0.75rem;
-  }
-
-  .check {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.95rem;
   }
 
   .hint {
