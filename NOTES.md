@@ -41,6 +41,10 @@ Feedback opgehaald op 6 nov: 8 testers en installaties met gedeelde wandelingen 
 
 - **Maarten** (8 nov): wil langer achter elkaar inspreken bij het trektellen (nu na 3 minuten gestopt). Voorstel `docs/plan-trektelmodus.md` (nog niet goedgekeurd): stukken knippen bij een pauze, stilte niet versturen, beveiligingen en een plafond per dag. Maarten antwoordde dezelfde dag: telefoon naast zich op een vaste post, scherm aan geen probleem, telt nu met de Live Atlas-app van Sovon, export naar trektellen.nl een goede extra optie, test graag mee (staat in het plan). Nieuwe wens: op de fiets inspreken via de microfoon van zijn oortjes, scherm uit; dat vraagt fase 3 van `docs/plan-capacitor.md` (opnemen met het scherm uit, starten met de knop op de oortjes).
 
+## Lancering in Play (8 nov)
+
+Roadmap in `docs/lancering.md`: eerst 14 dagen een gesloten test met minstens 12 testers (regel van Google voor nieuwe persoonlijke accounts), dan productietoegang aanvragen; openbaar rond begin december. Logo is bij een artiest aangevraagd; mag tijdens de gesloten test als nieuwe app-versie.
+
 ## Roadmap naar v1.0 (13 okt)
 
 Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de app installeren, een hele wandeling gebruiken zonder naar het scherm te kijken, en thuis zonder gedoe naar waarneming.nl exporteren.
