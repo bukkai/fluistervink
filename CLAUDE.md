@@ -47,7 +47,7 @@ Doel: valideren dat herkenning en interpretatie in het veld goed genoeg werken.
 **Wel in de MVP:**
 
 - Sessie starten en stoppen
-- Push-to-talk-knop in de interface (scherm aan)
+- Push-to-talk-knop in de interface (scherm aan), vast onderaan in de duimzone (weg tijdens het typen)
 - Opname → Whisper → LLM met tools → waarneming(en)
 - Tijd en GPS bij start van de opname
 - Local-first opslag en sequentiële verwerking in IndexedDB
