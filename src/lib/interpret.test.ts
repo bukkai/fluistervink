@@ -188,6 +188,17 @@ describe('plek uit de uitspraak', () => {
     expect(warnings).toHaveLength(2);
   });
 
+  it('haalt een vergeten afstand uit de omschrijving', () => {
+    const { actions } = add({
+      place_description: '300 meter ten westen',
+      place_distance_m: null,
+      place_direction: 'W',
+    });
+    expect(actions[0]).toMatchObject({
+      fields: { spokenPlace: { text: '300 meter ten westen', distanceM: 300, direction: 'W' } },
+    });
+  });
+
   it('zonder omschrijving maakt de app er een', () => {
     const { actions } = add({ place_distance_m: 200, place_direction: 'W' });
     expect(actions[0]).toMatchObject({ fields: { spokenPlace: { text: '200 m W' } } });

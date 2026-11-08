@@ -76,6 +76,80 @@ export function placeReason(spoken: SpokenPlace): string | undefined {
   return `Plek gezegd: "${spoken.text}"; zet hem op de kaart`;
 }
 
+const UNITS: Record<string, number> = {
+  een: 1, één: 1, twee: 2, drie: 3, vier: 4, vijf: 5, zes: 6, zeven: 7, acht: 8, negen: 9,
+  tien: 10, elf: 11, twaalf: 12, dertien: 13, veertien: 14, vijftien: 15, zestien: 16,
+  zeventien: 17, achttien: 18, negentien: 19,
+}; // prettier-ignore
+const TENS: Record<string, number> = {
+  twintig: 20, dertig: 30, veertig: 40, vijftig: 50, zestig: 60, zeventig: 70, tachtig: 80,
+  negentig: 90,
+}; // prettier-ignore
+const FRACTIONS: Record<string, number> = {
+  half: 0.5,
+  halve: 0.5,
+  anderhalf: 1.5,
+  anderhalve: 1.5,
+};
+
+/** Getal in cijfers of in woorden: "200", "1,5", "tweehonderdvijftig", "anderhalve" */
+export function parseNumber(word: string): number | undefined {
+  const w = word.toLowerCase();
+  if (/^\d+([.,]\d+)?$/.test(w)) return Number(w.replace(',', '.'));
+  if (w in FRACTIONS) return FRACTIONS[w];
+  if (w in UNITS) return UNITS[w];
+  if (w in TENS) return TENS[w];
+  for (const [name, factor] of [
+    ['duizend', 1000],
+    ['honderd', 100],
+  ] as const) {
+    const at = w.indexOf(name);
+    if (at < 0) continue;
+    const left = w.slice(0, at);
+    const right = w.slice(at + name.length).replace(/^en/, '');
+    const times = left ? parseNumber(left) : 1;
+    const plus = right ? parseNumber(right) : 0;
+    if (times === undefined || plus === undefined) return undefined;
+    return times * factor + plus;
+  }
+  const compound =
+    /^(.+?)[eë]n(twintig|dertig|veertig|vijftig|zestig|zeventig|tachtig|negentig)$/.exec(w);
+  if (compound && compound[1] in UNITS && UNITS[compound[1]] < 10) {
+    return UNITS[compound[1]] + TENS[compound[2]];
+  }
+  return undefined;
+}
+
+/**
+ * Afstand en windrichting uit de omschrijving zelf ("honderd meter ten
+ * zuidwesten van hier"). Het model vult place_distance_m soms niet in, ook als
+ * de afstand er letterlijk staat; dan haalt de app hem hier alsnog uit.
+ */
+export function parsePlaceText(text: string): Pick<SpokenPlace, 'distanceM' | 'direction'> {
+  const result: Pick<SpokenPlace, 'distanceM' | 'direction'> = {};
+  const distance =
+    /(?:^|\s)(?:([\d.,]+)\s*|([a-zéë]+(?:\s+[a-zéë]+)?)\s+)(km|kilometer|m|meter)(?![a-z])/i.exec(
+      text,
+    );
+  if (distance) {
+    const words = (distance[1] ?? distance[2]).split(/\s+/);
+    const value = parseNumber(words.join('')) ?? parseNumber(words[words.length - 1]);
+    const factor = /^k/i.test(distance[3]) ? 1000 : 1;
+    const meters = value === undefined ? undefined : Math.round(value * factor);
+    if (meters !== undefined && meters >= 1 && meters <= MAX_DISTANCE_M) result.distanceM = meters;
+  }
+  const direction =
+    /(?:^|[^a-z])(?:(noord|zuid)[- ]?(oost|west)?|(oost|west))(?:en|elijk|elijke)?(?![a-z])/i.exec(
+      text,
+    );
+  if (direction) {
+    const letter = (part?: string) => (part ? part[0].toUpperCase() : '');
+    const code = (letter(direction[1]) + letter(direction[2] ?? direction[3])) as Direction;
+    if (Object.hasOwn(DIRECTIONS, code)) result.direction = code;
+  }
+  return result;
+}
+
 /** Korte omschrijving als het model alleen afstand en richting gaf: "500 m Z" */
 export function describePlace(distanceM?: number, direction?: Direction): string {
   const distance =

@@ -4,6 +4,8 @@ import {
   UNKNOWN_PLACE_ACCURACY,
   describePlace,
   offsetPosition,
+  parseNumber,
+  parsePlaceText,
   placeFromSpeech,
   placeReason,
 } from './spokenPlace';
@@ -68,5 +70,38 @@ describe('describePlace', () => {
     expect(describePlace(1500, 'NO')).toBe('1,5 km NO');
     expect(describePlace(undefined, 'W')).toBe('W');
     expect(describePlace()).toBe('');
+  });
+});
+
+describe('parseNumber', () => {
+  it('cijfers en woorden', () => {
+    expect(parseNumber('200')).toBe(200);
+    expect(parseNumber('1,5')).toBe(1.5);
+    expect(parseNumber('honderd')).toBe(100);
+    expect(parseNumber('tweehonderdvijftig')).toBe(250);
+    expect(parseNumber('vijfenzeventig')).toBe(75);
+    expect(parseNumber('tweeëntwintig')).toBe(22);
+    expect(parseNumber('duizend')).toBe(1000);
+    expect(parseNumber('anderhalve')).toBe(1.5);
+    expect(parseNumber('weilanden')).toBeUndefined();
+  });
+});
+
+// Het model laat de afstand soms weg (feedback 8 nov: "honderd meter ten
+// zuidwesten van hier" werd ±200 m en onzeker)
+describe('parsePlaceText', () => {
+  it.each([
+    ['honderd meter ten zuidwesten van hier', { distanceM: 100, direction: 'ZW' }],
+    ['300 meter ten westen', { distanceM: 300, direction: 'W' }],
+    ['200 m noordoost', { distanceM: 200, direction: 'NO' }],
+    ['een halve kilometer zuidelijk', { distanceM: 500, direction: 'Z' }],
+    ['anderhalve km naar het oosten', { distanceM: 1500, direction: 'O' }],
+    ['1,5 km noord-west', { distanceM: 1500, direction: 'NW' }],
+    ["zo'n vijftig meter achter me", { distanceM: 50 }],
+    ['aan de overkant van de rivier', {}],
+    ['boven de Oostvaardersplassen', {}],
+    ['tachtigduizend kilometer noorden', { direction: 'N' }],
+  ])('%s', (text, expected) => {
+    expect(parsePlaceText(text)).toEqual(expected);
   });
 });
