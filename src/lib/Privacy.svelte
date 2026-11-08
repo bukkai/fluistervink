@@ -58,9 +58,10 @@
       tot je ze verwijdert. De opnames kun je ook los wissen (zie hieronder).
     </p>
     <p>
-      Maak je bij <a href="{app}#instellingen">Instellingen</a> een back-up, dan komt alles (met de opnames
-      als je dat aanvinkt) in één bestand op je telefoon (in de Android-app in Downloads). Dat bestand
-      gaat nergens heen, tenzij je het zelf ergens neerzet, bijvoorbeeld in Google Drive.
+      Maak je bij <a href="{app}#instellingen">Instellingen</a> een back-up, dan komt alles (opnames alleen
+      van sessies die je nog niet hebt nagelopen) in één bestand op je telefoon (in de Android-app in
+      Downloads). Dat bestand gaat nergens heen, tenzij je het zelf ergens neerzet, bijvoorbeeld in Google
+      Drive.
     </p>
     <p>
       In de Android-app staat tijdens een sessie een melding van Fluistervink. Daardoor mag de app
