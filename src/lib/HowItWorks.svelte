@@ -143,6 +143,10 @@
       Vergeten op Stop te drukken? Heb je een uur niets ingesproken, dan vraagt de app bij het
       openen of de sessie nog loopt. Na 8 uur stopt hij vanzelf.
     </p>
+    <p>
+      Alles staat alleen op je telefoon. Maak daarom af en toe een back-up bij Instellingen en zet
+      het bestand ergens anders neer; op een nieuwe telefoon zet je hem daar weer terug.
+    </p>
   </div>
 </section>
 

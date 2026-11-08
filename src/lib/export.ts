@@ -88,12 +88,15 @@ export interface ImportResult {
   added: number;
   /** Sessies die er al waren (zelfde id) en zijn overgeslagen */
   skipped: number;
+  /** Toegevoegde losse feedback (buiten een sessie) */
+  feedback: number;
 }
 
 /**
  * Leest een JSON-export (van `exportAllJson`) terug in. Alleen sessies die
- * er nog niet zijn, met hun uitspraken, waarnemingen en prullenbak; het
- * gebeurtenissenlog niet. Opnames alleen als de export ze bevat.
+ * er nog niet zijn, met hun uitspraken, waarnemingen en prullenbak, plus losse
+ * feedback die er nog niet is; het gebeurtenissenlog niet. Opnames alleen als
+ * de export ze bevat. Er wordt niets overschreven.
  */
 export async function importJson(file: File): Promise<ImportResult> {
   const data = JSON.parse(await file.text());
@@ -124,9 +127,18 @@ export async function importJson(file: File): Promise<ImportResult> {
         endedAt: s.endedAt ?? (lastObservation(s.id) || s.startedAt),
       })),
     );
+    // Losse feedback hoort bij geen sessie: per uitspraak nagaan
+    const loose = utterances.filter((u) => u.sessionId === '');
+    const present = new Set(
+      await db.utterances
+        .where('id')
+        .anyOf(loose.map((u) => u.id))
+        .primaryKeys(),
+    );
+    const freshLoose = new Set(loose.filter((u) => !present.has(u.id)));
     await db.utterances.bulkAdd(
       utterances
-        .filter((u) => ids.has(u.sessionId))
+        .filter((u) => ids.has(u.sessionId) || freshLoose.has(u))
         .map((u) =>
           // Niet in de wachtrij zetten; met een opname kan "Opnieuw" nog
           u.status === 'pending' || u.status === 'processing'
@@ -142,11 +154,30 @@ export async function importJson(file: File): Promise<ImportResult> {
     );
     await db.observations.bulkAdd(observations.filter((o) => ids.has(o.sessionId)));
     await db.deletedObservations.bulkAdd(deleted.filter((o) => ids.has(o.sessionId)));
-    return { added: fresh.length, skipped: sessions.length - fresh.length, ids: [...ids] };
+    return {
+      added: fresh.length,
+      skipped: sessions.length - fresh.length,
+      feedback: freshLoose.size,
+      ids: [...ids],
+    };
   });
   // Buiten de transactie: het log staat in een andere tabel
-  logEvent('imported', { file: file.name, sessionIds: result.ids, skipped: result.skipped });
-  return { added: result.added, skipped: result.skipped };
+  const { ids, ...counts } = result;
+  logEvent('imported', { file: file.name, sessionIds: ids, ...counts });
+  return counts;
+}
+
+/** Uitkomst van een import in een zin, voor op het scherm */
+export function describeImport({ added, skipped, feedback }: ImportResult): string {
+  return [
+    added === 0
+      ? 'Geen nieuwe sessies gevonden.'
+      : `${added === 1 ? '1 sessie' : `${added} sessies`} teruggezet, te vinden bij Vorige sessies.`,
+    skipped > 0 && `${skipped} stond${skipped === 1 ? '' : 'en'} er al.`,
+    feedback > 0 && `${feedback}× losse feedback teruggezet.`,
+  ]
+    .filter(Boolean)
+    .join(' ');
 }
 
 /**

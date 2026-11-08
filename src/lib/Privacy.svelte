@@ -38,6 +38,11 @@
       tot je ze verwijdert. De opnames kun je ook los wissen (zie hieronder).
     </p>
     <p>
+      Maak je bij <a href="#instellingen">Instellingen</a> een back-up, dan komt alles (met de opnames
+      als je dat aanvinkt) in één bestand op je telefoon (in de Android-app in Downloads). Dat bestand
+      gaat nergens heen, tenzij je het zelf ergens neerzet, bijvoorbeeld in Google Drive.
+    </p>
+    <p>
       In de Android-app staat tijdens een sessie een melding van Fluistervink. Daardoor mag de app
       doorwerken met het scherm uit, en blijft hij je locatie volgen om bij een uitspraak meteen te
       weten waar je bent. Bewaard wordt nog steeds alleen de locatie bij het begin van een
