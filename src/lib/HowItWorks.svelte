@@ -28,8 +28,8 @@
   <div class="card-body">
     <h3>Inspreken</h3>
     <p>
-      Start een wandeling. Zie of hoor je iets, tik dan op de microfoonknop of houd hem vast, en zeg
-      wat je waarneemt. Gewoon zoals je het tegen een medevogelaar zou zeggen:
+      Start een wandeling. Zie of hoor je iets, tik dan op de grote microfoonknop onderaan of houd
+      hem vast, en zeg wat je waarneemt. Gewoon zoals je het tegen een medevogelaar zou zeggen:
     </p>
     <ul class="examples">
       <li>"zes overvliegende houtduiven"</li>
