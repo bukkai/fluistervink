@@ -10,7 +10,7 @@ De naam is een woordgrap op "luistervink": je fluistert je waarnemingen in, en d
 2. Iets gezien of gehoord → knop indrukken (MVP) of later het wake word "Fluistervink" zeggen, en de waarneming inspreken.
 3. Elke uitspraak wordt verwerkt en verschijnt in het overzicht. Bevestiging via trillen, zodat de gebruiker niet naar het scherm hoeft te kijken.
 4. Correcties kunnen in het veld met de stem: "nee, keep in plaats van vink", "nog drie erbij", "die laatste weg".
-5. Thuis: review van soort, aantal, gedrag en locatie, nalopen van onzekere waarnemingen, audio terugluisteren. Snel nalopen: bovenaan de onzekere één voor één (Klopt, Weg, Aanpassen, Overslaan; `src/lib/UncertainReview.svelte`), daarna "Alles klopt" (`approveSession`): de rest geldt als nagelopen (na een bevestiging worden ook de onzekere zeker) en de wandeling staat klaar.
+5. Thuis: review van soort, aantal, gedrag en locatie (de plek is met de hand te verzetten op een kaartje, zie MVP-scope), nalopen van onzekere waarnemingen, audio terugluisteren. Snel nalopen: bovenaan de onzekere één voor één (Klopt, Weg, Aanpassen, Overslaan; `src/lib/UncertainReview.svelte`), daarna "Alles klopt" (`approveSession`): de rest geldt als nagelopen (na een bevestiging worden ook de onzekere zeker) en de wandeling staat klaar.
 6. Een nagelopen wandeling zet je "klaar voor waarneming.nl". Wanneer het uitkomt, exporteer je alle klaarstaande wandelingen in één bestand (scherm Wandelingen; CSV in de browser, xlsx in de Android-app, omdat Android een .csv een type geeft dat het uploadveld van waarneming.nl uitgrijst; `src/lib/xlsx.ts`) en importeer je die bij waarneming.nl; ze zijn dan "geëxporteerd". Eén wandeling los exporteren kan ook. Later via de API (`/api/v1/observations/create/`, zie `NOTES.md`).
 
 ## Vastgelegde ontwerpkeuzes
@@ -54,6 +54,7 @@ Doel: valideren dat herkenning en interpretatie in het veld goed genoeg werken.
 - Overzichtslijst met eenvoudig bewerken (soort, aantal, gedrag, verwijderen, kopiëren: een nieuwe waarneming met dezelfde tijd, plek en bron-uitspraak, `copyObservation`)
 - CSV-export voor de bulkimport van waarneming.nl
 - Kaart in de review van een wandeling (alleen bekijken): waar is wat gezien (Leaflet + OpenStreetMap). Stippen die overlappen worden een bolletje met het aantal (`leaflet.markercluster`); tikken opent bij ≤ 5 waarnemingen een lijst, anders zoomt de kaart in
+- Locatie met de hand aanpassen in de review (toegezegd aan tester Jurian): in het bewerkformulier "Locatie aanpassen" opent een kaartje (`src/lib/LocationPicker.svelte`) waar je tikt of de stip sleept. De nauwkeurigheid wordt dan vast 10 m (`HAND_ACCURACY`); de GPS-positie blijft bewaard in `recordedPosition`, zodat "Terug naar de opgenomen plek" kan. Export en kaart gebruiken `position`, dus de nieuwe plek. De overzichtskaart zelf blijft alleen bekijken
 - Proxy voor API-sleutels
 - Feedback (vroeger "dev notes"): een uitspraak die begint met "feedback" (of nog steeds "dev note") wordt geen waarneming maar een bevinding over de app (gaat niet naar het model). Als vangnet herkent het model opmerkingen over de app ook zonder dat voorvoegsel (tool `add_dev_note`; intern heet het nog `dev_note`). Op het Feedback-scherm ook te typen en te verwijderen; getypt buiten een wandeling is het "losse feedback" (`sessionId` leeg), die apart gedeeld wordt (`sessions/losse-feedback-<apparaat>`, per apparaat zodat de app en de PWA elkaars feedback niet overschrijven, met het log van het half uur ervoor). Los te lezen, als Markdown te kopiëren, en gaat mee bij het delen met de ontwikkelaar.
 - Testset: van elke uitspraak de audio, het transcript, de LLM-uitvoer en de uiteindelijke (gecorrigeerde) waarneming bewaren, en kunnen exporteren. Bedoeld om STT-opties, prompts en modellen objectief te vergelijken.
@@ -61,7 +62,7 @@ Doel: valideren dat herkenning en interpretatie in het veld goed genoeg werken.
 **Bewust níet in de MVP (niet toevoegen zonder overleg):**
 
 - Wake word (de native laag wel, zie `docs/plan-capacitor.md`)
-- GPS-track (ook later niet gewenst) en locaties verslepen op de kaart
+- GPS-track (ook later niet gewenst)
 - Echte offline-ondersteuning (verwerken zodra er verbinding is, sync-status)
 - Uploaden via de API van waarneming.nl
 - Automatisch pauzeren als een andere app (zoals Merlin) de microfoon gebruikt
@@ -71,7 +72,7 @@ Doel: valideren dat herkenning en interpretatie in het veld goed genoeg werken.
 
 - **Session:** id, start- en eindtijd, status, klaar voor export en geëxporteerd (tijdstippen), naam (gebied van waarneming.nl: bij de start dat van de startpositie, bij het stoppen dat met de meeste waarnemingen; met de hand aan te passen)
 - **Utterance:** id, sessionId, tijdstip, lat/lon/nauwkeurigheid, audio, transcript, LLM-uitvoer, verwerkingsstatus
-- **Observation:** id, sessionId, utteranceId (bron), soort-ID, aantal, telmethode, activiteit/gedrag (bv. overvliegend, ter plaatse, roepend, zingend), methode (gezien/gehoord), optioneel geslacht/leeftijd/kleed, tijdstip, lat/lon/nauwkeurigheid, `uncertain`, opmerking (voor waarneming.nl), eigen notitie (niet geëxporteerd), vlag "niet exporteren", status (concept / gereviewd / geëxporteerd)
+- **Observation:** id, sessionId, utteranceId (bron), soort-ID, aantal, telmethode, activiteit/gedrag (bv. overvliegend, ter plaatse, roepend, zingend), methode (gezien/gehoord), optioneel geslacht/leeftijd/kleed, tijdstip, lat/lon/nauwkeurigheid (bij een met de hand gezette plek ook de oorspronkelijke GPS-positie), `uncertain`, opmerking (voor waarneming.nl), eigen notitie (niet geëxporteerd), vlag "niet exporteren", status (concept / gereviewd / geëxporteerd)
 
 Soort, activiteit, methode, kleed en telmethode worden opgeslagen als **waarneming.nl-ID's** (zie `data/` en `docs/waarneming-nl.md`). Die werken direct met de latere API; voor de CSV-export zet de app ze om naar wetenschappelijke naam en Nederlandse tekst (de site moet bij het importeren op Nederlands staan, de standaard).
 
@@ -91,7 +92,6 @@ De zeven bouwstappen van de MVP zijn klaar: projectopzet, proxy, interpretatie m
 
 - Wake word "Fluistervink" (bv. Porcupine of openWakeWord), na de native laag
 - Automatisch pauzeren en hervatten als een andere app de microfoon gebruikt (AudioRecordingCallback)
-- Locaties verslepen op de kaart in de review
 - Offline wachtrij met sync-status
 - Upload via de API van waarneming.nl (OAuth; client-ID aanvragen bij Observation.org)
 - Eventueel: BirdNET on-device voor soortsuggesties

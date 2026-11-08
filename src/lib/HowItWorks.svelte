@@ -63,7 +63,9 @@
     <p>
       Thuis kun je alles nalopen en aanpassen door op een waarneming te tikken. Zijn er twee soorten
       in één keer ingesproken en is er maar één van geworden, dan maak je met Kopiëren een tweede
-      waarneming met dezelfde tijd en plek, en pas je daarvan de soort en het aantal aan.
+      waarneming met dezelfde tijd en plek, en pas je daarvan de soort en het aantal aan. Zat de
+      vogel ergens anders dan waar jij stond, dan zet je met Locatie aanpassen de plek op een
+      kaartje; de plek waar je het insprak blijft bewaard.
     </p>
   </div>
 </section>

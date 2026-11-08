@@ -5,13 +5,16 @@ import { FakeLockManager, HOUTDUIF, KEEP, VINK, toolResponse } from '../test-hel
 import { db, storeAudio, type Observation, type Utterance } from './db';
 import { interpret } from './interpret';
 import {
+  HAND_ACCURACY,
   STEAL_AFTER_MS,
   copyObservation,
   editObservation,
   isAccidental,
   listObservations,
   migrateAudio,
+  placeByHand,
   processQueue,
+  recordedPlace,
   retry,
   setSkipExport,
 } from './observations';
@@ -189,6 +192,38 @@ describe('corrigeren', () => {
     expect(await db.observations.count()).toBe(0);
     const [deleted] = await db.deletedObservations.toArray();
     expect(deleted).toMatchObject({ speciesId: VINK, deletedBy: 'voice' });
+  });
+});
+
+describe('plek met de hand in de review', () => {
+  it('bewaart de GPS-plek en kan ernaar terug', async () => {
+    await say('roepje vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    const [obs] = await listObservations(SESSION);
+
+    // Twee keer verzetten: de bewaarde plek blijft die van de GPS
+    let place = placeByHand(obs, obs.observedAt, 52.1, 5.1);
+    place = placeByHand(place, obs.observedAt, 52.2, 5.2);
+    await editObservation(obs.id, place);
+    let [saved] = await listObservations(SESSION);
+    expect(saved.position).toEqual({
+      lat: 52.2,
+      lon: 5.2,
+      accuracy: HAND_ACCURACY,
+      fixedAt: obs.observedAt,
+    });
+    expect(saved.recordedPosition).toEqual(POSITION);
+    expect(saved.status).toBe('reviewed');
+
+    await editObservation(obs.id, recordedPlace(saved));
+    [saved] = await listObservations(SESSION);
+    expect(saved.position).toEqual(POSITION);
+    expect(saved).not.toHaveProperty('recordedPosition');
+  });
+
+  it('zonder GPS: terug betekent weer geen locatie', () => {
+    const place = placeByHand({}, 0, 52.1, 5.1);
+    expect(place.recordedPosition).toBeNull();
+    expect(recordedPlace(place)).toEqual({ position: undefined, recordedPosition: undefined });
   });
 });
 

@@ -32,6 +32,7 @@ describe('importJson', () => {
   it.each([
     ['een aantal dat HTML is', { count: '<img src=x onerror=alert(1)>' }],
     ['een positie met tekst', { position: { ...position, lat: '1" onmouseover="x' } }],
+    ['een bewaarde GPS-plek met tekst', { recordedPosition: { ...position, lon: 'x' } }],
     ['een gebied zonder naam', { area: { id: 7, name: 42 } }],
     ['een soort die geen getal is', { speciesId: 'vink' }],
   ])('weigert een waarneming met %s, en zet dan niets terug', async (_, fields) => {

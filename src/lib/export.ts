@@ -206,6 +206,7 @@ function checkImport(data: {
         isNumber(o.observedAt) &&
         typeof o.uncertain === 'boolean' &&
         optional(o.position, isPosition) &&
+        optional(o.recordedPosition, isPosition) &&
         optional(o.area, isArea);
       if (!ok) fail('waarneming');
     }
