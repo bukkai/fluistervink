@@ -52,9 +52,20 @@ export function speciesName(id: number): string {
   return getSpecies(id)?.name ?? `soort ${id}`;
 }
 
-const promptSpeciesByName = new Map(species.map((s) => [s.name.toLowerCase(), s]));
+// Ook op wetenschappelijke naam: zet het model die in species_name, dan klopt
+// de soort nog steeds. Geen soort heeft als wetenschappelijke naam een
+// Nederlandse naam van een andere soort.
+const promptSpeciesByName = new Map(
+  species.flatMap((s) => [
+    [s.scientific.toLowerCase(), s],
+    [s.name.toLowerCase(), s],
+  ]),
+);
 
-/** Soort uit de lijst in de prompt, op naam (hoofdletters maken niet uit) */
+/**
+ * Soort uit de lijst in de prompt, op Nederlandse of wetenschappelijke naam
+ * (hoofdletters maken niet uit)
+ */
 export function findPromptSpecies(name: string): Species | undefined {
   return promptSpeciesByName.get(name.trim().toLowerCase());
 }
