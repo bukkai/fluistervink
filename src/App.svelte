@@ -36,6 +36,8 @@
   import Privacy from './lib/Privacy.svelte';
   import Settings from './lib/Settings.svelte';
   import Statistics from './lib/Statistics.svelte';
+  import Welcome from './lib/Welcome.svelte';
+  import { setWelcomeDone, welcomeDone } from './lib/welcome';
   import Zeemeeuwen from './lib/Zeemeeuwen.svelte';
 
   // Uitspraken die bij het afsluiten nog niet verwerkt waren, alsnog verwerken.
@@ -159,7 +161,14 @@
   const timer = setInterval(() => (now = Date.now()), 1000);
   onDestroy(() => clearInterval(timer));
 
+  // Welkom voor nieuwelingen (welcome.ts): pas als duidelijk is dat er nog
+  // geen enkele sessie is, zodat het niet even opflitst bij wie al sessies heeft
+  let welcomeClosed = $state(welcomeDone());
+  let showWelcome = $derived($sessions?.length === 0 && !welcomeClosed);
+
   async function start() {
+    setWelcomeDone();
+    welcomeClosed = true;
     await startSession();
     requestPersistentStorage();
   }
@@ -359,7 +368,7 @@
           <button class="link" onclick={() => (stale = undefined)}>Oké</button>
         </p>
       {/if}
-      {#if askShare && !installProblem}
+      {#if askShare && !installProblem && !showWelcome}
         <div class="consent card">
           <strong>Delen met de ontwikkelaar?</strong>
           <p>
@@ -376,6 +385,9 @@
         </div>
       {/if}
       <button class="start" onclick={start}>Begin met vogelen</button>
+      {#if showWelcome}
+        <Welcome onclose={() => (welcomeClosed = true)} />
+      {/if}
       {#if past[0]}
         <a class="last card" href="#sessie/{past[0].id}">
           <span>
