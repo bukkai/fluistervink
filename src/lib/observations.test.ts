@@ -156,6 +156,14 @@ describe('per ongeluk opgenomen', () => {
           "KBV'tje in de struik hier. Zou misschien een blako kunnen zijn, ik hoor hem niet goed.",
       }),
     ).toBe(false);
+    // Een trage lijst bij het naar de lucht kijken (Maarten, 8 nov)
+    const lijst =
+      'Twee houtduiven, drie overvliegende spreeuwen, kramsvogel, bonte specht, grote bonte specht, drie sijs.';
+    expect(isAccidental({ audio, audioDurationMs: 45_000, transcript: lijst })).toBe(false);
+    // Trektelmodus: stilte is daar al weggefilterd, pauzes zijn normaal
+    expect(
+      isAccidental({ audio, audioDurationMs: 60_000, transcript: 'Roodhalsfuut.', trektel: true }),
+    ).toBe(false);
     // Getypt: geen opname
     expect(isAccidental({ audioDurationMs: 20_000, transcript: 'x' })).toBe(false);
     // Opname later gewist: telt nog steeds als opname (bij "Opnieuw")
