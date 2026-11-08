@@ -371,7 +371,7 @@
           </div>
         </div>
       {/if}
-      <button class="start" onclick={start}>Start sessie</button>
+      <button class="start" onclick={start}>Begin met vogelen</button>
       {#if past[0]}
         <a class="last card" href="#sessie/{past[0].id}">
           <span>

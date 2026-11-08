@@ -28,9 +28,9 @@
   <div class="card-body">
     <h3>Inspreken</h3>
     <p>
-      Start een sessie en ga vogelen: lopend, op de fiets, in een vogelhut of gewoon in de tuin. Zie
-      of hoor je iets, tik dan op de microfoonknop of houd hem vast, en zeg wat je waarneemt. Gewoon
-      zoals je het tegen een medevogelaar zou zeggen:
+      Tik op "Begin met vogelen", waar je ook bent: lopend, op de fiets, in een vogelhut of gewoon
+      in de tuin. Zie of hoor je iets, tik dan op de microfoonknop of houd hem vast, en zeg wat je
+      waarneemt. Gewoon zoals je het tegen een medevogelaar zou zeggen:
     </p>
     <ul class="examples">
       <li>"zes overvliegende houtduiven"</li>
