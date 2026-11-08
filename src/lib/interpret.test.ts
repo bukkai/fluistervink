@@ -141,6 +141,52 @@ describe('parseResponse', () => {
 
 // De afstand in de context laat het model "nog een X" van een paar kilometer
 // verderop als nieuwe waarneming zien (feedback 13 okt, Aalscholver op de A12).
+describe('plek uit de uitspraak', () => {
+  const add = (input: object) =>
+    parseResponse(toolResponse(['add_observation', { species_id: VINK, count: 1, ...input }]), []);
+
+  it('neemt omschrijving, afstand en windrichting over', () => {
+    const { actions } = add({
+      place_description: '500 m zuid van hier',
+      place_distance_m: 500,
+      place_direction: 'Z',
+    });
+    expect(actions[0]).toMatchObject({
+      fields: { spokenPlace: { text: '500 m zuid van hier', distanceM: 500, direction: 'Z' } },
+    });
+  });
+
+  it('alleen een omschrijving, of helemaal niets', () => {
+    expect(
+      add({ place_description: 'overkant rivier', place_distance_m: null, place_direction: null })
+        .actions[0],
+    ).toMatchObject({ fields: { spokenPlace: { text: 'overkant rivier' } } });
+    expect(add({}).actions[0]).not.toHaveProperty('fields.spokenPlace');
+  });
+
+  it('laat een onmogelijke afstand of richting weg, met een waarschuwing', () => {
+    const { actions, warnings } = add({
+      place_description: 'ver weg',
+      place_distance_m: 900_000,
+      place_direction: 'links',
+    });
+    expect(actions[0]).toMatchObject({ fields: { spokenPlace: { text: 'ver weg' } } });
+    expect(actions[0]).not.toHaveProperty('fields.spokenPlace.distanceM');
+    expect(actions[0]).not.toHaveProperty('fields.spokenPlace.direction');
+    expect(warnings).toHaveLength(2);
+  });
+
+  it('zonder omschrijving maakt de app er een', () => {
+    const { actions } = add({ place_distance_m: 200, place_direction: 'W' });
+    expect(actions[0]).toMatchObject({ fields: { spokenPlace: { text: '200 m W' } } });
+  });
+
+  it('staat in de context voor het model', () => {
+    const text = describeContext([observation({ spokenPlace: { text: 'overkant rivier' } })]);
+    expect(text).toMatch(/plek: "overkant rivier"/);
+  });
+});
+
 describe('describeContext', () => {
   const here = { lat: 52.0557, lon: 5.4, accuracy: 10, fixedAt: 0 };
   const at = (lat: number, lon: number) => ({ lat, lon, accuracy: 10, fixedAt: 0 });

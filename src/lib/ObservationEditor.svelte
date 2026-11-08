@@ -1,6 +1,7 @@
 <script lang="ts">
   import { audioBlob, type Observation, type Utterance } from './db';
   import LocationPicker from './LocationPicker.svelte';
+  import { placeReason } from './spokenPlace';
   import {
     copyObservation,
     deleteObservation,
@@ -54,9 +55,11 @@
   let place = $state.raw<Place>({
     position: original.position,
     recordedPosition: original.recordedPosition,
+    placedByVoice: original.placedByVoice,
   });
   let placing = $state(false);
-  let byHand = $derived(place.recordedPosition !== undefined);
+  /** Niet meer op de GPS-positie: met de hand gezet of volgens de uitspraak */
+  let moved = $derived(place.recordedPosition !== undefined);
 
   const speciesByName = new Map(allSpecies.map((s) => [s.name.toLowerCase(), s]));
   let selectedSpecies = $derived(speciesByName.get(speciesName.trim().toLowerCase()));
@@ -79,12 +82,17 @@
       uncertainReason: uncertain ? original.uncertainReason : undefined,
       position: place.position,
       recordedPosition: place.recordedPosition,
+      placedByVoice: place.placedByVoice,
     });
     onclose();
   }
 
   function setPlace(lat: number, lon: number) {
     place = placeByHand(place, original.observedAt, lat, lon);
+    // Twijfelde de app alleen over de plek ("aan de overkant van de rivier"), dan is dat nu opgelost
+    if (original.spokenPlace && original.uncertainReason === placeReason(original.spokenPlace)) {
+      uncertain = false;
+    }
   }
 
   async function remove() {
@@ -194,7 +202,9 @@
       <span>
         {#if !place.position}
           geen locatie
-        {:else if byHand}
+        {:else if place.placedByVoice}
+          volgens de uitspraak, ±{place.position.accuracy} m
+        {:else if moved}
           met de hand gezet (±{place.position.accuracy} m)
         {:else}
           GPS, ±{Math.round(place.position.accuracy)} m
@@ -206,10 +216,13 @@
         >
       {/if}
     </span>
+    {#if original.spokenPlace}
+      <span class="spoken">Gezegd: {original.spokenPlace.text}</span>
+    {/if}
     {#if placing}
       <LocationPicker position={place.position} sessionId={original.sessionId} onplace={setPlace} />
     {/if}
-    {#if byHand}
+    {#if moved}
       <button type="button" class="link back" onclick={() => (place = recordedPlace(place))}>
         Terug naar de opgenomen plek{place.recordedPosition ? '' : ' (geen locatie)'}
       </button>
@@ -339,6 +352,12 @@
 
   .place .back {
     align-self: flex-start;
+  }
+
+  .spoken {
+    font-size: 0.95rem;
+    font-style: italic;
+    color: var(--muted);
   }
 
   .source {

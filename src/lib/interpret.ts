@@ -1,6 +1,7 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import { createMessage, type Timing } from './api';
-import type { Observation, Position } from './db';
+import type { Observation, Position, SpokenPlace } from './db';
+import { DIRECTIONS, MAX_DISTANCE_M, describePlace, type Direction } from './spokenPlace';
 import {
   activities,
   aliases,
@@ -44,6 +45,7 @@ export interface ObservationFields {
   uncertainReason?: string;
   remarks?: string;
   privateNote?: string;
+  spokenPlace?: SpokenPlace;
 }
 
 export type Action =
@@ -117,7 +119,22 @@ const fieldProperties = {
   private_note: {
     type: 'string',
     description:
-      'Notitie van de gebruiker voor zichzelf, voor het nalopen thuis, bv. "bij thuiskomst terugluisteren", "locatie klopt niet, zat verderop". Kort, in de woorden van de gebruiker. Bij update_observation vervangt dit de bestaande notitie.',
+      'Notitie van de gebruiker voor zichzelf, voor het nalopen thuis, bv. "bij thuiskomst terugluisteren", "foto checken". Kort, in de woorden van de gebruiker. Bij update_observation vervangt dit de bestaande notitie.',
+  },
+  place_description: {
+    type: 'string',
+    description:
+      'Alleen als de vogel niet bij de gebruiker is en die zegt waar: de plek in de woorden van de gebruiker, bv. "aan de overkant van de rivier", "500 m zuid van hier". Zie "Plek".',
+  },
+  place_distance_m: {
+    anyOf: [{ type: 'integer' }, { type: 'null' }],
+    description:
+      'Alleen samen met place_description: afstand van de gebruiker tot de vogel in meters, als die genoemd wordt ("halve kilometer" = 500), anders null.',
+  },
+  place_direction: {
+    anyOf: [{ type: 'string', enum: Object.keys(DIRECTIONS) }, { type: 'null' }],
+    description:
+      'Alleen samen met place_description: windrichting van de vogel gezien vanaf de gebruiker, als die genoemd wordt, anders null.',
   },
 } as const;
 
@@ -230,9 +247,21 @@ const SYSTEM_PROMPT = `Je bent de interpretatielaag van Fluistervink, een app wa
 ## Opmerkingen
 
 Zegt de gebruiker iets over een waarneming dat niet in de andere velden past, zet dat dan in een van twee velden:
-- private_note: een notitie voor zichzelf, om thuis na te lopen. Opdrachten voor later ("bij thuiskomst terugluisteren", "foto checken", "determinatie nakijken") en opmerkingen over de locatie ("zat verderop in een boom", "locatie aanpassen"). Gaat niet naar waarneming.nl.
+- private_note: een notitie voor zichzelf, om thuis na te lopen. Opdrachten voor later ("bij thuiskomst terugluisteren", "foto checken", "determinatie nakijken", "locatie aanpassen"). Gaat niet naar waarneming.nl. Waar de vogel zit, als dat niet bij de gebruiker is, gaat niet hierin maar in de plekvelden (zie "Plek").
 - remarks: een bijzonderheid over de vogel zelf, die mee mag naar waarneming.nl ("met ring", "zat op het hek", "in gezelschap van spreeuwen").
-Bevat een uitspraak allebei, verdeel het dan: "zat verderop in een boom, met een ring" → private_note "zat verderop in een boom" en remarks "met ring". Laat niets weg: elke bijzonderheid die de gebruiker noemt, komt in een van de twee velden. Bij twijfel tussen de twee: private_note. Hoort het bij een eerdere waarneming ("die heb ik op de foto"), gebruik dan update_observation. Heeft die al een opmerking of notitie (zie de lijst) en komt er iets bij ("die zat ook op het hek"), herhaal die dan en voeg de nieuwe toe. Verbetert of vervangt de gebruiker de notitie of opmerking ("nee, het was ten zuiden", "pas de notitie aan", "als notitie: …"), schrijf dan alleen de nieuwe versie, zonder de oude. Zet geen twijfel over de soort in deze velden; daarvoor is uncertain_reason.
+Bevat een uitspraak allebei, verdeel het dan: "foto checken, met een ring" → private_note "foto checken" en remarks "met ring". Laat niets weg: elke bijzonderheid die de gebruiker noemt, komt in een van de twee velden. Bij twijfel tussen de twee: private_note. Hoort het bij een eerdere waarneming ("die heb ik op de foto"), gebruik dan update_observation. Heeft die al een opmerking of notitie (zie de lijst) en komt er iets bij ("die zat ook op het hek"), herhaal die dan en voeg de nieuwe toe. Verbetert of vervangt de gebruiker de notitie of opmerking ("nee, het was ten zuiden", "pas de notitie aan", "als notitie: …"), schrijf dan alleen de nieuwe versie, zonder de oude. Zet geen twijfel over de soort in deze velden; daarvoor is uncertain_reason.
+
+## Plek
+
+De app legt de plek van de gebruiker vast. Zegt de gebruiker dat de vogel ergens anders is, en waar, vul dan de plekvelden. De app rekent de plek uit; je hoeft niets van de kaart te weten.
+- place_description: de plek in de woorden van de gebruiker, kort ("aan de overkant van de rivier", "500 m zuid van hier", "verderop in de weilanden", "links van het pad").
+- place_distance_m: de afstand in meters als die genoemd wordt ("vijfhonderd meter" = 500, "halve kilometer" = 500, "een kilometer" = 1000, "zo'n tweehonderd meter" = 200), anders null. Schat geen afstand die niet genoemd wordt.
+- place_direction: de windrichting van de vogel vanaf de gebruiker als die genoemd wordt ("zuid", "ten zuiden van hier", "zuidelijk" → Z; "noordoost" → NO), anders null. "Links", "rechts", "voor me", "achter me" zijn geen windrichting: alleen in place_description.
+Voorbeelden:
+- "Blauwe reiger aan de overkant van de rivier" → place_description "aan de overkant van de rivier", place_distance_m null, place_direction null.
+- "Buizerd overvliegend, 500 m zuid van hier" → activiteit overvliegend (zonder richting), place_description "500 m zuid van hier", place_distance_m 500, place_direction Z.
+- "Buizerd overvliegend naar het zuiden" is een vliegrichting, geen plek: geen plekvelden.
+Laat de plekvelden weg als de vogel bij de gebruiker is, of als het alleen gaat om waar hij zit zonder dat het een andere plek is ("zat op het hek", "in de rietkraag" → remarks). Een plek voor een eerdere waarneming ("die reiger zat eigenlijk 300 m noord") → update_observation met de plekvelden.
 
 ## Soorten
 
@@ -266,7 +295,7 @@ Latere correcties gaan per geslacht: "nog een paartje erbij" of "nog een man en 
 ## Activiteit en methode
 
 - "overvliegend", "over", "trekkend" → activiteit 6, methode 48 (gezien). Met windrichting ("naar het zuiden", "richting west", "noordwaarts") de bijbehorende overvliegend-code; ook als het woord overvliegend er niet bij staat ("buizerd richting west").
-- Een windrichting die een plek aanduidt in plaats van een vliegrichting ("ten westen van hier", "aan de oostkant", "in het noorden van het veld") is géén overvliegend-code. Zo'n plek gaat in private_note.
+- Een windrichting die een plek aanduidt in plaats van een vliegrichting ("ten westen van hier", "500 m zuid", "aan de oostkant") is géén overvliegend-code. Zo'n plek gaat in de plekvelden, zie "Plek".
 - Een vogel die blijft rondhangen: "cirkelend", "cirkelt", "biddend", "zwevend boven …", "thermiekend" → activiteit 1 (ter plaatse), niet overvliegend; "jagend" → activiteit 30.
 - "dood", "dode", "kadaver", "plukresten", "plukplaats" → activiteit 17 (vondst (dood)), methode 48. "Doodgereden", "verkeersslachtoffer" → activiteit 2016. Een vermoedelijke oorzaak ("plukplaats van een havik") gaat in remarks.
 - "roepje", "roept", "roepend" → activiteit 3, methode 49 (gehoord).
@@ -370,6 +399,7 @@ function describe(obs: Observation, here?: Position): string {
     obs.uncertain ? 'onzeker' : undefined,
     obs.remarks ? `opmerking: "${obs.remarks}"` : undefined,
     obs.privateNote ? `notitie: "${obs.privateNote}"` : undefined,
+    obs.spokenPlace ? `plek: "${obs.spokenPlace.text}"` : undefined,
     farAway(obs, here),
   ];
   return `${timeFormat.format(obs.observedAt)} ${parts.filter(Boolean).join(', ')}`;
@@ -466,6 +496,41 @@ interface RawFields {
   uncertain_reason?: string;
   remarks?: string;
   private_note?: string;
+  place_description?: string | null;
+  place_distance_m?: number | null;
+  place_direction?: string | null;
+}
+
+/**
+ * Plek uit de uitspraak. Een afstand of richting die niet kan, valt weg (met
+ * een waarschuwing); de omschrijving blijft dan, zodat de gebruiker thuis de
+ * plek op de kaart zet.
+ */
+function toSpokenPlace(
+  tool: string,
+  input: RawFields,
+  warnings: string[],
+): SpokenPlace | undefined {
+  let distanceM = input.place_distance_m ?? undefined;
+  if (
+    distanceM !== undefined &&
+    !(Number.isInteger(distanceM) && distanceM >= 1 && distanceM <= MAX_DISTANCE_M)
+  ) {
+    warnings.push(`${tool}: afstand ${distanceM} m genegeerd`);
+    distanceM = undefined;
+  }
+  let direction = input.place_direction ?? undefined;
+  if (direction !== undefined && !(direction in DIRECTIONS)) {
+    warnings.push(`${tool}: windrichting "${direction}" genegeerd`);
+    direction = undefined;
+  }
+  const text = input.place_description?.trim() || describePlace(distanceM, direction as Direction);
+  if (!text) return undefined;
+  return {
+    text,
+    ...(distanceM !== undefined && { distanceM }),
+    ...(direction !== undefined && { direction: direction as Direction }),
+  };
 }
 
 const validCode = (codes: Code[], id: number | undefined) =>
@@ -498,6 +563,7 @@ function toAction(
     uncertainReason: input.uncertain ? input.uncertain_reason : undefined,
     remarks: input.remarks?.trim() || undefined,
     privateNote: input.private_note?.trim() || undefined,
+    spokenPlace: toSpokenPlace(block.name, input, warnings),
   };
   // Weglaten wat het model niet meegaf, zodat een update alleen wijzigt wat bedoeld is
   for (const key of Object.keys(fields) as (keyof ObservationFields)[]) {

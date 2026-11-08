@@ -15,6 +15,7 @@ import { attachArea } from './area';
 import { utteranceFeedback, vibrate } from './feedback';
 import { MODEL, interpret, promptVersion, type Action, type Interpretation } from './interpret';
 import { currentPosition } from './location.svelte';
+import { placeFromSpeech, placeReason } from './spokenPlace';
 import { INSTANCE_ID } from './instance.svelte';
 import { APP_VERSION, logEvent, wasHiddenSince } from './log';
 import type { Recording } from './recorder.svelte';
@@ -98,7 +99,11 @@ async function attachPosition(utteranceId: string, pending: Promise<PositionLook
       .where('utteranceId')
       .equals(utteranceId)
       .modify((obs) => {
-        if (!obs.position) obs.position = position;
+        if (!obs.position) {
+          // Plek genoemd in de uitspraak ("500 m zuid"): vanaf de GPS uitrekenen
+          if (obs.spokenPlace) Object.assign(obs, placeFromSpeech(position, obs.spokenPlace));
+          else obs.position = position;
+        }
         // Al met de hand gezet: de GPS wordt de plek om naar terug te gaan
         else if (obs.recordedPosition === null) obs.recordedPosition = position;
       });
@@ -122,7 +127,7 @@ export async function editObservation(id: string, patch: Partial<Observation>): 
 /** Nauwkeurigheid van een met de hand gezette plek, in meters */
 export const HAND_ACCURACY = 10;
 
-export type Place = Pick<Observation, 'position' | 'recordedPosition'>;
+export type Place = Pick<Observation, 'position' | 'recordedPosition' | 'placedByVoice'>;
 
 /**
  * Plek met de hand gezet (tikken of slepen op de kaart). De GPS-positie
@@ -132,6 +137,7 @@ export type Place = Pick<Observation, 'position' | 'recordedPosition'>;
 export function placeByHand(current: Place, observedAt: number, lat: number, lon: number): Place {
   return {
     position: { lat, lon, accuracy: HAND_ACCURACY, fixedAt: observedAt },
+    placedByVoice: undefined,
     recordedPosition:
       current.recordedPosition !== undefined
         ? current.recordedPosition
@@ -142,7 +148,11 @@ export function placeByHand(current: Place, observedAt: number, lat: number, lon
 /** Terug naar de plek van de GPS ("Terug naar de opgenomen plek") */
 export function recordedPlace(current: Place): Place {
   if (current.recordedPosition === undefined) return current;
-  return { position: current.recordedPosition ?? undefined, recordedPosition: undefined };
+  return {
+    position: current.recordedPosition ?? undefined,
+    recordedPosition: undefined,
+    placedByVoice: undefined,
+  };
 }
 
 /**
@@ -589,6 +599,24 @@ export function isAccidental(
   return words / (ms / 1000) < ACCIDENTAL_MAX_WORDS_PER_S;
 }
 
+/** Velden die een onzekere waarneming bij een update niet zeker maken */
+const NOT_A_CORRECTION: string[] = ['remarks', 'privateNote', 'spokenPlace'];
+
+/**
+ * Een plek die niet uit te rekenen is ("aan de overkant van de rivier") maakt
+ * de waarneming onzeker, zodat hij bij het nalopen op de kaart gezet wordt.
+ * Een reden van het model blijft staan.
+ */
+function placeUncertainty(
+  fields: Partial<Pick<Observation, 'spokenPlace' | 'uncertain' | 'uncertainReason'>>,
+): Pick<Observation, 'uncertain' | 'uncertainReason'> | undefined {
+  const reason = fields.spokenPlace && placeReason(fields.spokenPlace);
+  if (!reason) return undefined;
+  const earlier = fields.uncertain ? fields.uncertainReason : undefined;
+  if (earlier?.includes(reason)) return { uncertain: true, uncertainReason: earlier };
+  return { uncertain: true, uncertainReason: earlier ? `${earlier}; ${reason}` : reason };
+}
+
 /** Voert de acties uit en geeft terug wat er veranderde. */
 async function applyActions(utterance: Utterance, actions: Action[]): Promise<Change[]> {
   const changes: Change[] = [];
@@ -614,10 +642,14 @@ async function applyActions(utterance: Utterance, actions: Action[]): Promise<Ch
           methodId: DEFAULT_METHOD,
           ...action.fields,
           uncertain: action.fields.uncertain ?? false,
+          ...placeUncertainty(action.fields),
           ...accidental,
           observedAt: utterance.recordedAt,
           createdAt: order++,
           position: utterance.position,
+          ...(action.fields.spokenPlace &&
+            utterance.position &&
+            placeFromSpeech(utterance.position, action.fields.spokenPlace)),
           area: utterance.area,
           status: 'draft',
         };
@@ -637,10 +669,19 @@ async function applyActions(utterance: Utterance, actions: Action[]): Promise<Ch
         // zeker; alleen een opmerking of notitie toevoegen niet
         const onlyRemarks =
           !action.addCount &&
-          Object.keys(action.fields).every((key) => key === 'remarks' || key === 'privateNote');
+          Object.keys(action.fields).every((key) => NOT_A_CORRECTION.includes(key));
         if (!onlyRemarks) {
           patch.uncertain ??= false;
           if (!patch.uncertain) patch.uncertainReason = undefined;
+        }
+        if (action.fields.spokenPlace) {
+          // Opnieuw vanaf de GPS-positie van de gebruiker, niet vanaf de vorige plek
+          const gps =
+            current.recordedPosition !== undefined
+              ? (current.recordedPosition ?? undefined)
+              : current.position;
+          if (gps) Object.assign(patch, placeFromSpeech(gps, action.fields.spokenPlace));
+          Object.assign(patch, placeUncertainty({ ...current, ...patch }));
         }
         Object.assign(patch, accidental);
 
