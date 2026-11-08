@@ -72,7 +72,7 @@ De spraakherkenning rekent per minuut audio. Bij `gpt-4o-transcribe` is dat in d
 
 ## Fasen
 
-1. **Knippen en doorgaan** (punt 1, 2 en 4), achter de instelling, alleen zichtbaar voor de eigenaar en Maarten. Proef op een telpost: knipt hij goed, gaat er geen spraak verloren, klopt de stiltedrempel.
+1. **Knippen en doorgaan** (punt 1, 2 en 4), achter de instelling, alleen zichtbaar voor de eigenaar en Maarten. Proef op een telpost met Maarten: knipt hij goed, gaat er geen spraak verloren, klopt de stiltedrempel.
 2. **Beveiligingen en plafond** (punt 3 en 5). Pas daarna de instelling voor iedereen.
 3. **Uitleg, privacy, meten** (punt 6). Kan samen met fase 2 in één PR.
 
@@ -80,7 +80,9 @@ Elke fase is één PR.
 
 ## Open punten
 
-- **Aan Maarten vragen:** hoe lang spreekt hij aan één stuk in, en wat ging er mis met de huidige 3 minuten? Is scherm aan met een powerbank acceptabel? Telt hij op een vaste post (dan doet de positie er weinig toe) of lopend?
-- **Trektellen.nl:** trektellers melden vaak daar, met tellingen per uur of tijdvak, en niet bij waarneming.nl. Als Maarten dat wil, is een export naar trektellen.nl misschien nuttiger dan of naast deze modus. Apart uitzoeken.
+- **Antwoorden van Maarten** (8 nov): hij legt de telefoon naast zich op een verhoging en zegt alles wat hij ziet. Dat is precies deze modus: een vaste post, dus de positie per stuk is vrijwel gelijk, en de knop indrukken is onhandig. Scherm aan is bij het trektellen geen probleem. Hij telt nu vooral met de Live Atlas-app van Sovon (ook voor BMP en atlasblokken), gekoppeld aan zijn account bij waarneming.nl. Hij test graag mee, dus de proef uit fase 1 doet hij.
+- **Nog te vragen:** liep hij tegen de 3 minuten aan, of was het vooral het steeds indrukken van de knop?
+- **Trektellen.nl:** trektellers melden vaak daar, met tellingen per uur of tijdvak. Maarten vindt een export daarheen "een goede extra optie". Los van dit plan, later uitzoeken (importformaat van trektellen.nl).
+- **Fietsen met oortjes (buiten dit plan):** Maarten wil ook op de fiets waarnemingen roepen via de microfoon van zijn oortjes, met het scherm uit. Daarvoor zijn twee dingen nodig die er nog niet zijn: opnemen met het scherm uit (de native opname uit fase 3 van `docs/plan-capacitor.md`) en een manier om een opname te starten zonder scherm: de knop op de oortjes (mediasessie) of later het wake word. Let op: de app neemt nu bewust op met de microfoon van de telefoon en niet met die van een Bluetooth-headset (fase 0 van dat plan, tegen het haperen van audio), dus de microfoon van de oortjes vraagt een eigen keuze en een proef. Een sterk argument om fase 3 op te pakken.
 - **Gedeelde opnames:** bij delen met de ontwikkelaar kunnen dat bij een trektelling veel stukken zijn. Opnames gaan alleen mee als de gebruiker dat apart aanzet; nagaan of KV en de limiet per tester dat aankunnen.
 - **Getallen** (60 s, 0,7 s stilte, 45 en 15 minuten, 4 uur, 5 uur per dag) zijn een eerste voorstel en volgen uit de proef.

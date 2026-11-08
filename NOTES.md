@@ -39,7 +39,7 @@ Feedback opgehaald op 6 nov: 8 testers en installaties met gedeelde wandelingen 
   - Nieuw opgevallen: "Meerkoet." (09:53) wordt nu "Merel"/"Migo"; "Piepgeluiden." wordt "twee/drie grauwe ganzen". Mogelijk ook "Roepje vink": bij een onverstaanbare opname zet `gpt-4o-transcribe` iets uit de prompt neer.
   - **Label 18/19 verbeterd**: 2× krakeend + 1× waterhoen (`whisper-1` hoort trouwens "Eén waterhoed", bevestigt "een" i.p.v. "nee"). Labels worden afgeleid uit de gedeelde wandeling, dus de opgehaalde sessie is aangepast met `testset/label-jurian-krakeend.mjs`; opnieuw draaien als een pull Jurians wandeling ooit opnieuw binnenhaalt.
 
-- **Maarten** (8 nov): wil langer achter elkaar inspreken bij het trektellen (nu na 3 minuten gestopt). Voorstel `docs/plan-trektelmodus.md` (nog niet goedgekeurd): stukken knippen bij een pauze, stilte niet versturen, beveiligingen en een plafond per dag. Eerst de open punten met Maarten bespreken (ook: trektellen.nl).
+- **Maarten** (8 nov): wil langer achter elkaar inspreken bij het trektellen (nu na 3 minuten gestopt). Voorstel `docs/plan-trektelmodus.md` (nog niet goedgekeurd): stukken knippen bij een pauze, stilte niet versturen, beveiligingen en een plafond per dag. Maarten antwoordde dezelfde dag: telefoon naast zich op een vaste post, scherm aan geen probleem, telt nu met de Live Atlas-app van Sovon, export naar trektellen.nl een goede extra optie, test graag mee (staat in het plan). Nieuwe wens: op de fiets inspreken via de microfoon van zijn oortjes, scherm uit; dat vraagt fase 3 van `docs/plan-capacitor.md` (opnemen met het scherm uit, starten met de knop op de oortjes).
 
 ## Roadmap naar v1.0 (13 okt)
 
