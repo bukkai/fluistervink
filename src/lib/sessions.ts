@@ -159,7 +159,8 @@ export async function countPerSession(): Promise<Map<string, SessionCounts>> {
 
 /** "1 u 5 min" of "12 min" */
 export function formatDuration(ms: number): string {
-  const minutes = Math.floor(ms / 60_000);
+  // Net gestart: de klok van het scherm loopt tot een seconde achter, geen "-1 min"
+  const minutes = Math.max(0, Math.floor(ms / 60_000));
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   return h > 0 ? `${h} u ${m} min` : `${m} min`;

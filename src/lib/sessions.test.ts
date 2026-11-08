@@ -5,6 +5,7 @@ import {
   AUTO_STOP_AFTER_MS,
   checkStaleSession,
   countPerSession,
+  formatDuration,
   keepSession,
 } from './sessions';
 
@@ -85,5 +86,14 @@ describe('countPerSession', () => {
       devNotes: 0,
       unprocessed: 2,
     });
+  });
+});
+
+describe('formatDuration', () => {
+  it('in minuten en uren, nooit negatief', () => {
+    expect(formatDuration(0)).toBe('0 min');
+    expect(formatDuration(-500)).toBe('0 min');
+    expect(formatDuration(59 * 60_000)).toBe('59 min');
+    expect(formatDuration(75 * 60_000)).toBe('1 u 15 min');
   });
 });
