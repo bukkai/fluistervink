@@ -522,7 +522,7 @@ function toSpokenPlace(
     distanceM = undefined;
   }
   let direction = input.place_direction ?? undefined;
-  if (direction !== undefined && !(direction in DIRECTIONS)) {
+  if (direction !== undefined && !Object.hasOwn(DIRECTIONS, direction)) {
     warnings.push(`${tool}: windrichting "${direction}" genegeerd`);
     direction = undefined;
   }
