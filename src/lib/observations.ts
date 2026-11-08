@@ -15,7 +15,7 @@ import { attachArea } from './area';
 import { utteranceFeedback, vibrate } from './feedback';
 import { MODEL, interpret, promptVersion, type Action, type Interpretation } from './interpret';
 import { currentPosition } from './location.svelte';
-import { placeFromSpeech, placeReason } from './spokenPlace';
+import { placeFromSpeech, placeReason, type Place } from './spokenPlace';
 import { INSTANCE_ID } from './instance.svelte';
 import { APP_VERSION, logEvent, wasHiddenSince } from './log';
 import type { Recording } from './recorder.svelte';
@@ -133,7 +133,7 @@ export async function editObservation(id: string, patch: Partial<Observation>): 
 /** Nauwkeurigheid van een met de hand gezette plek, in meters */
 export const HAND_ACCURACY = 10;
 
-export type Place = Pick<Observation, 'position' | 'recordedPosition' | 'placedByVoice'>;
+export type { Place };
 
 /**
  * Plek met de hand gezet (tikken of slepen op de kaart). De GPS-positie
@@ -377,9 +377,26 @@ const AUDIO_MIGRATED_KEY = 'fluistervink.audioMigrated';
  * en probeert de volgende ronde het opnieuw.
  */
 async function migrateOnce(): Promise<void> {
+  // Opslag geblokkeerd: dan elke start opnieuw, maar wel migreren
+  const storage = {
+    done: () => {
+      try {
+        return !!localStorage.getItem(AUDIO_MIGRATED_KEY);
+      } catch {
+        return false;
+      }
+    },
+    mark: () => {
+      try {
+        localStorage.setItem(AUDIO_MIGRATED_KEY, '1');
+      } catch {
+        // Dan de volgende start opnieuw kijken
+      }
+    },
+  };
   try {
-    if (localStorage.getItem(AUDIO_MIGRATED_KEY)) return;
-    if (await migrateAudio()) localStorage.setItem(AUDIO_MIGRATED_KEY, '1');
+    if (storage.done()) return;
+    if (await migrateAudio()) storage.mark();
   } catch (error) {
     audioMigration = undefined;
     logEvent('queue_error', {
@@ -597,10 +614,12 @@ const ACCIDENTAL_MAX_WORDS_PER_S = 0.3;
  * geritsel is luider dan fluisteren, en de zekerheid wisselt per poging.
  */
 export function isAccidental(
-  utterance: Pick<Utterance, 'audioDurationMs' | 'transcript' | 'audio'>,
+  utterance: Pick<Utterance, 'audioDurationMs' | 'transcript' | 'audio' | 'audioDeletedAt'>,
 ): boolean {
   const ms = utterance.audioDurationMs;
-  if (!utterance.audio || !ms || ms < ACCIDENTAL_MIN_MS) return false;
+  // Opgenomen (ook als de opname daarna gewist is), niet getypt
+  const recorded = !!utterance.audio || utterance.audioDeletedAt !== undefined;
+  if (!recorded || !ms || ms < ACCIDENTAL_MIN_MS) return false;
   const words = (utterance.transcript ?? '').split(/\s+/).filter(Boolean).length;
   return words / (ms / 1000) < ACCIDENTAL_MAX_WORDS_PER_S;
 }
@@ -731,7 +750,19 @@ async function applyActions(utterance: Utterance, actions: Action[]): Promise<Ch
               ? (current.recordedPosition ?? undefined)
               : current.position;
           if (gps) Object.assign(patch, placeFromSpeech(gps, action.fields.spokenPlace));
-          Object.assign(patch, placeUncertainty({ ...current, ...patch }));
+          // De vorige plek is vervangen: zijn twijfel ("zet hem op de kaart") ook
+          const merged = { ...current, ...patch };
+          const stale = current.spokenPlace && placeReason(current.spokenPlace);
+          if (stale && merged.uncertainReason?.includes(stale)) {
+            // De reden bevat zelf "; ", dus vervangen in plaats van splitsen
+            const rest = merged.uncertainReason
+              .replace(`; ${stale}`, '')
+              .replace(stale, '')
+              .replace(/^; /, '');
+            patch.uncertainReason = merged.uncertainReason = rest || undefined;
+            if (!rest) patch.uncertain = merged.uncertain = false;
+          }
+          Object.assign(patch, placeUncertainty(merged));
         }
         Object.assign(patch, accidental);
 

@@ -158,6 +158,10 @@ describe('per ongeluk opgenomen', () => {
     ).toBe(false);
     // Getypt: geen opname
     expect(isAccidental({ audioDurationMs: 20_000, transcript: 'x' })).toBe(false);
+    // Opname later gewist: telt nog steeds als opname (bij "Opnieuw")
+    expect(
+      isAccidental({ audioDeletedAt: 1, audioDurationMs: 20_442, transcript: 'Roodhalsfuut.' }),
+    ).toBe(true);
   });
 
   it('maakt wat eruit komt onzeker, met de reden', async () => {
@@ -328,6 +332,42 @@ describe('plek uit de uitspraak', () => {
     ]);
     const [obs] = await listObservations(SESSION);
     expect(obs.uncertainReason).toMatch(/^kan ook keep zijn; Plek gezegd: "ergens daar"/);
+  });
+
+  it('later een plek die wel uit te rekenen is: de twijfel over de oude plek gaat eraf', async () => {
+    await say('reiger aan de overkant van de rivier', [
+      'add_observation',
+      { species_id: VINK, count: 1, place_description: 'aan de overkant van de rivier' },
+    ]);
+    await say('die zat 300 m noord', [
+      'update_observation',
+      { ref: 1, place_description: '300 m noord', place_distance_m: 300, place_direction: 'N' },
+    ]);
+    const [obs] = await listObservations(SESSION);
+    expect(obs.uncertain).toBe(false);
+    expect(obs.uncertainReason).toBeUndefined();
+  });
+
+  it('later een andere plek: twijfel van het model blijft, de oude plek-twijfel niet', async () => {
+    await say('vink of keep, ergens daar', [
+      'add_observation',
+      {
+        species_id: VINK,
+        count: 1,
+        uncertain: true,
+        uncertain_reason: 'kan ook keep zijn',
+        place_description: 'ergens daar',
+      },
+    ]);
+    await say('die zat bij de boom', [
+      'update_observation',
+      { ref: 1, place_description: 'bij de boom' },
+    ]);
+    const [obs] = await listObservations(SESSION);
+    expect(obs.uncertain).toBe(true);
+    expect(obs.uncertainReason).toBe(
+      'kan ook keep zijn; Plek gezegd: "bij de boom"; zet hem op de kaart',
+    );
   });
 
   it('later verbeterd ("die zat 300 m noord"): rekent vanaf de GPS, niet vanaf de vorige plek', async () => {

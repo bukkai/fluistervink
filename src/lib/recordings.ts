@@ -26,24 +26,34 @@ function canDelete(u: Utterance): boolean {
   return u.transcript !== undefined;
 }
 
-/** Uitspraken met een opname die weg mag; zonder `sessionId` van alle wandelingen. */
-async function deletable(sessionId?: string): Promise<Utterance[]> {
+/**
+ * Loopt de uitspraken met een opname die weg mag één voor één langs; zonder
+ * `sessionId` van alle wandelingen. Niet alles tegelijk in het geheugen: dat
+ * kunnen honderden opnames zijn, en de telling loopt opnieuw bij elke wijziging.
+ */
+async function eachDeletable(
+  sessionId: string | undefined,
+  visit: (u: Utterance) => void,
+): Promise<void> {
   const utterances =
     sessionId === undefined
-      ? await db.utterances.toArray()
-      : await db.utterances.where('sessionId').equals(sessionId).toArray();
-  return utterances.filter(canDelete);
+      ? db.utterances.toCollection()
+      : db.utterances.where('sessionId').equals(sessionId);
+  await utterances.each((u) => {
+    if (canDelete(u)) visit(u);
+  });
 }
 
 /** Hoeveel opnames er gewist kunnen worden (van één wandeling of alles). */
 export async function countRecordings(sessionId?: string): Promise<RecordingCount> {
-  const shared = sharedAudioIds();
-  const list = await deletable(sessionId);
-  return {
-    count: list.length,
-    bytes: list.reduce((sum, u) => sum + audioSize(u.audio!), 0),
-    shared: list.filter((u) => shared.has(u.id)).length,
-  };
+  const sharedIds = sharedAudioIds();
+  const result: RecordingCount = { count: 0, bytes: 0, shared: 0 };
+  await eachDeletable(sessionId, (u) => {
+    result.count++;
+    result.bytes += audioSize(u.audio!);
+    if (sharedIds.has(u.id)) result.shared++;
+  });
+  return result;
 }
 
 /**
@@ -53,7 +63,8 @@ export async function countRecordings(sessionId?: string): Promise<RecordingCoun
 export async function deleteRecordings(sessionId?: string, now = Date.now()): Promise<number> {
   const deleted = await db.transaction('rw', db.utterances, async () => {
     // In de transactie opnieuw kijken: de wachtrij kan intussen iets oppakken
-    const ids = (await deletable(sessionId)).map((u) => u.id);
+    const ids: string[] = [];
+    await eachDeletable(sessionId, (u) => ids.push(u.id));
     for (const id of ids) {
       await db.utterances.update(id, { audio: undefined, audioDeletedAt: now });
     }
