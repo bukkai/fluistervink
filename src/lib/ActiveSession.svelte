@@ -17,6 +17,23 @@
   let typing = $state(false);
   /** Ruimte onder de lijst, zodat de knop de laatste waarneming niet bedekt */
   let barHeight = $state(0);
+  let input = $state<HTMLInputElement>();
+
+  // Toetsenbord dicht (terugknop of -veeg op Android) zonder dat het veld zijn
+  // focus verliest: dan zou de knop weg blijven. Het zichtbare deel van het
+  // scherm wordt dan flink hoger; laat het veld dan los.
+  $effect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    let height = viewport.height;
+    function onResize() {
+      const grew = viewport!.height - height > 100;
+      height = viewport!.height;
+      if (grew && document.activeElement === input) input?.blur();
+    }
+    viewport.addEventListener('resize', onResize);
+    return () => viewport.removeEventListener('resize', onResize);
+  });
 
   // GPS aan zolang dit scherm (de lopende wandeling) zichtbaar is
   $effect(() => {
@@ -137,6 +154,8 @@
     if (!text.trim()) return;
     await submitText(session.id, text);
     text = '';
+    // Toetsenbord dicht en de knop terug: meestal was het één uitspraak
+    input?.blur();
   }
 </script>
 
@@ -151,6 +170,7 @@
 
 <form onsubmit={submit} onfocusin={() => (typing = true)} onfocusout={() => (typing = false)}>
   <input
+    bind:this={input}
     bind:value={text}
     placeholder="Of typ: zes overvliegende houtduiven"
     aria-label="Uitspraak typen"
