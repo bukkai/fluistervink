@@ -11,7 +11,7 @@
   let { standalone = false }: { standalone?: boolean } = $props();
   const app = $derived(standalone ? '/' : '');
 
-  const CONTACT = 'stephan@heg-mus.nl';
+  const CONTACT = 'info@fluistervink.nl';
 </script>
 
 {#if !standalone}<a class="back" href="#/">Terug</a>{/if}

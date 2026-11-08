@@ -5,7 +5,7 @@ describe('losse privacypagina', () => {
   it('heeft de tekst van #privacy, met contact en links naar de app', async () => {
     const { html, css } = await renderPrivacyPage();
     expect(html).toContain('<h2 class="page-title">Privacy</h2>');
-    expect(html).toContain('href="mailto:stephan@heg-mus.nl"');
+    expect(html).toContain('href="mailto:info@fluistervink.nl"');
     // Schermen van de app via de voorpagina, niet /privacy#instellingen
     expect(html).toContain('href="/#instellingen"');
     expect(html).not.toMatch(/href="#/);
