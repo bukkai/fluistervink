@@ -10,6 +10,7 @@ import {
   copyObservation,
   editObservation,
   isAccidental,
+  isBareNo,
   listObservations,
   migrateAudio,
   placeByHand,
@@ -186,10 +187,43 @@ describe('corrigeren', () => {
       'add_observation',
       { species_id: VINK, count: 1, uncertain: true, uncertain_reason: 'x' },
     ]);
-    await say('nee, keep', ['update_observation', { ref: 1, species_id: KEEP }]);
+    await say('nee, keep in plaats van vink', ['update_observation', { ref: 1, species_id: KEEP }]);
     const [obs] = await listObservations(SESSION);
     expect(obs).toMatchObject({ speciesId: KEEP, uncertain: false });
     expect(obs.uncertainReason).toBeUndefined();
+  });
+
+  it('herkent een kale "nee" met een soortnaam', () => {
+    // Jurian, 4 nov: "een waterhoen" in de wind
+    expect(isBareNo('Nee, waterhoen.')).toBe(true);
+    expect(isBareNo('nee, twee keepen')).toBe(true);
+    expect(isBareNo('Nee, een smient')).toBe(true);
+    // Echte correcties zeggen meer (uit de testset)
+    expect(isBareNo('Nee, keep in plaats van vink')).toBe(false);
+    expect(isBareNo('Nee, die laatste was een gaai.')).toBe(false);
+    expect(isBareNo('Nee die koolmees was kuifmees')).toBe(false);
+    expect(isBareNo('Nee, een smient, niet een vink.')).toBe(false);
+    expect(isBareNo('Nee het was groene')).toBe(false);
+    expect(isBareNo('Nee.')).toBe(false);
+    expect(isBareNo('Neerstrijkend, twee vinken')).toBe(false);
+    expect(isBareNo(undefined)).toBe(false);
+  });
+
+  it('kale "nee, <vogel>" voert de correctie uit, maar onzeker', async () => {
+    await say('twee vinken', ['add_observation', { species_id: VINK, count: 2 }]);
+    const utterance = await say('Nee, keep.', ['update_observation', { ref: 1, species_id: KEEP }]);
+    const [obs] = await listObservations(SESSION);
+    expect(obs).toMatchObject({ speciesId: KEEP, count: 2, uncertain: true });
+    expect(obs.uncertainReason).toContain('Alleen "Nee, keep." verstaan');
+    expect(obs.uncertainReason).toContain('Was 2 × Vink');
+    expect(utterance.result).toBe('uncertain');
+  });
+
+  it('kale "nee" zonder andere soort blijft een gewone correctie', async () => {
+    await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    await say('nee, twee vinken', ['update_observation', { ref: 1, count: 2 }]);
+    const [obs] = await listObservations(SESSION);
+    expect(obs).toMatchObject({ count: 2, uncertain: false });
   });
 
   it('alleen een opmerking toevoegen laat de twijfel staan', async () => {

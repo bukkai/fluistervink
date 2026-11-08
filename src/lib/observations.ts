@@ -24,7 +24,13 @@ import { checkZeemeeuw } from './zeemeeuw.svelte';
 import { devNoteText } from './devNotePrefix';
 
 export { devNoteText };
-import { DEFAULT_ACTIVITY, DEFAULT_COUNTING_METHOD, DEFAULT_METHOD, getSpecies } from './vocab';
+import {
+  DEFAULT_ACTIVITY,
+  DEFAULT_COUNTING_METHOD,
+  DEFAULT_METHOD,
+  getSpecies,
+  speciesName,
+} from './vocab';
 import { PLATFORM } from './native';
 
 // Local-first verwerking: elke uitspraak wordt eerst opgeslagen (status
@@ -599,6 +605,39 @@ export function isAccidental(
   return words / (ms / 1000) < ACCIDENTAL_MAX_WORDS_PER_S;
 }
 
+/** Woorden die laten zien dat "nee …" echt een correctie is */
+const CORRECTION_WORDS = new Set([
+  'die',
+  'dat',
+  'het',
+  'was',
+  'is',
+  'zijn',
+  'waren',
+  'niet',
+  'geen',
+  'plaats',
+  'laatste',
+  'vorige',
+  'toch',
+]);
+
+/**
+ * Alleen "nee" en een soortnaam ("Nee, waterhoen."): in de wind kan dat ook
+ * "een waterhoen" zijn geweest. Jurian, 4 nov: daardoor werden de twee
+ * krakeenden ervoor stil twee waterhoenders. Wie echt corrigeert, zegt meestal
+ * meer ("nee, die laatste was een gaai", "nee, keep in plaats van vink").
+ */
+export function isBareNo(transcript: string | undefined): boolean {
+  const words = (transcript ?? '')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}' ]+/gu, ' ')
+    .split(/\s+/)
+    .filter(Boolean);
+  if (words[0] !== 'nee' || words.length < 2 || words.length > 4) return false;
+  return !words.slice(1).some((word) => CORRECTION_WORDS.has(word));
+}
+
 /** Velden die een onzekere waarneming bij een update niet zeker maken */
 const NOT_A_CORRECTION: string[] = ['remarks', 'privateNote', 'spokenPlace'];
 
@@ -673,6 +712,17 @@ async function applyActions(utterance: Utterance, actions: Action[]): Promise<Ch
         if (!onlyRemarks) {
           patch.uncertain ??= false;
           if (!patch.uncertain) patch.uncertainReason = undefined;
+        }
+        if (
+          action.fields.speciesId !== undefined &&
+          action.fields.speciesId !== current.speciesId &&
+          isBareNo(utterance.transcript)
+        ) {
+          const reason = `Alleen "${utterance.transcript!.trim()}" verstaan; misschien "een …" (nieuwe waarneming). Was ${current.count} × ${speciesName(current.speciesId)}`;
+          patch.uncertain = true;
+          patch.uncertainReason = patch.uncertainReason
+            ? `${patch.uncertainReason}; ${reason}`
+            : reason;
         }
         if (action.fields.spokenPlace) {
           // Opnieuw vanaf de GPS-positie van de gebruiker, niet vanaf de vorige plek
