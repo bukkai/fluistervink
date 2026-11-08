@@ -14,6 +14,18 @@ export interface Position {
   fixedAt: number;
 }
 
+/**
+ * Plek van de vogel volgens de uitspraak ("500 m zuid van hier", "aan de
+ * overkant van de rivier"), gezien vanaf de gebruiker.
+ */
+export interface SpokenPlace {
+  /** In de woorden van de gebruiker */
+  text: string;
+  distanceM?: number;
+  /** Windrichting van de vogel vanaf de gebruiker: N, NO, O, ZO, Z, ZW, W, NW */
+  direction?: 'N' | 'NO' | 'O' | 'ZO' | 'Z' | 'ZW' | 'W' | 'NW';
+}
+
 /** Hoe de positie bij een uitspraak tot stand kwam, voor analyse */
 export interface PositionLookup {
   /**
@@ -191,6 +203,13 @@ export interface Observation {
    * Leeg: `position` is nog die van de GPS.
    */
   recordedPosition?: Position | null;
+  /**
+   * De plek van `position` is uit de uitspraak afgeleid ("500 m zuid"), niet
+   * met de hand gezet; `recordedPosition` is dan de GPS-positie van de gebruiker.
+   */
+  placedByVoice?: boolean;
+  /** Plek van de vogel zoals de gebruiker hem noemde, zie src/lib/spokenPlace.ts */
+  spokenPlace?: SpokenPlace;
   /** Gebied van waarneming.nl, overgenomen van de uitspraak */
   area?: Area | null;
   uncertain: boolean;

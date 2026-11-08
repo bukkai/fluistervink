@@ -6,11 +6,13 @@ import {
   type Observation,
   type Position,
   type Session,
+  type SpokenPlace,
   type StoredAudio,
   type Utterance,
 } from './db';
 import { getTester, type Area } from './api';
 import { APP_VERSION, CHANNEL, logEvent } from './log';
+import { DIRECTIONS } from './spokenPlace';
 import { PLATFORM, isNativeApp, saveFileNative, type SaveResult } from './native';
 
 // Ruwe export van alle gegevens, als vangnet tijdens de ontwikkeling, en het
@@ -174,6 +176,14 @@ function checkImport(data: {
       isNumber(p?.lat) && isNumber(p?.lon) && isNumber(p?.accuracy) && optional(p.fixedAt, isNumber)
     );
   };
+  const isSpokenPlace = (value: unknown) => {
+    const p = value as SpokenPlace;
+    return (
+      typeof p?.text === 'string' &&
+      optional(p.distanceM, isNumber) &&
+      optional(p.direction, (d) => typeof d === 'string' && d in DIRECTIONS)
+    );
+  };
   const isArea = (value: unknown) => {
     const a = value as Area;
     return isNumber(a?.id) && typeof a?.name === 'string';
@@ -207,6 +217,7 @@ function checkImport(data: {
         typeof o.uncertain === 'boolean' &&
         optional(o.position, isPosition) &&
         optional(o.recordedPosition, isPosition) &&
+        optional(o.spokenPlace, isSpokenPlace) &&
         optional(o.area, isArea);
       if (!ok) fail('waarneming');
     }

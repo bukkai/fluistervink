@@ -2,7 +2,7 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { Blob as NodeBlob } from 'node:buffer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FakeLockManager, HOUTDUIF, KEEP, VINK, toolResponse } from '../test-helpers';
-import { db, storeAudio, type Observation, type Utterance } from './db';
+import { db, storeAudio, type Observation, type PositionLookup, type Utterance } from './db';
 import { interpret } from './interpret';
 import {
   HAND_ACCURACY,
@@ -17,7 +17,10 @@ import {
   recordedPlace,
   retry,
   setSkipExport,
+  submitText,
 } from './observations';
+import { UNKNOWN_PLACE_ACCURACY } from './spokenPlace';
+import { distanceMeters } from './interpret';
 
 // De wachtrij van begin tot eind, met een nagebootst model: wat het model
 // teruggeeft gaat door de echte validatie (parseResponse) en wordt echt in de
@@ -47,6 +50,16 @@ vi.mock('./interpret', async (importOriginal) => {
     }),
   };
 });
+
+// GPS en gebied: de positie komt binnen wanneer de test dat zegt
+const gpsLookup = vi.hoisted(() => ({
+  resolve: (_lookup: PositionLookup) => {},
+}));
+vi.mock('./location.svelte', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./location.svelte')>()),
+  currentPosition: () => new Promise<PositionLookup>((resolve) => (gpsLookup.resolve = resolve)),
+}));
+vi.mock('./area', () => ({ attachArea: async () => false }));
 
 const SESSION = 'wandeling';
 const POSITION = { lat: 52.0, lon: 5.9, accuracy: 8, fixedAt: 0 };
@@ -224,6 +237,95 @@ describe('plek met de hand in de review', () => {
     const place = placeByHand({}, 0, 52.1, 5.1);
     expect(place.recordedPosition).toBeNull();
     expect(recordedPlace(place)).toEqual({ position: undefined, recordedPosition: undefined });
+  });
+});
+
+describe('plek uit de uitspraak', () => {
+  const southInput = {
+    species_name: 'Buizerd',
+    species_id: 82,
+    count: 1,
+    place_description: '500 m zuid van hier',
+    place_distance_m: 500,
+    place_direction: 'Z',
+  };
+
+  it('"500 m zuid": verschuift de plek, de GPS blijft bewaard, niet onzeker', async () => {
+    const utterance = await say('buizerd overvliegend, 500 m zuid van hier', [
+      'add_observation',
+      southInput,
+    ]);
+    const [obs] = await listObservations(SESSION);
+    expect(distanceMeters(POSITION, obs.position!)).toBeCloseTo(500, -1);
+    expect(obs.position!.lat).toBeLessThan(POSITION.lat);
+    expect(obs.position!.accuracy).toBe(150);
+    expect(obs).toMatchObject({ recordedPosition: POSITION, placedByVoice: true });
+    expect(utterance.result).toBe('saved');
+
+    // Terug naar de opgenomen plek in de review
+    await editObservation(obs.id, recordedPlace(obs));
+    const [back] = await listObservations(SESSION);
+    expect(back.position).toEqual(POSITION);
+    expect(back).not.toHaveProperty('placedByVoice');
+  });
+
+  it('"aan de overkant van de rivier": ruimere plek, onzeker om op de kaart te zetten', async () => {
+    const utterance = await say('blauwe reiger aan de overkant van de rivier', [
+      'add_observation',
+      { species_id: VINK, count: 1, place_description: 'aan de overkant van de rivier' },
+    ]);
+    const [obs] = await listObservations(SESSION);
+    expect(obs.position).toMatchObject({ lat: POSITION.lat, accuracy: UNKNOWN_PLACE_ACCURACY });
+    expect(obs.uncertain).toBe(true);
+    expect(obs.uncertainReason).toMatch(/overkant van de rivier.*kaart/);
+    expect(utterance.result).toBe('uncertain');
+  });
+
+  it('houdt de twijfel van het model en voegt de plek eraan toe', async () => {
+    await say('vink of keep, ergens daar', [
+      'add_observation',
+      {
+        species_id: VINK,
+        count: 1,
+        uncertain: true,
+        uncertain_reason: 'kan ook keep zijn',
+        place_description: 'ergens daar',
+      },
+    ]);
+    const [obs] = await listObservations(SESSION);
+    expect(obs.uncertainReason).toMatch(/^kan ook keep zijn; Plek gezegd: "ergens daar"/);
+  });
+
+  it('later verbeterd ("die zat 300 m noord"): rekent vanaf de GPS, niet vanaf de vorige plek', async () => {
+    await say('buizerd 500 m zuid', ['add_observation', southInput]);
+    await say('die buizerd zat eigenlijk 300 m noord', [
+      'update_observation',
+      { ref: 1, place_description: '300 m noord', place_distance_m: 300, place_direction: 'N' },
+    ]);
+    const [obs] = await listObservations(SESSION);
+    expect(distanceMeters(POSITION, obs.position!)).toBeCloseTo(300, -1);
+    expect(obs.position!.lat).toBeGreaterThan(POSITION.lat);
+    expect(obs.recordedPosition).toEqual(POSITION);
+
+    // Ongedaan maken zet de vorige plek terug
+    await say('ongedaan maken', ['undo', {}]);
+    const [undone] = await listObservations(SESSION);
+    expect(undone.position!.lat).toBeLessThan(POSITION.lat);
+    expect(undone.spokenPlace?.text).toBe('500 m zuid van hier');
+  });
+
+  it('GPS komt pas na het verwerken binnen: de plek wordt alsnog uitgerekend', async () => {
+    model.respond = () => toolResponse(['add_observation', southInput]);
+    await submitText(SESSION, 'buizerd 500 m zuid van hier');
+    await vi.waitFor(async () => expect(await db.observations.count()).toBe(1));
+    expect((await listObservations(SESSION))[0].position).toBeUndefined();
+
+    gpsLookup.resolve({ source: 'fresh', position: POSITION, waitMs: 100 });
+    await vi.waitFor(async () => {
+      const [obs] = await listObservations(SESSION);
+      expect(obs.position?.accuracy).toBe(150);
+      expect(obs.recordedPosition).toEqual(POSITION);
+    });
   });
 });
 

@@ -47,6 +47,14 @@
       achter elkaar inspreken; na drie minuten stopt de opname vanzelf, en dan begin je gewoon een
       nieuwe.
     </p>
+    <p>
+      Zit de vogel verderop, zeg dan waar: "buizerd overvliegend, vijfhonderd meter zuid van hier".
+      Met een afstand én een windrichting zet de app hem zelf op de goede plek, met een ruimere
+      marge, want afstanden schatten is lastig. Zeg je alleen iets als "blauwe reiger aan de
+      overkant van de rivier", dan kan de app de kaart niet lezen: de waarneming wordt onzeker, en
+      thuis zet je hem op de kaart. "Links" of "voor me" weet de app niet; zeg liever een
+      windrichting.
+    </p>
   </div>
 </section>
 
@@ -65,7 +73,8 @@
       in één keer ingesproken en is er maar één van geworden, dan maak je met Kopiëren een tweede
       waarneming met dezelfde tijd en plek, en pas je daarvan de soort en het aantal aan. Zat de
       vogel ergens anders dan waar jij stond, dan zet je met Locatie aanpassen de plek op een
-      kaartje; de plek waar je het insprak blijft bewaard.
+      kaartje; de plek waar je het insprak blijft bewaard. Was de plek de enige twijfel, dan is de
+      waarneming daarna niet meer onzeker.
     </p>
   </div>
 </section>
