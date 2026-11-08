@@ -3,6 +3,7 @@ import { cloudflare } from '@cloudflare/vite-plugin';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { privacyPage } from './build/privacyPage.ts';
 
 // Welke code draait er? Bij elke uitspraak bewaard, zodat fouten later bij
 // een versie te zoeken zijn. Workers Builds geeft de commit mee; lokaal
@@ -33,6 +34,8 @@ export default defineConfig({
     // Draait de Worker (worker/index.ts) mee in de dev server, zodat
     // `npm run dev` zowel de app als /api lokaal serveert.
     cloudflare(),
+    // Losse privacypagina op /privacy, voor Google Play (build/privacyPage.ts)
+    privacyPage(),
     // Maakt het manifest en een service worker (Workbox) die de app-bestanden
     // cachet, zodat de app installeerbaar is en ook zonder netwerk opent.
     VitePWA({
@@ -41,7 +44,7 @@ export default defineConfig({
       registerType: 'prompt',
       workbox: {
         // API-verzoeken nooit via de cache of de index.html-fallback laten lopen
-        navigateFallbackDenylist: [/^\/api\//],
+        navigateFallbackDenylist: [/^\/api\//, /^\/privacy/],
         // Ook afbeeldingen (de meeuwen van de zeemeeuw-grap), zodat ze offline werken
         globPatterns: ['**/*.{js,css,html,png,svg}'],
       },
