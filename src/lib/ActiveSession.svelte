@@ -9,6 +9,8 @@
   import SessionLog from './SessionLog.svelte';
   import { syncWalkService } from './walkService';
   import { createTalkButton } from './talkButton';
+  import { trektelEnabled } from './trektel';
+  import { startTrektel, stopTrektel, trektel, trektelSupported } from './trektelRecorder.svelte';
 
   let { session }: { session: Session } = $props();
 
@@ -25,6 +27,7 @@
       stopTracking();
       // Wandeling gestopt tijdens een opname: microfoon uit, opname bewaren
       if (recorder.status === 'recording') finishRecording();
+      stopTrektel();
     };
   });
 
@@ -116,6 +119,49 @@
     };
   });
 
+  // Trektelmodus (docs/plan-trektelmodus.md): alleen als hij bij Instellingen aanstaat
+  const trektelOn = trektelEnabled() && trektelSupported();
+
+  async function beginTrektel() {
+    if (recorder.status !== 'idle') return;
+    syncWalkService(session.id);
+    const sessionId = session.id;
+    const started = await startTrektel({
+      onChunkStart: () => currentPosition(),
+      onChunk: (recording, chunkLookup) =>
+        submitRecording(sessionId, recording, chunkLookup, { trektel: true }),
+      onStopped: () => vibrate('trektelStopped'),
+    });
+    if (started) vibrate('recording');
+  }
+
+  function endTrektel() {
+    stopTrektel();
+    vibrate('recorded');
+  }
+
+  // Lopende tijd van de trektelling (minuten en seconden)
+  let trektelElapsed = $state(0);
+  $effect(() => {
+    if (trektel.status !== 'running') return;
+    const timer = setInterval(
+      () => (trektelElapsed = Date.now() - (trektel.startedAt ?? Date.now())),
+      1000,
+    );
+    return () => {
+      clearInterval(timer);
+      trektelElapsed = 0;
+    };
+  });
+
+  function clock(ms: number): string {
+    const total = Math.floor(ms / 1000);
+    const hours = Math.floor(total / 3600);
+    const mm = String(Math.floor((total % 3600) / 60)).padStart(hours ? 2 : 1, '0');
+    const ss = String(total % 60).padStart(2, '0');
+    return hours ? `${hours}:${mm}:${ss}` : `${mm}:${ss}`;
+  }
+
   const micLabels: Record<typeof recorder.status, string> = {
     idle: 'Tik of houd vast om in te spreken',
     starting: 'Microfoon aanzetten…',
@@ -181,36 +227,62 @@
   class:hidden={typing && recorder.status !== 'recording'}
   bind:clientHeight={barHeight}
 >
-  <button
-    class="talk"
-    class:recording={recorder.status === 'recording'}
-    disabled={recorder.status === 'unsupported'}
-    onpointerdown={press}
-    onpointerup={release}
-    onpointercancel={cancel}
-    oncontextmenu={(event) => event.preventDefault()}
-  >
-    <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true">
-      {#if recorder.status === 'recording'}
+  {#if trektel.status === 'running'}
+    <button class="talk recording" onclick={endTrektel}>
+      <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true">
         <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
-      {:else}
-        <rect x="9" y="2.5" width="6" height="12" rx="3" fill="currentColor" />
-        <path
-          d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        />
+      </svg>
+      <span>Stop trektelling · {clock(trektelElapsed)}</span>
+    </button>
+    <p class="mic listening">
+      <span class="ear" class:speaking={trektel.speaking}></span>
+      {trektel.speaking ? 'Hoort spraak' : 'Luistert'} · {trektel.sent}
+      {trektel.sent === 1 ? 'stuk' : 'stukken'} verwerkt
+    </p>
+  {:else}
+    {#if trektelOn}
+      <button
+        class="btn secondary block trektel-start"
+        disabled={recorder.status !== 'idle' || trektel.status !== 'idle'}
+        onclick={beginTrektel}
+      >
+        {trektel.status === 'starting' ? 'Microfoon aanzetten…' : 'Trektelling starten'}
+      </button>
+      {#if trektel.error}
+        <p class="mic denied">{trektel.error}</p>
       {/if}
-    </svg>
-    <span>
-      {recorder.status === 'recording' ? `Stop · ${Math.floor(elapsed / 1000)} s` : 'Inspreken'}
-    </span>
-  </button>
-  <p class="mic {recorder.status}">
-    {micLabels[recorder.status]}
-  </p>
+    {/if}
+    <button
+      class="talk"
+      class:recording={recorder.status === 'recording'}
+      disabled={recorder.status === 'unsupported'}
+      onpointerdown={press}
+      onpointerup={release}
+      onpointercancel={cancel}
+      oncontextmenu={(event) => event.preventDefault()}
+    >
+      <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true">
+        {#if recorder.status === 'recording'}
+          <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
+        {:else}
+          <rect x="9" y="2.5" width="6" height="12" rx="3" fill="currentColor" />
+          <path
+            d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        {/if}
+      </svg>
+      <span>
+        {recorder.status === 'recording' ? `Stop · ${Math.floor(elapsed / 1000)} s` : 'Inspreken'}
+      </span>
+    </button>
+    <p class="mic {recorder.status}">
+      {micLabels[recorder.status]}
+    </p>
+  {/if}
 </div>
 
 <style>
@@ -356,6 +428,31 @@
     /* Ook foutmeldingen (geen microfoon): in het veld leesbaar, minstens 16 px */
     font-size: 1rem;
     color: var(--muted);
+  }
+
+  .trektel-start {
+    margin-bottom: 0.75rem;
+  }
+
+  .mic.listening {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--fg);
+  }
+
+  /* Lampje: brandt als de app spraak hoort, zodat je ziet dat hij luistert */
+  .ear {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 100ms;
+  }
+
+  .ear.speaking {
+    background: var(--breast);
   }
 
   form {

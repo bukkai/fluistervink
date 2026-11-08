@@ -13,6 +13,7 @@
   import { isNativeApp, nativeAppVersion } from './native';
   import RecordingSettings from './RecordingSettings.svelte';
   import ShareSettings from './ShareSettings.svelte';
+  import TrektelSettings from './TrektelSettings.svelte';
 
   let code = $state(getAccessCode());
   let status = $state<'idle' | 'busy' | 'ok' | 'error'>('idle');
@@ -119,6 +120,8 @@
 <ShareSettings />
 
 <RecordingSettings />
+
+<TrektelSettings />
 
 <p class="version">
   Fluistervink{CHANNEL === 'beta' ? ' beta' : ''} · versie {APP_VERSION}{#if appVersion}<br

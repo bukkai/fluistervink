@@ -66,6 +66,7 @@ export async function submitRecording(
   sessionId: string,
   recording: Recording,
   lookup: Promise<PositionLookup>,
+  options: { trektel?: boolean } = {},
 ): Promise<void> {
   await submit(
     {
@@ -73,13 +74,17 @@ export async function submitRecording(
       recordedAt: recording.startedAt,
       audio: await storeAudio(recording.audio),
       audioDurationMs: recording.durationMs,
+      ...(options.trektel && { trektel: true }),
     },
     lookup,
   );
 }
 
 async function submit(
-  fields: Pick<Utterance, 'sessionId' | 'recordedAt' | 'transcript' | 'audio' | 'audioDurationMs'>,
+  fields: Pick<
+    Utterance,
+    'sessionId' | 'recordedAt' | 'transcript' | 'audio' | 'audioDurationMs' | 'trektel'
+  >,
   lookup: Promise<PositionLookup>,
 ): Promise<void> {
   const id = crypto.randomUUID();
