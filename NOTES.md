@@ -45,6 +45,8 @@ Feedback opgehaald op 6 nov: 8 testers en installaties met gedeelde wandelingen 
 
 Roadmap in `docs/lancering.md`: eerst 14 dagen een gesloten test met minstens 12 testers (regel van Google voor nieuwe persoonlijke accounts), dan productietoegang aanvragen; openbaar rond begin december. Logo is bij een artiest aangevraagd; mag tijdens de gesloten test als nieuwe app-versie.
 
+**Stand 9 nov:** privacypagina live op `fluistervink.nl/privacy` (#170, release naar stable gedaan), winkelvermelding en gegevensveiligheid ingevuld (`docs/play-store/`), eerste release in de gesloten test ingediend ter beoordeling. Daarna: deelnamelink in `PLAY_TEST_LINKS.stable`, testers werven (15–20). Regel voor de kwaliteitsronde van 8 nov ontbreekt nog in het logboek van `docs/kwaliteitsronde.md`.
+
 ## Roadmap naar v1.0 (13 okt)
 
 Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de app installeren, een hele wandeling gebruiken zonder naar het scherm te kijken, en thuis zonder gedoe naar waarneming.nl exporteren.

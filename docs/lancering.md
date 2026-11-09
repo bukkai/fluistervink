@@ -18,8 +18,8 @@ Grove planning: gesloten test vanaf ~10 nov, aanvragen ~24 nov, openbaar rond be
 
 Eigenaar:
 
-- [ ] `npm run release`: welkom (#168) en back-up (#167) naar `fluistervink.nl`.
-- [ ] Play Console → Testen → **Gesloten tests**: track aanmaken (bv. "Stabiel"), de stabiele AAB van de laatste tag uploaden en uitrollen (`docs/google-play.md`, stap 5.4).
+- [x] `npm run release`: welkom (#168) en back-up (#167) naar `fluistervink.nl`.
+- [x] Play Console → Testen → **Gesloten tests**: track aanmaken (bv. "Stabiel"), de stabiele AAB van de laatste tag uploaden en uitrollen (`docs/google-play.md`, stap 5.4).
 - [ ] Deelnamelink van die track in `PLAY_TEST_LINKS.stable` (`src/lib/invite.ts`).
 - [ ] 15–20 testers werven (Gmail-adressen in de lijst van de gesloten test) en uitnodigen vanaf Developer op `fluistervink.nl`.
 - [x] Contactadres voor de Play Store en de privacypagina: `info@fluistervink.nl` (bestaat sinds 9 nov).
@@ -27,7 +27,7 @@ Eigenaar:
 
 Claude (in PR's):
 
-- [ ] **Privacypagina als losse pagina** (`/privacy`), uit dezelfde bron als `#privacy`, zodat Google hem kan lezen zonder JavaScript. Plus wat de Play-regels vragen: wie de app maakt, contact, hoe lang gegevens blijven, je rechten (AVG).
+- [x] **Privacypagina als losse pagina** (`/privacy`), uit dezelfde bron als `#privacy`, zodat Google hem kan lezen zonder JavaScript. Plus wat de Play-regels vragen: wie de app maakt, contact, hoe lang gegevens blijven, je rechten (AVG).
 - [x] **Teksten voor de winkelvermelding** in `docs/play-store/README.md`: korte beschrijving (80 tekens), lange beschrijving (tot 4000), categorie. Noem de native functies (trillen met scherm uit, melding tijdens een sessie): Google wijst apps die alleen een website tonen soms af.
 - [x] **Antwoorden voor Gegevensveiligheid** (`docs/play-store/README.md`), uit de code afgeleid: audio, precieze locatie, installatie-id, app-activiteit, diagnose (log); verwerkers OpenAI, Anthropic, Cloudflare, Google (Play Integrity); versleuteld onderweg; wissen via feedback.
 - [ ] **Tekst voor de verklaring Foreground service** (`FOREGROUND_SERVICE_LOCATION`): waarom, wat de gebruiker ziet. De video (een sessie met de melding, niet-openbaar op YouTube) neemt de eigenaar op.
