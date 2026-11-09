@@ -53,6 +53,59 @@ describe('parseResponse', () => {
     expect(warnings).toEqual([]);
   });
 
+  it('zoekt een gezegde dwaalgast op en maakt hem onzeker', () => {
+    const { actions, rejected, warnings } = parseResponse(
+      toolResponse([
+        'add_observation',
+        {
+          species_name: 'Vogel onbekend',
+          species_id: 18926,
+          unlisted_species: 'roodkopklauwier',
+          count: 1,
+          uncertain: true,
+          uncertain_reason: 'Gezegd: roodkopklauwier (niet in de lijst)',
+        },
+      ]),
+      [],
+    );
+    expect(rejected).toEqual([]);
+    expect(warnings).toEqual([]);
+    expect(actions[0]).toMatchObject({
+      type: 'add',
+      fields: {
+        speciesId: 53,
+        uncertain: true,
+        uncertainReason: 'Dwaalgast, niet in de vaste lijst (gezegd: "roodkopklauwier")',
+      },
+    });
+  });
+
+  it('houdt de verzamelsoort als de dwaalgast niet te vinden is', () => {
+    const { actions, warnings } = parseResponse(
+      toolResponse([
+        'add_observation',
+        {
+          species_name: 'Vogel onbekend',
+          species_id: 18926,
+          unlisted_species: 'albatros',
+          count: 1,
+          uncertain: true,
+        },
+      ]),
+      [],
+    );
+    expect(actions[0]).toMatchObject({ type: 'add', fields: { speciesId: 18926 } });
+    expect(warnings).toEqual(['add_observation: "albatros" niet gevonden bij de dwaalgasten']);
+  });
+
+  it('weigert een dwaalgast-ID dat het model zelf kiest', () => {
+    const { rejected } = parseResponse(
+      toolResponse(['add_observation', { species_id: 53, count: 1 }]),
+      [],
+    );
+    expect(rejected).toHaveLength(1);
+  });
+
   it('weigert een soort-ID dat niet in de lijst staat', () => {
     const { actions, rejected } = parseResponse(
       toolResponse(['add_observation', { species_id: 999999, count: 1 }]),
