@@ -109,6 +109,11 @@ export interface Utterance {
   /** Een stuk uit de trektelmodus (de app knipte zelf), niet met de knop ingesproken */
   trektel?: true;
   /**
+   * Bij feedback die midden in een uitspraak met waarnemingen zat: de
+   * uitspraak waar hij uit komt (die heeft de opname en het hele transcript)
+   */
+  fromUtteranceId?: string;
+  /**
    * Uitkomst na verwerking; bepaalt later ook het trilpatroon.
    * `ignored`: geen waarneming in de uitspraak (of niet begrepen).
    * `note`: opgeslagen als dev note.

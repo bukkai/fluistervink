@@ -147,7 +147,7 @@ describe('parseResponse', () => {
       toolResponse(['undo', {}], ['redo', {}], ['add_dev_note', { text: 'x' }]),
       [],
     );
-    expect(actions).toEqual([{ type: 'undo' }, { type: 'redo' }, { type: 'dev_note' }]);
+    expect(actions).toEqual([{ type: 'undo' }, { type: 'redo' }, { type: 'dev_note', text: 'x' }]);
   });
 });
 

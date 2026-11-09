@@ -291,7 +291,7 @@ for (const u of utterances) {
   else if (u.transcript === undefined) skip('nog niet verstaan');
   else if (u.status !== 'done') skip('mislukt of niet verwerkt');
   else if (u.undone) skip('ongedaan gemaakt');
-  else if (devNoteText(u.transcript) !== undefined) skip('dev note ("dev note …")');
+  else if (!u.trektel && devNoteText(u.transcript) !== undefined) skip('dev note ("dev note …")');
   else if (!u.transcript.trim()) skip('niets verstaan');
   else if (!u.llmOutput) skip('geen antwoord van het model bewaard');
   else items.push({ u, expected: expectedFor(u), context: contextFor(u) });
@@ -333,7 +333,8 @@ async function run(item) {
     const { text, timing } = await transcribe(fromDataUrl(u.audioData), { model: opts.stt });
     result.transcript = text;
     result.sttMs = timing.requestMs;
-    if (devNoteText(text) !== undefined) return { ...result, actions: [{ type: 'dev_note' }] };
+    if (!u.trektel && devNoteText(text) !== undefined)
+      return { ...result, actions: [{ type: 'dev_note' }] };
     if (!text) return { ...result, actions: [] };
   }
   if (model === 'origineel') {
@@ -442,7 +443,11 @@ function compare(expected, got, context) {
   if (expected.devNote && !gotNote) diffs.push('dev note gemist');
   const nothingExpected =
     !expected.adds.length && !expected.updates.length && !expected.deletes.length && !expected.undo;
-  if (gotNote && !expected.devNote && !nothingExpected) diffs.push('onterecht als dev note');
+  // Feedback naast waarnemingen wordt een eigen uitspraak; alleen fout als
+  // de hele uitspraak feedback werd terwijl er waarnemingen in zaten
+  const onlyNote = got.actions.every((a) => a.type === 'dev_note');
+  if (gotNote && !expected.devNote && !nothingExpected && onlyNote)
+    diffs.push('onterecht als dev note');
   for (const r of got.rejected ?? []) diffs.push(`afgewezen: ${r}`);
 
   return {
