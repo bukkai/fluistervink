@@ -90,6 +90,33 @@ export async function currentPosition(): Promise<PositionLookup> {
   return latest ? result('last_known', latest, error) : result('none', undefined, error);
 }
 
+/**
+ * Eén losse meting, buiten een sessie: de knop "Mijn plek nu" op het kaartje
+ * van Locatie aanpassen. Geeft bij een fout een zin voor op het scherm.
+ */
+export function positionNow(): Promise<Position> {
+  return new Promise((resolve, reject) => {
+    if (!('geolocation' in navigator)) {
+      reject(new Error('Deze telefoon of browser geeft geen locatie.'));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (fix) => resolve(toPosition(fix)),
+      (error) => {
+        logEvent('gps_error', { code: error.code, message: error.message, by: 'here' });
+        reject(
+          new Error(
+            error.code === error.PERMISSION_DENIED
+              ? 'De app mag je locatie niet gebruiken. Zet dat aan bij de instellingen van je telefoon.'
+              : 'Je plek is niet gevonden. Probeer het buiten nog eens, of tik op de kaart.',
+          ),
+        );
+      },
+      { enableHighAccuracy: true, maximumAge: FRESH_MS, timeout: 20_000 },
+    );
+  });
+}
+
 function toPosition(fix: GeolocationPosition): Position {
   return {
     lat: fix.coords.latitude,

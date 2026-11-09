@@ -93,8 +93,8 @@
     !!original.spokenPlace &&
     original.uncertainReason === placeReason(original.spokenPlace);
 
-  function setPlace(lat: number, lon: number) {
-    place = placeByHand(place, original.observedAt, lat, lon);
+  function setPlace(lat: number, lon: number, accuracy?: number) {
+    place = placeByHand(place, original.observedAt, lat, lon, accuracy);
     // Plek gezet: die twijfel is opgelost
     if (onlyPlaceDoubt) uncertain = false;
   }

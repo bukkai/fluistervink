@@ -144,10 +144,23 @@ export type { Place };
  * Plek met de hand gezet (tikken of slepen op de kaart). De GPS-positie
  * blijft bewaard in `recordedPosition`, ook als de plek vaker verzet wordt.
  * Als meettijd de tijd van de waarneming, zodat er geen "positie oud" staat.
+ * Met "Mijn plek nu" op het kaartje de nauwkeurigheid van die GPS-meting
+ * (afgerond, niet beter dan HAND_ACCURACY).
  */
-export function placeByHand(current: Place, observedAt: number, lat: number, lon: number): Place {
+export function placeByHand(
+  current: Place,
+  observedAt: number,
+  lat: number,
+  lon: number,
+  accuracy = HAND_ACCURACY,
+): Place {
   return {
-    position: { lat, lon, accuracy: HAND_ACCURACY, fixedAt: observedAt },
+    position: {
+      lat,
+      lon,
+      accuracy: Math.max(HAND_ACCURACY, Math.round(accuracy)),
+      fixedAt: observedAt,
+    },
     placedByVoice: undefined,
     recordedPosition:
       current.recordedPosition !== undefined

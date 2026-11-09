@@ -279,6 +279,11 @@ describe('plek met de hand in de review', () => {
     expect(saved).not.toHaveProperty('recordedPosition');
   });
 
+  it('Mijn plek nu: nauwkeurigheid van de meting, afgerond en niet beter dan met de hand', () => {
+    expect(placeByHand({}, 0, 52.1, 5.1, 23.6).position?.accuracy).toBe(24);
+    expect(placeByHand({}, 0, 52.1, 5.1, 3).position?.accuracy).toBe(HAND_ACCURACY);
+  });
+
   it('zonder GPS: terug betekent weer geen locatie', () => {
     const place = placeByHand({}, 0, 52.1, 5.1);
     expect(place.recordedPosition).toBeNull();
