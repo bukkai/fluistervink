@@ -36,3 +36,8 @@ updates:
     groups:
       gradle:
         patterns: ['*']
+    ignore:
+      # Gradle 9.6+ werkt niet met de Android-plugin 8.x (gebruikt een interne
+      # API die eruit is). Pas samen met de Android-plugin 9 ophogen.
+      - dependency-name: gradle-wrapper
+        update-types: [version-update:semver-major]
