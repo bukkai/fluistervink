@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import {
     ApiError,
     getAccessCode,
@@ -53,11 +52,6 @@
     await test();
   }
 
-  // Meteen laten zien of de toegang werkt (met code of als installatie)
-  onMount(() => {
-    test();
-  });
-
   async function test() {
     status = 'busy';
     try {
@@ -101,29 +95,6 @@
   </section>
 {/if}
 
-<section class="card">
-  <div class="card-head"><h2>Verbinding</h2></div>
-  <div class="card-body">
-    {#if message}
-      <p class="message {status}">{message}</p>
-    {/if}
-    <details open={!!code}>
-      <summary>Code van de ontwikkelaar</summary>
-      <form onsubmit={save}>
-        <label>
-          Code
-          <input type="password" bind:value={code} autocomplete="off" />
-        </label>
-        <p class="hint">
-          Alleen voor de ontwikkelaar; de app werkt zonder code. Leeg laten en opslaan haalt de code
-          weg.
-        </p>
-        <button class="btn" disabled={status === 'busy'}>Opslaan en testen</button>
-      </form>
-    </details>
-  </div>
-</section>
-
 <BackupSettings />
 
 <ShareSettings />
@@ -136,6 +107,24 @@
   Fluistervink{CHANNEL === 'beta' ? ' beta' : ''} · versie {APP_VERSION}{#if appVersion}<br
     />Android-app {appVersion}{/if}
 </p>
+
+<details class="owner-code">
+  <summary>Code van de ontwikkelaar</summary>
+  <form onsubmit={save}>
+    <label>
+      Code
+      <input type="password" bind:value={code} autocomplete="off" />
+    </label>
+    <p class="hint">
+      Alleen voor de ontwikkelaar; de app werkt zonder code. Leeg laten en opslaan haalt de code
+      weg.
+    </p>
+    <button class="btn" disabled={status === 'busy'}>Opslaan en testen</button>
+    {#if message}
+      <p class="message {status}">{message}</p>
+    {/if}
+  </form>
+</details>
 
 <style>
   form {
@@ -156,7 +145,16 @@
   }
 
   .message {
-    margin: 0 0 0.75rem;
+    margin: 0;
+  }
+
+  .owner-code {
+    margin: 0 0 1.5rem;
+    text-align: center;
+  }
+
+  .owner-code form {
+    text-align: left;
   }
 
   summary {
@@ -177,7 +175,7 @@
   }
 
   .version {
-    margin: 1.5rem 0 1rem;
+    margin: 1.5rem 0 0.5rem;
     font-size: 0.8rem;
     text-align: center;
     color: var(--muted);
