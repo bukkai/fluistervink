@@ -2,7 +2,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import worker from './index';
-import { integrityNonce } from './install';
+import { installName, integrityNonce, putInstall, signInstallToken } from './install';
 
 // De proxy in Node, met een nep-KV in het geheugen, D1 als SQLite in het
 // geheugen (zodat de echte SQL getest wordt) en een nagebootste fetch
@@ -11,7 +11,19 @@ import { integrityNonce } from './install';
 // Vitest 5.)
 
 const OWNER_CODE = 'code-van-de-eigenaar';
-const ANNA_CODE = 'code-van-anna';
+const INSTALL_SECRET = 'geheim-voor-tokens';
+// Anna en Piet zijn installaties (alleen de eigenaar heeft een code)
+const ANNA_ID = 'a0000000-0000-4000-8000-00000000a11a';
+const PIET_ID = 'b0000000-0000-4000-8000-00000000b1e7';
+const ANNA = installName(ANNA_ID);
+const PIET = installName(PIET_ID);
+let ANNA_CODE: string;
+let PIET_CODE: string;
+
+beforeAll(async () => {
+  ANNA_CODE = await signInstallToken(ANNA_ID, INSTALL_SECRET);
+  PIET_CODE = await signInstallToken(PIET_ID, INSTALL_SECRET);
+});
 
 // Bestaat alleen in de Workers-runtime, niet in Node
 beforeAll(() => {
@@ -88,7 +100,7 @@ beforeEach(() => {
   testersKv = memoryKv();
   env = {
     ACCESS_CODE: OWNER_CODE,
-    ACCESS_CODES: JSON.stringify({ anna: ANNA_CODE }),
+    INSTALL_SECRET,
     OPENAI_API_KEY: 'sk-openai-geheim',
     ANTHROPIC_API_KEY: 'sk-ant-geheim',
     FEEDBACK: kv,
@@ -145,23 +157,19 @@ describe('toegangscode', () => {
     expect((await call('/api/ping', { code: 'geraden' })).status).toBe(401);
   });
 
-  it('herkent de eigenaar en de testers', async () => {
+  it('herkent de eigenaar en de installaties', async () => {
     expect(await (await call('/api/ping', { code: OWNER_CODE })).json()).toEqual({
       ok: true,
       tester: 'eigenaar',
     });
-    expect(await (await call('/api/ping')).json()).toEqual({ ok: true, tester: 'anna' });
+    expect(await (await call('/api/ping')).json()).toEqual({ ok: true, tester: ANNA });
   });
 
-  it('laat een tester met de naam "eigenaar" niet binnen', async () => {
-    env.ACCESS_CODES = JSON.stringify({ eigenaar: 'nep-eigenaar' });
-    expect((await call('/api/ping', { code: 'nep-eigenaar' })).status).toBe(401);
-  });
-
-  it('blijft werken voor de eigenaar als ACCESS_CODES kapot is', async () => {
-    env.ACCESS_CODES = '{kapot';
-    expect((await call('/api/ping', { code: OWNER_CODE })).status).toBe(200);
-    expect((await call('/api/ping')).status).toBe(401);
+  it('weigert elke code zonder ACCESS_CODE', async () => {
+    delete env.ACCESS_CODE;
+    expect((await call('/api/ping', { code: OWNER_CODE })).status).toBe(401);
+    expect((await call('/api/ping', { code: '' })).status).toBe(401);
+    expect((await call('/api/ping')).status).toBe(200);
   });
 
   it('gaat zonder geldige code nooit naar buiten', async () => {
@@ -174,7 +182,7 @@ describe('toegangscode', () => {
     const anna = await call('/api/messages', { method: 'POST', body: '{}' });
     expect(anna.status).toBe(429);
     expect(upstream).not.toHaveBeenCalled();
-    expect(limited.counts.get('anna')).toBe(1);
+    expect(limited.counts.get(ANNA)).toBe(1);
     // De eigenaar komt wel door (hier tot de controle van het verzoek zelf)
     const owner = await call('/api/messages', { code: OWNER_CODE, method: 'POST', body: '{}' });
     expect(owner.status).toBe(400);
@@ -185,8 +193,8 @@ describe('toegangscode', () => {
     limited.max = 0;
     const put = await call('/api/feedback/sessions/abc', { method: 'PUT', body: '{"a":1}' });
     expect(put.status).toBe(429);
-    expect(limited.counts.get('share:anna')).toBe(1);
-    expect(await kv.get('anna/sessions/abc')).toBeNull();
+    expect(limited.counts.get(`share:${ANNA}`)).toBe(1);
+    expect(await kv.get(`${ANNA}/sessions/abc`)).toBeNull();
     const owner = await call('/api/feedback/sessions/abc', {
       code: OWNER_CODE,
       method: 'PUT',
@@ -210,7 +218,6 @@ describe('/api/install (aanmelden zonder code)', () => {
   const ID = '3f9a2b1c-0000-4000-8000-000000000001';
 
   beforeEach(() => {
-    env.INSTALL_SECRET = 'geheim-voor-tokens';
     env.TURNSTILE_SECRET = 'turnstile-geheim';
     env.TURNSTILE_SITE_KEY = '0x-site-key';
   });
@@ -326,8 +333,8 @@ describe('/api/install (aanmelden zonder code)', () => {
 
     expect((await setName('x'.repeat(41))).status).toBe(400);
     expect((await setName('nee\u0000')).status).toBe(400);
-    // Een tester met code heeft al een naam
-    expect((await setName('Piet', ANNA_CODE)).status).toBe(403);
+    // De eigenaar heeft al een naam
+    expect((await setName('Piet', OWNER_CODE)).status).toBe(403);
 
     expect((await setName('')).status).toBe(200);
     expect((await list())?.displayName).toBeUndefined();
@@ -341,13 +348,13 @@ describe('/api/install (aanmelden zonder code)', () => {
     expect((await call('/api/testers', { code: token })).status).toBe(403);
   });
 
-  it('laat geen tester aanmaken met een naam als een installatie', async () => {
+  it('maakt geen testers met een code meer aan', async () => {
     const response = await call('/api/testers', {
       code: OWNER_CODE,
       method: 'POST',
-      body: JSON.stringify({ name: 'app-3f9a2b1c' }),
+      body: JSON.stringify({ name: 'anna' }),
     });
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(404);
   });
 
   describe('Play Integrity', () => {
@@ -709,7 +716,7 @@ describe('/api/feedback (gedeelde gegevens)', () => {
 
   it('bewaart een sessie onder de naam van de tester', async () => {
     expect((await put('sessions/sessie-1', '{"ok":true}')).status).toBe(200);
-    const entry = kv.store.get('anna/sessions/sessie-1');
+    const entry = kv.store.get(`${ANNA}/sessions/sessie-1`);
     expect(new TextDecoder().decode(entry?.value)).toBe('{"ok":true}');
     expect(entry?.metadata).toMatchObject({ contentType: 'application/json', bytes: 11 });
   });
@@ -728,17 +735,19 @@ describe('/api/feedback (gedeelde gegevens)', () => {
   it('laat een tester niets lezen of wissen', async () => {
     await put('sessions/w', '{}');
     expect((await call('/api/feedback/list')).status).toBe(403);
-    expect((await call('/api/feedback/file?key=anna/sessions/w')).status).toBe(403);
-    expect((await call('/api/feedback/tester?name=anna', { method: 'DELETE' })).status).toBe(403);
+    expect((await call(`/api/feedback/file?key=${ANNA}/sessions/w`)).status).toBe(403);
+    expect((await call(`/api/feedback/tester?name=${ANNA}`, { method: 'DELETE' })).status).toBe(
+      403,
+    );
     expect(kv.store.size).toBe(1);
   });
 
   it('laat de eigenaar alles ophalen', async () => {
     await put('sessions/w', '{"a":1}');
     const list = await (await call('/api/feedback/list', { code: OWNER_CODE })).json();
-    expect(list).toEqual({ keys: [expect.objectContaining({ key: 'anna/sessions/w' })] });
+    expect(list).toEqual({ keys: [expect.objectContaining({ key: `${ANNA}/sessions/w` })] });
 
-    const file = await call('/api/feedback/file?key=anna/sessions/w', { code: OWNER_CODE });
+    const file = await call(`/api/feedback/file?key=${ANNA}/sessions/w`, { code: OWNER_CODE });
     expect(file.headers.get('Content-Type')).toBe('application/json');
     expect(await file.text()).toBe('{"a":1}');
     expect((await call('/api/feedback/file?key=bestaat/niet', { code: OWNER_CODE })).status).toBe(
@@ -755,29 +764,28 @@ describe('/api/feedback (gedeelde gegevens)', () => {
       });
     await send('opname', 'audio/webm;codecs=opus');
     await send('html', 'text/html');
-    expect(kv.store.get('anna/audio/opname')?.metadata).toMatchObject({
+    expect(kv.store.get(`${ANNA}/audio/opname`)?.metadata).toMatchObject({
       contentType: 'audio/webm;codecs=opus',
     });
-    expect(kv.store.get('anna/audio/html')?.metadata).toMatchObject({
+    expect(kv.store.get(`${ANNA}/audio/html`)?.metadata).toMatchObject({
       contentType: 'application/octet-stream',
     });
-    const file = await call('/api/feedback/file?key=anna/audio/html', { code: OWNER_CODE });
+    const file = await call(`/api/feedback/file?key=${ANNA}/audio/html`, { code: OWNER_CODE });
     expect(file.headers.get('Content-Type')).toBe('application/octet-stream');
     expect(file.headers.get('X-Content-Type-Options')).toBe('nosniff');
   });
 
   it('wist alles van één tester, en niets van de anderen', async () => {
-    env.ACCESS_CODES = JSON.stringify({ anna: ANNA_CODE, piet: 'code-van-piet' });
     await put('sessions/a', '{}');
     await put('audio/b', 'geluid');
-    await put('sessions/c', '{}', 'code-van-piet');
+    await put('sessions/c', '{}', PIET_CODE);
 
-    const response = await call('/api/feedback/tester?name=anna', {
+    const response = await call(`/api/feedback/tester?name=${ANNA}`, {
       code: OWNER_CODE,
       method: 'DELETE',
     });
     expect(await response.json()).toEqual({ ok: true, deleted: 2 });
-    expect([...kv.store.keys()]).toEqual(['piet/sessions/c']);
+    expect([...kv.store.keys()]).toEqual([`${PIET}/sessions/c`]);
   });
 
   it('weigert een ongeldige naam bij wissen', async () => {
@@ -830,10 +838,10 @@ describe('/api/feedback/notes (feedback inzien)', () => {
 
   it('geeft alle feedback, nieuwste eerst, zonder voorvoegsel', async () => {
     expect(await notes()).toEqual([
-      { id: 'n2', tester: 'anna', recordedAt: 3000, text: 'Getypt', processed: false },
+      { id: 'n2', tester: ANNA, recordedAt: 3000, text: 'Getypt', processed: false },
       {
         id: 'n1',
-        tester: 'anna',
+        tester: ANNA,
         recordedAt: 2000,
         text: 'de kaart is traag',
         appVersion: 'abc123',
@@ -866,11 +874,16 @@ describe('/api/feedback/notes (feedback inzien)', () => {
       sessions: [{ startedAt: 4000, endedAt: 5000 }],
       utterances: [{ id: 'u2', recordedAt: 4500, transcript: 'Vink' }],
     });
+    await putInstall(testersKv as never, ANNA_ID, {
+      name: ANNA,
+      registeredAt: 1000,
+      via: 'turnstile',
+    });
     const response = await call('/api/testers', { code: OWNER_CODE });
     const { testers } = (await response.json()) as {
       testers: { name: string; usage?: object }[];
     };
-    expect(testers.find((t) => t.name === 'anna')?.usage).toEqual({
+    expect(testers.find((t) => t.name === ANNA)?.usage).toEqual({
       walks: 2,
       utterances: 2,
       notes: 2,
@@ -960,7 +973,7 @@ describe('/api/usage (verbruik)', () => {
 
     expect(await rows()).toEqual([
       expect.objectContaining({
-        tester: 'anna',
+        tester: ANNA,
         channel: 'beta',
         session: 'sessie-1',
         model: 'claude-haiku-5-5',
@@ -1080,7 +1093,7 @@ describe('/api/stats (gebruik per dag)', () => {
       rows: [
         {
           day: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
-          tester: 'anna',
+          tester: ANNA,
           sessions: 2,
           utterances: 3,
         },

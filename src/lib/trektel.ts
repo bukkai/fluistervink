@@ -7,8 +7,6 @@
 // browser-API's, zodat ze te testen zijn. De opname zelf staat in
 // trektelRecorder.svelte.ts.
 
-import { getTester } from './api';
-
 /** Zo vaak meet de opname het geluidsniveau. */
 export const FRAME_MS = 100;
 
@@ -132,19 +130,12 @@ export function levelDb(samples: Float32Array): number {
 /** Een trektelling stopt hoe dan ook na zo lang. */
 export const TREKTEL_MAX_MS = 4 * 60 * 60_000;
 
-/** Fase 1: alleen voor de eigenaar en Maarten (die de proef doet). */
-const TREKTEL_TESTERS = ['eigenaar', 'Maarten'];
-
-export function trektelAvailable(): boolean {
-  return TREKTEL_TESTERS.includes(getTester() ?? '');
-}
-
 const SETTING_KEY = 'fluistervink.trektelmodus';
 
-/** Staat de trektelmodus aan bij Instellingen (en mag deze gebruiker hem)? */
+/** Staat de trektelmodus aan bij Instellingen? */
 export function trektelEnabled(): boolean {
   try {
-    return trektelAvailable() && localStorage.getItem(SETTING_KEY) === '1';
+    return localStorage.getItem(SETTING_KEY) === '1';
   } catch {
     return false;
   }

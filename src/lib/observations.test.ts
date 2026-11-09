@@ -696,8 +696,8 @@ describe('netwerk weg', () => {
   beforeEach(() => {
     vibrations = [];
     transcribeCalls = 0;
-    // Met een code, zodat de app zich niet eerst als installatie aanmeldt
-    localStorage.setItem('fluistervink.accessCode', 'code-van-anna');
+    // Met een token, zodat de app zich niet eerst als installatie aanmeldt
+    localStorage.setItem('fluistervink.installToken', 'i1.token-van-anna');
     vi.stubGlobal('navigator', {
       ...navigator,
       onLine: true,

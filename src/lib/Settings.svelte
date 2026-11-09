@@ -5,12 +5,13 @@
     getAccessCode,
     getDisplayName,
     getTester,
+    OWNER,
     ping,
     setAccessCode,
     setDisplayName,
   } from './api';
   import { APP_VERSION, CHANNEL } from './log';
-  import { isNativeApp, nativeAppVersion } from './native';
+  import { nativeAppVersion } from './native';
   import BackupSettings from './BackupSettings.svelte';
   import RecordingSettings from './RecordingSettings.svelte';
   import ShareSettings from './ShareSettings.svelte';
@@ -21,9 +22,9 @@
   let message = $state('');
 
   let tester = $state(getTester());
-  let hasCode = $state(!!getAccessCode());
+  let isOwner = $derived(tester === OWNER);
 
-  // Eigen naam, alleen zonder code (een tester met code heeft al een naam)
+  // Eigen naam, zodat de ontwikkelaar weet wie een installatie is
   let displayName = $state(getDisplayName());
   let nameStatus = $state<'idle' | 'busy' | 'ok' | 'error'>('idle');
   let nameMessage = $state('');
@@ -48,7 +49,6 @@
   async function save(event: SubmitEvent) {
     event.preventDefault();
     setAccessCode(code);
-    hasCode = !!getAccessCode();
     tester = undefined;
     await test();
   }
@@ -62,13 +62,15 @@
     status = 'busy';
     try {
       tester = await ping();
+      // Een oude testercode is dan net vervangen door een installatie (api.ts)
+      code = getAccessCode();
       status = 'ok';
       message = tester ? `Verbonden als ${tester}.` : 'Verbonden met de proxy.';
     } catch (error) {
       status = 'error';
       message =
         error instanceof ApiError && error.status === 401 && getAccessCode()
-          ? 'Testercode klopt niet.'
+          ? 'Code klopt niet.'
           : error instanceof ApiError && error.status !== 0
             ? `Aanmelden lukt niet: ${error.message}`
             : 'Proxy niet bereikbaar.';
@@ -79,7 +81,7 @@
 <a class="back" href="#/">Terug</a>
 <h2 class="page-title">Instellingen</h2>
 
-{#if !hasCode}
+{#if !isOwner}
   <section class="card">
     <div class="card-head"><h2>Je naam</h2></div>
     <form class="card-body" onsubmit={saveName}>
@@ -100,22 +102,26 @@
 {/if}
 
 <section class="card">
-  <div class="card-head"><h2>Toegang</h2></div>
-  <form class="card-body" onsubmit={save}>
-    <label>
-      Testercode (niet nodig)
-      <input type="password" bind:value={code} autocomplete="off" />
-    </label>
-    <p class="hint">
-      De app werkt zonder code. Heb je een testercode gekregen, vul hem dan hier in{isNativeApp
-        ? ' (hij staat in je uitnodigingsmail)'
-        : ', of open de uitnodigingslink in Chrome'}. Leeg laten en opslaan haalt de code weg.
-    </p>
-    <button class="btn" disabled={status === 'busy'}>Opslaan en testen</button>
+  <div class="card-head"><h2>Verbinding</h2></div>
+  <div class="card-body">
     {#if message}
       <p class="message {status}">{message}</p>
     {/if}
-  </form>
+    <details open={!!code}>
+      <summary>Code van de ontwikkelaar</summary>
+      <form onsubmit={save}>
+        <label>
+          Code
+          <input type="password" bind:value={code} autocomplete="off" />
+        </label>
+        <p class="hint">
+          Alleen voor de ontwikkelaar; de app werkt zonder code. Leeg laten en opslaan haalt de code
+          weg.
+        </p>
+        <button class="btn" disabled={status === 'busy'}>Opslaan en testen</button>
+      </form>
+    </details>
+  </div>
 </section>
 
 <BackupSettings />
@@ -150,7 +156,18 @@
   }
 
   .message {
-    margin: 0;
+    margin: 0 0 0.75rem;
+  }
+
+  summary {
+    font-size: 0.85rem;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 0.5rem 0;
+  }
+
+  details form {
+    margin-top: 0.5rem;
   }
 
   .hint {

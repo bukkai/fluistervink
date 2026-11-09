@@ -1,12 +1,14 @@
-// Client voor de proxy in worker/index.ts. Zonder toegangscode meldt de app
-// zich vanzelf aan als installatie (install.ts). Een code (van de eigenaar of
-// een tester) kan nog steeds: één keer ingevuld of via een uitnodigingslink
-// meegegeven, en daarna in localStorage bewaard, samen met de naam van de
-// tester die de proxy erbij teruggeeft.
+// Client voor de proxy in worker/index.ts. De app meldt zich vanzelf aan als
+// installatie (install.ts). Alleen de eigenaar heeft een toegangscode, één
+// keer ingevuld bij Instellingen en daarna in localStorage bewaard, samen met
+// de naam die de proxy erbij teruggeeft.
 
 import type { Billing, UsageRow } from './costs';
 import { forgetInstallToken, getInstallToken, register } from './install';
 import type { ActivityRow } from './stats';
+
+/** Naam die de proxy geeft bij de toegangscode van de eigenaar. */
+export const OWNER = 'eigenaar';
 
 const ACCESS_CODE_KEY = 'fluistervink.accessCode';
 const TESTER_KEY = 'fluistervink.tester';
@@ -24,8 +26,8 @@ export function setAccessCode(code: string): void {
 }
 
 /**
- * Naam van de tester bij de toegangscode ("eigenaar", "anna") of van de
- * installatie ("app-3f9a2b1c"), als bekend.
+ * "eigenaar" bij de toegangscode, anders de naam van de installatie
+ * ("app-3f9a2b1c"), als bekend.
  */
 export function getTester(): string | undefined {
   return localStorage.getItem(TESTER_KEY) ?? undefined;
@@ -33,7 +35,7 @@ export function getTester(): string | undefined {
 
 const DISPLAY_NAME_KEY = 'fluistervink.displayName';
 
-/** Naam die de gebruiker zelf opgaf (Instellingen, alleen zonder code), of ''. */
+/** Naam die de gebruiker zelf opgaf (Instellingen), of ''. */
 export function getDisplayName(): string {
   return localStorage.getItem(DISPLAY_NAME_KEY) ?? '';
 }
@@ -50,31 +52,6 @@ export async function setDisplayName(name: string): Promise<void> {
   });
   if (displayName) localStorage.setItem(DISPLAY_NAME_KEY, displayName);
   else localStorage.removeItem(DISPLAY_NAME_KEY);
-}
-
-const INVITE_KEY = 'fluistervink.invite';
-
-/**
- * Uitnodigingslink: `https://…/#code=abc123`. Bewaart de code, haalt hem uit
- * de adresbalk en gaat naar het hoofdscherm, dat een welkom toont (zie
- * takeInvite). Na het `#` gaat de code niet mee naar de server en komt hij
- * niet in logs terecht.
- */
-export function acceptInviteLink(): void {
-  // Ook als er iets vóór staat, zoals "#instellingen/#code=…" (met de hand
-  // aan een gekopieerd adres geplakt).
-  const code = /(?:^|[#/&])code=([^&#/]+)/.exec(location.hash)?.[1];
-  if (!code) return;
-  setAccessCode(decodeURIComponent(code));
-  sessionStorage.setItem(INVITE_KEY, '1');
-  history.replaceState(null, '', `${location.pathname}${location.search}`);
-}
-
-/** True (één keer) als de app net via een uitnodigingslink is geopend. */
-export function takeInvite(): boolean {
-  const invited = sessionStorage.getItem(INVITE_KEY) === '1';
-  sessionStorage.removeItem(INVITE_KEY);
-  return invited;
 }
 
 export class ApiError extends Error {
@@ -141,6 +118,18 @@ async function timedRequest<T>(
   if (!response.ok) {
     // Afgesloten of het geheim van de proxy veranderd: opnieuw aanmelden
     if (response.status === 401 && credential === getInstallToken()) forgetInstallToken();
+    // Een oude testercode (die bestaan niet meer): weg ermee, en meteen
+    // opnieuw als installatie, zodat de uitspraak niet mislukt. Niet bij een
+    // net ingevulde code (Instellingen), die meldt zelf dat hij niet klopt.
+    if (
+      response.status === 401 &&
+      credential === getAccessCode() &&
+      getTester() &&
+      getTester() !== OWNER
+    ) {
+      setAccessCode('');
+      return timedRequest<T>(path, init, timeoutMs);
+    }
     throw new ApiError(body.error ?? `HTTP ${response.status}`, response.status);
   }
   return { data: body as T, timing };
@@ -265,16 +254,11 @@ export async function fetchBilling(): Promise<Billing> {
   return request<Billing>('/api/billing');
 }
 
-/**
- * Tester in de proxy: uitgenodigd vanuit de app (`app`, met code), via
- * `npm run tester` in het geheim ACCESS_CODES (`secret`, alleen de naam), of
- * een installatie zonder code (`install`, worker/install.ts).
- */
+/** Installatie in de proxy (worker/install.ts). */
 export interface Tester {
   name: string;
-  source: 'app' | 'secret' | 'install';
-  code?: string;
-  /** Uitgenodigd, of bij een installatie: aangemeld */
+  source: 'install';
+  /** Aangemeld */
   invitedAt?: number;
   /** Hoe een installatie bewees dat hij echt is */
   via?: 'play' | 'turnstile';
@@ -290,21 +274,12 @@ export interface Tester {
   };
 }
 
-/** Alle testers (alleen voor de eigenaar). */
+/** Alle installaties (alleen voor de eigenaar). */
 export async function listTesters(): Promise<Tester[]> {
   return (await request<{ testers: Tester[] }>('/api/testers')).testers;
 }
 
-/** Nieuwe tester met een eigen toegangscode (alleen voor de eigenaar). */
-export async function addTester(name: string): Promise<{ name: string; code: string }> {
-  return request('/api/testers', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name }),
-  });
-}
-
-/** Uitgenodigde tester of installatie afsluiten: de code of het token werkt daarna niet meer. */
+/** Installatie afsluiten: het token werkt daarna niet meer. */
 export async function removeTester(name: string): Promise<void> {
   await request(`/api/testers?name=${encodeURIComponent(name)}`, { method: 'DELETE' });
 }
@@ -335,9 +310,4 @@ export async function markNotesProcessed(ids: string[], processed: boolean): Pro
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ids, processed }),
   });
-}
-
-/** Uitnodigingslink voor een code, op het adres waar de app nu draait. */
-export function inviteLink(code: string): string {
-  return `${location.origin}/#code=${code}`;
 }

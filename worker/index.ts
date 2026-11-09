@@ -29,17 +29,13 @@ import { activitySince, recordUsage, sessionFrom, usageSince, type Usage } from 
 // een beheersleutel per aanbieder haalt hij ook de echte rekening op
 // (/api/billing, worker/billing.ts).
 //
-// Toegangscodes: ACCESS_CODE is die van de eigenaar; ACCESS_CODES bevat er één
-// per tester als JSON, `{"anna": "…", "piet": "…"}`. Zo kun je één tester
-// afsluiten zonder de anderen, en zie je in de logs wie wat gebruikt.
-// Testers die de eigenaar vanuit de app uitnodigt (scherm Developer) staan in
-// KV (TESTERS), zie /api/testers; die werken op dezelfde manier.
-// Zonder code meldt de app zich aan als installatie (/api/install); die heet
-// dan "app-3f9a2b1c" en werkt verder ook als een tester.
+// Toegang: de app meldt zich aan als installatie (/api/install); die heet dan
+// "app-3f9a2b1c" en is op het scherm Developer af te sluiten. Alleen de
+// eigenaar heeft een toegangscode (ACCESS_CODE), zodat de proxy hem herkent
+// (Developer, kosten, feedback ophalen, geen snelheidslimiet).
 
 interface Secrets {
   ACCESS_CODE?: string;
-  ACCESS_CODES?: string;
   OPENAI_API_KEY: string;
   ANTHROPIC_API_KEY: string;
 }
@@ -71,19 +67,10 @@ const MAX_MESSAGE_BYTES = 256 * 1024;
 /** Een gedeelde sessie zonder opnames is hooguit een paar honderd kB. */
 const MAX_SESSION_BYTES = 5 * 1024 * 1024;
 
-/** KV-sleutel (in TESTERS) met alle uitgenodigde testers. */
-const INVITED_KEY = 'invited';
 /** KV-sleutel (in TESTERS) met de id's van feedback die de eigenaar verwerkt heeft. */
 const PROCESSED_KEY = 'processed-notes';
 /** Zoveel id's tegelijk als verwerkt markeren; ruim genoeg voor "alles". */
 const MAX_PROCESSED_IDS = 1000;
-/** Zelfde regel als bij het wissen van gedeelde gegevens (/api/feedback). */
-const TESTER_NAME = /^[\w-]{1,32}$/;
-
-interface InvitedTester {
-  code: string;
-  invitedAt: number;
-}
 
 export default {
   async fetch(request, env, ctx): Promise<Response> {
@@ -678,31 +665,16 @@ async function processedNotes(env: WorkerEnv): Promise<Set<string>> {
 }
 
 /**
- * Testers beheren vanuit de app (alleen de eigenaar). Uitgenodigde testers
- * staan als één JSON-object in KV: `{ "anna": { code, invitedAt } }`. Testers
- * uit het geheim ACCESS_CODES (scripts/tester.mjs) komen ook in de lijst, maar
- * zijn hier niet te wijzigen. Installaties zonder code (/api/install) staan er
- * ook in, en zijn net zo af te sluiten.
+ * Installaties beheren vanuit de app (alleen de eigenaar).
  *
- * - GET /api/testers               alle testers en installaties
- * - POST /api/testers  { name }    nieuwe tester; geeft de code terug
- * - DELETE /api/testers?name=…     uitgenodigde tester of installatie afsluiten
+ * - GET /api/testers               alle installaties, met verbruik
+ * - DELETE /api/testers?name=…     installatie afsluiten
  */
 async function testers(request: Request, env: WorkerEnv, tester: string): Promise<Response> {
   if (tester !== OWNER) return json({ error: 'Alleen voor de eigenaar' }, 403);
-  const invited = await invitedTesters(env);
 
   if (request.method === 'GET') {
-    const fromSecret = secretCodes(env)
-      .filter(([name]) => name !== OWNER)
-      .map(([name]) => ({ name, source: 'secret' as const }));
-    const fromApp = Object.entries(invited).map(([name, { code, invitedAt }]) => ({
-      name,
-      source: 'app' as const,
-      code,
-      invitedAt,
-    }));
-    const fromInstall = (await listInstalls(env.TESTERS)).map(
+    const installs = (await listInstalls(env.TESTERS)).map(
       ({ name, registeredAt, via, blocked, displayName }) => ({
         name,
         source: 'install' as const,
@@ -713,52 +685,18 @@ async function testers(request: Request, env: WorkerEnv, tester: string): Promis
       }),
     );
     const usage = await testerUsage(env);
-    return json({
-      testers: [...fromSecret, ...fromApp, ...fromInstall].map((t) => ({
-        ...t,
-        usage: usage.get(t.name),
-      })),
-    });
-  }
-  if (request.method === 'POST') {
-    const { name } = (await request.json()) as { name?: unknown };
-    if (typeof name !== 'string' || !TESTER_NAME.test(name)) {
-      return json({ error: 'Naam zonder spaties of accenten, hooguit 32 tekens' }, 400);
-    }
-    if (name.startsWith('app-')) {
-      return json({ error: 'Namen met "app-" zijn voor installaties zonder code' }, 400);
-    }
-    const taken = name === OWNER || name in invited || secretCodes(env).some(([n]) => n === name);
-    if (taken) return json({ error: `${name} bestaat al` }, 409);
-    // 24 tekens, veilig in een URL; zelfde als scripts/tester.mjs
-    const bytes = crypto.getRandomValues(new Uint8Array(18));
-    const code = btoa(String.fromCharCode(...bytes))
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_');
-    invited[name] = { code, invitedAt: Date.now() };
-    await env.TESTERS.put(INVITED_KEY, JSON.stringify(invited));
-    return json({ name, code });
+    return json({ testers: installs.map((t) => ({ ...t, usage: usage.get(t.name) })) });
   }
   if (request.method === 'DELETE') {
     const name = new URL(request.url).searchParams.get('name') ?? '';
-    if (name.startsWith('app-')) {
-      // Het token blijft geldig, maar authorize() weigert het daarna
-      const found = await findInstall(env.TESTERS, name);
-      if (!found) return json({ error: 'Niet gevonden' }, 404);
-      const { id, ...record } = found;
-      await putInstall(env.TESTERS, id, { ...record, blocked: true });
-      return json({ ok: true });
-    }
-    if (!(name in invited)) return json({ error: 'Niet gevonden' }, 404);
-    delete invited[name];
-    await env.TESTERS.put(INVITED_KEY, JSON.stringify(invited));
+    // Het token blijft geldig, maar authorize() weigert het daarna
+    const found = name.startsWith('app-') ? await findInstall(env.TESTERS, name) : undefined;
+    if (!found) return json({ error: 'Niet gevonden' }, 404);
+    const { id, ...record } = found;
+    await putInstall(env.TESTERS, id, { ...record, blocked: true });
     return json({ ok: true });
   }
   return json({ error: 'Niet gevonden' }, 404);
-}
-
-async function invitedTesters(env: WorkerEnv): Promise<Record<string, InvitedTester>> {
-  return (await env.TESTERS.get<Record<string, InvitedTester>>(INVITED_KEY, 'json')) ?? {};
 }
 
 /**
@@ -794,42 +732,11 @@ async function area(request: Request): Promise<Response> {
   );
 }
 
-/** Naam per toegangscode, uit de geheimen en de uitgenodigde testers in KV. */
-async function accessCodes(env: WorkerEnv): Promise<[name: string, code: string][]> {
-  const codes = secretCodes(env);
-  try {
-    for (const [name, { code }] of Object.entries(await invitedTesters(env))) {
-      if (code && name !== OWNER) codes.push([name, code]);
-    }
-  } catch (error) {
-    // Dan werken de geheimen nog wel
-    console.error('Testers uit KV niet te lezen', error);
-  }
-  return codes;
-}
-
-/** Naam per toegangscode, uit ACCESS_CODE (de eigenaar) en ACCESS_CODES. */
-function secretCodes(env: WorkerEnv): [name: string, code: string][] {
-  const codes: [string, string][] = [];
-  if (env.ACCESS_CODE) codes.push([OWNER, env.ACCESS_CODE]);
-  if (env.ACCESS_CODES) {
-    try {
-      const testers = JSON.parse(env.ACCESS_CODES) as Record<string, unknown>;
-      for (const [name, code] of Object.entries(testers)) {
-        // Een tester mag nooit als eigenaar binnenkomen
-        if (typeof code === 'string' && code && name !== OWNER) codes.push([name, code]);
-      }
-    } catch {
-      console.error('ACCESS_CODES is geen geldige JSON');
-    }
-  }
-  return codes;
-}
-
 /**
- * Geeft de naam van de tester bij de toegangscode, of null. Vergelijkt in
- * constante tijd (via SHA-256-hashes van gelijke lengte) en loopt altijd alle
- * codes langs, zodat een code niet via responstijden te raden is.
+ * Geeft de naam van de tester: "eigenaar" bij de toegangscode, "app-…" bij een
+ * geldig token van een installatie, anders null. Vergelijkt de code in
+ * constante tijd (via SHA-256-hashes van gelijke lengte), zodat hij niet via
+ * responstijden te raden is.
  */
 async function authorize(request: Request, env: WorkerEnv): Promise<string | null> {
   const header = request.headers.get('Authorization') ?? '';
@@ -852,11 +759,9 @@ async function authorize(request: Request, env: WorkerEnv): Promise<string | nul
   const encoder = new TextEncoder();
   const hash = (text: string) => crypto.subtle.digest('SHA-256', encoder.encode(text));
   const given = await hash(code);
-  let match: string | null = null;
-  for (const [name, expected] of await accessCodes(env)) {
-    if (crypto.subtle.timingSafeEqual(given, await hash(expected))) match ??= name;
-  }
-  return match;
+  const ownerCode = env.ACCESS_CODE;
+  if (!ownerCode) return null;
+  return crypto.subtle.timingSafeEqual(given, await hash(ownerCode)) ? OWNER : null;
 }
 
 /**

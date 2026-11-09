@@ -20,8 +20,8 @@ Eigenaar:
 
 - [x] `npm run release`: welkom (#168) en back-up (#167) naar `fluistervink.nl`.
 - [x] Play Console → Testen → **Gesloten tests**: track aanmaken (bv. "Stabiel"), de stabiele AAB van de laatste tag uploaden en uitrollen (`docs/google-play.md`, stap 5.4).
-- [x] Deelnamelink van die track in `PLAY_TEST_LINKS.stable` (`src/lib/invite.ts`): `https://play.google.com/apps/testing/nl.hegmus.fluistervink`. Winkelpagina (pas zichtbaar na deelnemen): `https://play.google.com/store/apps/details?id=nl.hegmus.fluistervink`.
-- [ ] 15–20 testers werven (Gmail-adressen in de lijst van de gesloten test) en uitnodigen vanaf Developer op `fluistervink.nl`.
+- [x] Deelnamelink van die track: `https://play.google.com/apps/testing/nl.hegmus.fluistervink`. Winkelpagina (pas zichtbaar na deelnemen): `https://play.google.com/store/apps/details?id=nl.hegmus.fluistervink`.
+- [ ] 15–20 testers werven (Gmail-adressen in de lijst van de gesloten test) en de deelnamelink sturen; een code is niet meer nodig.
 - [x] Contactadres voor de Play Store en de privacypagina: `info@fluistervink.nl` (bestaat sinds 9 nov).
 - [ ] Plafond en daglimiet bij OpenAI en Anthropic nalopen: straks kan iedereen zonder code installeren.
 
@@ -63,7 +63,7 @@ Daaruit maken we: Android-pictogram (`android/app/src/main/res/mipmap-*`, adapti
 
 - [ ] Productietoegang aanvragen in de Play Console (na 14 dagen, als het dashboard het toestaat).
 - [ ] Na goedkeuring: de stabiele AAB naar **Productie**. De beta blijft in de interne test.
-- [ ] `#uitleg`, `#privacy` en de uitnodigingsmail nalopen op "test"-taal; `CLAUDE.md` en `NOTES.md` bijwerken.
+- [ ] `#uitleg` en `#privacy` nalopen op "test"-taal; `CLAUDE.md` en `NOTES.md` bijwerken.
 - [ ] De eerste weken Statistieken en Kosten op Developer volgen.
 
-Later, niet nodig voor de lancering: App Links (`docs/google-play.md`), automatisch uploaden vanuit de workflow.
+Later, niet nodig voor de lancering: automatisch uploaden vanuit de workflow.

@@ -1,7 +1,6 @@
 # Kopieer naar .dev.vars en vul in. .dev.vars staat niet in git.
+# Jouw code als eigenaar (Instellingen → Code van de ontwikkelaar)
 ACCESS_CODE=kies-een-lange-geheime-code
-# Optioneel: codes voor testers, als JSON (naam → code)
-# ACCESS_CODES={"anna":"code-van-anna"}
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
 # Optioneel: beheersleutels voor de echte rekening op Developer (worker/billing.ts)
