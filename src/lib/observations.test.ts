@@ -533,6 +533,50 @@ describe('wachtrij', () => {
     expect(interpret).not.toHaveBeenCalled();
   });
 
+  it('feedback tussen waarnemingen wordt een eigen uitspraak', async () => {
+    const utterance = await say(
+      'Zes holenduiven. Feedback, wat betekent nul stukken? Buizerd.',
+      ['add_observation', { species_id: HOUTDUIF, count: 6 }],
+      ['add_dev_note', { text: 'wat betekent nul stukken?' }],
+      ['add_observation', { species_id: VINK, count: 1 }],
+    );
+    expect(utterance.kind).toBeUndefined();
+    expect(utterance.result).toBe('saved');
+    expect(await db.observations.count()).toBe(2);
+    const notes = await db.utterances.filter((u) => u.kind === 'dev_note').toArray();
+    expect(notes).toMatchObject([
+      {
+        transcript: 'wat betekent nul stukken?',
+        sessionId: SESSION,
+        fromUtteranceId: utterance.id,
+        position: POSITION,
+        status: 'done',
+        result: 'note',
+      },
+    ]);
+  });
+
+  it('een trektelstuk dat met feedback begint, gaat toch naar het model', async () => {
+    const id = crypto.randomUUID();
+    await db.utterances.add({
+      id,
+      sessionId: SESSION,
+      recordedAt: (clock += 60_000),
+      transcript: 'Feedback, de knop is te klein. Zes houtduiven.',
+      status: 'pending',
+      trektel: true,
+    });
+    model.respond = () =>
+      toolResponse(
+        ['add_dev_note', { text: 'de knop is te klein' }],
+        ['add_observation', { species_id: HOUTDUIF, count: 6 }],
+      );
+    await processQueue();
+    expect(interpret).toHaveBeenCalled();
+    expect(await db.observations.count()).toBe(1);
+    expect(await db.utterances.get(id)).toMatchObject({ result: 'saved' });
+  });
+
   it('verwerkt wachtende uitspraken op volgorde', async () => {
     const seen: string[] = [];
     vi.mocked(interpret).mockImplementation(async (transcript) => {

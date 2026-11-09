@@ -256,8 +256,13 @@
     </button>
     <p class="mic listening">
       <span class="ear" class:speaking={trektel.speaking}></span>
-      {trektel.speaking ? 'Hoort spraak' : 'Luistert'} · {trektel.sent}
-      {trektel.sent === 1 ? 'stuk' : 'stukken'} verwerkt
+      {trektel.speaking ? 'Hoort spraak' : 'Luistert'} ·
+      <!-- De app knipt pas na ongeveer een minuut; stille stukken tellen niet mee -->
+      {#if trektel.sent === 0}
+        eerste stuk na een minuut
+      {:else}
+        {trektel.sent} {trektel.sent === 1 ? 'stuk' : 'stukken'} met spraak verstuurd
+      {/if}
     </p>
   {:else}
     {#if trektelOn}

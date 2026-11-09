@@ -474,8 +474,10 @@ async function processUtterance(utterance: Utterance): Promise<void> {
     const transcript = utterance.transcript ?? '';
     checkZeemeeuw(transcript);
 
-    // Dev notes gaan niet naar het model: snel, gratis en altijd goed herkend
-    if (devNoteText(transcript) !== undefined) {
+    // Feedback gaat niet naar het model: snel, gratis en altijd goed herkend.
+    // Behalve in een trektelling: daar knipt de app zelf, dus een stuk dat met
+    // "feedback" begint, kan daarna nog waarnemingen bevatten.
+    if (!utterance.trektel && devNoteText(transcript) !== undefined) {
       await finishWithout(utterance.id, attempts, { kind: 'dev_note', result: 'note' });
       return;
     }
@@ -553,7 +555,27 @@ async function processUtterance(utterance: Utterance): Promise<void> {
       changes.flatMap((c) => (c.type === 'delete' ? [] : [c.observationId])),
     );
     const uncertain = touched.some((obs) => obs?.uncertain);
-    const devNote = interpretation.actions.some((a) => a.type === 'dev_note');
+    const notes = interpretation.actions.filter((a) => a.type === 'dev_note');
+    // Alleen feedback: de uitspraak zelf wordt feedback. Feedback tussen
+    // waarnemingen (vooral in een trektelling) wordt een eigen uitspraak, zodat
+    // de waarnemingen gewone waarnemingen blijven.
+    const devNote = notes.length > 0 && notes.length === interpretation.actions.length;
+    if (!devNote) {
+      for (const [i, note] of notes.entries()) {
+        await db.utterances.add({
+          id: crypto.randomUUID(),
+          sessionId: latest.sessionId,
+          recordedAt: latest.recordedAt + i + 1,
+          savedAt: Date.now(),
+          ...(latest.position && { position: latest.position }),
+          transcript: note.text ?? latest.transcript,
+          status: 'done',
+          kind: 'dev_note',
+          result: 'note',
+          fromUtteranceId: latest.id,
+        });
+      }
+    }
 
     await db.utterances.update(utterance.id, {
       status: 'done',

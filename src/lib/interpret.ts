@@ -60,7 +60,7 @@ export type Action =
   | { type: 'delete'; observationId: string }
   | { type: 'undo' }
   | { type: 'redo' }
-  | { type: 'dev_note' };
+  | { type: 'dev_note'; text?: string };
 
 export interface Interpretation {
   actions: Action[];
@@ -221,10 +221,20 @@ const TOOLS: Anthropic.Tool[] = [
   },
   {
     name: 'add_dev_note',
-    description:
-      'Bewaart de uitspraak als feedback: een opmerking over de app zelf in plaats van over vogels.',
+    description: 'Bewaart een opmerking over de app zelf (in plaats van over vogels) als feedback.',
     strict: true,
-    input_schema: { type: 'object', properties: {}, additionalProperties: false },
+    input_schema: {
+      type: 'object',
+      properties: {
+        text: {
+          type: 'string',
+          description:
+            'Alleen de opmerking over de app, in de woorden van de gebruiker, zonder "feedback" ervoor en zonder de waarnemingen eromheen.',
+        },
+      },
+      required: ['text'],
+      additionalProperties: false,
+    },
   },
 ];
 
@@ -247,6 +257,7 @@ const SYSTEM_PROMPT = `Je bent de interpretatielaag van Fluistervink, een app wa
 - Een undo zelf terugdraaien ("toch niet ongedaan maken", "zet terug wat je net ongedaan maakte", "dat ongedaan maken was fout") → redo.
 - Bevestiging ("ja, klopt", "dat was goed", "vorige is correct") → update_observation op #1 met alleen uncertain: false, als #1 onzeker is. Is #1 niet onzeker, roep dan geen tool aan.
 - Een opmerking over de app zelf (wat beter kan, wat niet werkt, een idee voor een functie), ook zonder "feedback" ervoor → add_dev_note. Bijvoorbeeld "bij grote groepen wil ik een schatting kunnen opgeven" of "hij trilt niet".
+- Feedback midden tussen waarnemingen (vooral in een trektelling, waar de app zelf stukken van een minuut knipt): voer de waarnemingen gewoon uit én roep add_dev_note aan, met in text alleen de opmerking over de app. "Zes holenduiven. Feedback, de knop is te klein. Buizerd." = add_observation (Holenduif) + add_dev_note (text "de knop is te klein") + add_observation (Buizerd).
 - Geen waarneming, correctie of opmerking over de app (gepraat, "hallo", "test", vragen) → roep geen enkele tool aan.
 - Het woord "Fluistervink" (of het oude "Thijsse") aan het begin is de aanspreekvorm van de app; negeer het. Het is géén waarneming van een vink: "Fluistervink, zes houtduiven" gaat alleen over houtduiven.
 
@@ -491,6 +502,8 @@ export async function interpret(
 
 interface RawFields {
   ref?: number;
+  /** add_dev_note */
+  text?: string;
   species_name?: string;
   species_id?: number;
   count?: number;
@@ -562,7 +575,10 @@ function toAction(
 
   if (block.name === 'undo') return { type: 'undo' };
   if (block.name === 'redo') return { type: 'redo' };
-  if (block.name === 'add_dev_note') return { type: 'dev_note' };
+  if (block.name === 'add_dev_note') {
+    const text = typeof input.text === 'string' ? input.text.trim() : '';
+    return { type: 'dev_note', ...(text && { text }) };
+  }
 
   const fields: ObservationFields = {
     speciesId: input.species_id,
