@@ -39,17 +39,26 @@ beforeAll(() => {
 
 /** KV in het geheugen, met alleen wat de proxy gebruikt. */
 function memoryKv() {
-  const store = new Map<string, { value: ArrayBuffer; metadata: unknown }>();
+  const store = new Map<string, { value: ArrayBuffer; metadata: unknown; expiresAt?: number }>();
   return {
     store,
-    async put(key: string, value: ArrayBuffer | string, options?: { metadata?: unknown }) {
+    async put(
+      key: string,
+      value: ArrayBuffer | string,
+      options?: { metadata?: unknown; expirationTtl?: number },
+    ) {
       const bytes =
         typeof value === 'string' ? (new TextEncoder().encode(value).buffer as ArrayBuffer) : value;
-      store.set(key, { value: bytes, metadata: options?.metadata });
+      const ttl = options?.expirationTtl;
+      store.set(key, {
+        value: bytes,
+        metadata: options?.metadata,
+        expiresAt: ttl ? Date.now() + ttl * 1000 : undefined,
+      });
     },
     async get(key: string, type?: string) {
       const entry = store.get(key);
-      if (!entry) return null;
+      if (!entry || (entry.expiresAt && entry.expiresAt <= Date.now())) return null;
       const text = new TextDecoder().decode(entry.value);
       return type === 'json' ? JSON.parse(text) : text;
     },
@@ -1229,7 +1238,51 @@ describe('/api/billing (echte rekening)', () => {
     const { openai, anthropic } = await billing();
     expect(openai).toMatchObject({ days: {} });
     expect(anthropic).toEqual({ error: 'Anthropic 403: Geen organisatie' });
-    expect([...testersKv.store.keys()].some((key) => key.includes('anthropic'))).toBe(false);
+    expect(testersKv.store.has('billing/anthropic/')).toBe(false);
+  });
+
+  /** OpenAI weigert met 429, zoals bij meer dan 10 verzoeken per minuut. */
+  function openaiBusy() {
+    upstream.mockImplementation(async (url) =>
+      url.includes('openai')
+        ? Response.json({ error: { message: 'Rate limit, please slow down' } }, { status: 429 })
+        : Response.json({ data: [], has_more: false, next_page: null }),
+    );
+  }
+  const openaiCalls = () => upstream.mock.calls.filter(([url]) => url.includes('openai')).length;
+
+  it('geeft na een fout de laatst bekende rekening van deze maand, met de fout erbij', async () => {
+    bills();
+    await billing();
+    vi.setSystemTime(new Date('2026-10-24T14:00:00Z'));
+    openaiBusy();
+    const { openai } = await billing();
+    expect(openai).toMatchObject({
+      days: { '2026-10-23': 0.25, '2026-10-24': 0.75 },
+      fetchedAt: Date.parse('2026-10-24T12:00:00Z'),
+      stale: 'OpenAI 429: Rate limit, please slow down',
+    });
+  });
+
+  it('probeert het na een fout pas na een minuut opnieuw', async () => {
+    openaiBusy();
+    expect((await billing()).openai).toEqual({ error: 'OpenAI 429: Rate limit, please slow down' });
+    expect(openaiCalls()).toBe(1);
+    vi.setSystemTime(new Date('2026-10-24T12:00:50Z'));
+    expect((await billing()).openai).toEqual({ error: 'OpenAI 429: Rate limit, please slow down' });
+    expect(openaiCalls()).toBe(1);
+    bills();
+    vi.setSystemTime(new Date('2026-10-24T12:01:01Z'));
+    expect((await billing()).openai).toMatchObject({ days: { '2026-10-24': 0.75 } });
+    expect(openaiCalls()).toBe(2);
+  });
+
+  it('geeft in een nieuwe maand niet de rekening van de vorige', async () => {
+    bills();
+    await billing();
+    vi.setSystemTime(new Date('2026-11-01T00:10:00Z'));
+    openaiBusy();
+    expect((await billing()).openai).toEqual({ error: 'OpenAI 429: Rate limit, please slow down' });
   });
 
   it('telt alleen het project en de workspace van Fluistervink', async () => {

@@ -11,8 +11,12 @@
 // (OPENAI_PROJECT_ID), bij Anthropic van één workspace (ANTHROPIC_WORKSPACE_ID).
 // Zonder die id de hele organisatie, dus ook andere projecten.
 //
-// Beide geven kosten per dag in UTC. De proxy bewaart het een uur in KV
-// (TESTERS), zodat niet elk bezoek aan Developer de API's aanroept.
+// Beide geven kosten per dag in UTC. De proxy haalt de rekening hooguit één
+// keer per uur op en bewaart hem in KV (TESTERS), zodat niet elk bezoek aan
+// Developer de API's aanroept. De Costs API van OpenAI staat maar 10 verzoeken
+// per minuut toe (voor de hele organisatie). Mislukt het ophalen, dan geeft de
+// proxy de laatst bekende rekening van deze maand terug met de fout erbij
+// (`stale`), en probeert hij het pas na een minuut opnieuw.
 
 import type { Bill, Provider } from '../src/lib/costs';
 
@@ -27,15 +31,22 @@ export interface BillingKeys {
 
 /** Zo lang geldt een opgehaalde rekening. */
 export const BILL_MAX_AGE = 60 * 60 * 1000;
+/** Zo lang blijft een rekening bewaard als terugval (ruim een maand). */
+const BILL_KEEP = 40 * 24 * 60 * 60;
+/** Na een fout zo lang niet opnieuw proberen (seconden; minimum van KV). */
+export const BILL_RETRY_AFTER = 60;
 /** Een maand heeft hooguit 31 dagen; meer pagina's is een fout. */
 const MAX_PAGES = 3;
 
 // Met de id erin, zodat een andere id meteen een nieuwe rekening geeft
 const kvKey = (provider: Provider, scope = '') => `billing/${provider}/${scope}`;
+// De laatste fout, zolang niet opnieuw proberen
+const pauseKey = (provider: Provider, scope = '') => `billing-pause/${provider}/${scope}`;
 
 /**
  * De rekening van deze maand (UTC) per dag, uit KV of vers opgehaald. Null
- * zonder beheersleutel; bij een fout `{ error }`, die niet bewaard wordt.
+ * zonder beheersleutel. Bij een fout de laatst bekende rekening van deze maand
+ * met `stale`, of `{ error }` als die er niet is; een minuut lang niet opnieuw.
  */
 export async function bill(
   kv: KVNamespace,
@@ -48,18 +59,23 @@ export async function bill(
   if (!key) return null;
   const month = now.toISOString().slice(0, 7);
   const cached = await kv.get<Bill>(kvKey(provider, scope), 'json');
-  if (cached?.month === month && now.getTime() - cached.fetchedAt < BILL_MAX_AGE) return cached;
+  const thisMonth = cached?.month === month ? cached : null;
+  if (thisMonth && now.getTime() - thisMonth.fetchedAt < BILL_MAX_AGE) return thisMonth;
+  const failed = (error: string) => (thisMonth ? { ...thisMonth, stale: error } : { error });
+
+  const pause = await kv.get(pauseKey(provider, scope));
+  if (pause) return failed(pause);
   try {
     const start = new Date(`${month}-01T00:00:00Z`);
     const days = await (provider === 'openai' ? openaiCosts : anthropicCosts)(key, start, scope);
     const fresh: Bill = { month, days, fetchedAt: now.getTime() };
-    await kv.put(kvKey(provider, scope), JSON.stringify(fresh), {
-      expirationTtl: BILL_MAX_AGE / 1000,
-    });
+    await kv.put(kvKey(provider, scope), JSON.stringify(fresh), { expirationTtl: BILL_KEEP });
     return fresh;
   } catch (error) {
     console.error({ billing: provider, error: String(error) });
-    return { error: error instanceof Error ? error.message : String(error) };
+    const message = error instanceof Error ? error.message : String(error);
+    await kv.put(pauseKey(provider, scope), message, { expirationTtl: BILL_RETRY_AFTER });
+    return failed(message);
   }
 }
 

@@ -193,6 +193,11 @@ export interface Bill {
   days: Record<string, number>;
   /** Wanneer de proxy hem ophaalde (ms) */
   fetchedAt: number;
+  /**
+   * Opnieuw ophalen mislukte (bv. OpenAI 429: hooguit 10 verzoeken per
+   * minuut); dit is dan de laatst bekende rekening, met de fout erbij.
+   */
+  stale?: string;
 }
 
 /** Per aanbieder; null als de proxy geen beheersleutel heeft. */
