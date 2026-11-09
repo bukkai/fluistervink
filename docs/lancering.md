@@ -20,7 +20,7 @@ Eigenaar:
 
 - [x] `npm run release`: welkom (#168) en back-up (#167) naar `fluistervink.nl`.
 - [x] Play Console → Testen → **Gesloten tests**: track aanmaken (bv. "Stabiel"), de stabiele AAB van de laatste tag uploaden en uitrollen (`docs/google-play.md`, stap 5.4).
-- [ ] Deelnamelink van die track in `PLAY_TEST_LINKS.stable` (`src/lib/invite.ts`).
+- [x] Deelnamelink van die track in `PLAY_TEST_LINKS.stable` (`src/lib/invite.ts`): `https://play.google.com/apps/testing/nl.hegmus.fluistervink`. Winkelpagina (pas zichtbaar na deelnemen): `https://play.google.com/store/apps/details?id=nl.hegmus.fluistervink`.
 - [ ] 15–20 testers werven (Gmail-adressen in de lijst van de gesloten test) en uitnodigen vanaf Developer op `fluistervink.nl`.
 - [x] Contactadres voor de Play Store en de privacypagina: `info@fluistervink.nl` (bestaat sinds 9 nov).
 - [ ] Plafond en daglimiet bij OpenAI en Anthropic nalopen: straks kan iedereen zonder code installeren.

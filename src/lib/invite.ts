@@ -11,7 +11,7 @@
  */
 export const PLAY_TEST_LINKS: Record<'beta' | 'stable', string> = {
   beta: 'https://play.google.com/apps/internaltest/4701242842814722001',
-  stable: '',
+  stable: 'https://play.google.com/apps/testing/nl.hegmus.fluistervink',
 };
 
 export interface InviteMail {
