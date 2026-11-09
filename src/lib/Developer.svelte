@@ -134,7 +134,11 @@
     const diff = check.counted
       ? ` (${check.billed >= check.counted ? '+' : '−'}${Math.round((Math.abs(check.billed - check.counted) / check.counted) * 100)}%)`
       : '';
-    return `geteld ${money(check.counted)} · rekening ${money(check.billed)}${diff} vanaf ${dateFormat.format(new Date(check.since))}`;
+    const text = `geteld ${money(check.counted)} · rekening ${money(check.billed)}${diff} vanaf ${dateFormat.format(new Date(check.since))}`;
+    // Opnieuw ophalen mislukte: de laatst bekende rekening, met de fout erbij
+    return bill.stale
+      ? `${text} · stand van ${timeFormat.format(new Date(bill.fetchedAt))} (${bill.stale})`
+      : text;
   }
 
   const centsFormat = new Intl.NumberFormat('nl-NL', {
@@ -174,6 +178,12 @@
   }
 
   const dateFormat = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'short' });
+  const timeFormat = new Intl.DateTimeFormat('nl-NL', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
   const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
