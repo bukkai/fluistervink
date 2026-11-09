@@ -81,8 +81,8 @@
       in één keer ingesproken en is er maar één van geworden, dan maak je met Kopiëren een tweede
       waarneming met dezelfde tijd en plek, en pas je daarvan de soort en het aantal aan. Zat de
       vogel ergens anders dan waar jij stond, dan zet je met Locatie aanpassen de plek op een
-      kaartje; de plek waar je het insprak blijft bewaard. Was de plek de enige twijfel, dan is de
-      waarneming daarna niet meer onzeker.
+      kaartje (of met Mijn plek nu op de plek waar je nu staat); de plek waar je het insprak blijft
+      bewaard. Was de plek de enige twijfel, dan is de waarneming daarna niet meer onzeker.
     </p>
   </div>
 </section>

@@ -2,6 +2,7 @@
   import type { Map as LeafletMap, Marker } from 'leaflet';
   import 'leaflet/dist/leaflet.css';
   import type { Position } from './db';
+  import { positionNow } from './location.svelte';
   import { listObservations } from './observations';
 
   // Kaartje in het bewerkformulier om de plek van één waarneming met de hand
@@ -16,8 +17,12 @@
     position?: Position;
     /** Zonder positie: beginnen bij de andere waarnemingen van de sessie */
     sessionId: string;
-    onplace: (lat: number, lon: number) => void;
+    /** `accuracy` alleen bij "Mijn plek nu": die van de GPS-meting */
+    onplace: (lat: number, lon: number, accuracy?: number) => void;
   } = $props();
+
+  let locating = $state(false);
+  let hereError = $state<string>();
 
   let container = $state<HTMLDivElement>();
   let map: LeafletMap | undefined;
@@ -94,6 +99,23 @@
     };
   });
 
+  // "Mijn plek nu": wie thuis of later naloopt en er nog staat (of de GPS
+  // had bij het inspreken nog geen plek), zet de stip waar hij nu is
+  async function here() {
+    locating = true;
+    hereError = undefined;
+    try {
+      const now = await positionNow();
+      setMarker?.(now.lat, now.lon);
+      map?.setView([now.lat, now.lon], Math.max(map.getZoom(), 17));
+      onplace(now.lat, now.lon, now.accuracy);
+    } catch (error) {
+      hereError = (error as Error).message;
+    } finally {
+      locating = false;
+    }
+  }
+
   // Plek van buitenaf veranderd ("Terug naar de opgenomen plek"): stip mee
   $effect(() => {
     const current = position;
@@ -113,6 +135,12 @@
 
 <div class="map" bind:this={container}></div>
 <p class="hint">Tik op de kaart of sleep de stip naar de plek van de vogel.</p>
+<button type="button" class="btn secondary here" onclick={here} disabled={locating}>
+  {locating ? 'Plek zoeken…' : 'Mijn plek nu'}
+</button>
+{#if hereError}
+  <p class="error" role="alert">{hereError}</p>
+{/if}
 
 <style>
   .map {
@@ -128,6 +156,17 @@
     margin: 0.3rem 0 0;
     font-size: 0.85rem;
     color: var(--muted);
+  }
+
+  .here {
+    align-self: flex-start;
+    margin-top: 0.4rem;
+  }
+
+  .error {
+    margin: 0.3rem 0 0;
+    font-size: 0.85rem;
+    color: var(--red);
   }
 
   /* Ruim te pakken met een vinger; zichtbaar op elke ondergrond */
