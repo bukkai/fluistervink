@@ -29,8 +29,8 @@
     <h3>Inspreken</h3>
     <p>
       Tik op "Begin met vogelen", waar je ook bent: lopend, op de fiets, in een vogelhut of gewoon
-      in de tuin. Zie of hoor je iets, tik dan op de microfoonknop of houd hem vast, en zeg wat je
-      waarneemt. Gewoon zoals je het tegen een medevogelaar zou zeggen:
+      in de tuin. Zie of hoor je iets, tik dan op de grote microfoonknop onderaan of houd hem vast,
+      en zeg wat je waarneemt. Gewoon zoals je het tegen een medevogelaar zou zeggen:
     </p>
     <ul class="examples">
       <li>"zes overvliegende houtduiven"</li>
