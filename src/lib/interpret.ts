@@ -19,6 +19,7 @@ import {
   getSpecies,
   speciesName,
   findPromptSpecies,
+  findVagrant,
   isPromptSpecies,
   lifeStages,
   methods,
@@ -94,6 +95,11 @@ const fieldProperties = {
   species_id: {
     type: 'integer',
     description: 'ID uit de soortenlijst in de systeemprompt.',
+  },
+  unlisted_species: {
+    type: 'string',
+    description:
+      'Alleen als de gebruiker duidelijk een soort noemt die niet in de soortenlijst staat (een zeldzame dwaalgast): de naam zoals gezegd, bv. "roodkopklauwier". species_name en species_id zijn dan de best passende verzamelsoort, anders Vogel onbekend. Zie "Soorten".',
   },
   count: { type: 'integer', description: 'Aantal individuen, minimaal 1.' },
   counting_method_id: { type: 'integer', enum: enumOf(countingMethods) },
@@ -284,7 +290,7 @@ Laat de plekvelden weg als de vogel bij de gebruiker is, of als het alleen gaat 
 
 Gebruik alleen een ID uit de soortenlijst hieronder; verzin nooit een ID. Schrijf bij elke soort eerst species_name, de naam precies zoals hij in de soortenlijst staat, en dan het species_id dat in de lijst bij díe naam staat. Let op soorten met namen die op elkaar lijken (Boomkruiper en Boomklever). Spraakherkenning maakt fouten: kies de soort die het meest waarschijnlijk bedoeld is en zet dan uncertain op true met een korte reden. Algemene namen ("een meeuw", "een eend") → de verzamelsoort ("Meeuw onbekend", "Eend onbekend") als die bestaat. Is de soort echt niet te bepalen, maar is er duidelijk wel een vogel gezien, kies dan de best passende verzamelsoort met uncertain ("een vogel" → Vogel onbekend).
 
-Noemt de gebruiker duidelijk een soort die niet in de lijst staat (een zeldzame dwaalgast, bv. "dwergaalscholver"), kies dan de best passende verzamelsoort (anders Vogel onbekend) met uncertain, en zet in uncertain_reason letterlijk de genoemde naam: "Gezegd: dwergaalscholver (niet in de lijst)". Kies dan geen andere soort die er toevallig op lijkt. De gebruiker zet de soort thuis zelf goed.
+Noemt de gebruiker duidelijk een soort die niet in de lijst staat (een zeldzame dwaalgast, bv. "roodkopklauwier", "kuifkoekoek", "dwergaalscholver"), zet die naam dan zoals gezegd in unlisted_species, en kies voor species_name en species_id de best passende verzamelsoort (anders Vogel onbekend) met uncertain en in uncertain_reason letterlijk de genoemde naam: "Gezegd: roodkopklauwier (niet in de lijst)". De app zoekt de soort zelf op in een lijst met dwaalgasten. Kies dan geen andere soort die er toevallig op lijkt. Gebruik unlisted_species niet voor een soort die wel in de lijst staat, ook niet als die zeldzaam is.
 
 Vogelaars gebruiken veel bijnamen en afkortingen; zie de lijst met bijnamen hieronder. Die gelden ook in verbogen vormen en verkleinwoorden ("twee pimmetjes", "drie tova's") en als spraakherkenning ze iets anders schrijft ("robo tap", "ka be vee"). Vaste afspraken:
 - "KBV" (klein bruin vogeltje) wordt door spraakherkenning vaak als "KPV" geschreven: dat is ook KBV → Zangvogel onbekend.
@@ -506,6 +512,7 @@ interface RawFields {
   text?: string;
   species_name?: string;
   species_id?: number;
+  unlisted_species?: string;
   count?: number;
   add_count?: number;
   counting_method_id?: number;
@@ -618,7 +625,23 @@ function toAction(
     }
   }
 
-  if (fields.speciesId !== undefined && !isPromptSpecies(fields.speciesId)) {
+  // Een dwaalgast die niet in de prompt staat: de app zoekt de gezegde naam op.
+  // Altijd onzeker, want die soort zie je zelden en spraakherkenning kent hem niet.
+  const said = input.unlisted_species?.trim();
+  const vagrant = said ? findVagrant(said) : undefined;
+  if (vagrant) {
+    fields.speciesId = vagrant.id;
+    fields.uncertain = true;
+    fields.uncertainReason = `Dwaalgast, niet in de vaste lijst (gezegd: "${said}")`;
+  } else if (said) {
+    warnings.push(`${block.name}: "${said}" niet gevonden bij de dwaalgasten`);
+  }
+
+  if (
+    fields.speciesId !== undefined &&
+    !isPromptSpecies(fields.speciesId) &&
+    fields.speciesId !== vagrant?.id
+  ) {
     return `${block.name}: onbekende soort-ID ${fields.speciesId}`;
   }
   // Hele getallen: het schema vraagt dat, maar het model houdt zich er niet altijd aan

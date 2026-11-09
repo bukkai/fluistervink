@@ -178,7 +178,9 @@
         <strong>Tekst wordt een waarneming.</strong> Claude, de AI van Anthropic (een kleine, snelle versie),
         leest de zin en bepaalt wat je bedoelt: een nieuwe waarneming, een verbetering, of iets weghalen.
         Het mag alleen kiezen uit een vaste lijst Nederlandse vogelsoorten en kan dus geen soorten verzinnen.
-        Twijfelt het, dan markeert het de waarneming als onzeker in plaats van te gokken.
+        Twijfelt het, dan markeert het de waarneming als onzeker in plaats van te gokken. Heel zeldzame
+        soorten (dwaalgasten zoals een roodkopklauwier) staan niet in die lijst. Noem je er een, dan zoekt
+        de app hem op in een tweede lijst; zo'n waarneming is altijd onzeker, zodat je hem thuis nakijkt.
       </li>
       <li>
         <strong>De app</strong> controleert het resultaat, slaat het op, zoekt de naam van het gebied

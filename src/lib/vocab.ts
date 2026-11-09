@@ -75,6 +75,88 @@ export function isPromptSpecies(id: number): boolean {
   return promptSpeciesIds.has(id);
 }
 
+// ---------------------------------------------------------------------------
+// Dwaalgasten: zeer zeldzame soorten die niet in de prompt staan. Noemt de
+// gebruiker er een, dan geeft het model de naam door (unlisted_species) en
+// zoekt de app hem hier op. Geen uitheemse ontsnapte kooivogels (zeldzaamheid
+// 0 in de bron): die zijn geen dwaalgast.
+
+/** Kleine letters, zonder accenten, spaties, streepjes en apostroffen */
+function normalizeName(name: string): string {
+  return name
+    .normalize('NFD')
+    .toLowerCase()
+    .replace(/[^a-z]/g, '');
+}
+
+const VAGRANT_RARITY = 4;
+const vagrants = allSpecies.filter(
+  (s) => s.rarity === VAGRANT_RARITY && s.type === 'S' && !promptSpeciesIds.has(s.id),
+);
+const vagrantIds = new Set(vagrants.map((s) => s.id));
+const keysOf = (s: Species) => [normalizeName(s.name), normalizeName(s.scientific)];
+const vagrantKeys = vagrants.flatMap((s) => keysOf(s).map((key) => ({ key, s })));
+const promptKeys = species.flatMap(keysOf);
+
+/** Is dit een dwaalgast (zeer zeldzaam, niet in de prompt)? */
+export function isVagrant(id: number): boolean {
+  return vagrantIds.has(id);
+}
+
+/** Aantal letters dat mag verschillen: spraakherkenning schrijft namen soms net anders */
+function allowedTypos(length: number): number {
+  return length >= 10 ? 2 : length >= 6 ? 1 : 0;
+}
+
+/** Levenshtein-afstand, met een bovengrens: verder dan `max` geeft max + 1 */
+export function editDistance(a: string, b: string, max = Infinity): number {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  let previous = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const current = [i];
+    for (let j = 1; j <= b.length; j++) {
+      current[j] = Math.min(
+        previous[j] + 1,
+        current[j - 1] + 1,
+        previous[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1),
+      );
+    }
+    if (Math.min(...current) > max) return max + 1;
+    previous = current;
+  }
+  return previous[b.length];
+}
+
+/**
+ * Dwaalgast bij een gezegde naam (Nederlands of wetenschappelijk), met een
+ * paar letters speling. Liever geen soort dan een verkeerde: niets als twee
+ * dwaalgasten even goed passen, of als een soort uit de prompt minstens zo
+ * goed past ("roodborsttapuit" is geen Roodkeeltapuit).
+ */
+export function findVagrant(name: string): Species | undefined {
+  const said = normalizeName(name);
+  const max = allowedTypos(said.length);
+  if (!said) return undefined;
+  let best: Species | undefined;
+  let bestDistance = max + 1;
+  let tie = false;
+  for (const { key, s } of vagrantKeys) {
+    const d = editDistance(said, key, max);
+    if (d < bestDistance) {
+      best = s;
+      bestDistance = d;
+      tie = false;
+    } else if (d === bestDistance && best && s.id !== best.id) {
+      tie = true;
+    }
+  }
+  if (!best || tie) return undefined;
+  if (promptKeys.some((key) => editDistance(said, key, bestDistance) <= bestDistance)) {
+    return undefined;
+  }
+  return best;
+}
+
 /**
  * Bijnamen en afkortingen uit vogelaarsjargon ("tova", "robotap", "KBV"),
  * zie data/bijnamen.json. `naam` staat er alleen voor de leesbaarheid.
