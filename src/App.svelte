@@ -12,7 +12,7 @@
     type StaleCheck,
   } from './lib/sessions';
   import ActiveSession from './lib/ActiveSession.svelte';
-  import { ApiError, getAccessCode, getTester, ping, takeInvite } from './lib/api';
+  import { ApiError, getAccessCode, getTester, OWNER, ping } from './lib/api';
   import { getInstallToken } from './lib/install';
   import { listDevNotes } from './lib/devNotes';
   import { CHANNEL } from './lib/log';
@@ -92,7 +92,6 @@
   );
   const onHashChange = () => {
     hash = location.hash;
-    checkInvite();
     scheduleShare();
     // De bevestiging na het stoppen alleen tonen tot je dat scherm verlaat
     if (justStopped && !hash.endsWith(justStopped)) justStopped = undefined;
@@ -110,7 +109,8 @@
 
   let menuOpen = $state(false);
 
-  // Zonder toegangscode meldt de app zich meteen aan als installatie
+  // Zonder toegangscode (alleen de eigenaar heeft er een) meldt de app zich
+  // meteen aan als installatie
   // (install.ts), zodat een eventuele controle van Cloudflare nu op het
   // hoofdscherm komt en niet midden in de eerste uitspraak. Geen verbinding:
   // dan bij het eerste verzoek opnieuw, zonder melding.
@@ -129,24 +129,9 @@
   // van de proxy (ping); in localStorage, dus opnieuw lezen per scherm.
   let isOwner = $derived.by(() => {
     void route;
-    void welcome;
     void installProblem;
-    return getTester() === 'eigenaar';
+    return getTester() === OWNER;
   });
-
-  // Net geopend via een uitnodigingslink: meteen testen of de code werkt en
-  // welkom heten op het hoofdscherm. Ook bij hashchange, voor als de app al
-  // open stond (main.ts heeft de code dan net bewaard).
-  let welcome = $state<{ ok: boolean; tester?: string }>();
-  async function checkInvite() {
-    if (!takeInvite()) return;
-    try {
-      welcome = { ok: true, tester: await ping() };
-    } catch {
-      welcome = { ok: false };
-    }
-  }
-  checkInvite();
 
   // Delen met de ontwikkelaar pas na toestemming (share.ts). Zolang er niet
   // gekozen is, vraagt het hoofdscherm het; ook aan wie de app al had.
@@ -342,22 +327,9 @@
         druk dan op de knop en zeg het, bijvoorbeeld
         <em>"zes overvliegende houtduiven"</em> of <em>"roepje vink"</em>.
       </p>
-      {#if welcome?.ok}
-        <p class="welcome">
-          Welkom{welcome.tester ? `, ${welcome.tester}` : ''}! Je toegang is ingesteld. Tip: zet de
-          app op je startscherm via het menu van Chrome → <em>Toevoegen aan startscherm</em>. Lees
-          ook even <a href="#uitleg">hoe het werkt</a>.
-          <button class="link" onclick={() => (welcome = undefined)}>Oké</button>
-        </p>
-      {:else if welcome}
+      {#if installProblem}
         <p class="notice">
-          De code uit de uitnodigingslink werkt niet (of er is geen verbinding). Kijk bij
-          <a href="#instellingen">Instellingen</a>.
-        </p>
-      {:else if installProblem}
-        <p class="notice">
-          De app kon zich niet aanmelden ({installProblem}). Probeer het later opnieuw, of vul een
-          testercode in bij <a href="#instellingen">Instellingen</a>.
+          De app kon zich niet aanmelden ({installProblem}). Probeer het later opnieuw.
         </p>
       {/if}
       {#if stale?.kind === 'stopped'}
@@ -536,11 +508,6 @@
     border-radius: var(--radius);
     color: var(--amber);
     background: var(--amber-soft);
-  }
-
-  .notice a {
-    color: inherit;
-    font-weight: 600;
   }
 
   .welcome {

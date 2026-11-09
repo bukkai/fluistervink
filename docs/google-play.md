@@ -64,23 +64,11 @@ Op GitHub: repository → **Settings → Secrets and variables → Actions → N
 ### 6. Testers toevoegen
 
 1. **Testen → Interne tests → Testers**: een e-maillijst maken met de Google-accounts (Gmail-adressen) van de Android-testers (beta). Hooguit 100. Gebruikers van de stabiele versie gaan in de lijst van de gesloten test, met een eigen link.
-2. Daar staat ook de **link voor deelname**. Zet die eenmalig in `PLAY_TEST_LINKS` in `src/lib/invite.ts` (`beta` voor de interne test, `stable` voor de gesloten test). Zolang die leeg is, stuurt de uitnodigingsmail Android-testers naar Chrome, zoals vroeger.
-3. Per tester: eerst het Google-account op de lijst van stap 1 zetten, daarna uitnodigen vanaf het scherm Developer (op de beta voor de interne test, op `fluistervink.nl` voor de gesloten test). De mail bevat voor Android de link voor deelname en de toegangscode los; voor een iPhone de persoonlijke link.
-4. De tester opent de link voor deelname op de telefoon, wordt tester, installeert de app uit Play en vult de code in bij **Instellingen**. De link met `#code=` werkt op Android niet voor de app: die opent in Chrome, en de app heeft eigen opslag, los van Chrome (zie hieronder, App Links).
+2. Daar staat ook de **link voor deelname**: interne test `https://play.google.com/apps/internaltest/4701242842814722001`, gesloten test `https://play.google.com/apps/testing/nl.hegmus.fluistervink`.
+3. Per tester: eerst het Google-account op de lijst van stap 1 zetten, daarna de link voor deelname sturen (vanaf je eigen mail). Een iPhone-gebruiker krijgt het adres van de site (Safari, "Zet op beginscherm").
+4. De tester opent de link voor deelname op de telefoon, wordt tester en installeert de app uit Play. Een code is niet nodig: de app meldt zich vanzelf aan (Play Integrity). Wie wil, vult bij **Instellingen** een naam in, die jij op Developer ziet.
 
 Jijzelf: de debug-APK die je nu hebt, is met een andere sleutel ondertekend. Verwijder die eerst; daarna installeer je de app uit Play, net als de testers. **Let op:** verwijderen wist de sessies in de app. Maak eerst een JSON-export (met opnames) en importeer die daarna in de app uit Play.
-
-## Later: App Links (voorstel, nog niet gebouwd)
-
-Met App Links opent de link `https://…/#code=…` op Android de app in plaats van Chrome, mits de app geïnstalleerd is. Dan hoeft de tester de code niet over te tikken: Play-link, installeren, en daarna op de persoonlijke link tikken. Zonder app blijft de link gewoon in Chrome werken.
-
-Wat ervoor nodig is:
-
-1. **`public/.well-known/assetlinks.json`**: verklaart dat de app `nl.hegmus.fluistervink` bij de site hoort, met de SHA-256 van de **app signing key** van Play (Play Console → Testen en releasen → App-integriteit → App-ondertekening), en eventueel die van de debug-sleutel. Beide omgevingen serveren dezelfde bestanden en het is één app, dus één bestand. Controleren dat de Worker een map met een punt ervoor serveert (`curl https://fluistervink.nl/.well-known/assetlinks.json`).
-2. **Intent-filter in `AndroidManifest.xml`** met `android:autoVerify="true"`, scheme `https` en de host van de omgeving (via een `manifestPlaceholder` per build in `android/app/build.gradle`, zodat de beta-app alleen links van workers.dev opent en de stabiele alleen die van `fluistervink.nl`). Android controleert bij het installeren het bestand van stap 1; klopt het niet, dan gaat de link stil naar Chrome. Nalopen met `adb shell pm get-app-links nl.hegmus.fluistervink`.
-3. **`@capacitor/app`** (officiële plug-in) en in `src/lib/native.ts` een luisteraar op `appUrlOpen`, die de code uit het `#` haalt en hetzelfde doet als bij het openen van de link in de browser (opslaan, welkom tonen). Ook bij een koude start, als de app door de link opstart.
-
-Kosten: ongeveer een middag werk, plus een nieuwe release (tag, beide AAB's uploaden), want stap 2 en 3 zijn native. Testers moeten de app bijwerken; tot dan werkt de code invullen bij Instellingen nog steeds. De mail kan daarna stap 3 vervangen door "tik op deze link", met de code los als terugval.
 
 ## Een nieuwe versie
 

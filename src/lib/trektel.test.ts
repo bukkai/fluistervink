@@ -115,17 +115,7 @@ describe('levelDb', () => {
 describe('instelling', () => {
   beforeEach(() => localStorage.clear());
 
-  it('alleen voor de eigenaar en Maarten', () => {
-    setTrektelEnabled(true);
-    expect(trektelEnabled()).toBe(false);
-    localStorage.setItem('fluistervink.tester', 'Maarten');
-    expect(trektelEnabled()).toBe(true);
-    localStorage.setItem('fluistervink.tester', 'Jurian');
-    expect(trektelEnabled()).toBe(false);
-  });
-
   it('staat standaard uit', () => {
-    localStorage.setItem('fluistervink.tester', 'eigenaar');
     expect(trektelEnabled()).toBe(false);
     setTrektelEnabled(true);
     expect(trektelEnabled()).toBe(true);

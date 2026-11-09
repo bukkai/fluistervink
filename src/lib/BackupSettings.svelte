@@ -101,7 +101,7 @@
     {/if}
     <p class="hint">
       Terugzetten voegt alleen sessies toe die hier nog niet staan; wat er al is, blijft zoals het
-      is. Instellingen en je testercode gaan niet mee.
+      is. Instellingen gaan niet mee.
     </p>
   </div>
 </section>

@@ -72,7 +72,7 @@ De spraakherkenning rekent per minuut audio. Bij `gpt-4o-transcribe` is dat in d
 
 ## Fasen
 
-1. **Knippen en doorgaan** (punt 1, 2 en 4), achter de instelling, alleen zichtbaar voor de eigenaar en Maarten. Proef op een telpost met Maarten: knipt hij goed, gaat er geen spraak verloren, klopt de stiltedrempel.
+1. **Knippen en doorgaan** (punt 1, 2 en 4), achter de instelling, eerst alleen zichtbaar voor de eigenaar en Maarten (sinds 9 nov voor iedereen, toen de testercodes verdwenen). Proef op een telpost met Maarten: knipt hij goed, gaat er geen spraak verloren, klopt de stiltedrempel.
 2. **Beveiligingen en plafond** (punt 3 en 5). Pas daarna de instelling voor iedereen.
 3. **Uitleg, privacy, meten** (punt 6). Kan samen met fase 2 in één PR.
 

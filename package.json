@@ -15,7 +15,6 @@
     "deploy": "npm run build && wrangler deploy",
     "types": "wrangler types worker/worker-configuration.d.ts",
     "testset": "node scripts/testset.mjs",
-    "tester": "node scripts/tester.mjs",
     "feedback": "node scripts/feedback.mjs",
     "build:stable": "CLOUDFLARE_ENV=stable vite build --mode stable",
     "release": "node scripts/release.mjs",

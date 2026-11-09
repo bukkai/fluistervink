@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getTester, ping, setAccessCode } from './api';
+import { getAccessCode, getTester, ping, setAccessCode } from './api';
 import { getInstallToken, integrityNonce } from './install';
 
 // Aanmelden zonder code, met een nagebootste proxy en Turnstile: er gaat
@@ -28,10 +28,12 @@ beforeEach(() => {
         return Response.json({ token: 'i1.token', tester: 'app-3f9a2b1c' });
       }
       if (url === '/api/install') return Response.json({ turnstileSiteKey: 'site-key' });
-      if (auth === 'Bearer i1.oud') return Response.json({ error: 'nee' }, { status: 401 });
+      if (auth === 'Bearer i1.oud' || auth === 'Bearer oude-testercode') {
+        return Response.json({ error: 'nee' }, { status: 401 });
+      }
       return Response.json({
         ok: true,
-        tester: auth === 'Bearer i1.token' ? 'app-3f9a2b1c' : 'anna',
+        tester: auth === 'Bearer i1.token' ? 'app-3f9a2b1c' : 'eigenaar',
       });
     }),
   );
@@ -91,10 +93,36 @@ describe('aanmelden zonder code', () => {
     expect(ids[0]).not.toBe(ids[1]);
   });
 
-  it('gebruikt een toegangscode als die er is', async () => {
-    setAccessCode('code-van-anna');
-    expect(await ping()).toBe('anna');
+  it('gebruikt de code van de eigenaar als die er is', async () => {
+    setAccessCode('code-van-de-eigenaar');
+    expect(await ping()).toBe('eigenaar');
     expect(requests.map((r) => r.url)).toEqual(['/api/ping']);
+  });
+
+  it('vervangt een oude testercode door een installatie, zonder dat het verzoek mislukt', async () => {
+    localStorage.setItem('fluistervink.accessCode', 'oude-testercode');
+    localStorage.setItem('fluistervink.tester', 'anna');
+    expect(await ping()).toBe('app-3f9a2b1c');
+    expect(getAccessCode()).toBe('');
+    expect(requests.map((r) => `${r.url} ${r.auth}`)).toEqual([
+      '/api/ping Bearer oude-testercode',
+      '/api/install null',
+      '/api/install null',
+      '/api/ping Bearer i1.token',
+    ]);
+  });
+
+  it('laat een net ingevulde verkeerde code staan, zodat Instellingen het kan melden', async () => {
+    setAccessCode('oude-testercode');
+    await expect(ping()).rejects.toMatchObject({ status: 401 });
+    expect(getAccessCode()).toBe('oude-testercode');
+  });
+
+  it('laat de code van de eigenaar staan als de proxy hem even weigert', async () => {
+    localStorage.setItem('fluistervink.accessCode', 'oude-testercode');
+    localStorage.setItem('fluistervink.tester', 'eigenaar');
+    await expect(ping()).rejects.toMatchObject({ status: 401 });
+    expect(getAccessCode()).toBe('oude-testercode');
   });
 
   it('vergeet een token dat niet (meer) werkt', async () => {

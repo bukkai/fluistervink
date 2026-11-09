@@ -137,11 +137,11 @@
       als je dat bij <a href="{app}#instellingen">Instellingen</a> aanzet.
     </p>
     <p>
-      Het staat bij Cloudflare onder je testernaam, of zonder code onder de willekeurige naam van je
-      installatie. Alleen de ontwikkelaar kan het lezen, en gebruikt het alleen om de herkenning en
-      de app te verbeteren. Niet doorgeven, niet publiceren. Wil je dat het weg is, stuur dat als
-      feedback in de app of mail naar <a href="mailto:{CONTACT}">{CONTACT}</a>: dan wordt alles van
-      jou gewist.
+      Het staat bij Cloudflare onder de willekeurige naam van je installatie (met je naam erbij als
+      je die bij Instellingen invulde). Alleen de ontwikkelaar kan het lezen, en gebruikt het alleen
+      om de herkenning en de app te verbeteren. Niet doorgeven, niet publiceren. Wil je dat het weg
+      is, stuur dat als feedback in de app of mail naar <a href="mailto:{CONTACT}">{CONTACT}</a>:
+      dan wordt alles van jou gewist.
     </p>
   </div>
 </section>

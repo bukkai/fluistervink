@@ -11,7 +11,7 @@ Besloten 24 okt. Testers proberen nieuwe versies uit op de **beta**; wie gewoon 
 | In de app | label "beta" in de kop, heet "Fluistervink Beta" | heet "Fluistervink" |
 | Google Play | interne test | gesloten test, later productie |
 
-**Gedeeld:** de KV (`FEEDBACK`, `TESTERS`) en dezelfde geheimen. Eén toegangscode werkt op beide adressen, `npm run tester` zet de codes in beide Workers, en `npm run feedback -- pull` haalt alles op, waar het ook vandaan komt. Elke gedeelde sessie en elke JSON-export heeft een veld `channel` (`beta` of `stable`).
+**Gedeeld:** de KV (`FEEDBACK`, `TESTERS`) en dezelfde geheimen. De code van de eigenaar werkt op beide adressen, en `npm run feedback -- pull` haalt alles op, waar het ook vandaan komt. Elke gedeelde sessie en elke JSON-export heeft een veld `channel` (`beta` of `stable`).
 
 **Gescheiden:** de gegevens op de telefoon. IndexedDB hoort bij een adres, dus sessies op de beta zie je niet op `fluistervink.nl` en andersom. Overstappen gaat met de JSON-export en -import (Instellingen / Developer).
 
@@ -84,11 +84,7 @@ npx wrangler secret put OPENAI_ADMIN_KEY --env stable
 npx wrangler secret put ANTHROPIC_ADMIN_KEY --env stable
 ```
 
-```bash
-npm run tester -- push
-```
-
-(De laatste zet `ACCESS_CODES` in beta, previews en stabiel.) Daarna `https://fluistervink.nl/#code=<jouw code>` openen en een korte proefopname doen.
+Daarna `https://fluistervink.nl` openen, bij Instellingen je code invullen en een korte proefopname doen.
 
 ### 5. Google Play
 
@@ -97,5 +93,5 @@ Zie `docs/google-play.md`. Kort: één app, twee tracks. De beta-AAB naar de **i
 ## Waar staat wie
 
 - De eigenaar en de eerste tester blijven op de beta (workers.dev); hun gegevens staan daar.
-- Nieuwe mensen die alleen willen vogelen: uitnodigen vanaf het scherm Developer **op `fluistervink.nl`** (de link gebruikt het adres waarop je het scherm opent).
-- Uitnodigingen voor de beta: vanaf het scherm Developer op workers.dev, zoals nu.
+- Nieuwe mensen die alleen willen vogelen: de stabiele versie (`fluistervink.nl`, of de gesloten test in Play). Een code is niet nodig.
+- Testers van de beta: workers.dev, of de interne test in Play.

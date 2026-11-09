@@ -7,7 +7,6 @@ Spraakgestuurde vogelwaarnemingen. Zie `CLAUDE.md` voor het ontwerp en `NOTES.md
 Vereist Node 22 (zie `.node-version`). Kopieer eerst `.dev.vars.example` naar `.dev.vars` en vul in:
 
 - `ACCESS_CODE`: alleen voor de lokale Worker; kies iets simpels, mag per computer verschillen.
-- `ACCESS_CODES` (optioneel): codes voor testers, zie "Testers uitnodigen".
 - `OPENAI_API_KEY` en `ANTHROPIC_API_KEY`: maak per computer een nieuwe sleutel aan (ze worden maar één keer getoond), zodat je ze los kunt intrekken.
 
 ```bash
@@ -58,26 +57,11 @@ Eenmalig instellen in het Cloudflare-dashboard:
 
 Handmatig deployen kan ook: `npm run deploy`.
 
-## Testers uitnodigen
+## Testers
 
-Elke tester krijgt een eigen toegangscode. Het makkelijkst vanuit de app: scherm **Developer** (menu, alleen voor de eigenaar) → naam en e-mailadres invullen → **Uitnodigen en mailen**. De proxy maakt een code (bewaard in KV, binding `TESTERS`) en je mail-app opent met een kant-en-klaar bericht met de link; je verstuurt het zelf, vanaf je eigen adres. Het e-mailadres wordt nergens bewaard. Op hetzelfde scherm staan alle testers, met de link opnieuw te kopiëren en een knop om iemand af te sluiten. Een nieuwe of afgesloten code werkt binnen een minuut overal (KV wordt even gecachet).
+Er zijn geen testercodes meer: iedereen installeert de app (Android uit Google Play, zie `docs/google-play.md`; anders de site in Chrome of Safari) en de app meldt zich vanzelf aan als installatie ("app-3f9a2b1c"). Op het scherm **Developer** (menu, alleen voor de eigenaar) staan alle installaties, met de naam die iemand bij Instellingen opgaf, en een knop om er een af te sluiten.
 
-Of met één commando vanaf de computer:
-
-```bash
-npm run tester -- add anna                # code maken, naar Cloudflare, link tonen
-npm run tester -- list                    # alle testers met hun uitnodigingslink
-npm run tester -- remove anna             # tester afsluiten
-npm run tester -- url https://…           # ander adres in de links (standaard productie)
-```
-
-Het script houdt de codes bij in `.testers.json` (niet in git) en zet ze als geheim `ACCESS_CODES` in Cloudflare, via `wrangler` (eenmalig `npx wrangler login`): in productie (beta), in de stabiele versie én in de Previews Base, want previews erven geen geheimen van productie. Een bestaande preview krijgt de nieuwe lijst pas bij zijn volgende deploy. Werk je op een andere computer, kopieer `.testers.json` dan mee (of bewaar hem in de wachtwoordmanager); anders begint de lijst daar leeg en overschrijft `add` de testers die er al waren.
-
-Stuur de tester de link. Op Android: de link in Chrome openen (de app bewaart de code en heet de tester welkom op het hoofdscherm), daarna pas "Toevoegen aan startscherm". Jouw eigen `ACCESS_CODE` blijft gewoon werken, als tester "eigenaar". In Workers Logs staat bij elk verzoek welke tester het deed.
-
-Testers uit het script staan ook in de lijst in de app, maar zijn daar niet af te sluiten; testers uit de app staan niet in `.testers.json`. Gebruik niet dezelfde naam in beide.
-
-Met de hand kan ook: `ACCESS_CODES` is JSON, `{"anna": "code", "piet": "code"}`, in te stellen in het dashboard onder Variables and Secrets.
+Alleen jij hebt een code, `ACCESS_CODE`: vul hem in bij **Instellingen → Code van de ontwikkelaar**, dan ben je "eigenaar" (Developer, Statistieken, kosten, geen snelheidslimiet). In Workers Logs staat bij elk verzoek welke installatie het deed.
 
 ### Wat testers delen ophalen
 

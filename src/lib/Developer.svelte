@@ -1,11 +1,10 @@
 <script lang="ts">
   // Alleen voor de eigenaar (menu en route in App.svelte): feedback van testers
-  // lezen, testers uitnodigen, kosten bekijken, exporteren voor de testset en importeren. Afgeschermd in de interface; de
-  // proxy staat het beheer van testers ook alleen de eigenaar toe.
+  // lezen, installaties bekijken en afsluiten, kosten bekijken, exporteren voor
+  // de testset en importeren. Afgeschermd in de interface; de proxy staat het
+  // beheer ook alleen de eigenaar toe.
   import {
-    addTester,
     fetchBilling,
-    inviteLink,
     listSharedNotes,
     listTesters,
     listUsage,
@@ -26,8 +25,6 @@
   } from './costs';
   import { db } from './db';
   import { describeImport, exportAllJson, importJson, saveFile } from './export';
-  import { inviteMail, inviteMailto, PLAY_TEST_LINKS } from './invite';
-  import { CHANNEL } from './log';
 
   let testers = $state<Tester[]>();
   let testersError = $state('');
@@ -166,61 +163,10 @@
   }
   const maxTesterCost = $derived(Math.max(...(costs?.perTester.map((t) => t.cost) ?? []), 0));
 
-  let name = $state('');
-  let email = $state('');
-  let inviting = $state(false);
-  /** Net uitgenodigd: knop naar de mail-app, en de link om te kopiëren */
-  let invited = $state<{ name: string; link: string; mailto: string }>();
-  let inviteError = $state('');
-
-  /**
-   * Maakt een code bij de proxy en toont daarna een knop die de mail-app opent
-   * met een kant-en-klaar bericht. De mail gaat vanaf je eigen adres (geen
-   * mailserver nodig, komt niet in de spam); het e-mailadres zelf wordt
-   * nergens bewaard. De mail-app openen kan niet meteen na het aanmaken:
-   * Chrome op Android opent een andere app alleen direct na een tik, en het
-   * wachten op de proxy telt niet meer als zo'n tik.
-   */
-  async function invite(event: SubmitEvent) {
-    event.preventDefault();
-    inviting = true;
-    inviteError = '';
-    invited = undefined;
-    try {
-      const tester = await addTester(name.trim());
-      const link = inviteLink(tester.code);
-      invited = {
-        name: tester.name,
-        link,
-        mailto: inviteMailto(
-          email.trim(),
-          inviteMail(tester.name, link, tester.code, PLAY_TEST_LINKS[CHANNEL]),
-        ),
-      };
-      name = '';
-      email = '';
-      await loadTesters();
-    } catch (error) {
-      inviteError = `Uitnodigen mislukt: ${error instanceof Error ? error.message : error}`;
-    } finally {
-      inviting = false;
-    }
-  }
-
-  let copied = $state('');
-
-  async function copyLink(key: string, link: string) {
-    await navigator.clipboard.writeText(link);
-    copied = key;
-    setTimeout(() => (copied = ''), 2000);
-  }
-
   async function remove(tester: Tester) {
-    const what = tester.source === 'install' ? 'De app' : 'De code';
-    if (!confirm(`${who(tester.name)} afsluiten? ${what} werkt daarna niet meer.`)) return;
+    if (!confirm(`${who(tester.name)} afsluiten? De app werkt daarna niet meer.`)) return;
     try {
       await removeTester(tester.name);
-      if (invited?.name === tester.name) invited = undefined;
       await loadTesters();
     } catch (error) {
       testersError = `Afsluiten mislukt: ${error instanceof Error ? error.message : error}`;
@@ -338,59 +284,13 @@
 </section>
 
 <section class="card">
-  <div class="card-head"><h2>Tester uitnodigen</h2></div>
-  <form class="card-body stack" onsubmit={invite}>
-    <label>
-      Naam
-      <input
-        bind:value={name}
-        required
-        pattern="[A-Za-z0-9_\-]{'{'}1,32{'}'}"
-        title="Zonder spaties of accenten"
-        autocapitalize="none"
-        autocomplete="off"
-      />
-    </label>
-    <label>
-      E-mailadres
-      <input type="email" bind:value={email} required autocomplete="off" />
-    </label>
-    <button class="btn" class:secondary={invited} disabled={inviting}>Code maken</button>
-    {#if inviteError}
-      <p class="message error">{inviteError}</p>
-    {/if}
-    {#if invited}
-      <p class="message">Code voor {invited.name} gemaakt.</p>
-      <a class="btn" href={invited.mailto}>Mail openen</a>
-      <p class="hint">
-        Opent je mail-app met het bericht. Lukt dat niet,
-        <button type="button" class="link" onclick={() => copyLink('new', invited!.link)}>
-          {copied === 'new' ? 'gekopieerd' : 'kopieer dan de link'}
-        </button>
-        en stuur hem zelf.
-      </p>
-    {/if}
-    <p class="hint">
-      De naam komt in de feedback en de logs; het e-mailadres wordt nergens bewaard. De mail gaat
-      vanaf je eigen adres.
-    </p>
-    {#if PLAY_TEST_LINKS[CHANNEL]}
-      <p class="hint">
-        Android: zet het Google-account van de tester eerst op de testerslijst in de Play Console;
-        anders werkt de link voor deelname niet.
-      </p>
-    {/if}
-  </form>
-</section>
-
-<section class="card">
-  <div class="card-head"><h2>Testers en installaties</h2></div>
+  <div class="card-head"><h2>Installaties</h2></div>
   <div class="card-body stack">
     {#if testersError}
       <p class="message error">{testersError}</p>
     {/if}
     {#if testers?.length === 0}
-      <p class="hint">Nog geen testers.</p>
+      <p class="hint">Nog geen installaties.</p>
     {:else if testers}
       <ul class="testers">
         {#each testers as tester (tester.name)}
@@ -398,24 +298,13 @@
             <span class="name">
               {who(tester.name)}
               <span class="muted">
-                {tester.source === 'secret'
-                  ? '· via npm run tester'
-                  : tester.invitedAt
-                    ? `· ${dateFormat.format(tester.invitedAt)}`
-                    : ''}
-                {tester.source === 'install'
-                  ? `· zonder code (${tester.via === 'play' ? 'Play' : 'browser'})`
-                  : ''}
+                {tester.invitedAt ? `· ${dateFormat.format(tester.invitedAt)}` : ''}
+                · {tester.via === 'play' ? 'Play' : 'browser'}
                 {tester.blocked ? '· afgesloten' : ''}
               </span>
               <span class="usage muted">{usageText(tester.usage)}</span>
             </span>
-            {#if tester.source === 'app' && tester.code}
-              <button class="link" onclick={() => copyLink(tester.name, inviteLink(tester.code!))}>
-                {copied === tester.name ? 'Gekopieerd' : 'Link'}
-              </button>
-              <button class="link danger" onclick={() => remove(tester)}>Afsluiten</button>
-            {:else if tester.source === 'install' && !tester.blocked}
+            {#if !tester.blocked}
               <button class="link danger" onclick={() => remove(tester)}>Afsluiten</button>
             {/if}
           </li>
