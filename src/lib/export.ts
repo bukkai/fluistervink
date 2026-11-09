@@ -37,7 +37,13 @@ function fromDataUrl(url: string): StoredAudio {
   return { data: Uint8Array.from(atob(data), (c) => c.charCodeAt(0)).buffer, type };
 }
 
-export async function exportAllJson({ withAudio = false } = {}): Promise<Blob> {
+/**
+ * `withAudio`: alle opnames, geen, of alleen die waarvoor de functie true geeft
+ * (de back-up neemt alleen opnames mee die nog nodig zijn, zie backup.ts).
+ */
+export async function exportAllJson({
+  withAudio = false,
+}: { withAudio?: boolean | ((u: Utterance) => boolean) } = {}): Promise<Blob> {
   const [sessions, utterances, observations, deletedObservations, events] = await Promise.all([
     db.sessions.toArray(),
     db.utterances.toArray(),
@@ -53,11 +59,15 @@ export async function exportAllJson({ withAudio = false } = {}): Promise<Blob> {
     tester: getTester(),
     sessions,
     utterances: await Promise.all(
-      utterances.map(async ({ audio, ...u }) => ({
-        ...u,
-        audioBytes: audio && audioSize(audio),
-        audioData: withAudio && audio ? await toDataUrl(audioBlob(audio)) : undefined,
-      })),
+      utterances.map(async (utterance) => {
+        const { audio, ...u } = utterance;
+        const include = typeof withAudio === 'function' ? withAudio(utterance) : withAudio;
+        return {
+          ...u,
+          audioBytes: audio && audioSize(audio),
+          audioData: include && audio ? await toDataUrl(audioBlob(audio)) : undefined,
+        };
+      }),
     ),
     observations,
     deletedObservations,
