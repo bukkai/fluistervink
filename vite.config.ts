@@ -33,7 +33,18 @@ export default defineConfig({
     svelte(),
     // Draait de Worker (worker/index.ts) mee in de dev server, zodat
     // `npm run dev` zowel de app als /api lokaal serveert.
-    cloudflare(),
+    // De testset (scripts/testset.mjs) telt zijn verbruik in de echte
+    // D1-database, zodat de kaart Kosten op Developer ook die runs ziet.
+    // Gewone `npm run dev` blijft lokaal.
+    cloudflare(
+      process.env.FLUISTERVINK_USAGE_ONLINE
+        ? {
+            config: (config) => {
+              for (const db of config.d1_databases ?? []) db.remote = true;
+            },
+          }
+        : undefined,
+    ),
     // Losse privacypagina op /privacy, voor Google Play (build/privacyPage.ts)
     privacyPage(),
     // Maakt het manifest en een service worker (Workbox) die de app-bestanden
