@@ -12,14 +12,9 @@
   <div class="card-body">
     <h3>Waarom Fluistervink?</h3>
     <p>
-      Elke waarneming die op waarneming.nl komt, telt. Onderzoekers en natuurbeschermers gebruiken
-      ze om te volgen hoe het met de vogels gaat. Zo draag je als vogelaar bij aan de wetenschap
-      (citizen science).
-    </p>
-    <p>
-      Maar alles achteraf met de hand invoeren is saai en kost veel tijd, dus blijft het vaak
-      liggen. Met Fluistervink zeg je onderweg gewoon wat je ziet of hoort, en een vogelmaatje
-      schrijft mee. Jij blijft kijken en luisteren; thuis staat je lijst klaar.
+      Waarnemingen op waarneming.nl helpen onderzoekers volgen hoe het met de vogels gaat. Maar
+      alles achteraf invoeren kost tijd. Met Fluistervink zeg je onderweg wat je ziet of hoort, en
+      thuis staat je lijst klaar.
     </p>
   </div>
 </section>
@@ -28,72 +23,47 @@
   <div class="card-body">
     <h3>Inspreken</h3>
     <p>
-      Tik op "Begin met vogelen", waar je ook bent: lopend, op de fiets, in een vogelhut of gewoon
-      in de tuin. Zie of hoor je iets, tik dan op de grote microfoonknop onderaan of houd hem vast,
-      en zeg wat je waarneemt. Gewoon zoals je het tegen een medevogelaar zou zeggen:
+      Tik op "Begin met vogelen". Zie of hoor je iets, tik dan op de microfoonknop onderaan (of houd
+      hem vast) en zeg het zoals tegen een medevogelaar:
     </p>
     <ul class="examples">
       <li>"zes overvliegende houtduiven"</li>
       <li>"roepje vink"</li>
       <li>"schatting vijfhonderd spreeuwen"</li>
-      <li>"vijf wilde eenden, twee vrouwtjes en drie mannetjes"</li>
       <li>"mogelijk een woudaap" (wordt onzeker)</li>
+      <li>"buizerd overvliegend, vijfhonderd meter zuid van hier"</li>
     </ul>
     <p>
-      Vogelaarsjargon werkt ook: "tova", "KBV", "grobo". Wetenschappelijke namen ook: "Fringilla
-      coelebs".
+      Jargon ("tova", "grobo") en wetenschappelijke namen werken ook. Meerdere soorten in één keer
+      mag: "zes houtduiven en een vink" wordt twee waarnemingen. Na drie minuten stopt een opname
+      vanzelf.
     </p>
     <p>
-      Meerdere soorten in één keer kan ook: "zes houtduiven en een vink" wordt twee waarnemingen,
-      met dezelfde tijd en plek. Noem je dezelfde soort twee keer ("vijf houtduiven ... nog twee
-      houtduiven"), dan telt de app ze op. Je kunt er zelfs een verbetering bij zeggen: "buizerd
-      overvliegend, en die ruigpoot van daarnet mag weg". In een vogelhut kun je zo een hele lijst
-      achter elkaar inspreken; na drie minuten stopt de opname vanzelf, en dan begin je gewoon een
-      nieuwe.
+      Met een afstand én windrichting zet de app de vogel zelf op de kaart. Zeg je alleen "aan de
+      overkant van de rivier", dan wordt hij onzeker en zet je hem thuis op de kaart.
     </p>
-    <p>
-      Zit de vogel verderop, zeg dan waar: "buizerd overvliegend, vijfhonderd meter zuid van hier".
-      Met een afstand én een windrichting zet de app hem zelf op de goede plek, met een ruimere
-      marge, want afstanden schatten is lastig. Zeg je alleen iets als "blauwe reiger aan de
-      overkant van de rivier", dan kan de app de kaart niet lezen: de waarneming wordt onzeker, en
-      thuis zet je hem op de kaart. "Links" of "voor me" weet de app niet; zeg liever een
-      windrichting.
-    </p>
-    <p>
-      In de Android-app kan ook de volumeknop de opname starten en stoppen (aanzetten bij
-      Instellingen). Dan hoef je niet te zoeken waar de knop op het scherm zit, en werkt het ook met
-      handschoenen of met een Bluetooth-knopje voor selfies.
-    </p>
-    <p>
-      Snel beginnen in de Android-app: houd het pictogram van Fluistervink ingedrukt en kies "Begin
-      met vogelen". Dat start meteen een sessie. Sleep je die keuze naar je beginscherm, dan heb je
-      er een eigen knop voor. Of zet een tegel in de snelle instellingen (Instellingen, "Snel
-      beginnen"): dan veeg je vanuit elke app naar beneden en tik je.
-    </p>
+    {#if isNativeApp}
+      <p>
+        In de Android-app kan ook de volumeknop de opname starten en stoppen (bij Instellingen).
+        Snel beginnen: houd het pictogram van Fluistervink ingedrukt en kies "Begin met vogelen".
+      </p>
+    {/if}
   </div>
 </section>
 
 <section class="card">
   <div class="card-body">
     <h3>Verbeteren</h3>
-    <p>Iets verkeerd verstaan of verkeerd gezegd? Zeg het gewoon:</p>
+    <p>Zeg het gewoon:</p>
     <ul class="examples">
       <li>"nee, keep in plaats van vink"</li>
       <li>"nog drie erbij"</li>
       <li>"die laatste weg"</li>
-      <li>"ongedaan maken" (en als dat te veel was: "toch niet ongedaan maken")</li>
+      <li>"ongedaan maken"</li>
     </ul>
     <p>
-      Zeg je alleen "nee" en een vogel ("nee, keep"), dan voert de app de verbetering uit, maar
-      onzeker: in de wind klinkt "een keep" net zo. Thuis zie je dan wat het eerst was.
-    </p>
-    <p>
-      Thuis kun je alles nalopen en aanpassen door op een waarneming te tikken. Zijn er twee soorten
-      in één keer ingesproken en is er maar één van geworden, dan maak je met Kopiëren een tweede
-      waarneming met dezelfde tijd en plek, en pas je daarvan de soort en het aantal aan. Zat de
-      vogel ergens anders dan waar jij stond, dan zet je met Locatie aanpassen de plek op een
-      kaartje (of met Mijn plek nu op de plek waar je nu staat); de plek waar je het insprak blijft
-      bewaard. Was de plek de enige twijfel, dan is de waarneming daarna niet meer onzeker.
+      Alleen "nee, keep" voert de app uit, maar onzeker: in de wind klinkt "een keep" net zo. Thuis
+      tik je op een waarneming om hem aan te passen, te kopiëren of de plek te verzetten.
     </p>
   </div>
 </section>
@@ -102,45 +72,35 @@
   <div class="card-body">
     <h3>Trillen</h3>
     <p>
-      Zo hoef je onderweg niet op je scherm te kijken. Bij het begin en eind van een opname voel je
-      een heel kort tikje, daarna hoor je via een tril of het gelukt is:
+      Zo hoef je niet op het scherm te kijken. Een heel kort tikje bij begin en eind van de opname,
+      daarna:
     </p>
     <dl>
       <dt>Eén korte tril</dt>
       <dd>Opgeslagen.</dd>
       <dt>Kort, lang</dt>
-      <dd>Opgeslagen, maar onzeker. Even nalopen als je thuis bent.</dd>
+      <dd>Opgeslagen, maar onzeker. Thuis even nalopen.</dd>
       <dt>Twee korte</dt>
-      <dd>Niet begrepen, er is niets opgeslagen. Zeg het nog eens.</dd>
+      <dd>Niet begrepen, niets opgeslagen. Zeg het nog eens.</dd>
       <dt>Drie korte</dt>
       <dd>
-        Er ging iets mis, bijvoorbeeld geen bereik. De opname is bewaard en gaat niet verloren, maar
-        wordt niet vanzelf opnieuw verwerkt: tik later, als je weer bereik hebt, bij de sessie onder
-        "Uitspraken" op "Opnieuw". Bij heel slecht bereik kan deze tril tot een halve minuut op zich
-        laten wachten, na een lange opname tot een minuut. Komen de drie korte meteen na het
-        indrukken, dan ging de microfoon niet aan en is er niets opgenomen: tik nog eens.
+        Er ging iets mis, bijvoorbeeld geen bereik. De opname is bewaard: tik later bij "Uitspraken"
+        op "Opnieuw". Komt deze tril meteen na het indrukken, dan ging de microfoon niet aan.
       </dd>
     </dl>
     <p>
-      In de trektelmodus (aan te zetten bij Instellingen) zijn er nog twee: één lange tril als de
-      telling pauzeert omdat je naar een andere app gaat of het scherm op slot gaat, en twee lange
-      als hij vanzelf gestopt is.
+      Bij de trektelling: één lange tril als hij pauzeert (andere app, scherm op slot), twee lange
+      als hij gestopt is.
     </p>
     {#if isNativeApp}
       <p>
-        Zolang een sessie loopt, staat er een melding van Fluistervink bovenin je telefoon. Daardoor
-        werkt de app door als je scherm uit is of je een andere app opent: na het inspreken mag je
-        je telefoon gewoon wegstoppen, de tril komt vanzelf. Laat de knop wel eerst los of tik op
-        Stop, want als je het scherm uitzet tijdens het inspreken, stopt de opname. Tik op de
-        melding om de app weer te openen; na "Stop" verdwijnt hij.
+        Zolang een sessie loopt, staat er een melding bovenin en werkt de app door met het scherm
+        uit. Laat de knop wel eerst los: scherm uit tijdens het inspreken stopt de opname.
       </p>
     {:else}
       <p>
-        Voel je niets? Zet dan in de instellingen van je telefoon trillen bij aanraken aan (bij een
-        Engelse telefoon: Sound and vibration → Vibration and haptics → Touch feedback). De app
-        trilt alleen als hij op je scherm staat, niet met het scherm uit of als je een andere app
-        open hebt. In de Android-app van Fluistervink kan dat wel. Op een iPhone trilt de app
-        helemaal niet (Safari kan dat niet); kijk dan even op het scherm.
+        Voel je niets? Zet trillen bij aanraken aan in de instellingen van je telefoon. De app trilt
+        alleen als hij op het scherm staat; op een iPhone helemaal niet.
       </p>
     {/if}
   </div>
@@ -150,20 +110,11 @@
   <div class="card-body">
     <h3>Thuis</h3>
     <p>
-      Na "Stop" zie je de sessie op een kaart en in een lijst. Bovenaan staan de onzekere
-      waarnemingen één voor één, met wat je zei: tik Klopt, Weg of Aanpassen, en luister zo nodig de
-      opname terug. Klopt de rest, dan zet "Alles klopt" de sessie met één tik klaar voor
-      waarneming.nl. Wanneer het je uitkomt, exporteer je alle klaarstaande sessies in één bestand
-      (bij Sessies) en importeer je dat bij waarneming.nl.
+      Na "Stop" staan de onzekere waarnemingen bovenaan, één voor één, met de opname erbij. Daarna
+      zet "Alles klopt" de sessie klaar. Bij Sessies exporteer je alles wat klaarstaat in één
+      bestand voor waarneming.nl.
     </p>
-    <p>
-      Vergeten op Stop te drukken? Heb je een uur niets ingesproken, dan vraagt de app bij het
-      openen of de sessie nog loopt. Na 8 uur stopt hij vanzelf.
-    </p>
-    <p>
-      Alles staat alleen op je telefoon. Maak daarom af en toe een back-up bij Instellingen en zet
-      het bestand ergens anders neer; op een nieuwe telefoon zet je hem daar weer terug.
-    </p>
+    <p>Alles staat alleen op je telefoon: maak af en toe een back-up bij Instellingen.</p>
   </div>
 </section>
 
@@ -171,59 +122,25 @@
   <div class="card-body">
     <h3>Feedback geven</h3>
     <p>
-      Begin een uitspraak met <em>"feedback"</em>, bijvoorbeeld
-      <em>"feedback, hij herkende blako niet, terwijl dat toch echt bladkoning betekent"</em>. Dat
-      wordt geen waarneming, maar een opmerking voor de ontwikkelaar. Terug te lezen bij
-      <a href="#feedback">Feedback</a>.
+      Begin een uitspraak met <em>"feedback"</em>: dan wordt het een opmerking voor de ontwikkelaar
+      in plaats van een waarneming. Terug te lezen bij <a href="#feedback">Feedback</a>.
     </p>
   </div>
 </section>
 
 <section class="card">
   <div class="card-body">
-    <h3>Wat er gebeurt als je iets zegt</h3>
-    <ol>
-      <li>
-        <strong>De app</strong> noteert het tijdstip en waar je bent, en bewaart je opname op je telefoon.
-        Die kun je later wissen, de tekst en waarnemingen blijven dan staan.
-      </li>
-      <li>
-        <strong>Spraak wordt tekst.</strong> Een programma van OpenAI (de makers van ChatGPT) schrijft
-        uit wat je zei. Het krijgt een lijst vogelnamen mee, zodat "tjiftjaf" goed overkomt.
-      </li>
-      <li>
-        <strong>Tekst wordt een waarneming.</strong> Claude, de AI van Anthropic (een kleine, snelle versie),
-        leest de zin en bepaalt wat je bedoelt: een nieuwe waarneming, een verbetering, of iets weghalen.
-        Het mag alleen kiezen uit een vaste lijst Nederlandse vogelsoorten en kan dus geen soorten verzinnen.
-        Twijfelt het, dan markeert het de waarneming als onzeker in plaats van te gokken. Heel zeldzame
-        soorten (dwaalgasten zoals een roodkopklauwier) staan niet in die lijst. Noem je er een, dan zoekt
-        de app hem op in een tweede lijst; zo'n waarneming is altijd onzeker, zodat je hem thuis nakijkt.
-        Ook een zeldzame soort uit de gewone lijst wordt onzeker: vaak is het een verwisseling met een
-        gewone soort (uit te zetten bij Instellingen).
-      </li>
-      <li>
-        <strong>De app</strong> controleert het resultaat, slaat het op, zoekt de naam van het gebied
-        op bij waarneming.nl, en trilt. Een opname met bijna geen tekst (knop per ongeluk aangezet in
-        je zak) wordt onzeker: uit geritsel verzint de spraakherkenning soms een vogel.
-      </li>
-    </ol>
-  </div>
-</section>
-
-<section class="card">
-  <div class="card-body">
-    <h3>Wat AI niet kan</h3>
-    <ul>
-      <li>
-        AI maakt fouten: verkeerd verstaan, een verkeerde soort, een verkeerd aantal. Loop je
-        waarnemingen daarom altijd na voordat je ze inzendt. Wat er op waarneming.nl komt, blijft
-        jouw verantwoordelijkheid.
-      </li>
-      <li>
-        Fluistervink herkent geen vogels aan hun geluid (dat doen apps als Merlin en BirdNET). Het
-        verwerkt alleen wat jíj zegt.
-      </li>
-    </ul>
+    <h3>Wat AI doet</h3>
+    <p>
+      Een programma van OpenAI (de makers van ChatGPT) maakt tekst van je opname. Daarna leest
+      Claude, de AI van Anthropic, wat je bedoelt. Het kiest alleen uit een vaste lijst Nederlandse
+      vogels en kan dus geen soorten verzinnen. Bij twijfel, een heel zeldzame soort of een opname
+      met bijna geen tekst wordt de waarneming onzeker.
+    </p>
+    <p>
+      AI maakt fouten. Loop je waarnemingen daarom altijd na voordat je ze inzendt. En Fluistervink
+      herkent geen vogels aan hun geluid (zoals Merlin): het verwerkt alleen wat jíj zegt.
+    </p>
     <p>
       Wat er met je opnames en locaties gebeurt, lees je bij <a href="#privacy">Privacy</a>.
     </p>
@@ -242,19 +159,16 @@
 
   p,
   ul,
-  ol,
   dl {
     margin: 0;
   }
 
   * + p,
-  * + ul,
-  * + ol {
+  * + ul {
     margin-top: 0.5rem;
   }
 
-  ul,
-  ol {
+  ul {
     padding-left: 1.2rem;
   }
 
