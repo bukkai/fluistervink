@@ -103,13 +103,26 @@
 {/if}
 
 <header>
-  <h2 class="page-title">{session.place?.name ?? 'Vogelsessie'}</h2>
+  <div class="title">
+    <h2 class="page-title">{session.place?.name ?? 'Vogelsessie'}</h2>
+    <button class="rename" onclick={rename} aria-label="Naam wijzigen" title="Naam wijzigen">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <path
+          d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </button>
+  </div>
   <p class="muted">
     {dateFormat.format(session.startedAt)},
     {timeFormat.format(session.startedAt)}–{session.endedAt
       ? timeFormat.format(session.endedAt)
       : '?'}
-    · <button class="link" onclick={rename}>naam wijzigen</button>
   </p>
 </header>
 
@@ -163,13 +176,15 @@
         om {timeFormat.format(session.exportedAt)}.
       </p>
     {:else if session.readyAt}
-      <p>
-        Deze sessie staat klaar. Exporteer alle klaarstaande sessies in één keer bij
-        <a class="link" href="#sessies">Sessies</a>.
+      <p class="first">
+        Deze sessie staat klaar. Exporteer alle klaarstaande sessies in één keer bij Sessies.
       </p>
-      <button class="btn secondary block" onclick={() => markReady(session.id, false)}
-        >Toch nog niet klaar</button
-      >
+      <div class="actions">
+        <a class="btn block" href="#sessies">Naar Sessies</a>
+        <button class="btn secondary block" onclick={() => markReady(session.id, false)}
+          >Toch nog niet klaar</button
+        >
+      </div>
     {:else}
       {#if uncertainCount > 0}
         <p class="warning">
@@ -182,33 +197,37 @@
       <button class="btn block large" onclick={ready}>Alles klopt, klaar voor waarneming.nl</button>
       <p class="muted">
         De waarnemingen gelden dan als nagelopen. Klaargezette sessies exporteer je later in één
-        bestand, bij
-        <a class="link" href="#sessies">Sessies</a>.
+        bestand, bij Sessies.
       </p>
     {/if}
+    <div class="actions only-this">
+      <button class="btn secondary block" onclick={exportOnlyThis}
+        >Alleen deze sessie exporteren</button
+      >
+    </div>
     <p class="muted">
-      Of <button class="link" onclick={exportOnlyThis}>exporteer alleen deze sessie</button>
-      en importeer het bestand bij
+      Importeer het bestand bij
       <a href={IMPORT_URL} target="_blank" rel="noopener">waarneming.nl</a>, met de site in het
       Nederlands.
     </p>
   </div>
 </section>
 
-<p class="footer muted">
+<!-- Knoppen in plaats van linkjes: ook met dikke vingers of handschoenen te raken -->
+<div class="footer actions">
   {#if resumable}
-    Per ongeluk gestopt? <button class="link" onclick={resume}>Sessie voortzetten</button>
-    <br />
+    <button class="btn secondary block" onclick={resume}>Per ongeluk gestopt? Voortzetten</button>
   {/if}
   {#if $recordings?.count}
-    <button class="link danger" onclick={removeRecordings}>Alleen de opnames wissen</button>
-    <br />
+    <button class="btn secondary block danger-text" onclick={removeRecordings}
+      >Alleen de opnames wissen</button
+    >
   {/if}
-  <button class="link danger" onclick={remove}>Sessie verwijderen</button>
-</p>
+  <button class="btn secondary block danger-text" onclick={remove}>Sessie verwijderen</button>
+</div>
 
 <style>
-  a {
+  a:not(.btn) {
     color: var(--brand-strong);
   }
 
@@ -239,6 +258,37 @@
 
   header p {
     margin: 0;
+  }
+
+  .title {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .title .page-title {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Potloodje: 48 px tikvlak, ook met dikke vingers */
+  .rename {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    margin: -0.4rem -0.6rem 0 0;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    color: var(--brand-strong);
+    background: none;
+    cursor: pointer;
+  }
+
+  .rename:active {
+    background: color-mix(in srgb, var(--brand) 12%, transparent);
   }
 
   .stats {
@@ -301,10 +351,33 @@
     background: color-mix(in srgb, var(--brand) 12%, transparent);
   }
 
+  .actions {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .actions .btn {
+    min-height: 3rem;
+  }
+
+  .export .first {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+  }
+
+  .only-this {
+    margin-top: 1rem;
+  }
+
+  .export .only-this + p {
+    margin-top: 0.4rem;
+  }
+
   .footer {
     margin: 1.5rem 0 1rem;
-    font-size: 0.9rem;
-    line-height: 2;
-    text-align: center;
+  }
+
+  .danger-text {
+    color: var(--red);
   }
 </style>
