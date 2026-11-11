@@ -42,6 +42,11 @@
       label: 'Voorbeeldzin wordt onzeker',
       hint: 'Verstaat de spraakherkenning precies een van zijn voorbeeldzinnen ("Roepje vink."), dan heeft hij waarschijnlijk niets verstaan en dat zelf ingevuld. De waarneming wordt dan onzeker.',
     },
+    {
+      option: 'watZeiIk',
+      label: '"Wat zei ik?" tijdens een sessie',
+      hint: 'Boven de lijst staat wat de spraakherkenning van je laatste uitspraak verstond, met een knop om de opname te horen. Zo zie je meteen waarom iets misging en kun je het verbeteren.',
+    },
   ];
 
   const shown = items.filter((item) => item.available !== false);
