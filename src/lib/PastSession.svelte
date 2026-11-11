@@ -7,6 +7,8 @@
   import { confirmDeleteText, countRecordings, deleteRecordings } from './recordings';
   import ObservationMap from './ObservationMap.svelte';
   import SessionLog from './SessionLog.svelte';
+  import SessionSummary from './SessionSummary.svelte';
+  import { devOptionOn } from './devOptions';
   import UncertainReview from './UncertainReview.svelte';
   import { IMPORT_URL, approveSession, exportForWaarneming, markReady } from './waarnemingExport';
 
@@ -129,6 +131,10 @@
       </dd>
     </div>
   </dl>
+{/if}
+
+{#if devOptionOn('samenvatting')}
+  <SessionSummary {session} />
 {/if}
 
 {#if !session.exportedAt}

@@ -8,6 +8,7 @@
   import { currentPosition, gps, startTracking, stopTracking } from './location.svelte';
   import { submitRecording, submitText } from './observations';
   import { recorder, startRecording, stopRecording } from './recorder.svelte';
+  import LastUtterance from './LastUtterance.svelte';
   import SessionLog from './SessionLog.svelte';
   import { syncWalkService } from './walkService';
   import { createTalkButton } from './talkButton';
@@ -254,6 +255,10 @@
     </svg>
   </button>
 </form>
+
+{#if devOptionOn('watZeiIk')}
+  <LastUtterance sessionId={session.id} />
+{/if}
 
 <SessionLog {session} />
 

@@ -3,7 +3,14 @@
 // localStorage; het kaartje bij Instellingen staat alleen bij de eigenaar.
 
 export type DevOption =
-  'snelkoppeling' | 'gesproken' | 'trektelpauze' | 'zeldzaamOnzeker' | 'voorbeeldzinOnzeker';
+  | 'snelkoppeling'
+  | 'gesproken'
+  | 'trektelpauze'
+  | 'zeldzaamOnzeker'
+  | 'voorbeeldzinOnzeker'
+  | 'watZeiIk'
+  | 'exportHerinnering'
+  | 'samenvatting';
 
 const PREFIX = 'fluistervink.dev.';
 
