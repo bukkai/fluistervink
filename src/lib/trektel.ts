@@ -130,6 +130,12 @@ export function levelDb(samples: Float32Array): number {
 /** Een trektelling stopt hoe dan ook na zo lang. */
 export const TREKTEL_MAX_MS = 4 * 60 * 60_000;
 
+/**
+ * Gepauzeerd (ontwikkeloptie: naar Merlin en terug) en niet binnen zo lang
+ * terug: dan stopt de telling alsnog.
+ */
+export const TREKTEL_PAUSE_MAX_MS = 15 * 60_000;
+
 const SETTING_KEY = 'fluistervink.trektelmodus';
 
 /** Staat de trektelmodus aan bij Instellingen? */

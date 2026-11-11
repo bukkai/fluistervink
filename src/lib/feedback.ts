@@ -24,6 +24,8 @@ const PATTERNS = {
   failed: [120, 150, 120, 150, 120],
   /** Trektelling vanzelf gestopt (maximum bereikt, app naar de achtergrond): twee lange */
   trektelStopped: [500, 200, 500],
+  /** Trektelling gepauzeerd (naar een andere app, ontwikkeloptie): één lange */
+  trektelPaused: [500],
   /** Easter egg "zeemeeuw": boos gepik */
   angry: [70, 40, 70, 40, 70, 40, 250, 80, 70, 40, 70, 40, 400],
 };

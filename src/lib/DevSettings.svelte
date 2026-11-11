@@ -5,6 +5,7 @@
 
   let shortcut = $state(devOptionOn('snelkoppeling'));
   let spoken = $state(devOptionOn('gesproken'));
+  let trektelPause = $state(devOptionOn('trektelpauze'));
 
   function toggleShortcut() {
     setDevOption('snelkoppeling', shortcut);
@@ -41,9 +42,20 @@
         start meteen een sessie.
       </p>
     {/if}
-    {#if !shortcutSupported && !speechSupported}
-      <p class="hint">Nog niets voor deze app-versie.</p>
-    {/if}
+    <label class="check">
+      <input
+        type="checkbox"
+        bind:checked={trektelPause}
+        onchange={() => setDevOption('trektelpauze', trektelPause)}
+      />
+      Trektelling pauzeert bij een andere app
+    </label>
+    <p class="hint">
+      Ga je tijdens een trektelling even naar Merlin (of gaat het scherm op slot), dan stopt de
+      telling niet maar pauzeert hij: de microfoon gaat uit, zodat Merlin hem kan gebruiken (één
+      lange tril). Kom je binnen een kwartier terug, dan luistert de app weer verder (kort tikje);
+      anders stopt de telling alsnog.
+    </p>
   </div>
 </section>
 

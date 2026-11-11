@@ -2,6 +2,7 @@
   import { nameFromStart } from './area';
   import type { PositionLookup, Session } from './db';
   import { vibrate } from './feedback';
+  import { devOptionOn } from './devOptions';
   import { logEvent } from './log';
   import { listenVolumeKey, volumeKeySupported } from './native';
   import { currentPosition, gps, startTracking, stopTracking } from './location.svelte';
@@ -161,6 +162,10 @@
       onChunk: (recording, chunkLookup) =>
         submitRecording(sessionId, recording, chunkLookup, { trektel: true }),
       onStopped: () => vibrate('trektelStopped'),
+      // Ontwikkeloptie: naar Merlin en terug zonder dat de telling stopt
+      pauseWhenHidden: devOptionOn('trektelpauze'),
+      onPaused: () => vibrate('trektelPaused'),
+      onResumed: () => vibrate('recording'),
     });
     if (started) vibrate('recording');
   }
@@ -173,7 +178,7 @@
   // Lopende tijd van de trektelling (minuten en seconden)
   let trektelElapsed = $state(0);
   $effect(() => {
-    if (trektel.status !== 'running') return;
+    if (trektel.startedAt === undefined) return;
     const timer = setInterval(
       () => (trektelElapsed = Date.now() - (trektel.startedAt ?? Date.now())),
       1000,
@@ -260,7 +265,8 @@
   class:hidden={typing && recorder.status !== 'recording'}
   bind:clientHeight={barHeight}
 >
-  {#if trektel.status === 'running'}
+  <!-- Ook tijdens een pauze en het weer aanzetten van de microfoon (startedAt staat dan) -->
+  {#if trektel.startedAt !== undefined}
     <button class="talk recording" onclick={endTrektel}>
       <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true">
         <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
@@ -271,7 +277,14 @@
          app spraak hoorde, dan sprong de stopknop steeds op en neer (Maarten) -->
     <p class="mic listening">
       <span class="ear" class:speaking={trektel.speaking}></span>
-      <span class="hearing">{trektel.speaking ? 'Hoort spraak' : 'Luistert'}</span> ·
+      <span class="hearing"
+        >{trektel.status !== 'running'
+          ? 'Microfoon aanzetten'
+          : trektel.speaking
+            ? 'Hoort spraak'
+            : 'Luistert'}</span
+      >
+      ·
       <!-- De app knipt pas na ongeveer een minuut; stille stukken tellen niet mee -->
       <span class="sent">
         {#if trektel.sent === 0}
