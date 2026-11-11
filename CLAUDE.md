@@ -105,6 +105,7 @@ De zeven bouwstappen van de MVP zijn klaar: projectopzet, proxy, interpretatie m
 ## Werkafspraken
 
 - Werk in kleine stappen: één feature per branch en pull request, met een duidelijke beschrijving.
+- **Licentie:** AGPL-3.0-only (sinds 11 nov 2026; daarvoor MIT). De eigenaar wil de enige auteur blijven (dubbele licentie), dus nooit code van anderen overnemen: geen pull requests van anderen mergen, en een bijdrage alleen opnieuw bouwen vanuit de beschrijving, zonder hun code te kopiëren (`CONTRIBUTING.md`). Updates van Dependabot mogen wel.
 - Changelog: elke PR die voor gebruikers iets zichtbaars verandert, zet in `src/lib/changelog.ts` een regel in gewone taal, onder de datum van de merge (bovenaan) bij het passende onderwerp (`TOPICS`: Inspreken, Trektelling, Nalopen, Export, Back-up, Android-app, Over de app) (pagina `#nieuw`, "Wat is er nieuw?", gelinkt bij Instellingen en vanuit de melding "Bijgewerkt naar versie …" na een update, `src/lib/UpdateStatus.svelte`). Geen ontwikkelopties of schermen van de eigenaar.
 - De eigenaar programmeert zelf weinig maar heeft een front-end-achtergrond (JavaScript): leg keuzes kort uit in de PR-beschrijving.
 - Houd dit bestand actueel wanneer ontwerpkeuzes veranderen.
