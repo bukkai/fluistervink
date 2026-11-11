@@ -103,4 +103,7 @@ Elke stap is één à twee PR's en gaat eerst op een wandeling mee voordat de vo
 3. Stap 3 (opnemen met het scherm uit) **na de productierelease**.
 4. Wake word: **open source** (openWakeWord), geen licentie.
 
-Stap 1 is begonnen.
+5. **Alleen voor de eigenaar tot het bevalt:** nieuwe functies uit deze roadmap komen achter een ontwikkeloptie die alleen met de code van de eigenaar zichtbaar is (zoals Developer, `isOwner` in `App.svelte`). Uitzondering: de volumeknop, die is voor iedereen (standaard uit). Native delen gaan gewoon mee in de Play-versie en doen bij anderen niets.
+6. **Geen aparte ontwikkel-app.** Gevolg: stap 3 en 5 vragen een nieuwe toestemming (microfoon in de service) die Google bij elke release met een verklaring wil zien, ook als alleen de eigenaar de functie gebruikt. Die stappen wachten dus echt tot na de productierelease (punt 3).
+
+Stap 1 is begonnen (PR #185).
