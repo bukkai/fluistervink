@@ -52,6 +52,11 @@
       label: 'Herinnering aan de export',
       hint: 'Staan sessies een week klaar voor waarneming.nl, of wachten ze al een week om nagelopen te worden, dan zie je een melding op het hoofdscherm. Met "Later" drie dagen niet.',
     },
+    {
+      option: 'samenvatting',
+      label: 'Samenvatting van een sessie',
+      hint: 'Bij een afgelopen sessie een soortenlijst met aantallen, met wat je dit jaar voor het eerst zag (op deze telefoon). Te kopiëren, bijvoorbeeld voor een appgroep.',
+    },
   ];
 
   const shown = items.filter((item) => item.available !== false);
