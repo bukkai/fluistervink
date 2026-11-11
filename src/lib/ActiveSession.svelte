@@ -6,7 +6,7 @@
   import { logEvent } from './log';
   import { listenVolumeKey, volumeKeySupported } from './native';
   import { currentPosition, gps, startTracking, stopTracking } from './location.svelte';
-  import { submitRecording, submitText } from './observations';
+  import { onAudioLimit, submitRecording, submitText } from './observations';
   import { recorder, startRecording, stopRecording } from './recorder.svelte';
   import LastUtterance from './LastUtterance.svelte';
   import SessionLog from './SessionLog.svelte';
@@ -174,6 +174,17 @@
     });
     if (started) vibrate('recording');
   }
+
+  // Plafond per dag bereikt (5 uur spraak, proxy): de trektelling stoppen in
+  // plaats van stukken op te nemen die vandaag niet meer verwerkt worden
+  $effect(() =>
+    onAudioLimit(() => {
+      if (trektel.status === 'idle') return;
+      stopTrektel('limit');
+      trektel.error =
+        'Trektelling gestopt: vandaag is er al 5 uur ingesproken, het maximum per dag. De stukken blijven bewaard; tik morgen op Opnieuw om ze te laten verwerken.';
+    }),
+  );
 
   function endTrektel() {
     stopTrektel();

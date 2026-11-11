@@ -19,6 +19,7 @@ import {
 } from './install';
 import {
   activitySince,
+  audioSecondsToday,
   lastUsedPerTester,
   recordUsage,
   sessionFrom,
@@ -60,6 +61,21 @@ const TRANSCRIBE_MODELS = [
   'gpt-4o-mini-transcribe',
   'whisper-1',
 ];
+/**
+ * Voor iedereen behalve de eigenaar (die met de testset ook de andere
+ * vergelijkt): de modellen die per seconde audio rekenen, want alleen daarvan
+ * kent de proxy de duur voor het plafond per dag. De app gebruikt gpt-transcribe.
+ */
+const PER_SECOND_MODELS = ['gpt-transcribe', 'whisper-1'];
+
+/**
+ * Plafond op de spraakherkenning per tester per dag (docs/plan-trektelmodus.md,
+ * punt 5): een trektelling houdt de microfoon uren aan, en sinds aanmelden
+ * zonder code kan iedereen de app installeren. Vijf uur spraak is een hele dag
+ * tellen; met de knop haal je dat nooit. De eigenaar valt erbuiten (testset).
+ */
+const AUDIO_SECONDS_PER_DAY = 5 * 60 * 60;
+
 const CLAUDE_MODELS = ['claude-haiku-5-5', 'claude-sonnet-5-5', 'claude-opus-5-5'];
 
 /** Bovengrens voor uitvoer: een uitspraak levert maar een paar tool calls op. */
@@ -120,7 +136,7 @@ export default {
         return json({ error: 'Te veel verzoeken achter elkaar; probeer het zo opnieuw' }, 429);
       }
       if (pathname === '/api/transcribe' && request.method === 'POST') {
-        return await transcribe(request, env, meter(request, env, ctx, tester));
+        return await transcribe(request, env, tester, meter(request, env, ctx, tester));
       }
       if (pathname === '/api/messages' && request.method === 'POST') {
         return await messages(request, env, meter(request, env, ctx, tester));
@@ -258,7 +274,12 @@ function meter(request: Request, env: WorkerEnv, ctx: ExecutionContext, tester: 
  * Verwacht multipart/form-data met `audio` (bestand), optioneel `model` en
  * `prompt` (bv. soortnamen, om de herkenning te sturen).
  */
-async function transcribe(request: Request, env: WorkerEnv, meter: Meter): Promise<Response> {
+async function transcribe(
+  request: Request,
+  env: WorkerEnv,
+  tester: string,
+  meter: Meter,
+): Promise<Response> {
   // Ruimte voor de andere velden (model, prompt met soortnamen) naast de audio
   if (declaredTooLarge(request, MAX_AUDIO_BYTES + 256 * 1024)) return tooLarge();
   const form = await request.formData();
@@ -270,6 +291,21 @@ async function transcribe(request: Request, env: WorkerEnv, meter: Meter): Promi
   if (audio.size > MAX_AUDIO_BYTES) return json({ error: 'Audio te groot' }, 413);
   if (!TRANSCRIBE_MODELS.includes(model)) {
     return json({ error: `Model niet toegestaan: ${model}` }, 400);
+  }
+  if (tester !== OWNER) {
+    if (!PER_SECOND_MODELS.includes(model)) {
+      return json({ error: `Model alleen voor de testset: ${model}` }, 400);
+    }
+    if (await overDailyAudio(env, tester)) {
+      // Eigen code, zodat de app een lopende trektelling stopt met uitleg
+      return json(
+        {
+          error: 'Daglimiet bereikt: vandaag is er al 5 uur ingesproken. Morgen kan het weer.',
+          code: 'audio_limit',
+        },
+        429,
+      );
+    }
   }
 
   const upstream = new FormData();
@@ -308,6 +344,20 @@ async function transcribe(request: Request, env: WorkerEnv, meter: Meter): Promi
     200,
     Date.now() - start,
   );
+}
+
+/**
+ * Zit de tester vandaag aan het plafond? Kan D1 het niet zeggen, dan niet:
+ * een uitspraak mag niet mislukken omdat het tellen hapert (net als bij het
+ * opslaan van het verbruik).
+ */
+async function overDailyAudio(env: WorkerEnv, tester: string): Promise<boolean> {
+  try {
+    return (await audioSecondsToday(env.USAGE, tester)) >= AUDIO_SECONDS_PER_DAY;
+  } catch (error) {
+    console.error('Plafond niet na te gaan', error);
+    return false;
+  }
 }
 
 /** De gpt-4o-modellen rekenen per token, whisper-1 en gpt-transcribe per seconde audio. */

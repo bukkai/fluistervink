@@ -57,6 +57,7 @@ De microfoon blijft in deze modus continu bezet. Merlin kan er dan niet tussendo
 
 - Een maximum aantal minuten audio per tester per dag, in de proxy. Het verbruik staat al per dag en tester in D1 (`worker/usage.ts`). Bij `gpt-4o-transcribe` telt dat in tokens, dus de app stuurt de duur mee of de proxy schat die uit de bestandsgrootte.
 - Voorstel: 5 uur per dag, de eigenaar uitgezonderd. Boven het plafond geeft `/api/transcribe` een eigen foutmelding, en de app stopt de modus met uitleg in plaats van stukken te blijven proberen.
+- **Gebouwd (11 nov):** 5 uur per installatie per dag, eigenaar uitgezonderd. De proxy telt de seconden uit de usage-tabel (geen duur van de app nodig); daarom mogen installaties alleen nog de modellen die per seconde rekenen (`gpt-transcribe`, `whisper-1`). Fout `429` met `code: 'audio_limit'`; de app bewaart de opname ("Opnieuw") en stopt een lopende trektelling met uitleg. Kan D1 het niet zeggen, dan gaat de uitspraak gewoon door.
 - Hier kan later een premium-abonnement aanhaken: een hoger plafond of de modus zelf alleen voor wie betaalt.
 
 ### 6. Meten, uitleg en privacy

@@ -258,6 +258,18 @@ async function moveToBin(
   return observation;
 }
 
+const audioLimitListeners = new Set<() => void>();
+
+/**
+ * Het plafond per dag is bereikt (proxy, `audio_limit`): het sessiescherm
+ * stopt dan een lopende trektelling, die anders stukken blijft opnemen die
+ * toch niet verwerkt worden. Geeft een functie om af te melden.
+ */
+export function onAudioLimit(listener: () => void): () => void {
+  audioLimitListeners.add(listener);
+  return () => audioLimitListeners.delete(listener);
+}
+
 export async function retry(utteranceId: string): Promise<void> {
   await db.utterances.update(utteranceId, { status: 'pending', error: undefined });
   processQueue();
@@ -550,6 +562,10 @@ async function processUtterance(utterance: Utterance): Promise<void> {
       if (isCurrentAttempt(latest, attempts))
         await db.utterances.update(utterance.id, { status: 'failed', error: prefix + message });
     });
+    // De opname blijft bewaard: morgen met "Opnieuw" alsnog verwerken
+    if (error instanceof ApiError && error.code === 'audio_limit') {
+      for (const listener of audioLimitListeners) listener();
+    }
     return;
   }
 

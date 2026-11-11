@@ -58,6 +58,8 @@ export class ApiError extends Error {
   constructor(
     message: string,
     readonly status: number,
+    /** Eigen foutcode van de proxy, bv. `audio_limit` (plafond per dag) */
+    readonly code?: string,
   ) {
     super(message);
   }
@@ -130,7 +132,11 @@ async function timedRequest<T>(
       setAccessCode('');
       return timedRequest<T>(path, init, timeoutMs);
     }
-    throw new ApiError(body.error ?? `HTTP ${response.status}`, response.status);
+    throw new ApiError(
+      body.error ?? `HTTP ${response.status}`,
+      response.status,
+      typeof body.code === 'string' ? body.code : undefined,
+    );
   }
   return { data: body as T, timing };
 }

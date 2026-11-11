@@ -17,13 +17,16 @@ import {
   type Cut,
 } from './trektel';
 
+/** `limit`: de proxy verwerkt vandaag niets meer (plafond per dag) */
+type StopReason = 'max' | 'hidden' | 'limit';
+
 export interface TrektelHandlers {
   /** Bij het begin van elk stuk: de positie van dat moment opvragen. */
   onChunkStart: () => Promise<PositionLookup>;
   /** Een stuk met spraak; `startedAt` is het begin van dat stuk. */
   onChunk: (recording: Recording, lookup: Promise<PositionLookup>) => void;
-  /** De trektelling stopte vanzelf (maximum, app naar de achtergrond). */
-  onStopped: (reason: 'max' | 'hidden') => void;
+  /** De trektelling stopte vanzelf (maximum, app naar de achtergrond, plafond per dag). */
+  onStopped: (reason: StopReason) => void;
   /**
    * Naar een andere app (Merlin) of scherm op slot: de telling pauzeert. De
    * microfoon gaat dan uit, zodat de andere app hem kan gebruiken, en weer aan
@@ -253,7 +256,7 @@ export async function startTrektel(next: TrektelHandlers): Promise<boolean> {
 }
 
 /** Stopt de trektelling; het laatste stuk wordt nog verwerkt. */
-export function stopTrektel(reason?: 'max' | 'hidden'): void {
+export function stopTrektel(reason?: StopReason): void {
   if (trektel.status === 'starting') stopWhenStarted = true;
   if (trektel.status !== 'running' && trektel.status !== 'paused') return;
   clearTimeout(maxTimer);

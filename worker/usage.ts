@@ -105,6 +105,24 @@ export async function recordUsage(
     .run();
 }
 
+/**
+ * Seconden audio die een tester vandaag (Nederlandse tijd) liet verstaan,
+ * over beide omgevingen en alle sessies. Voor het plafond per dag in de proxy.
+ * Telt alleen modellen die per seconde rekenen; de andere geven tokens.
+ */
+export async function audioSecondsToday(
+  db: D1Database,
+  tester: string,
+  now = new Date(),
+): Promise<number> {
+  await ensureTable(db);
+  const { results } = await db
+    .prepare(`SELECT SUM(audio_seconds) AS seconds FROM usage WHERE day = ? AND tester = ?`)
+    .bind(dayOf(now), tester)
+    .all<{ seconds: number | null }>();
+  return results[0]?.seconds ?? 0;
+}
+
 /** Alle regels vanaf `from` (een datum als `2026-09-01`), voor de eigenaar. */
 export async function usageSince(db: D1Database, from: string): Promise<UsageRow[]> {
   await ensureTable(db);
