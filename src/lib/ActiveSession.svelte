@@ -202,13 +202,18 @@
     return hours ? `${hours}:${mm}:${ss}` : `${mm}:${ss}`;
   }
 
-  const micLabels: Record<typeof recorder.status, string> = {
-    idle: 'Tik of houd vast om in te spreken',
-    starting: 'Microfoon aanzetten…',
-    recording: 'Loslaten of tikken om te stoppen',
-    denied: 'Geen toegang tot de microfoon. Sta dit toe in de browserinstellingen.',
-    unsupported: 'Opnemen kan niet in deze browser.',
-  };
+  // Alleen een regel onder de knop als er iets mis is: "tik of houd vast" staat
+  // in het welkom en #uitleg, en de knop zelf zegt al "Stop · 3 s". Zo kost de
+  // balk geen ruimte en springt hij niet bij elke opname.
+  const micMessage = $derived(
+    recorder.status === 'denied'
+      ? 'Geen toegang tot de microfoon. Sta dit toe in de browserinstellingen.'
+      : recorder.status === 'unsupported'
+        ? 'Opnemen kan niet in deze browser.'
+        : recorder.failed && recorder.status === 'idle'
+          ? 'De microfoon ging niet aan. Tik nog eens.'
+          : undefined,
+  );
 
   const gpsLabels: Record<typeof gps.status, string> = {
     off: '',
@@ -228,14 +233,29 @@
   }
 </script>
 
-<p class="gps {gps.status}">
-  <span class="dot"></span>
-  {#if gps.status === 'ok' && gps.latest}
-    Locatie ±{Math.round(gps.latest.accuracy)} m
-  {:else}
-    {gpsLabels[gps.status]}
+<!-- Trektelling starten naast de GPS: die regel staat er al, dus de knop kost
+     de lijst geen ruimte. Niet in de duimzone: je start hem één keer per
+     sessie, op een vaste plek, en zo raak je hem niet per ongeluk tijdens het
+     lopen (een trektelling houdt de microfoon tot 4 uur aan). -->
+<div class="top">
+  <p class="gps {gps.status}">
+    <span class="dot"></span>
+    {#if gps.status === 'ok' && gps.latest}
+      Locatie ±{Math.round(gps.latest.accuracy)} m
+    {:else}
+      {gpsLabels[gps.status]}
+    {/if}
+  </p>
+  {#if trektelOn && trektel.startedAt === undefined}
+    <button
+      class="trektel-start"
+      disabled={recorder.status !== 'idle' || trektel.status !== 'idle'}
+      onclick={beginTrektel}
+    >
+      {trektel.status === 'starting' ? 'Microfoon aanzetten…' : 'Trektelling starten'}
+    </button>
   {/if}
-</p>
+</div>
 
 <form onsubmit={submit} onfocusin={() => (typing = true)} onfocusout={() => (typing = false)}>
   <input
@@ -305,17 +325,8 @@
       </span>
     </p>
   {:else}
-    {#if trektelOn}
-      <button
-        class="btn secondary block trektel-start"
-        disabled={recorder.status !== 'idle' || trektel.status !== 'idle'}
-        onclick={beginTrektel}
-      >
-        {trektel.status === 'starting' ? 'Microfoon aanzetten…' : 'Trektelling starten'}
-      </button>
-      {#if trektel.error}
-        <p class="mic denied">{trektel.error}</p>
-      {/if}
+    {#if trektelOn && trektel.error}
+      <p class="mic denied">{trektel.error}</p>
     {/if}
     <button
       class="talk"
@@ -341,14 +352,16 @@
         {/if}
       </svg>
       <span>
-        {recorder.status === 'recording' ? `Stop · ${Math.floor(elapsed / 1000)} s` : 'Inspreken'}
+        {recorder.status === 'recording'
+          ? `Stop · ${Math.floor(elapsed / 1000)} s`
+          : recorder.status === 'starting'
+            ? 'Microfoon aanzetten…'
+            : 'Inspreken'}
       </span>
     </button>
-    <p class="mic {recorder.status}" class:failed={recorder.failed && recorder.status === 'idle'}>
-      {recorder.failed && recorder.status === 'idle'
-        ? 'De microfoon ging niet aan. Tik nog eens.'
-        : micLabels[recorder.status]}
-    </p>
+    {#if micMessage}
+      <p class="mic denied">{micMessage}</p>
+    {/if}
   {/if}
 </div>
 
@@ -387,9 +400,7 @@
 
   .gps.denied,
   .gps.unavailable,
-  .mic.denied,
-  .mic.failed,
-  .mic.unsupported {
+  .mic.denied {
     color: var(--red);
   }
 
@@ -498,10 +509,40 @@
     color: var(--muted);
   }
 
+  .top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 0.75rem;
+  }
+
+  .top .gps {
+    margin: 0;
+  }
+
   .trektel-start {
-    /* In het veld, vlak boven de inspreekknop: minstens 48 px (was 46) */
-    min-height: 3rem;
-    margin-bottom: 0.75rem;
+    position: relative;
+    margin-left: auto;
+    padding: 0.3rem 0.85rem;
+    border: 1px solid var(--brand);
+    border-radius: 2rem;
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--brand);
+    background: var(--surface);
+  }
+
+  /* Tikvlak minstens 48 px hoog, zonder dat de regel hoger wordt */
+  .trektel-start::after {
+    content: '';
+    position: absolute;
+    inset: -0.6rem -0.25rem;
+  }
+
+  .trektel-start:disabled {
+    opacity: 0.5;
   }
 
   .mic.listening {

@@ -8,6 +8,7 @@ import { db, type Observation, type Utterance } from './db';
 import { devOptionOn } from './devOptions';
 import { logEvent } from './log';
 import { speakNative, speechSupported } from './native';
+import { isComputable, type Direction } from './spokenPlace';
 import { allActivities, codeName, DEFAULT_ACTIVITY, speciesName } from './vocab';
 
 /** Meer dan zoveel waarnemingen: alleen het aantal noemen */
@@ -15,14 +16,45 @@ const MAX_NAMED = 2;
 
 type Spoken = Pick<Utterance, 'status' | 'result' | 'changes' | 'undid'>;
 
-/** Kort wat de waarneming is: "houtduif, 6, overvliegend" (TTS leest het getal) */
-function describe(obs: Pick<Observation, 'speciesId' | 'count' | 'activityId'>): string {
+const DIRECTION_WORDS: Record<Direction, string> = {
+  N: 'noord',
+  NO: 'noordoost',
+  O: 'oost',
+  ZO: 'zuidoost',
+  Z: 'zuid',
+  ZW: 'zuidwest',
+  W: 'west',
+  NW: 'noordwest',
+};
+
+/** De gezegde plek, kort: "30 meter zuid", anders in de woorden van de gebruiker */
+function describePlace(place: NonNullable<Observation['spokenPlace']>): string {
+  if (!isComputable(place)) return place.text;
+  const m = place.distanceM!;
+  const distance =
+    m < 1000 ? `${m} meter` : `${String(Math.round(m / 100) / 10).replace('.', ',')} kilometer`;
+  return `${distance} ${DIRECTION_WORDS[place.direction!]}`;
+}
+
+type Described = Pick<
+  Observation,
+  'speciesId' | 'count' | 'activityId' | 'spokenPlace' | 'uncertain'
+>;
+
+/**
+ * Kort wat de waarneming is: "houtduif, 6, overvliegend" (TTS leest het
+ * getal), met de gezegde plek en "onzeker" bij díe waarneming, niet pas aan
+ * het eind van alles.
+ */
+function describe(obs: Described): string {
   const parts = [speciesName(obs.speciesId).toLowerCase(), String(obs.count)];
   if (obs.activityId !== undefined && obs.activityId !== DEFAULT_ACTIVITY) {
     const activity = codeName(allActivities, obs.activityId);
     // "baltsend / zingend": geen schuine streep voorlezen
     if (activity) parts.push(activity.toLowerCase().replaceAll(' / ', ' of '));
   }
+  if (obs.spokenPlace) parts.push(describePlace(obs.spokenPlace));
+  if (obs.uncertain) parts.push('onzeker');
   return parts.join(', ');
 }
 
@@ -40,8 +72,8 @@ export function confirmationText(
   if (utterance.undid) return 'Ongedaan gemaakt';
 
   const said: string[] = [];
-  let uncertain = utterance.result === 'uncertain';
   let count = 0;
+  let uncertainCount = 0;
   for (const change of utterance.changes ?? []) {
     if (change.type === 'delete') {
       said.push(`weg: ${speciesName(change.observation.speciesId).toLowerCase()}`);
@@ -51,13 +83,20 @@ export function confirmationText(
     const obs = current.get(change.observationId);
     if (!obs) continue;
     count++;
-    if (obs.uncertain) uncertain = true;
+    if (obs.uncertain) uncertainCount++;
     said.push(change.type === 'update' ? `aangepast: ${describe(obs)}` : describe(obs));
   }
-  if (count === 0) return uncertain ? 'Opgeslagen, onzeker' : 'Opgeslagen';
+  const flagged = utterance.result === 'uncertain';
+  if (count === 0) return flagged ? 'Opgeslagen, onzeker' : 'Opgeslagen';
+  if (count > MAX_NAMED) {
+    return uncertainCount > 0
+      ? `${count} waarnemingen, ${uncertainCount} onzeker`
+      : `${count} waarnemingen${flagged ? '. Onzeker' : ''}`;
+  }
   const capital = (part: string) => part.charAt(0).toUpperCase() + part.slice(1);
-  const sentence = count > MAX_NAMED ? `${count} waarnemingen` : said.map(capital).join('. ');
-  return uncertain ? `${sentence}. Onzeker` : sentence;
+  const sentence = said.map(capital).join('. ');
+  // Onzeker zonder dat één waarneming het is (zou niet moeten): dan toch zeggen
+  return flagged && uncertainCount === 0 ? `${sentence}. Onzeker` : sentence;
 }
 
 /** Na het trillen: zeggen wat er is vastgelegd, als de ontwikkeloptie aan staat */
