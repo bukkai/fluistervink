@@ -31,6 +31,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     topics: {
       Inspreken: ['De eerste opname na de vraag om de microfoon is niet meer leeg.'],
       Trektelling: [
+        'De app verwerkt hooguit 5 uur spraak per dag. Kom je daarboven, dan stopt een lopende trektelling met uitleg op het scherm. Wat je daarna inspreekt, blijft bewaard: tik de volgende dag op "Opnieuw".',
         'Naar Merlin of het scherm op slot pauzeert de telling in plaats van te stoppen.',
         'De knop "Trektelling starten" staat nu bovenaan naast de locatie, zodat de lijst met waarnemingen meer ruimte heeft. Ook de uitleg onder de inspreekknop is weg.',
         'Op Stop drukken terwijl de microfoon net weer aanging (terug van Merlin) stopt de telling nu echt. Aanhoudende wind telt niet meer als spraak als de microfoon stil begon.',
