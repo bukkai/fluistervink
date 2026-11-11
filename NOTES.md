@@ -47,6 +47,27 @@ Roadmap in `docs/lancering.md`: eerst 14 dagen een gesloten test met minstens 12
 
 **Stand 9 nov:** privacypagina live op `fluistervink.nl/privacy` (#170, release naar stable gedaan), winkelvermelding en gegevensveiligheid ingevuld (`docs/play-store/`), eerste release in de gesloten test ingediend ter beoordeling. Daarna: deelnamelink in `PLAY_TEST_LINKS.stable`, testers werven (15–20). Regel voor de kwaliteitsronde van 8 nov ontbreekt nog in het logboek van `docs/kwaliteitsronde.md`.
 
+## Android-roadmap en ontwikkelopties (11 nov)
+
+Roadmap in `docs/roadmap-android.md` (goedgekeurd 11 nov): vogelen zonder naar de telefoon te kijken, in vijf stappen. Besloten: volumeknop **tikken**; gesproken bevestiging **alleen met oortjes**; stap 3 (opnemen met het scherm uit) **na de productierelease**; wake word **open source** (openWakeWord). Nieuwe functies komen eerst achter een **ontwikkeloptie** (kaartje Ontwikkelopties bij Instellingen, alleen met de code van de eigenaar, `src/lib/devOptions.ts`); uitzondering is de volumeknop. **Geen aparte ontwikkel-app**, dus stap 3 en 5 (nieuwe toestemming microfoon in de service, verklaring bij Google) wachten echt tot na de productierelease.
+
+Gebouwd en gemerged op 11 nov:
+
+- #185 **Volumeknop als inspreekknop** (voor iedereen, Instellingen → Volumeknop, standaard uit). Tik = start, nog een tik = stop; alleen met de app op het scherm. Bluetooth-sluiterknopjes (selfie) sturen dezelfde toets: eentje proberen. Native (`KnopPlugin.java`).
+- #186 Snelkoppeling "Begin met vogelen" op het app-pictogram (ontwikkeloptie, native `SnelkoppelingPlugin.java`).
+- #187 Gesproken bevestiging in de oortjes ("Houtduif, 6, overvliegend"; ontwikkeloptie, native `SprekenPlugin.java`, tekst in `src/lib/spoken.ts`).
+- #189 Trektelling pauzeert bij Merlin (of scherm op slot) in plaats van te stoppen, verder als je binnen 15 minuten terugkomt (ontwikkeloptie; geen native code: de `AudioRecordingCallback` heeft pas zin bij stap 3).
+- #191 Zeldzame soort (zeldzaamheid 3–4, 71 soorten) en een letterlijke voorbeeldzin uit de STT-prompt ("Roepje vink.") worden onzeker (twee ontwikkelopties).
+- #192 "Wat zei ik?": kaartje "Laatst verstaan" op het sessiescherm met transcript en afspeelknop (ontwikkeloptie).
+- #193 Herinnering aan de export op het hoofdscherm na een week (ontwikkeloptie).
+- #194 Samenvatting van een sessie: soortenlijst met aantallen, nieuw dit jaar, kopiëren (ontwikkeloptie). "Eerste van het seizoen" bewust weggelaten.
+
+Nog te doen:
+
+- **Nieuwe tag** voor Play: #185, #186 en #187 zijn native. Debug-APK `apk/fluistervink-0.559-beta.apk` (alle drie). Nog niets op de telefoon geprobeerd: volumeknop, snelkoppeling (koude start en vanaf de achtergrond, één sessie), stem met en zonder oortjes en met een podcast, Merlin tijdens een trektelling, afspelen in "Wat zei ik?", kopiëren van de samenvatting.
+- Ontwikkelopties aanzetten en een paar wandelingen meenemen; daarna per optie beslissen of hij voor iedereen wordt (dan `#uitleg` en eventueel `#privacy` bijwerken). Bij #191 tellen hoe vaak een zeldzame soort echt was.
+- Volgende stappen uit de roadmap: stap 3 en 5 na de productierelease.
+
 ## Roadmap naar v1.0 (13 okt)
 
 Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de app installeren, een hele wandeling gebruiken zonder naar het scherm te kijken, en thuis zonder gedoe naar waarneming.nl exporteren.
@@ -108,7 +129,7 @@ Nog niet gepland; eerst overleggen.
 - **Soortenstatistieken over alle gebruikers:** tellen per soort-ID wat het model koos, wat met de hand gecorrigeerd werd en wat het niet kon plaatsen, om de soortenlijst, bijnamen en STT-prompt bij te stellen. Kan in de proxy (Analytics Engine of D1); alleen geaggregeerd, en op `#privacy` vermelden. Pas relevant bij meer gebruikers; tot die tijd geeft de testset hetzelfde beeld.
 - Foto koppelen aan een waarneming via tijd en locatie.
 
-**Voorstellen van Claude** (8 nov, op verzoek van de eigenaar; nog niet besproken of gepland). Voorgestelde volgorde: eerst Terschelling en wat daaruit komt, dan 1 en 2, dan welkom voor vreemden en back-up (zie de roadmap), dan een fysieke knop als push-to-talk (volumeknop of de knop op de oortjes; kleiner dan fase 3 en lost het grootste deel van Maartens fietswens op), fase 3 pas daarna, export naar trektellen.nl na de proef met Maarten.
+**Voorstellen van Claude** (8 nov, op verzoek van de eigenaar). **Alle zes gebouwd op 11 nov** als ontwikkeloptie (zie Android-roadmap en ontwikkelopties hierboven); de fysieke knop ook (#185). Voorgestelde volgorde: eerst Terschelling en wat daaruit komt, dan 1 en 2, dan welkom voor vreemden en back-up (zie de roadmap), dan een fysieke knop als push-to-talk (volumeknop of de knop op de oortjes; kleiner dan fase 3 en lost het grootste deel van Maartens fietswens op), fase 3 pas daarna, export naar trektellen.nl na de proef met Maarten.
 
 1. **Geen verzonnen soort uit de STT-prompt.** Bij een onverstaanbare opname zet `gpt-transcribe` soms een voorbeeld uit de prompt neer ("Roepje vink."): geloofwaardig en verzonnen. Een transcript dat letterlijk een voorbeeldzin is onzeker maken, of de voorbeeldzinnen zonder echte soort schrijven. Meten met de testset.
 2. **Onwaarschijnlijke soort wordt onzeker.** De meeste fouten zijn verwisselingen met een andere echte vogelnaam (kuifmees/koolmees, kraai/gaai, smient/vink). Kiest de app een zeldzame soort (zeldzaamheid van waarneming.nl staat er al), dan onzeker, zodat hij bovenaan staat bij het nalopen. Later eventueel ook seizoen en plek.
