@@ -75,3 +75,13 @@ npm run testset -- testset/feedback/anna.json
 ```
 
 `pull` vraagt één keer om jouw productie-`ACCESS_CODE` en bewaart die in `.testers.json`. Andere server: `FLUISTERVINK_URL=http://localhost:5173 npm run feedback -- pull`.
+
+## Licentie
+
+Copyright © 2026 Stephan Muller.
+
+Fluistervink is vrije software onder de [GNU Affero General Public License, versie 3](LICENSE) (alleen versie 3, `AGPL-3.0-only`). Je mag de code gebruiken, aanpassen en verspreiden, ook als dienst op een server, zolang je je eigen versie onder dezelfde licentie openbaar maakt, inclusief de broncode van wat op de server draait.
+
+Versies tot en met commit `8dbc86f` (11 november 2026) zijn gepubliceerd onder de MIT-licentie en blijven daaronder beschikbaar.
+
+Bijdragen: zie [CONTRIBUTING.md](CONTRIBUTING.md).
