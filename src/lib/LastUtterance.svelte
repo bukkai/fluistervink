@@ -2,9 +2,11 @@
   // "Wat zei ik?" (ontwikkeloptie, devOptions.ts): op het sessiescherm de
   // laatste uitspraak met wat de spraakherkenning verstond, en een knop om
   // de opname te horen. Zo zie je in het veld waarom iets misging ("hier"
-  // in plaats van "vier") en kun je meteen verbeteren.
+  // in plaats van "vier") en kun je meteen verbeteren. Eén regel boven de
+  // inspreekknop; tik op de tekst voor het hele transcript.
   import { liveQuery } from 'dexie';
   import { audioBlob, db, type Utterance } from './db';
+  import { playback } from './playback.svelte';
 
   let { sessionId }: { sessionId: string } = $props();
 
@@ -19,6 +21,7 @@
   let audio: HTMLAudioElement | undefined;
   let url: string | undefined;
   let playingId = $state<string>();
+  let open = $state(false);
   const PLAY = '▶︎';
   const PAUSE = '⏸︎';
 
@@ -27,6 +30,7 @@
     if (url) URL.revokeObjectURL(url);
     audio = url = undefined;
     playingId = undefined;
+    playback.playing = false;
   }
 
   function toggle(u: Utterance) {
@@ -38,12 +42,26 @@
     stop();
     url = URL.createObjectURL(audioBlob(u.audio!));
     audio = new Audio(url);
-    audio.onplay = () => (playingId = u.id);
+    audio.onplay = () => {
+      playingId = u.id;
+      playback.playing = true;
+    };
+    audio.onpause = () => (playback.playing = false);
     audio.onended = stop;
     audio.play();
   }
 
   $effect(() => stop);
+
+  // Een nieuwe uitspraak begint weer ingeklapt
+  let shownId: string | undefined;
+  $effect(() => {
+    const id = $last?.id;
+    if (id !== shownId) {
+      shownId = id;
+      open = false;
+    }
+  });
 
   function label(u: Utterance): string {
     if (u.status === 'pending') return 'in de wachtrij';
@@ -57,7 +75,7 @@
 
 {#if $last}
   {@const u = $last}
-  <section class="card last" aria-live="polite">
+  <section class="last" aria-live="polite">
     {#if u.audio}
       <button
         class="play"
@@ -66,28 +84,44 @@
         >{playingId === u.id ? PAUSE : PLAY}</button
       >
     {/if}
-    <p>
-      <span class="muted">Laatst verstaan</span>
-      {#if u.transcript !== undefined}
-        <span class="said">“{u.transcript}”</span>
-      {/if}
+    <button
+      class="text"
+      class:open
+      aria-expanded={open}
+      aria-label="Laatst verstaan: {u.transcript ?? ''} ({label(u)})"
+      onclick={() => (open = !open)}
+    >
       <span class="status {u.result}">{label(u)}</span>
-    </p>
+      <span class="said"
+        >{u.transcript !== undefined ? `“${u.transcript}”` : 'Laatst verstaan'}</span
+      >
+    </button>
   </section>
 {/if}
 
 <style>
+  /* In de vaste balk onderaan (ActiveSession.svelte), die zelf geen tikken
+     doorlaat; diens regel voor de kinderen geldt niet voor een component */
   .last {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 30rem;
+    min-width: 0;
+    pointer-events: auto;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.6rem 0.9rem;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding: 0.25rem;
+    border: 1px solid var(--border);
+    border-radius: 1.5rem;
+    background: var(--surface);
   }
 
   .play {
     flex: none;
-    width: 3rem;
-    height: 3rem;
+    width: 2.75rem;
+    height: 2.75rem;
     border-radius: 50%;
     border: 1px solid var(--border);
     background: var(--surface);
@@ -95,24 +129,36 @@
     font-size: 1.1rem;
   }
 
-  p {
-    margin: 0;
-    display: grid;
-    gap: 0.1rem;
+  .text {
+    flex: 1;
     min-width: 0;
+    min-height: 2.75rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.25rem 0.5rem 0.25rem 0.25rem;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
   }
 
   .said {
-    font-size: 1.05rem;
+    min-width: 0;
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .text.open .said {
+    white-space: normal;
     overflow-wrap: anywhere;
   }
 
-  .muted {
-    font-size: 0.8rem;
-    color: var(--muted);
-  }
-
   .status {
+    flex: none;
     font-size: 0.8rem;
     color: var(--muted);
   }

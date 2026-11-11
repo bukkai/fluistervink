@@ -15,6 +15,7 @@
   import { trektelEnabled } from './trektel';
   import { startTrektel, stopTrektel, trektel, trektelSupported } from './trektelRecorder.svelte';
   import { volumeKeyEnabled } from './volumeKey';
+  import { playback } from './playback.svelte';
 
   let { session }: { session: Session } = $props();
 
@@ -110,9 +111,10 @@
 
   // Volumeknop als inspreekknop (Android-app, instelling): elke druk is een
   // tik op de knop. Niet tijdens een trektelling: die heeft een eigen knop.
+  // Ook niet zolang "Laatst verstaan" afspeelt: dan regelt hij het volume.
   const volumeKeyOn = volumeKeySupported && volumeKeyEnabled();
   $effect(() => {
-    if (!volumeKeyOn || trektel.status !== 'idle') return;
+    if (!volumeKeyOn || trektel.status !== 'idle' || playback.playing) return;
     return listenVolumeKey((key) => {
       logEvent('talk_volume_key', { key, status: recorder.status }, { sessionId: session.id });
       talk.tap();
@@ -258,10 +260,6 @@
   </button>
 </form>
 
-{#if devOptionOn('watZeiIk')}
-  <LastUtterance sessionId={session.id} />
-{/if}
-
 <SessionLog {session} />
 
 <!-- Onderaan, in de duimzone: bereikbaar met één hand, ook als je door de
@@ -272,6 +270,11 @@
   class:hidden={typing && recorder.status !== 'recording'}
   bind:clientHeight={barHeight}
 >
+  <!-- "Wat zei ik?" hier, als één regel boven de knop: bovenaan de lijst nam
+       het zoveel ruimte dat er maar één waarneming zichtbaar bleef -->
+  {#if devOptionOn('watZeiIk')}
+    <LastUtterance sessionId={session.id} />
+  {/if}
   <!-- Ook tijdens een pauze en het weer aanzetten van de microfoon (startedAt staat dan) -->
   {#if trektel.startedAt !== undefined}
     <button class="talk recording" onclick={endTrektel}>
