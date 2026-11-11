@@ -1,6 +1,7 @@
 <script lang="ts">
   import { audioBlob, type Observation, type Utterance } from './db';
   import LocationPicker from './LocationPicker.svelte';
+  import LocationPreview from './LocationPreview.svelte';
   import { placeReason } from './spokenPlace';
   import {
     copyObservation,
@@ -221,9 +222,19 @@
         {/if}
       </span>
       {#if !placing}
-        <button type="button" class="link" onclick={() => (placing = true)}
-          >Locatie aanpassen</button
-        >
+        <button type="button" class="link pin-link" onclick={() => (placing = true)}>
+          <!-- Kaartspeld, zoals in kaart-apps -->
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path
+              d="M12 22s7-7.1 7-12.5A7 7 0 0 0 5 9.5C5 14.9 12 22 12 22Z"
+              fill="var(--breast)"
+              stroke="var(--breast-strong)"
+              stroke-width="1.25"
+            />
+            <circle cx="12" cy="9.5" r="2.6" fill="#fff" />
+          </svg>
+          Locatie aanpassen
+        </button>
       {/if}
     </span>
     {#if original.spokenPlace}
@@ -231,6 +242,8 @@
     {/if}
     {#if placing}
       <LocationPicker position={place.position} sessionId={original.sessionId} onplace={setPlace} />
+    {:else if place.position}
+      <LocationPreview position={place.position} onopen={() => (placing = true)} />
     {/if}
     {#if moved}
       <button type="button" class="link back" onclick={backToRecorded}>
@@ -358,6 +371,16 @@
     justify-content: space-between;
     gap: 0.25rem 1rem;
     font-size: 0.95rem;
+  }
+
+  .pin-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  .pin-link svg {
+    flex: none;
   }
 
   .place .back {
