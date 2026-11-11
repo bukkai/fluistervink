@@ -61,11 +61,13 @@ Gebouwd en gemerged op 11 nov:
 - #192 "Wat zei ik?": kaartje "Laatst verstaan" op het sessiescherm met transcript en afspeelknop (ontwikkeloptie).
 - #193 Herinnering aan de export op het hoofdscherm na een week (ontwikkeloptie).
 - #194 Samenvatting van een sessie: soortenlijst met aantallen, nieuw dit jaar, kopiëren (ontwikkeloptie). "Eerste van het seizoen" bewust weggelaten.
+- #198 Voor iedereen (11 nov): zeldzame soort onzeker, samenvatting en exportherinnering bij Instellingen → "Nalopen en export" (standaard aan, `src/lib/preferences.ts`); trektelpauze en snelkoppeling zonder keuze. Getypte losse feedback gaat meteen weg. Ontwikkelopties nog: stem, voorbeeldzin, "Wat zei ik?".
+- #199 Tegel "Begin met vogelen" in de snelle instellingen (native `BeginTegel.java`), toevoegen via Instellingen → "Snel beginnen".
 
 Nog te doen:
 
-- **Nieuwe tag** voor Play: #185, #186 en #187 zijn native. Debug-APK `apk/fluistervink-0.559-beta.apk` (alle drie). Nog niets op de telefoon geprobeerd: volumeknop, snelkoppeling (koude start en vanaf de achtergrond, één sessie), stem met en zonder oortjes en met een podcast, Merlin tijdens een trektelling, afspelen in "Wat zei ik?", kopiëren van de samenvatting.
-- Ontwikkelopties aanzetten en een paar wandelingen meenemen; daarna per optie beslissen of hij voor iedereen wordt (dan `#uitleg` en eventueel `#privacy` bijwerken). Bij #191 tellen hoe vaak een zeldzame soort echt was.
+- **Tag v0.3 gezet (11 nov)** met #185–#187, #198 en #199: beide AAB's uploaden in de Play Console (beta naar de interne test, stabiel naar de gesloten test). Debug-APK `apk/fluistervink-0.582-beta.apk`. Nog niets op de telefoon geprobeerd: volumeknop, snelkoppeling en tegel (koude start, vanaf de achtergrond, vergrendelscherm, één sessie), stem met en zonder oortjes en met een podcast, Merlin tijdens een trektelling, afspelen in "Wat zei ik?", kopiëren van de samenvatting.
+- De overgebleven ontwikkelopties een paar wandelingen meenemen en per optie beslissen. Bij #191 tellen hoe vaak een zeldzame soort echt was (nu voor iedereen aan).
 - Volgende stappen uit de roadmap: stap 3 en 5 na de productierelease.
 
 ## Roadmap naar v1.0 (13 okt)
