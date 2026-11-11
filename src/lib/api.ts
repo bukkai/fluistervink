@@ -284,6 +284,11 @@ export async function removeTester(name: string): Promise<void> {
   await request(`/api/testers?name=${encodeURIComponent(name)}`, { method: 'DELETE' });
 }
 
+/** Een afgesloten installatie uit de lijst halen; hij blijft afgesloten. */
+export async function hideTester(name: string): Promise<void> {
+  await request(`/api/testers?name=${encodeURIComponent(name)}&hide=1`, { method: 'DELETE' });
+}
+
 /** Feedback van alle testers, zoals de proxy hem heeft (alleen voor de eigenaar). */
 export interface SharedNote {
   id: string;

@@ -5,6 +5,7 @@
   // beheer ook alleen de eigenaar toe.
   import {
     fetchBilling,
+    hideTester,
     listSharedNotes,
     listTesters,
     listUsage,
@@ -177,6 +178,16 @@
     }
   }
 
+  async function hide(tester: Tester) {
+    if (!confirm(`${who(tester.name)} uit de lijst halen? Hij blijft afgesloten.`)) return;
+    try {
+      await hideTester(tester.name);
+      await loadTesters();
+    } catch (error) {
+      testersError = `Verwijderen mislukt: ${error instanceof Error ? error.message : error}`;
+    }
+  }
+
   const dateFormat = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'short' });
   const timeFormat = new Intl.DateTimeFormat('nl-NL', {
     day: 'numeric',
@@ -314,7 +325,9 @@
               </span>
               <span class="usage muted">{usageText(tester.usage)}</span>
             </span>
-            {#if !tester.blocked}
+            {#if tester.blocked}
+              <button class="link danger" onclick={() => hide(tester)}>Verwijderen</button>
+            {:else}
               <button class="link danger" onclick={() => remove(tester)}>Afsluiten</button>
             {/if}
           </li>

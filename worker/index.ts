@@ -669,31 +669,37 @@ async function processedNotes(env: WorkerEnv): Promise<Set<string>> {
  *
  * - GET /api/testers               alle installaties, met verbruik
  * - DELETE /api/testers?name=…     installatie afsluiten
+ * - DELETE /api/testers?name=…&hide=1  afgesloten installatie uit de lijst halen
  */
 async function testers(request: Request, env: WorkerEnv, tester: string): Promise<Response> {
   if (tester !== OWNER) return json({ error: 'Alleen voor de eigenaar' }, 403);
 
   if (request.method === 'GET') {
-    const installs = (await listInstalls(env.TESTERS)).map(
-      ({ name, registeredAt, via, blocked, displayName }) => ({
+    const installs = (await listInstalls(env.TESTERS))
+      .filter((t) => !t.hidden)
+      .map(({ name, registeredAt, via, blocked, displayName }) => ({
         name,
         source: 'install' as const,
         invitedAt: registeredAt,
         via,
         blocked: blocked || undefined,
         displayName,
-      }),
-    );
+      }));
     const usage = await testerUsage(env);
     return json({ testers: installs.map((t) => ({ ...t, usage: usage.get(t.name) })) });
   }
   if (request.method === 'DELETE') {
-    const name = new URL(request.url).searchParams.get('name') ?? '';
+    const params = new URL(request.url).searchParams;
+    const name = params.get('name') ?? '';
     // Het token blijft geldig, maar authorize() weigert het daarna
     const found = name.startsWith('app-') ? await findInstall(env.TESTERS, name) : undefined;
     if (!found) return json({ error: 'Niet gevonden' }, 404);
     const { id, ...record } = found;
-    await putInstall(env.TESTERS, id, { ...record, blocked: true });
+    // Uit de lijst halen kan alleen na het afsluiten, zodat niemand per
+    // ongeluk een werkende installatie onzichtbaar maakt
+    const hide = params.get('hide') === '1';
+    if (hide && !record.blocked) return json({ error: 'Eerst afsluiten' }, 409);
+    await putInstall(env.TESTERS, id, { ...record, blocked: true, hidden: hide || undefined });
     return json({ ok: true });
   }
   return json({ error: 'Niet gevonden' }, 404);

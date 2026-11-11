@@ -324,6 +324,31 @@ describe('/api/install (aanmelden zonder code)', () => {
     expect((await register({ id: ID, turnstile: 'goed' })).status).toBe(403);
   });
 
+  it('haalt een afgesloten installatie uit de lijst, maar hij blijft afgesloten', async () => {
+    turnstileAnswers();
+    const { token } = (await (await register({ id: ID, turnstile: 'goed' })).json()) as {
+      token: string;
+    };
+    const hide = () =>
+      call('/api/testers?name=app-3f9a2b1c&hide=1', { code: OWNER_CODE, method: 'DELETE' });
+    const names = async () =>
+      (
+        (await (await call('/api/testers', { code: OWNER_CODE })).json()) as {
+          testers: { name: string }[];
+        }
+      ).testers.map((t) => t.name);
+
+    // Een werkende installatie eerst afsluiten
+    expect((await hide()).status).toBe(409);
+    expect((await call('/api/ping', { code: token })).status).toBe(200);
+
+    await call('/api/testers?name=app-3f9a2b1c', { code: OWNER_CODE, method: 'DELETE' });
+    expect((await hide()).status).toBe(200);
+    expect(await names()).not.toContain('app-3f9a2b1c');
+    expect((await call('/api/ping', { code: token })).status).toBe(401);
+    expect((await register({ id: ID, turnstile: 'goed' })).status).toBe(403);
+  });
+
   it('bewaart een opgegeven naam bij de installatie', async () => {
     turnstileAnswers();
     const { token } = (await (await register({ id: ID, turnstile: 'goed' })).json()) as {
