@@ -23,7 +23,8 @@
 // begin van de id, eventueel met # en een reden erachter.
 //
 // Het script start zelf een dev-server als proxy (met de sleutels uit
-// .dev.vars) en gebruikt de code van de app (prompt, tools, validatie), dus
+// .dev.vars; het verbruik telt in de echte D1, dus bij Kosten op Developer)
+// en gebruikt de code van de app (prompt, tools, validatie), dus
 // het test altijd de versie van de huidige branch.
 //
 // Het juiste antwoord per uitspraak wordt afgeleid, niet met de hand gelabeld:
@@ -97,7 +98,10 @@ const replay = !opts.laadtest && (opts.model !== 'origineel' || opts.stt !== 'op
 
 let proxy;
 if (replay) {
-  // Volledige configuratie: de Worker met /api, sleutels uit .dev.vars
+  // Volledige configuratie: de Worker met /api, sleutels uit .dev.vars.
+  // Het verbruik gaat naar de echte D1 (vite.config.ts), zodat de kosten van
+  // de testset op Developer staan; daarvoor moet je ingelogd zijn bij wrangler.
+  process.env.FLUISTERVINK_USAGE_ONLINE = '1';
   proxy = await createServer({
     root: ROOT,
     logLevel: 'error',

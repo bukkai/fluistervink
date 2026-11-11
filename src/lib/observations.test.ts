@@ -13,6 +13,7 @@ import {
   isBareNo,
   listObservations,
   migrateAudio,
+  onAudioLimit,
   placeByHand,
   processQueue,
   recordedPlace,
@@ -775,6 +776,41 @@ describe('netwerk weg', () => {
     await vi.waitFor(async () => expect((await db.utterances.get(id))?.status).toBe('done'));
     expect(transcribeCalls).toBe(1);
     expect(await db.observations.count()).toBe(1);
+  });
+
+  it('plafond per dag: opname blijft bewaard, het sessiescherm hoort het', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        Response.json(
+          { error: 'Daglimiet bereikt: vandaag is er al 5 uur ingesproken.', code: 'audio_limit' },
+          { status: 429 },
+        ),
+      ),
+    );
+    const reached = vi.fn();
+    const off = onAudioLimit(reached);
+    const id = await record();
+    await processQueue();
+    off();
+    expect(reached).toHaveBeenCalledTimes(1);
+    const u = await db.utterances.get(id);
+    expect(u).toMatchObject({ status: 'failed', error: expect.stringMatching(/Daglimiet/) });
+    expect(u?.audio).toBeDefined();
+    expect(interpret).not.toHaveBeenCalled();
+  });
+
+  it('een andere fout van de proxy is geen plafond', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => Response.json({ error: 'Te veel verzoeken' }, { status: 429 })),
+    );
+    const reached = vi.fn();
+    const off = onAudioLimit(reached);
+    await record();
+    await processQueue();
+    off();
+    expect(reached).not.toHaveBeenCalled();
   });
 
   it('een mislukte uitspraak houdt de rest van de wachtrij niet op', async () => {
