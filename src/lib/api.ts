@@ -265,6 +265,8 @@ export interface Tester {
   blocked?: boolean;
   /** Naam die een installatie zelf opgaf */
   displayName?: string;
+  /** Laatste dag met een uitspraak ("2026-11-03"), ook zonder delen; uit het verbruik */
+  lastUsed?: string;
   /** Wat de tester gedeeld heeft; leeg als er (nog) niets gedeeld is */
   usage?: {
     walks: number;
@@ -282,6 +284,11 @@ export async function listTesters(): Promise<Tester[]> {
 /** Installatie afsluiten: het token werkt daarna niet meer. */
 export async function removeTester(name: string): Promise<void> {
   await request(`/api/testers?name=${encodeURIComponent(name)}`, { method: 'DELETE' });
+}
+
+/** Een afgesloten installatie uit de lijst halen; hij blijft afgesloten. */
+export async function hideTester(name: string): Promise<void> {
+  await request(`/api/testers?name=${encodeURIComponent(name)}&hide=1`, { method: 'DELETE' });
 }
 
 /** Feedback van alle testers, zoals de proxy hem heeft (alleen voor de eigenaar). */

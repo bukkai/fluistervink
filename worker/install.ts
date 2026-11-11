@@ -36,6 +36,11 @@ export interface InstallRecord {
   /** Hoe de app bewees dat hij echt is */
   via: 'play' | 'turnstile';
   blocked?: boolean;
+  /**
+   * Afgesloten én uit de lijst op Developer gehaald. Het record blijft wel
+   * staan: zonder zou het token van die installatie weer werken.
+   */
+  hidden?: boolean;
   /** Naam die de gebruiker zelf opgaf (Instellingen), zodat de eigenaar weet wie het is */
   displayName?: string;
 }

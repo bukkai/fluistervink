@@ -324,6 +324,31 @@ describe('/api/install (aanmelden zonder code)', () => {
     expect((await register({ id: ID, turnstile: 'goed' })).status).toBe(403);
   });
 
+  it('haalt een afgesloten installatie uit de lijst, maar hij blijft afgesloten', async () => {
+    turnstileAnswers();
+    const { token } = (await (await register({ id: ID, turnstile: 'goed' })).json()) as {
+      token: string;
+    };
+    const hide = () =>
+      call('/api/testers?name=app-3f9a2b1c&hide=1', { code: OWNER_CODE, method: 'DELETE' });
+    const names = async () =>
+      (
+        (await (await call('/api/testers', { code: OWNER_CODE })).json()) as {
+          testers: { name: string }[];
+        }
+      ).testers.map((t) => t.name);
+
+    // Een werkende installatie eerst afsluiten
+    expect((await hide()).status).toBe(409);
+    expect((await call('/api/ping', { code: token })).status).toBe(200);
+
+    await call('/api/testers?name=app-3f9a2b1c', { code: OWNER_CODE, method: 'DELETE' });
+    expect((await hide()).status).toBe(200);
+    expect(await names()).not.toContain('app-3f9a2b1c');
+    expect((await call('/api/ping', { code: token })).status).toBe(401);
+    expect((await register({ id: ID, turnstile: 'goed' })).status).toBe(403);
+  });
+
   it('bewaart een opgegeven naam bij de installatie', async () => {
     turnstileAnswers();
     const { token } = (await (await register({ id: ID, turnstile: 'goed' })).json()) as {
@@ -876,6 +901,32 @@ describe('/api/feedback/notes (feedback inzien)', () => {
     expect(await notes()).toContainEqual(
       expect.objectContaining({ id: 'n3', sessionName: 'Gulperberg' }),
     );
+  });
+
+  it('geeft per installatie de laatste dag met een uitspraak, ook zonder delen', async () => {
+    await putInstall(testersKv as never, ANNA_ID, {
+      name: ANNA,
+      registeredAt: 1000,
+      via: 'turnstile',
+    });
+    const list = async () =>
+      (
+        (await (await call('/api/testers', { code: OWNER_CODE })).json()) as {
+          testers: { name: string; lastUsed?: string }[];
+        }
+      ).testers.find((t) => t.name === ANNA);
+    expect((await list())?.lastUsed).toBeUndefined(); // maakt ook de tabel aan
+    const insert = (day: string, session: string) =>
+      (env.USAGE as ReturnType<typeof memoryD1>)
+        .prepare(
+          `INSERT INTO usage (day, tester, channel, session, model) VALUES (?, ?, 'beta', ?, 'm')`,
+        )
+        .bind(day, ANNA, session)
+        .run();
+    await insert('2026-10-01', 's1');
+    await insert('2026-11-03', 's2');
+    await insert('2026-11-09', ''); // zonder sessie (testset) telt niet
+    expect((await list())?.lastUsed).toBe('2026-11-03');
   });
 
   it('telt per tester sessies, uitspraken, feedback en de laatste actie', async () => {

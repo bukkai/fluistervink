@@ -5,6 +5,7 @@
   // beheer ook alleen de eigenaar toe.
   import {
     fetchBilling,
+    hideTester,
     listSharedNotes,
     listTesters,
     listUsage,
@@ -24,10 +25,14 @@
     type WalkCost,
   } from './costs';
   import { db } from './db';
+  import { ACTIVE_DAYS, lastSeen, splitActive } from './testers';
   import { describeImport, exportAllJson, importJson, saveFile } from './export';
 
   let testers = $state<Tester[]>();
   let testersError = $state('');
+  /** Actief bovenaan; wie al een tijd niets deed of afgesloten is achter "Toon meer" */
+  const split = $derived(splitActive(testers ?? []));
+  let showInactive = $state(false);
 
   async function loadTesters() {
     try {
@@ -177,6 +182,16 @@
     }
   }
 
+  async function hide(tester: Tester) {
+    if (!confirm(`${who(tester.name)} uit de lijst halen? Hij blijft afgesloten.`)) return;
+    try {
+      await hideTester(tester.name);
+      await loadTesters();
+    } catch (error) {
+      testersError = `Verwijderen mislukt: ${error instanceof Error ? error.message : error}`;
+    }
+  }
+
   const dateFormat = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'short' });
   const timeFormat = new Intl.DateTimeFormat('nl-NL', {
     day: 'numeric',
@@ -188,13 +203,18 @@
   const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
   /** "3 sessies · 41 uitspraken · 2× feedback · laatst 20 okt" */
-  function usageText(usage: Tester['usage']): string {
-    if (!usage) return 'nog niets gedeeld';
+  function usageText(tester: Tester): string {
+    const { usage, lastUsed } = tester;
+    const last = lastUsed || usage?.lastActivity ? lastSeen(tester) : undefined;
     return [
-      count(usage.walks, 'sessie', 'sessies'),
-      count(usage.utterances, 'uitspraak', 'uitspraken'),
-      `${usage.notes}× feedback`,
-      usage.lastActivity ? `laatst ${dateFormat.format(usage.lastActivity)}` : undefined,
+      usage
+        ? [
+            count(usage.walks, 'sessie', 'sessies'),
+            count(usage.utterances, 'uitspraak', 'uitspraken'),
+            `${usage.notes}× feedback`,
+          ].join(' · ')
+        : 'nog niets gedeeld',
+      last ? `laatst ${dateFormat.format(last)}` : undefined,
     ]
       .filter(Boolean)
       .join(' · ');
@@ -302,8 +322,11 @@
     {#if testers?.length === 0}
       <p class="hint">Nog geen installaties.</p>
     {:else if testers}
+      {#if split.active.length === 0}
+        <p class="hint">Niemand actief in de laatste {ACTIVE_DAYS} dagen.</p>
+      {/if}
       <ul class="testers">
-        {#each testers as tester (tester.name)}
+        {#each showInactive ? [...split.active, ...split.inactive] : split.active as tester (tester.name)}
           <li>
             <span class="name">
               {who(tester.name)}
@@ -312,14 +335,24 @@
                 · {tester.via === 'play' ? 'Play' : 'browser'}
                 {tester.blocked ? '· afgesloten' : ''}
               </span>
-              <span class="usage muted">{usageText(tester.usage)}</span>
+              <span class="usage muted">{usageText(tester)}</span>
             </span>
-            {#if !tester.blocked}
+            {#if tester.blocked}
+              <button class="link danger" onclick={() => hide(tester)}>Verwijderen</button>
+            {:else}
               <button class="link danger" onclick={() => remove(tester)}>Afsluiten</button>
             {/if}
           </li>
         {/each}
       </ul>
+      {#if split.inactive.length > 0}
+        <button class="link more" onclick={() => (showInactive = !showInactive)}>
+          {showInactive ? 'Toon minder' : `Toon meer (${split.inactive.length})`}
+        </button>
+        <p class="hint">
+          Onder "Toon meer": afgesloten, of meer dan {ACTIVE_DAYS} dagen niet gebruikt.
+        </p>
+      {/if}
     {/if}
   </div>
 </section>
