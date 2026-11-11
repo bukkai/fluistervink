@@ -16,6 +16,7 @@
   import ShareSettings from './ShareSettings.svelte';
   import TrektelSettings from './TrektelSettings.svelte';
   import VolumeKeySettings from './VolumeKeySettings.svelte';
+  import DevSettings from './DevSettings.svelte';
 
   let code = $state(getAccessCode());
   let status = $state<'idle' | 'busy' | 'ok' | 'error'>('idle');
@@ -106,6 +107,10 @@
 
 {#if volumeKeySupported}
   <VolumeKeySettings />
+{/if}
+
+{#if isOwner}
+  <DevSettings />
 {/if}
 
 <p class="version">
