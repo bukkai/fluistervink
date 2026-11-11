@@ -45,7 +45,13 @@ Feedback opgehaald op 6 nov: 8 testers en installaties met gedeelde wandelingen 
 
 Roadmap in `docs/lancering.md`: eerst 14 dagen een gesloten test met minstens 12 testers (regel van Google voor nieuwe persoonlijke accounts), dan productietoegang aanvragen; openbaar rond begin december. Logo is bij een artiest aangevraagd; mag tijdens de gesloten test als nieuwe app-versie.
 
-**Stand 9 nov:** privacypagina live op `fluistervink.nl/privacy` (#170, release naar stable gedaan), winkelvermelding en gegevensveiligheid ingevuld (`docs/play-store/`), eerste release in de gesloten test ingediend ter beoordeling. Daarna: deelnamelink in `PLAY_TEST_LINKS.stable`, testers werven (15–20). Regel voor de kwaliteitsronde van 8 nov ontbreekt nog in het logboek van `docs/kwaliteitsronde.md`.
+**Stand 9 nov:** privacypagina live op `fluistervink.nl/privacy` (#170, release naar stable gedaan), winkelvermelding en gegevensveiligheid ingevuld (`docs/play-store/`), eerste release in de gesloten test ingediend ter beoordeling. Daarna: deelnamelink in `PLAY_TEST_LINKS.stable`, testers werven (15–20).
+
+## Kwaliteitsronde (11 nov)
+
+Na de release naar stable van 11 nov (`82c1b73`). Logboek in `docs/kwaliteitsronde.md`, alles in **PR #202**: de proxy leest een kapot gedeeld bestand niet meer (liet Developer vastlopen), Stop tijdens het weer aangaan van de microfoon stopt de trektelling nu echt, lege eerste meting zette het achtergrondniveau van de trektelling vast, "Trektelling starten" 48 px, `#privacy` zonder "geen statistieken" (bronnen nagekeken op 11 nov), trilpatronen van de trektelling in `#uitleg`.
+
+Open, om te beslissen: `android:allowBackup="true"` (Android kan app-gegevens in de Google-back-up meenemen: uitzetten in een volgende app-versie, of in `#privacy` zetten) en de gegevensveiligheid in Play (`docs/play-store/`) naast de nieuwe privacytekst leggen. Op de telefoon proberen na het mergen: trektelling, naar Merlin en terug, meteen op Stop.
 
 ## Android-roadmap en ontwikkelopties (11 nov)
 
