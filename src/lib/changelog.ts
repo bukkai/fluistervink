@@ -15,6 +15,9 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-11-11',
     items: [
       'Na een update zie je onderin even "Bijgewerkt naar versie …", en deze lijst met wat er nieuw is.',
+      'Nieuw bij Instellingen, onder "Nalopen en export": een zeldzame soort wordt onzeker, een samenvatting van elke sessie, en een herinnering om te exporteren. Alle drie staan aan.',
+      'Trektelling: naar Merlin of het scherm op slot pauzeert de telling in plaats van te stoppen.',
+      'Android-app: "Begin met vogelen" als snelkoppeling op het app-pictogram, en als tegel in de snelle instellingen.',
       'De eerste opname na de vraag om de microfoon is niet meer leeg.',
       'Bij een waarneming staat een kaartje met de plek. Tik erop om de plek te verzetten.',
       'Android-app: de volumeknop kan de inspreekknop zijn (bij Instellingen).',
