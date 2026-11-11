@@ -88,6 +88,14 @@ describe('createChunker', () => {
     expect(chunker.speaking).toBe(true);
   });
 
+  it('een meting met alleen nullen zet het achtergrondniveau niet vast', () => {
+    const chunker = createChunker();
+    // De eerste meting na het aanzetten van de microfoon is vaak leeg
+    chunker.push(-Infinity);
+    feed(chunker, WIND, 120_000);
+    expect(chunker.speaking).toBe(false);
+  });
+
   it('heel zacht geluid is nooit spraak', () => {
     const chunker = createChunker();
     feed(chunker, -90, 1000);

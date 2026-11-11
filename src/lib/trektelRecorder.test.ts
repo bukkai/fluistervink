@@ -115,6 +115,27 @@ describe('trektelling naar de achtergrond', () => {
     expect(micOn).toBe(0);
   });
 
+  it('stopknop terwijl de microfoon weer aangaat: stoppen zodra hij aan is', async () => {
+    const h = handlers({ onResumed: vi.fn() });
+    await startTrektel(h);
+    setHidden(true);
+    setHidden(false);
+    expect(trektel.status).toBe('starting');
+    stopTrektel();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(trektel.status).toBe('idle');
+    expect(micOn).toBe(0);
+    expect(h.onResumed).not.toHaveBeenCalled();
+  });
+
+  it('sessie gestopt terwijl de microfoon voor het eerst aangaat: niet starten', async () => {
+    const starting = startTrektel(handlers());
+    stopTrektel();
+    expect(await starting).toBe(false);
+    expect(trektel.status).toBe('idle');
+    expect(micOn).toBe(0);
+  });
+
   it('alweer weg terwijl de microfoon aangaat: opnieuw pauzeren', async () => {
     const h = handlers();
     await startTrektel(h);

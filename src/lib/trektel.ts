@@ -36,6 +36,13 @@ export const CHUNK_OPTIONS: ChunkerOptions = {
 
 /** Hoe snel het achtergrondniveau mag stijgen, in dB per meting (0,5 dB per seconde). */
 const FLOOR_RISE_DB = 0.05;
+/**
+ * Stiller dan dit telt als dit niveau. Een meting met alleen nullen (de eerste
+ * na het aanzetten van de microfoon) is -Infinity; daar komt het
+ * achtergrondniveau met kleine stapjes nooit meer vandaan, en dan telt elke
+ * wind als spraak.
+ */
+const MIN_LEVEL_DB = -100;
 
 export interface Cut {
   /** Lengte van het stuk */
@@ -90,7 +97,8 @@ export function createChunker(options: ChunkerOptions = CHUNK_OPTIONS) {
      * Eén meting van `frameMs` met niveau `levelDb` (dBFS). Geeft een `Cut`
      * terug als het stuk hier eindigt; het volgende begint dan meteen.
      */
-    push(levelDb: number, frameMs = FRAME_MS): Cut | undefined {
+    push(measuredDb: number, frameMs = FRAME_MS): Cut | undefined {
+      const levelDb = Math.max(measuredDb, MIN_LEVEL_DB);
       floorDb = floorDb === undefined || levelDb < floorDb ? levelDb : floorDb + FLOOR_RISE_DB;
       speaking = levelDb > options.absoluteFloorDb && levelDb > floorDb + options.marginDb;
 
@@ -131,7 +139,7 @@ export function levelDb(samples: Float32Array): number {
 export const TREKTEL_MAX_MS = 4 * 60 * 60_000;
 
 /**
- * Gepauzeerd (ontwikkeloptie: naar Merlin en terug) en niet binnen zo lang
+ * Gepauzeerd (naar Merlin en terug) en niet binnen zo lang
  * terug: dan stopt de telling alsnog.
  */
 export const TREKTEL_PAUSE_MAX_MS = 15 * 60_000;

@@ -499,6 +499,8 @@
   }
 
   .trektel-start {
+    /* In het veld, vlak boven de inspreekknop: minstens 48 px (was 46) */
+    min-height: 3rem;
     margin-bottom: 0.75rem;
   }
 

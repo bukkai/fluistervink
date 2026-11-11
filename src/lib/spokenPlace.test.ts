@@ -83,6 +83,8 @@ describe('parseNumber', () => {
     expect(parseNumber('tweeëntwintig')).toBe(22);
     expect(parseNumber('duizend')).toBe(1000);
     expect(parseNumber('anderhalve')).toBe(1.5);
+    // Staat "in" elk object, maar is geen getal
+    expect(parseNumber('constructor')).toBeUndefined();
     expect(parseNumber('weilanden')).toBeUndefined();
   });
 });

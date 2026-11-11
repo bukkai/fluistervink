@@ -71,7 +71,7 @@ Doel: valideren dat herkenning en interpretatie in het veld goed genoeg werken.
 - GPS-track (ook later niet gewenst)
 - Echte offline-ondersteuning (verwerken zodra er verbinding is, sync-status)
 - Uploaden via de API van waarneming.nl
-- Automatisch pauzeren als een andere app (zoals Merlin) de microfoon gebruikt (behalve de ontwikkeloptie voor de trektelling, zie hieronder)
+- Automatisch pauzeren als een andere app (zoals Merlin) de microfoon gebruikt (behalve de trektelling, die pauzeert als de app naar de achtergrond gaat; zie Trektelmodus hierboven)
 - Accounts, delen of multi-user
 
 ## Datamodel

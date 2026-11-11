@@ -14,6 +14,8 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     date: '2026-11-11',
     items: [
+      'Trektelling: op Stop drukken terwijl de microfoon net weer aanging (terug van Merlin) stopt de telling nu echt. Aanhoudende wind telt niet meer als spraak als de microfoon stil begon.',
+      'Privacy: duidelijker dat de ontwikkelaar ziet hoeveel de app gebruikt wordt (alleen aantallen).',
       'Na een update zie je onderin even "Bijgewerkt naar versie …", en deze lijst met wat er nieuw is.',
       'Nieuw bij Instellingen, onder "Nalopen en export": een zeldzame soort wordt onzeker, een samenvatting van elke sessie, en een herinnering om te exporteren. Alle drie staan aan.',
       'Trektelling: naar Merlin of het scherm op slot pauzeert de telling in plaats van te stoppen.',

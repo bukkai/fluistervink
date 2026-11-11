@@ -38,6 +38,7 @@ import {
   DEFAULT_COUNTING_METHOD,
   DEFAULT_METHOD,
   getSpecies,
+  isVagrant,
   speciesName,
 } from './vocab';
 import { PLATFORM } from './native';
@@ -763,6 +764,8 @@ function withReason(
  */
 export function rareReason(speciesId: number): string | undefined {
   if (!preferenceOn('zeldzaamOnzeker') || rarityOf(speciesId) < RARE) return undefined;
+  // Een dwaalgast is al onzeker, met zijn eigen reden (interpret.ts)
+  if (isVagrant(speciesId)) return undefined;
   return `Zeldzame soort (${speciesName(speciesId)}): klopt het?`;
 }
 
@@ -869,7 +872,7 @@ async function applyActions(utterance: Utterance, actions: Action[]): Promise<Ch
           Object.assign(patch, placeUncertainty(merged));
         }
         Object.assign(patch, accidental);
-        // Andere soort: is die zeldzaam (ontwikkeloptie)?
+        // Andere soort: is die zeldzaam (instelling)?
         if (
           action.fields.speciesId !== undefined &&
           action.fields.speciesId !== current.speciesId
