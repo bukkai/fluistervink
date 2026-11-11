@@ -20,6 +20,8 @@
   import { instance } from './lib/instance.svelte';
   import { processQueue } from './lib/observations';
   import { syncWalkService } from './lib/walkService';
+  import { devOptionOn } from './lib/devOptions';
+  import { listenShortcut, setShortcut } from './lib/native';
   import {
     SHARE_CHANGED,
     scheduleShare,
@@ -157,6 +159,23 @@
     await startSession();
     requestPersistentStorage();
   }
+
+  // Snelkoppeling "Begin met vogelen" op het app-pictogram (ontwikkeloptie,
+  // alleen de eigenaar). Zonder code of met de optie uit: weghalen, zodat hij
+  // niet blijft staan als de code weg is. Tikken: naar het hoofdscherm en een
+  // sessie starten (startSession doet niets als er al een loopt).
+  let shortcutOn: boolean | undefined;
+  $effect(() => {
+    const on = isOwner && devOptionOn('snelkoppeling');
+    if (on === shortcutOn) return;
+    shortcutOn = on;
+    setShortcut(on);
+  });
+  listenShortcut((action) => {
+    if (action !== 'begin') return;
+    location.hash = '';
+    start();
+  });
 
   // Vergeten sessie (sessions.ts): bij het openen van de app, en bij
   // terugkomen uit de achtergrond (Android sluit de app niet altijd)

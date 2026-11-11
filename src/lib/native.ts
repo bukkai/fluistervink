@@ -179,3 +179,34 @@ export function listenVolumeKey(onPress: (key: string) => void): () => void {
     Knop.uit().catch(() => {});
   };
 }
+
+interface SnelkoppelingPlugin {
+  zetten(options: { aan: boolean }): Promise<void>;
+  wachtend(): Promise<{ actie?: string }>;
+  addListener(
+    event: 'actie',
+    listener: (data: { actie: string }) => void,
+  ): Promise<PluginListenerHandle>;
+}
+
+const Snelkoppeling = registerPlugin<SnelkoppelingPlugin>('Snelkoppeling');
+
+/** Kan deze app een snelkoppeling op het pictogram zetten (SnelkoppelingPlugin.java)? */
+export const shortcutSupported = isNativeApp && Capacitor.isPluginAvailable('Snelkoppeling');
+
+/** Snelkoppeling "Begin met vogelen" op het app-pictogram aan of uit */
+export async function setShortcut(on: boolean): Promise<void> {
+  if (shortcutSupported) await Snelkoppeling.zetten({ aan: on }).catch(() => {});
+}
+
+/**
+ * Roept `onAction` aan als de app via een snelkoppeling geopend is: eerst
+ * voor de opening waarmee hij startte, daarna bij elke volgende.
+ */
+export function listenShortcut(onAction: (action: string) => void): void {
+  if (!shortcutSupported) return;
+  Snelkoppeling.addListener('actie', ({ actie }) => onAction(actie));
+  Snelkoppeling.wachtend()
+    .then(({ actie }) => actie && onAction(actie))
+    .catch(() => {});
+}
