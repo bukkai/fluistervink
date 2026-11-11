@@ -17,6 +17,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(IntegriteitPlugin.class);
         registerPlugin(KnopPlugin.class);
         registerPlugin(SnelkoppelingPlugin.class);
+        registerPlugin(SprekenPlugin.class);
         super.onCreate(savedInstanceState);
 
         // Terugknop: een pagina terug in de app (de schermen zijn #-adressen),

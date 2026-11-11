@@ -13,6 +13,7 @@ import {
 import { ApiError } from './api';
 import { attachArea } from './area';
 import { utteranceFeedback, vibrate } from './feedback';
+import { confirmAloud } from './spoken';
 import { MODEL, interpret, promptVersion, type Action, type Interpretation } from './interpret';
 import { currentPosition } from './location.svelte';
 import { placeFromSpeech, placeReason, type Place } from './spokenPlace';
@@ -375,7 +376,11 @@ async function runQueue(): Promise<void> {
       continue;
     }
     const processed = await db.utterances.get(next.id);
-    if (processed) vibrate(utteranceFeedback(processed));
+    if (processed) {
+      vibrate(utteranceFeedback(processed));
+      // Niet wachten: de volgende uitspraak hoeft niet op de stem te wachten
+      confirmAloud(processed).catch(() => {});
+    }
   }
 }
 
