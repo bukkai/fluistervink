@@ -323,7 +323,7 @@
       <p class="hint">Nog geen installaties.</p>
     {:else if testers}
       {#if split.active.length === 0}
-        <p class="hint">Niemand actief in de laatste {ACTIVE_DAYS} dagen.</p>
+        <p class="hint">Niemand die de laatste {ACTIVE_DAYS} dagen iets deelde.</p>
       {/if}
       <ul class="testers">
         {#each showInactive ? [...split.active, ...split.inactive] : split.active as tester (tester.name)}
@@ -350,7 +350,7 @@
           {showInactive ? 'Toon minder' : `Toon meer (${split.inactive.length})`}
         </button>
         <p class="hint">
-          Onder "Toon meer": afgesloten, of meer dan {ACTIVE_DAYS} dagen niet gebruikt.
+          Onder "Toon meer": afgesloten, nog niets gedeeld, of meer dan {ACTIVE_DAYS} dagen niet gebruikt.
         </p>
       {/if}
     {/if}

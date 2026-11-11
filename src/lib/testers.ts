@@ -17,12 +17,15 @@ export function lastSeen(tester: Tester): number | undefined {
 }
 
 /**
- * Actieve installaties (niet afgesloten, gezien in de laatste `ACTIVE_DAYS`
- * dagen), en de rest; allebei met de laatst geziene bovenaan.
+ * Actieve installaties (niet afgesloten, iets gedeeld, en gezien in de laatste
+ * `ACTIVE_DAYS` dagen), en de rest; allebei met de laatst geziene bovenaan.
+ * Wie nog niets deelde staat ook bij de rest: daar valt voor de eigenaar
+ * (nog) niets aan te zien.
  */
 export function splitActive(testers: Tester[], now = Date.now()) {
   const since = now - ACTIVE_DAYS * 24 * 60 * 60 * 1000;
   const sorted = [...testers].sort((a, b) => (lastSeen(b) ?? 0) - (lastSeen(a) ?? 0));
-  const isActive = (t: Tester) => !t.blocked && (lastSeen(t) ?? 0) >= since;
+  const isActive = (t: Tester) =>
+    !t.blocked && t.usage !== undefined && (lastSeen(t) ?? 0) >= since;
   return { active: sorted.filter(isActive), inactive: sorted.filter((t) => !isActive(t)) };
 }

@@ -25,17 +25,19 @@ describe('lijst met installaties', () => {
   });
 
   it('zet recent gebruikte installaties bovenaan en de rest apart', () => {
+    const shared = { walks: 1, utterances: 3, notes: 0 };
     const { active, inactive } = splitActive(
       [
-        tester('oud', { invitedAt: daysAgo(90), lastUsed: '2026-09-01' }),
-        tester('nieuw', { invitedAt: daysAgo(2) }),
-        tester('vandaag', { invitedAt: daysAgo(90), lastUsed: '2026-11-11' }),
-        tester('afgesloten', { invitedAt: daysAgo(1), blocked: true }),
+        tester('oud', { invitedAt: daysAgo(90), lastUsed: '2026-09-01', usage: shared }),
+        tester('nieuw', { invitedAt: daysAgo(2), usage: shared }),
+        tester('vandaag', { invitedAt: daysAgo(90), lastUsed: '2026-11-11', usage: shared }),
+        tester('niets gedeeld', { invitedAt: daysAgo(1), lastUsed: '2026-11-11' }),
+        tester('afgesloten', { invitedAt: daysAgo(1), blocked: true, usage: shared }),
         tester('onbekend'),
       ],
       now,
     );
     expect(active.map((t) => t.name)).toEqual(['vandaag', 'nieuw']);
-    expect(inactive.map((t) => t.name)).toEqual(['afgesloten', 'oud', 'onbekend']);
+    expect(inactive.map((t) => t.name)).toEqual(['niets gedeeld', 'afgesloten', 'oud', 'onbekend']);
   });
 });
