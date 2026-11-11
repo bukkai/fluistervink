@@ -24,10 +24,20 @@ const MIN_DURATION_MS = 500;
 /** Bestandsformaten in volgorde van voorkeur; Chrome op Android kan webm/opus. */
 export const MIME_TYPES = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/mp4'];
 
+/**
+ * De microfoon ging niet aan, maar niet omdat toegang geweigerd is. Op Android
+ * gebeurt dat vaak één keer, vlak na het geven van toestemming
+ * (NotReadableError "Could not start audio source"); de tweede poging lukt dan.
+ */
+const RETRY_ERRORS = ['NotReadableError', 'AbortError'];
+const RETRY_AFTER_MS = 500;
+
 /** Toestand voor de interface. */
 export const recorder = $state<{
   status: 'idle' | 'starting' | 'recording' | 'denied' | 'unsupported';
   startedAt?: number;
+  /** De laatste poging mislukte (niet geweigerd); weg bij de volgende start */
+  failed?: boolean;
 }>({
   status: 'MediaRecorder' in window && navigator.mediaDevices ? 'idle' : 'unsupported',
 });
@@ -39,15 +49,25 @@ let chunks: Blob[] = [];
 export async function startRecording(): Promise<boolean> {
   if (recorder.status !== 'idle' && recorder.status !== 'denied') return false;
   recorder.status = 'starting';
+  recorder.failed = undefined;
 
-  let stream: MediaStream;
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({ audio: await microphoneConstraints() });
-  } catch (error) {
-    const denied = error instanceof DOMException && error.name === 'NotAllowedError';
-    logEvent('mic_error', { name: (error as Error).name, message: (error as Error).message });
-    recorder.status = denied ? 'denied' : 'idle';
-    return false;
+  let stream: MediaStream | undefined;
+  for (let attempt = 1; !stream; attempt++) {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: await microphoneConstraints() });
+    } catch (error) {
+      const { name, message } = error as Error;
+      const retry = attempt === 1 && RETRY_ERRORS.includes(name);
+      logEvent('mic_error', { name, message, attempt, retry });
+      if (retry) {
+        await new Promise((resolve) => setTimeout(resolve, RETRY_AFTER_MS));
+        continue;
+      }
+      const denied = error instanceof DOMException && name === 'NotAllowedError';
+      recorder.status = denied ? 'denied' : 'idle';
+      recorder.failed = !denied || undefined;
+      return false;
+    }
   }
 
   // Welke microfoon het werd, om het haperen van Bluetooth-audio na te gaan
