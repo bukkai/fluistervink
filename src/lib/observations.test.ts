@@ -851,3 +851,50 @@ describe('slot van de wachtrij', () => {
     expect((await db.utterances.get(id))?.status).toBe('done');
   });
 });
+
+describe('onzeker door ontwikkelopties', () => {
+  const ROODHALSFUUT = 367; // zeldzaam bij waarneming.nl
+  afterEach(() => localStorage.clear());
+
+  it('zeldzame soort wordt onzeker, alleen met de optie', async () => {
+    await say('roodhalsfuut', ['add_observation', { species_id: ROODHALSFUUT, count: 1 }]);
+    localStorage.setItem('fluistervink.dev.zeldzaamOnzeker', '1');
+    const utterance = await say('roodhalsfuut', [
+      'add_observation',
+      { species_id: ROODHALSFUUT, count: 1 },
+    ]);
+    const [rare, without] = await listObservations(SESSION);
+    expect(without.uncertain).toBe(false);
+    expect(rare.uncertain).toBe(true);
+    expect(rare.uncertainReason).toMatch(/Zeldzame soort \(Roodhalsfuut\)/);
+    expect(utterance.result).toBe('uncertain');
+  });
+
+  it('gewone soort blijft zeker, ook met de optie', async () => {
+    localStorage.setItem('fluistervink.dev.zeldzaamOnzeker', '1');
+    await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    const [obs] = await listObservations(SESSION);
+    expect(obs.uncertain).toBe(false);
+  });
+
+  it('verbeteren naar een zeldzame soort wordt onzeker', async () => {
+    localStorage.setItem('fluistervink.dev.zeldzaamOnzeker', '1');
+    await say('fuut', ['add_observation', { species_id: VINK, count: 1 }]);
+    await say('nee, die vorige was een roodhalsfuut', [
+      'update_observation',
+      { ref: 1, species_id: ROODHALSFUUT },
+    ]);
+    const [obs] = await listObservations(SESSION);
+    expect(obs).toMatchObject({ speciesId: ROODHALSFUUT, uncertain: true });
+  });
+
+  it('een letterlijke voorbeeldzin uit de prompt wordt onzeker', async () => {
+    localStorage.setItem('fluistervink.dev.voorbeeldzinOnzeker', '1');
+    await say('Roepje vink.', ['add_observation', { species_id: VINK, count: 1, activity_id: 3 }]);
+    await say('Roepende vink', ['add_observation', { species_id: VINK, count: 1, activity_id: 3 }]);
+    const [real, example] = await listObservations(SESSION);
+    expect(example.uncertain).toBe(true);
+    expect(example.uncertainReason).toMatch(/voorbeeldzin/);
+    expect(real.uncertain).toBe(false);
+  });
+});

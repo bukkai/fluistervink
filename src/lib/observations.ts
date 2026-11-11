@@ -20,7 +20,14 @@ import { placeFromSpeech, placeReason, type Place } from './spokenPlace';
 import { INSTANCE_ID } from './instance.svelte';
 import { APP_VERSION, logEvent, wasHiddenSince } from './log';
 import type { Recording } from './recorder.svelte';
-import { TRANSCRIBE_MODEL, transcribe, transcribePromptVersion } from './transcribe';
+import { devOptionOn } from './devOptions';
+import { rarityOf } from './rarity';
+import {
+  TRANSCRIBE_MODEL,
+  isPromptExample,
+  transcribe,
+  transcribePromptVersion,
+} from './transcribe';
 import { checkZeemeeuw } from './zeemeeuw.svelte';
 import { devNoteText } from './devNotePrefix';
 
@@ -731,6 +738,39 @@ function placeUncertainty(
   return { uncertain: true, uncertainReason: earlier ? `${earlier}; ${reason}` : reason };
 }
 
+/** Zeldzaam (3) of zeer zeldzaam (4) bij waarneming.nl */
+const RARE = 3;
+
+/**
+ * Twijfel erbij zetten, met de reden achter een eventuele eerdere reden.
+ * Ontwikkelopties (devOptions.ts): zeldzame soort, voorbeeldzin.
+ */
+function withReason(
+  fields: Pick<Observation, 'uncertain' | 'uncertainReason'>,
+  reason: string | undefined,
+): Pick<Observation, 'uncertain' | 'uncertainReason'> {
+  if (!reason) return fields;
+  const earlier = fields.uncertain ? fields.uncertainReason : undefined;
+  if (earlier?.includes(reason)) return { uncertain: true, uncertainReason: earlier };
+  return { uncertain: true, uncertainReason: earlier ? `${earlier}; ${reason}` : reason };
+}
+
+/**
+ * De meeste fouten zijn verwisselingen met een andere echte vogelnaam. Kiest
+ * de app een zeldzame soort, dan onzeker, zodat hij bij het nalopen bovenaan
+ * staat (ontwikkeloptie).
+ */
+export function rareReason(speciesId: number): string | undefined {
+  if (!devOptionOn('zeldzaamOnzeker') || rarityOf(speciesId) < RARE) return undefined;
+  return `Zeldzame soort (${speciesName(speciesId)}): klopt het?`;
+}
+
+/** Transcript is letterlijk een voorbeeldzin uit de prompt (ontwikkeloptie) */
+export function exampleReason(transcript: string | undefined): string | undefined {
+  if (!devOptionOn('voorbeeldzinOnzeker') || !isPromptExample(transcript)) return undefined;
+  return `Verstaan: "${transcript!.trim()}", een voorbeeldzin uit de spraakherkenning. Misschien niets verstaan`;
+}
+
 /** Voert de acties uit en geeft terug wat er veranderde. */
 async function applyActions(utterance: Utterance, actions: Action[]): Promise<Change[]> {
   const changes: Change[] = [];
@@ -767,6 +807,13 @@ async function applyActions(utterance: Utterance, actions: Action[]): Promise<Ch
           area: utterance.area,
           status: 'draft',
         };
+        Object.assign(
+          observation,
+          withReason(
+            withReason(observation, rareReason(observation.speciesId)),
+            exampleReason(utterance.transcript),
+          ),
+        );
         await db.observations.add(observation);
         changes.push({ type: 'add', observationId: observation.id });
         break;
@@ -821,6 +868,20 @@ async function applyActions(utterance: Utterance, actions: Action[]): Promise<Ch
           Object.assign(patch, placeUncertainty(merged));
         }
         Object.assign(patch, accidental);
+        // Andere soort: is die zeldzaam (ontwikkeloptie)?
+        if (
+          action.fields.speciesId !== undefined &&
+          action.fields.speciesId !== current.speciesId
+        ) {
+          const merged = { ...current, ...patch };
+          Object.assign(patch, withReason(merged, rareReason(action.fields.speciesId)));
+        }
+        if (exampleReason(utterance.transcript)) {
+          Object.assign(
+            patch,
+            withReason({ ...current, ...patch }, exampleReason(utterance.transcript)),
+          );
+        }
 
         const before = Object.fromEntries(
           Object.keys(patch).map((key) => [key, current[key as keyof Observation]]),
