@@ -14,6 +14,7 @@
   import BackupSettings from './BackupSettings.svelte';
   import RecordingSettings from './RecordingSettings.svelte';
   import ShareSettings from './ShareSettings.svelte';
+  import PreferenceSettings from './PreferenceSettings.svelte';
   import TrektelSettings from './TrektelSettings.svelte';
   import VolumeKeySettings from './VolumeKeySettings.svelte';
   import DevSettings from './DevSettings.svelte';
@@ -96,6 +97,8 @@
     </form>
   </section>
 {/if}
+
+<PreferenceSettings />
 
 <BackupSettings />
 

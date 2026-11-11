@@ -10,7 +10,7 @@
   } from './devNotes';
   import { db, type Utterance } from './db';
   import { onDestroy } from 'svelte';
-  import { SHARE_CHANGED, sentNoteIds, shareEnabled } from './share';
+  import { SHARE_CHANGED, scheduleShare, sentNoteIds, shareEnabled } from './share';
 
   const notes = liveQuery(listDevNotes);
 
@@ -42,6 +42,8 @@
     if (!text.trim()) return;
     await addTypedNote(text, $active?.id);
     text = '';
+    // Losse feedback meteen versturen (bij een sessie gaat hij mee na het stoppen)
+    if (!$active) scheduleShare(500);
   }
 
   async function remove(note: Utterance) {
@@ -80,10 +82,10 @@
 <p class="intro">
   Spreek het in tijdens het vogelen: begin een uitspraak met <em>"feedback"</em>, bijvoorbeeld
   <em>"feedback, hij herkende blako niet, terwijl dat toch echt bladkoning betekent"</em>. Of typ
-  het hieronder. Feedback gaat na de sessie mee naar de ontwikkelaar,
-  {sharing ? 'want delen staat aan' : 'als je delen aanzet'} (<a href="#instellingen"
-    >Instellingen</a
-  >). Verstuurde feedback blijft hier staan; weghalen kan altijd.
+  het hieronder. {#if sharing}Feedback gaat vanzelf naar de ontwikkelaar: getypte meteen,
+    ingesproken na de sessie.{:else}Feedback gaat naar de ontwikkelaar als je delen aanzet (<a
+      href="#instellingen">Instellingen</a
+    >).{/if} Verstuurde feedback blijft hier staan; weghalen kan altijd.
 </p>
 
 <form class="card add" onsubmit={add}>

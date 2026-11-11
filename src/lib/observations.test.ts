@@ -852,13 +852,14 @@ describe('slot van de wachtrij', () => {
   });
 });
 
-describe('onzeker door ontwikkelopties', () => {
+describe('onzeker door instellingen en ontwikkelopties', () => {
   const ROODHALSFUUT = 367; // zeldzaam bij waarneming.nl
   afterEach(() => localStorage.clear());
 
-  it('zeldzame soort wordt onzeker, alleen met de optie', async () => {
+  it('zeldzame soort wordt onzeker, tenzij uitgezet', async () => {
+    localStorage.setItem('fluistervink.pref.zeldzaamOnzeker', '0');
     await say('roodhalsfuut', ['add_observation', { species_id: ROODHALSFUUT, count: 1 }]);
-    localStorage.setItem('fluistervink.dev.zeldzaamOnzeker', '1');
+    localStorage.removeItem('fluistervink.pref.zeldzaamOnzeker');
     const utterance = await say('roodhalsfuut', [
       'add_observation',
       { species_id: ROODHALSFUUT, count: 1 },
@@ -870,15 +871,13 @@ describe('onzeker door ontwikkelopties', () => {
     expect(utterance.result).toBe('uncertain');
   });
 
-  it('gewone soort blijft zeker, ook met de optie', async () => {
-    localStorage.setItem('fluistervink.dev.zeldzaamOnzeker', '1');
+  it('gewone soort blijft zeker', async () => {
     await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
     const [obs] = await listObservations(SESSION);
     expect(obs.uncertain).toBe(false);
   });
 
   it('verbeteren naar een zeldzame soort wordt onzeker', async () => {
-    localStorage.setItem('fluistervink.dev.zeldzaamOnzeker', '1');
     await say('fuut', ['add_observation', { species_id: VINK, count: 1 }]);
     await say('nee, die vorige was een roodhalsfuut', [
       'update_observation',

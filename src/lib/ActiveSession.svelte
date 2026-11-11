@@ -167,8 +167,6 @@
       onChunk: (recording, chunkLookup) =>
         submitRecording(sessionId, recording, chunkLookup, { trektel: true }),
       onStopped: () => vibrate('trektelStopped'),
-      // Ontwikkeloptie: naar Merlin en terug zonder dat de telling stopt
-      pauseWhenHidden: devOptionOn('trektelpauze'),
       onPaused: () => vibrate('trektelPaused'),
       onResumed: () => vibrate('recording'),
     });

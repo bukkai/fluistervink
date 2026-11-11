@@ -73,18 +73,8 @@ describe('trektelling naar de achtergrond', () => {
     vi.unstubAllGlobals();
   });
 
-  it('zonder de optie: stoppen, zoals altijd', async () => {
-    const h = handlers();
-    expect(await startTrektel(h)).toBe(true);
-    expect(micOn).toBe(1);
-    setHidden(true);
-    expect(trektel.status).toBe('idle');
-    expect(micOn).toBe(0);
-    expect(h.onStopped).toHaveBeenCalledWith('hidden');
-  });
-
-  it('met de optie: microfoon uit bij Merlin, weer aan bij terugkomen', async () => {
-    const h = handlers({ pauseWhenHidden: true, onPaused: vi.fn(), onResumed: vi.fn() });
+  it('microfoon uit bij Merlin, weer aan bij terugkomen', async () => {
+    const h = handlers({ onPaused: vi.fn(), onResumed: vi.fn() });
     await startTrektel(h);
     const startedAt = trektel.startedAt;
 
@@ -105,7 +95,7 @@ describe('trektelling naar de achtergrond', () => {
   });
 
   it('niet binnen een kwartier terug: alsnog stoppen', async () => {
-    const h = handlers({ pauseWhenHidden: true });
+    const h = handlers();
     await startTrektel(h);
     setHidden(true);
     await vi.advanceTimersByTimeAsync(TREKTEL_PAUSE_MAX_MS + 1000);
@@ -117,7 +107,7 @@ describe('trektelling naar de achtergrond', () => {
   });
 
   it('stopknop tijdens de pauze: gewoon stoppen', async () => {
-    const h = handlers({ pauseWhenHidden: true });
+    const h = handlers();
     await startTrektel(h);
     setHidden(true);
     stopTrektel();
@@ -126,7 +116,7 @@ describe('trektelling naar de achtergrond', () => {
   });
 
   it('alweer weg terwijl de microfoon aangaat: opnieuw pauzeren', async () => {
-    const h = handlers({ pauseWhenHidden: true });
+    const h = handlers();
     await startTrektel(h);
     setHidden(true);
     setHidden(false);

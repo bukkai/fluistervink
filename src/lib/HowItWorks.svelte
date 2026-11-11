@@ -64,6 +64,11 @@
       Instellingen). Dan hoef je niet te zoeken waar de knop op het scherm zit, en werkt het ook met
       handschoenen of met een Bluetooth-knopje voor selfies.
     </p>
+    <p>
+      Snel beginnen in de Android-app: houd het pictogram van Fluistervink ingedrukt en kies "Begin
+      met vogelen". Dat start meteen een sessie. Sleep je die keuze naar je beginscherm, dan heb je
+      er een eigen knop voor.
+    </p>
   </div>
 </section>
 
@@ -187,6 +192,8 @@
         Twijfelt het, dan markeert het de waarneming als onzeker in plaats van te gokken. Heel zeldzame
         soorten (dwaalgasten zoals een roodkopklauwier) staan niet in die lijst. Noem je er een, dan zoekt
         de app hem op in een tweede lijst; zo'n waarneming is altijd onzeker, zodat je hem thuis nakijkt.
+        Ook een zeldzame soort uit de gewone lijst wordt onzeker: vaak is het een verwisseling met een
+        gewone soort (uit te zetten bij Instellingen).
       </li>
       <li>
         <strong>De app</strong> controleert het resultaat, slaat het op, zoekt de naam van het gebied

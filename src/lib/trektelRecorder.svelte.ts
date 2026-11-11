@@ -25,11 +25,10 @@ export interface TrektelHandlers {
   /** De trektelling stopte vanzelf (maximum, app naar de achtergrond). */
   onStopped: (reason: 'max' | 'hidden') => void;
   /**
-   * Naar een andere app (Merlin) of scherm op slot: pauzeren in plaats van
-   * stoppen (ontwikkeloptie). De microfoon gaat dan uit, zodat de andere app
-   * hem kan gebruiken, en weer aan als je terugkomt.
+   * Naar een andere app (Merlin) of scherm op slot: de telling pauzeert. De
+   * microfoon gaat dan uit, zodat de andere app hem kan gebruiken, en weer aan
+   * als je terugkomt (binnen een kwartier, anders stopt hij alsnog).
    */
-  pauseWhenHidden?: boolean;
   onPaused?: () => void;
   onResumed?: () => void;
 }
@@ -124,12 +123,8 @@ async function keepScreenOn() {
 function onVisibility() {
   if (document.hidden && trektel.status === 'running') {
     // Naar een andere app of scherm op slot: de microfoon niet onopgemerkt aan
-    // laten. Stoppen, of (ontwikkeloptie) pauzeren tot je terugkomt.
-    if (handlers?.pauseWhenHidden) pauseTrektel();
-    else {
-      logEvent('trektel_stopped_hidden');
-      stopTrektel('hidden');
-    }
+    // laten, maar pauzeren tot je terugkomt
+    pauseTrektel();
   } else if (!document.hidden && trektel.status === 'paused') {
     resumeTrektel();
   }

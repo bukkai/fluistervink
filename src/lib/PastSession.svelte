@@ -8,7 +8,7 @@
   import ObservationMap from './ObservationMap.svelte';
   import SessionLog from './SessionLog.svelte';
   import SessionSummary from './SessionSummary.svelte';
-  import { devOptionOn } from './devOptions';
+  import { preferenceOn } from './preferences';
   import UncertainReview from './UncertainReview.svelte';
   import { IMPORT_URL, approveSession, exportForWaarneming, markReady } from './waarnemingExport';
 
@@ -133,7 +133,7 @@
   </dl>
 {/if}
 
-{#if devOptionOn('samenvatting')}
+{#if preferenceOn('samenvatting')}
   <SessionSummary {session} />
 {/if}
 

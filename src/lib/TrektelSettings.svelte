@@ -22,9 +22,10 @@
       zonder dat je steeds hoeft te drukken. Stilte wordt niet verstuurd.
     </p>
     <p class="hint">
-      Het scherm blijft aan zolang de telling loopt, dat kost accu. Ga je naar een andere app of
-      gaat het scherm op slot, dan stopt de telling (twee lange trillen), en na vier uur stopt hij
-      vanzelf. De microfoon is de hele tijd bezet, dus Merlin kan er dan niet bij.
+      Het scherm blijft aan zolang de telling loopt, dat kost accu. Ga je even naar een andere app
+      (zoals Merlin) of gaat het scherm op slot, dan pauzeert de telling: de microfoon gaat uit (één
+      lange tril) en weer aan als je terugkomt. Na een kwartier weg stopt de telling (twee lange
+      trillen), en na vier uur stopt hij vanzelf.
     </p>
   </div>
 </section>

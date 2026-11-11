@@ -1,4 +1,4 @@
-// Samenvatting van een sessie (ontwikkeloptie, devOptions.ts): welke soorten
+// Samenvatting van een sessie (instelling, standaard aan, preferences.ts): welke soorten
 // met hoeveel, en welke dit jaar voor het eerst op deze telefoon. Thuis meer
 // waarde dan alleen exporteren.
 
