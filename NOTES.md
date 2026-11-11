@@ -86,6 +86,15 @@ Nog te doen:
 - **Zeldzame soort onzeker (#191):** het model koos maar 8 keer een soort met zeldzaamheid 3–4. Van de 5 die nagelopen zijn, klopten er 2; 3 waren fout (Bijeneter uit "Bijenboomijster", Klapekster uit "Klapke", Roodhalsfuut verwijderd). De regel vangt dus vooral fouten: **standaard aan laten.** Te weinig gevallen om meer te zeggen.
 - Volgende stappen uit de roadmap: stap 3 en 5 na de productierelease.
 
+## Inspanning en eBird (11 nov)
+
+Brainstorm (nov 2026): inspanning vastleggen, kilometerhokken als spel, een Telegram-bot, "Ik zag een merel". Besloten: alleen de inspanning met export naar eBird nu in Fluistervink (de eigenaar en een paar mensen in zijn omgeving gebruiken eBird); de rest zijn losse projecten, eerst overleggen (het spel en de merel-app botsen met "geen accounts"; de merel-app pas na contact met Sovon/DWHC; een gedeeld kernpakket pas als er echt een tweede app komt).
+
+- Plan: `docs/plan-ebird.md` (goedgekeurd 11 nov): drempels 50 m (Stationary en onnauwkeurige metingen), onzekere waarnemingen gaan mee met een waarschuwing, de vraag "Heb je alles genoteerd?" alleen voor wie eBird gebruikt.
+- **Fase 1: PR #212** (open): duur zonder pauzes en afgelegde afstand als kilometerteller (geen route, `src/lib/effort.ts`), ontwikkeloptie "eBird: duur en afstand bij het nalopen". Getest met nagebootste GPS. **Na het mergen:** ontwikkeloptie aan, een wandeling en een fietstocht naast Strava of Komoot; telling van overgeslagen metingen in het log (`distance_fixes`).
+- Nagegaan: de bulkimport van waarneming.nl kent geen inspanning (`docs/waarneming-nl.md`).
+- **Fase 2** (export naar eBird) pas na die veldtest. Vóór de bouw: kolomvolgorde tegen de sjabloon van eBird, en of het uploadveld van eBird in de Android-app een .csv neemt.
+
 ## Roadmap naar v1.0 (13 okt)
 
 Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de app installeren, een hele wandeling gebruiken zonder naar het scherm te kijken, en thuis zonder gedoe naar waarneming.nl exporteren.
@@ -149,7 +158,7 @@ Nog niet gepland; eerst overleggen.
   - *Teksten:* alle schermen, `#uitleg`, `#privacy`, changelog en de Play-vermelding vertalen. Een eenvoudig woordenboek per taal (bv. `src/lib/i18n.ts`) is genoeg; taal volgt de telefoon, met een keuze bij Instellingen.
   - *Inspreken:* `gpt-transcribe` kan Engels; de STT-prompt krijgt Engelse soortnamen. Het model krijgt de soortenlijst met Engelse namen en een Engelse systeemprompt (aparte promptversie, met de testset nagaan; er is nog geen Engelse testset: eerst een paar Engelstalige sprekers zoeken). Engelse bijnamen en jargon ("BOP", "LBJ", "sprawk") in een eigen bestand naast `data/bijnamen.json`. Gedrag en methode in het Engels: de Engelse namen van waarneming.nl hebben we al (`en` in `data/attributen-vogels.json`).
   - *observation.org:* hetzelfde platform als waarneming.nl, met dezelfde soort-ID's en vermoedelijk dezelfde bulkimport, dus bijna gratis (nagaan op observation.org).
-  - *eBird:* bulkimport met het eBird Record Format (CSV) bestaat. eBird denkt in checklists met protocol (stationair/lopend), duur, afstand en "alle soorten gemeld" ja/nee; een sessie past daar redelijk op (start, eind, stationair bij trektelling). Soorten koppelen op wetenschappelijke naam; eBird volgt een andere taxonomie (Clements) dan waarneming.nl (AviList), dus een vertaaltabel voor de verschillen. Uitzoeken: welke kolommen verplicht, en of één checklist per sessie werkt.
+  - *eBird:* nu gepland, zie `docs/plan-ebird.md` en Inspanning en eBird hierboven. Bulkimport met het eBird Record Format (CSV) bestaat. eBird denkt in checklists met protocol (stationair/lopend), duur, afstand en "alle soorten gemeld" ja/nee; een sessie past daar redelijk op (start, eind, stationair bij trektelling). Soorten koppelen op wetenschappelijke naam; eBird volgt een andere taxonomie (Clements) dan waarneming.nl (AviList), dus een vertaaltabel voor de verschillen. Uitzoeken: welke kolommen verplicht, en of één checklist per sessie werkt.
   - *iNaturalist:* draait om foto's en geluid; een waarneming zonder bewijs blijft "casual" en telt nauwelijks mee. Eventueel de opname zelf als geluid meesturen (alleen als het de vogel zelf is, niet je stem: meestal dus niet). Laagste prioriteit.
   - Privacy: Engelse `#privacy` moet hetzelfde zeggen; de AVG blijft gelden, ook voor gebruikers buiten de EU.
 - **Vogels van andere landen** (idee eigenaar, 11 nov), voor op vakantie.
