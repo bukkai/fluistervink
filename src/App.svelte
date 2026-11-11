@@ -21,6 +21,7 @@
   import { processQueue } from './lib/observations';
   import { syncWalkService } from './lib/walkService';
   import { devOptionOn } from './lib/devOptions';
+  import { exportReminder, reminderText, snooze, snoozedAt } from './lib/exportReminder';
   import { listenShortcut, setShortcut } from './lib/native';
   import {
     SHARE_CHANGED,
@@ -158,6 +159,18 @@
     welcomeClosed = true;
     await startSession();
     requestPersistentStorage();
+  }
+
+  // Herinnering aan de export (ontwikkeloptie, exportReminder.ts)
+  let snoozed = $state(snoozedAt());
+  let reminder = $derived(
+    $sessions && devOptionOn('exportHerinnering')
+      ? exportReminder($sessions, now, snoozed)
+      : undefined,
+  );
+  function remindLater() {
+    snooze();
+    snoozed = Date.now();
   }
 
   // Snelkoppeling "Begin met vogelen" op het app-pictogram (ontwikkeloptie,
@@ -357,6 +370,13 @@
           is hij vanzelf gestopt.
           <a href="#sessie/{stale.session.id}">Bekijken</a> ·
           <button class="link" onclick={() => (stale = undefined)}>Oké</button>
+        </p>
+      {/if}
+      {#if reminder}
+        <p class="welcome">
+          {reminderText(reminder)}
+          <a href="#sessies">Naar de sessies</a> ·
+          <button class="link" onclick={remindLater}>Later</button>
         </p>
       {/if}
       {#if askShare && !installProblem && !showWelcome}

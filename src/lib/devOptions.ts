@@ -8,7 +8,8 @@ export type DevOption =
   | 'trektelpauze'
   | 'zeldzaamOnzeker'
   | 'voorbeeldzinOnzeker'
-  | 'watZeiIk';
+  | 'watZeiIk'
+  | 'exportHerinnering';
 
 const PREFIX = 'fluistervink.dev.';
 
