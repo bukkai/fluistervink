@@ -51,7 +51,7 @@ Roadmap in `docs/lancering.md`: eerst 14 dagen een gesloten test met minstens 12
 
 Na de release naar stable van 11 nov (`82c1b73`). Logboek in `docs/kwaliteitsronde.md`, alles in **PR #202**: de proxy leest een kapot gedeeld bestand niet meer (liet Developer vastlopen), Stop tijdens het weer aangaan van de microfoon stopt de trektelling nu echt, lege eerste meting zette het achtergrondniveau van de trektelling vast, "Trektelling starten" 48 px, `#privacy` zonder "geen statistieken" (bronnen nagekeken op 11 nov), trilpatronen van de trektelling in `#uitleg`.
 
-Open, om te beslissen: `android:allowBackup="true"` (Android kan app-gegevens in de Google-back-up meenemen: uitzetten in een volgende app-versie, of in `#privacy` zetten) en de gegevensveiligheid in Play (`docs/play-store/`) naast de nieuwe privacytekst leggen. Op de telefoon proberen na het mergen: trektelling, naar Merlin en terug, meteen op Stop.
+Besloten (11 nov): `android:allowBackup="true"` blijft zo en komt niet in `#privacy` (het is de back-up van de gebruiker zelf; uitleg in het logboek). Nog open: de gegevensveiligheid in Play (`docs/play-store/`) naast de nieuwe privacytekst leggen. Op de telefoon proberen na het mergen: trektelling, naar Merlin en terug, meteen op Stop.
 
 ## Android-roadmap en ontwikkelopties (11 nov)
 
