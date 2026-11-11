@@ -3,6 +3,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import worker from './index';
 import { installName, integrityNonce, putInstall, signInstallToken } from './install';
+import { recordUsage } from './usage';
 
 // De proxy in Node, met een nep-KV in het geheugen, D1 als SQLite in het
 // geheugen (zodat de echte SQL getest wordt) en een nagebootste fetch
@@ -624,10 +625,10 @@ describe('/api/messages (Anthropic)', () => {
 });
 
 describe('/api/transcribe (OpenAI)', () => {
-  function post(fields: Record<string, string | Blob>) {
+  function post(fields: Record<string, string | Blob>, code = ANNA_CODE) {
     const form = new FormData();
     for (const [key, value] of Object.entries(fields)) form.set(key, value);
-    return call('/api/transcribe', { method: 'POST', body: form });
+    return call('/api/transcribe', { method: 'POST', body: form, code });
   }
   const audio = () => new File([new Uint8Array(100)], 'opname.webm', { type: 'audio/webm' });
 
@@ -667,7 +668,7 @@ describe('/api/transcribe (OpenAI)', () => {
 
   it('vraagt bij gpt-4o-transcribe om Nederlands en de zekerheid', async () => {
     upstream.mockResolvedValue(Response.json({ text: 'vink' }));
-    await post({ audio: audio(), model: 'gpt-4o-transcribe' });
+    await post({ audio: audio(), model: 'gpt-4o-transcribe' }, OWNER_CODE);
     const sent = upstream.mock.calls[0][1]?.body as FormData;
     expect(sent.get('language')).toBe('nl');
     expect(sent.has('languages[]')).toBe(false);
@@ -691,6 +692,47 @@ describe('/api/transcribe (OpenAI)', () => {
     };
     expect(body.confidence).toBeUndefined();
     expect((upstream.mock.calls[0][1]?.body as FormData).has('include[]')).toBe(false);
+  });
+
+  it('laat de gpt-4o-modellen alleen voor de eigenaar door (testset)', async () => {
+    expect((await post({ audio: audio(), model: 'gpt-4o-transcribe' })).status).toBe(400);
+    expect((await post({ audio: audio(), model: 'gpt-4o-mini-transcribe' })).status).toBe(400);
+    expect(upstream).not.toHaveBeenCalled();
+  });
+
+  describe('plafond per dag', () => {
+    /** Zoveel seconden audio op naam van een tester, zoals de proxy telt */
+    function spoken(seconds: number, tester = ANNA, at = new Date()) {
+      const key = { tester, channel: 'stable', session: 's', model: 'gpt-transcribe' };
+      return recordUsage(env.USAGE as never, key, { audioSeconds: seconds }, at);
+    }
+
+    it('weigert boven de 5 uur vandaag, met een eigen code voor de app', async () => {
+      await spoken(5 * 60 * 60);
+      const response = await post({ audio: audio() });
+      expect(response.status).toBe(429);
+      expect(await response.json()).toMatchObject({ code: 'audio_limit' });
+      expect(upstream).not.toHaveBeenCalled();
+    });
+
+    it('laat net onder het plafond nog door', async () => {
+      await spoken(5 * 60 * 60 - 1);
+      upstream.mockResolvedValue(Response.json({ text: 'vink' }));
+      expect((await post({ audio: audio() })).status).toBe(200);
+    });
+
+    it('telt alleen vandaag en alleen deze tester', async () => {
+      await spoken(6 * 60 * 60, ANNA, new Date('2000-01-01T12:00:00Z'));
+      await spoken(6 * 60 * 60, 'iemand-anders');
+      upstream.mockResolvedValue(Response.json({ text: 'vink' }));
+      expect((await post({ audio: audio() })).status).toBe(200);
+    });
+
+    it('geldt niet voor de eigenaar', async () => {
+      await spoken(6 * 60 * 60, 'eigenaar');
+      upstream.mockResolvedValue(Response.json({ text: 'vink' }));
+      expect((await post({ audio: audio() }, OWNER_CODE)).status).toBe(200);
+    });
   });
 
   it('geeft fouten van OpenAI door, behalve een sleutelprobleem (502)', async () => {
@@ -999,7 +1041,8 @@ describe('/api/usage (verbruik)', () => {
     });
   }
 
-  function transcribe(model: string, session = 'sessie-1') {
+  /** Standaard als Anna; de gpt-4o-modellen alleen voor de eigenaar (testset) */
+  function transcribe(model: string, session = 'sessie-1', code = ANNA_CODE) {
     const form = new FormData();
     form.set('audio', new File([new Uint8Array(100)], 'opname.webm', { type: 'audio/webm' }));
     form.set('model', model);
@@ -1007,6 +1050,7 @@ describe('/api/usage (verbruik)', () => {
       method: 'POST',
       headers: { 'X-Session': session },
       body: form,
+      code,
     });
   }
 
@@ -1066,12 +1110,12 @@ describe('/api/usage (verbruik)', () => {
         usage: { type: 'tokens', input_tokens: 80, output_tokens: 3, total_tokens: 83 },
       }),
     );
-    await transcribe('gpt-4o-transcribe');
+    await transcribe('gpt-4o-transcribe', 'sessie-1', OWNER_CODE);
     upstream.mockImplementation(async () =>
       Response.json({ text: 'vink', usage: { type: 'duration', seconds: 4 } }),
     );
-    await transcribe('whisper-1');
-    await transcribe('gpt-transcribe');
+    await transcribe('whisper-1', 'sessie-1', OWNER_CODE);
+    await transcribe('gpt-transcribe', 'sessie-1', OWNER_CODE);
 
     expect(await rows()).toEqual([
       expect.objectContaining({ model: 'gpt-4o-transcribe', inputTokens: 80, outputTokens: 3 }),
@@ -1091,7 +1135,7 @@ describe('/api/usage (verbruik)', () => {
 
   it('telt niets als OpenAI of Anthropic een fout geeft', async () => {
     upstream.mockResolvedValue(Response.json({ error: { message: 'kapot' } }, { status: 500 }));
-    await transcribe('gpt-4o-transcribe');
+    await transcribe('gpt-transcribe');
     expect(await rows()).toEqual([]);
   });
 
@@ -1102,7 +1146,8 @@ describe('/api/usage (verbruik)', () => {
       },
     };
     upstream.mockResolvedValue(Response.json({ text: 'vink' }));
-    expect((await transcribe('gpt-4o-transcribe')).status).toBe(200);
+    // Ook het plafond is dan niet na te gaan: toch doorlaten
+    expect((await transcribe('gpt-transcribe')).status).toBe(200);
   });
 
   it('geeft alleen regels vanaf de gevraagde datum', async () => {

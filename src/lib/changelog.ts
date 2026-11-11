@@ -14,6 +14,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     date: '2026-11-11',
     items: [
+      'De app verwerkt hooguit 5 uur spraak per dag. Kom je daarboven, dan stopt een lopende trektelling met uitleg op het scherm. Wat je daarna inspreekt, blijft bewaard: tik de volgende dag op "Opnieuw".',
       '"Hoe werkt het?" is korter.',
       'Na een sessie: de naam wijzig je met het potloodje, en de linkjes onderaan zijn knoppen geworden die je makkelijker raakt.',
       'Trektelling: de knop "Trektelling starten" staat nu bovenaan naast de locatie, zodat de lijst met waarnemingen meer ruimte heeft. Ook de uitleg onder de inspreekknop is weg.',

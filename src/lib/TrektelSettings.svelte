@@ -27,6 +27,10 @@
       lange tril) en weer aan als je terugkomt. Na een kwartier weg stopt de telling (twee lange
       trillen), en na vier uur stopt hij vanzelf.
     </p>
+    <p class="hint">
+      Per dag verwerkt de app hooguit 5 uur spraak. Daarboven stopt de telling; wat je daarna nog
+      inspreekt, blijft bewaard en kun je de volgende dag met "Opnieuw" laten verwerken.
+    </p>
   </div>
 </section>
 
