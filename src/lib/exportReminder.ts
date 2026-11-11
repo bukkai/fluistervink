@@ -1,4 +1,4 @@
-// Herinnering aan de export (ontwikkeloptie, devOptions.ts): staan sessies
+// Herinnering aan de export (instelling, standaard aan, preferences.ts): staan sessies
 // een week klaar zonder export, of een week gestopt zonder dat ze zijn
 // nagelopen, dan een melding op het hoofdscherm. Alles staat alleen op de
 // telefoon; wat niet bij waarneming.nl staat, gaat verloren met de telefoon.

@@ -187,6 +187,8 @@
         Twijfelt het, dan markeert het de waarneming als onzeker in plaats van te gokken. Heel zeldzame
         soorten (dwaalgasten zoals een roodkopklauwier) staan niet in die lijst. Noem je er een, dan zoekt
         de app hem op in een tweede lijst; zo'n waarneming is altijd onzeker, zodat je hem thuis nakijkt.
+        Ook een zeldzame soort uit de gewone lijst wordt onzeker: vaak is het een verwisseling met een
+        gewone soort (uit te zetten bij Instellingen).
       </li>
       <li>
         <strong>De app</strong> controleert het resultaat, slaat het op, zoekt de naam van het gebied

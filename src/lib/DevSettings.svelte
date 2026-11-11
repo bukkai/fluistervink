@@ -28,16 +28,6 @@
       onChange: setShortcut,
     },
     {
-      option: 'trektelpauze',
-      label: 'Trektelling pauzeert bij een andere app',
-      hint: 'Ga je tijdens een trektelling even naar Merlin (of gaat het scherm op slot), dan stopt de telling niet maar pauzeert hij: de microfoon gaat uit, zodat Merlin hem kan gebruiken (één lange tril). Kom je binnen een kwartier terug, dan luistert de app weer verder (kort tikje); anders stopt de telling alsnog.',
-    },
-    {
-      option: 'zeldzaamOnzeker',
-      label: 'Zeldzame soort wordt onzeker',
-      hint: 'Kiest de app een soort die bij waarneming.nl zeldzaam of zeer zeldzaam is, dan wordt de waarneming onzeker, zodat je hem thuis bovenaan ziet. Meestal is het een verwisseling met een gewone soort.',
-    },
-    {
       option: 'voorbeeldzinOnzeker',
       label: 'Voorbeeldzin wordt onzeker',
       hint: 'Verstaat de spraakherkenning precies een van zijn voorbeeldzinnen ("Roepje vink."), dan heeft hij waarschijnlijk niets verstaan en dat zelf ingevuld. De waarneming wordt dan onzeker.',
@@ -46,16 +36,6 @@
       option: 'watZeiIk',
       label: '"Wat zei ik?" tijdens een sessie',
       hint: 'Boven de lijst staat wat de spraakherkenning van je laatste uitspraak verstond, met een knop om de opname te horen. Zo zie je meteen waarom iets misging en kun je het verbeteren.',
-    },
-    {
-      option: 'exportHerinnering',
-      label: 'Herinnering aan de export',
-      hint: 'Staan sessies een week klaar voor waarneming.nl, of wachten ze al een week om nagelopen te worden, dan zie je een melding op het hoofdscherm. Met "Later" drie dagen niet.',
-    },
-    {
-      option: 'samenvatting',
-      label: 'Samenvatting van een sessie',
-      hint: 'Bij een afgelopen sessie een soortenlijst met aantallen, met wat je dit jaar voor het eerst zag (op deze telefoon). Te kopiëren, bijvoorbeeld voor een appgroep.',
     },
   ];
 

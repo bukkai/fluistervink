@@ -21,6 +21,7 @@ import { INSTANCE_ID } from './instance.svelte';
 import { APP_VERSION, logEvent, wasHiddenSince } from './log';
 import type { Recording } from './recorder.svelte';
 import { devOptionOn } from './devOptions';
+import { preferenceOn } from './preferences';
 import { rarityOf } from './rarity';
 import {
   TRANSCRIBE_MODEL,
@@ -758,10 +759,10 @@ function withReason(
 /**
  * De meeste fouten zijn verwisselingen met een andere echte vogelnaam. Kiest
  * de app een zeldzame soort, dan onzeker, zodat hij bij het nalopen bovenaan
- * staat (ontwikkeloptie).
+ * staat (instelling, standaard aan).
  */
 export function rareReason(speciesId: number): string | undefined {
-  if (!devOptionOn('zeldzaamOnzeker') || rarityOf(speciesId) < RARE) return undefined;
+  if (!preferenceOn('zeldzaamOnzeker') || rarityOf(speciesId) < RARE) return undefined;
   return `Zeldzame soort (${speciesName(speciesId)}): klopt het?`;
 }
 

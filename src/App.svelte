@@ -21,6 +21,7 @@
   import { processQueue } from './lib/observations';
   import { syncWalkService } from './lib/walkService';
   import { devOptionOn } from './lib/devOptions';
+  import { preferenceOn } from './lib/preferences';
   import { exportReminder, reminderText, snooze, snoozedAt } from './lib/exportReminder';
   import { listenShortcut, setShortcut } from './lib/native';
   import {
@@ -161,10 +162,10 @@
     requestPersistentStorage();
   }
 
-  // Herinnering aan de export (ontwikkeloptie, exportReminder.ts)
+  // Herinnering aan de export (instelling, standaard aan; exportReminder.ts)
   let snoozed = $state(snoozedAt());
   let reminder = $derived(
-    $sessions && devOptionOn('exportHerinnering')
+    $sessions && preferenceOn('exportHerinnering')
       ? exportReminder($sessions, now, snoozed)
       : undefined,
   );
