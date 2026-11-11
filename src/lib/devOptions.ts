@@ -2,7 +2,7 @@
 // bevallen (docs/roadmap-android.md, besloten 11 nov). Per telefoon in
 // localStorage; het kaartje bij Instellingen staat alleen bij de eigenaar.
 
-export type DevOption = 'snelkoppeling' | 'gesproken';
+export type DevOption = 'snelkoppeling' | 'gesproken' | 'trektelpauze';
 
 const PREFIX = 'fluistervink.dev.';
 

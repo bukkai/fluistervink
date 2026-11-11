@@ -8,7 +8,14 @@ import type { PositionLookup } from './db';
 import { logEvent } from './log';
 import { microphoneConstraints } from './microphone';
 import { AUDIO_BITS_PER_SECOND, MIME_TYPES, type Recording } from './recorder.svelte';
-import { createChunker, FRAME_MS, levelDb, TREKTEL_MAX_MS, type Cut } from './trektel';
+import {
+  createChunker,
+  FRAME_MS,
+  levelDb,
+  TREKTEL_MAX_MS,
+  TREKTEL_PAUSE_MAX_MS,
+  type Cut,
+} from './trektel';
 
 export interface TrektelHandlers {
   /** Bij het begin van elk stuk: de positie van dat moment opvragen. */
@@ -17,10 +24,19 @@ export interface TrektelHandlers {
   onChunk: (recording: Recording, lookup: Promise<PositionLookup>) => void;
   /** De trektelling stopte vanzelf (maximum, app naar de achtergrond). */
   onStopped: (reason: 'max' | 'hidden') => void;
+  /**
+   * Naar een andere app (Merlin) of scherm op slot: pauzeren in plaats van
+   * stoppen (ontwikkeloptie). De microfoon gaat dan uit, zodat de andere app
+   * hem kan gebruiken, en weer aan als je terugkomt.
+   */
+  pauseWhenHidden?: boolean;
+  onPaused?: () => void;
+  onResumed?: () => void;
 }
 
 export const trektel = $state<{
-  status: 'idle' | 'starting' | 'running';
+  /** `paused`: microfoon uit omdat de app op de achtergrond staat */
+  status: 'idle' | 'starting' | 'running' | 'paused';
   startedAt?: number;
   /** Hoort de app nu spraak (lampje op het scherm) */
   speaking: boolean;
@@ -49,6 +65,11 @@ let wakeLock: WakeLockSentinel | undefined;
 let handlers: TrektelHandlers | undefined;
 /** Rondt het laatste stuk af bij het stoppen */
 let stopChunker: (() => Cut) | undefined;
+let pausedAt: number | undefined;
+let pauseTimer: ReturnType<typeof setTimeout> | undefined;
+/** Bij een pauze: hoe vaak en hoe lang, voor het log bij het stoppen */
+let pauses = 0;
+let pausedMs = 0;
 
 export function trektelSupported(): boolean {
   return 'MediaRecorder' in window && !!navigator.mediaDevices && 'AudioContext' in window;
@@ -101,33 +122,22 @@ async function keepScreenOn() {
 }
 
 function onVisibility() {
-  if (trektel.status !== 'running') return;
-  // Naar een andere app of scherm op slot: stoppen. De microfoon niet
-  // onopgemerkt aan laten.
-  if (document.hidden) {
-    logEvent('trektel_stopped_hidden');
-    stopTrektel('hidden');
+  if (document.hidden && trektel.status === 'running') {
+    // Naar een andere app of scherm op slot: de microfoon niet onopgemerkt aan
+    // laten. Stoppen, of (ontwikkeloptie) pauzeren tot je terugkomt.
+    if (handlers?.pauseWhenHidden) pauseTrektel();
+    else {
+      logEvent('trektel_stopped_hidden');
+      stopTrektel('hidden');
+    }
+  } else if (!document.hidden && trektel.status === 'paused') {
+    resumeTrektel();
   }
 }
 
-/** Geeft true terug als de trektelling loopt. */
-export async function startTrektel(next: TrektelHandlers): Promise<boolean> {
-  if (trektel.status !== 'idle') return false;
-  trektel.status = 'starting';
-  trektel.error = undefined;
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({ audio: await microphoneConstraints() });
-  } catch (error) {
-    logEvent('mic_error', { name: (error as Error).name, message: (error as Error).message });
-    trektel.status = 'idle';
-    trektel.error =
-      error instanceof DOMException && error.name === 'NotAllowedError'
-        ? 'Geen toegang tot de microfoon. Sta dit toe in de browserinstellingen.'
-        : 'De microfoon gaat niet aan.';
-    return false;
-  }
-
-  handlers = next;
+/** Microfoon aan, meter en eerste stuk starten. Gooit als de microfoon niet aangaat. */
+async function openMic(): Promise<void> {
+  stream = await navigator.mediaDevices.getUserMedia({ audio: await microphoneConstraints() });
   audioContext = new AudioContext();
   const analyser = audioContext.createAnalyser();
   analyser.fftSize = 2048;
@@ -147,22 +157,12 @@ export async function startTrektel(next: TrektelHandlers): Promise<boolean> {
   }, FRAME_MS);
   // Bij het stoppen het laatste stuk afronden
   stopChunker = () => chunker.finish();
-
-  maxTimer = setTimeout(() => stopTrektel('max'), TREKTEL_MAX_MS);
-  document.addEventListener('visibilitychange', onVisibility);
   await keepScreenOn();
-
-  Object.assign(trektel, { status: 'running', startedAt: Date.now(), sent: 0, skipped: 0 });
-  logEvent('trektel_started');
-  return true;
 }
 
-/** Stopt de trektelling; het laatste stuk wordt nog verwerkt. */
-export function stopTrektel(reason?: 'max' | 'hidden'): void {
-  if (trektel.status !== 'running') return;
+/** Laatste stuk afronden en de microfoon echt uitzetten. */
+function closeMic(): void {
   clearInterval(meter);
-  clearTimeout(maxTimer);
-  document.removeEventListener('visibilitychange', onVisibility);
   if (current && stopChunker) endChunk(current, stopChunker());
   current = undefined;
   stopChunker = undefined;
@@ -172,12 +172,92 @@ export function stopTrektel(reason?: 'max' | 'hidden'): void {
   audioContext = undefined;
   wakeLock?.release().catch(() => {});
   wakeLock = undefined;
+  trektel.speaking = false;
+}
+
+function pauseTrektel(): void {
+  closeMic();
+  trektel.status = 'paused';
+  pausedAt = Date.now();
+  pauses++;
+  // Niet terug binnen een kwartier: dan was het geen even Merlin, maar weg
+  pauseTimer = setTimeout(() => stopTrektel('hidden'), TREKTEL_PAUSE_MAX_MS);
+  logEvent('trektel_paused');
+  handlers?.onPaused?.();
+}
+
+async function resumeTrektel(): Promise<void> {
+  clearTimeout(pauseTimer);
+  const away = Date.now() - (pausedAt ?? Date.now());
+  // De timer kan op de achtergrond te laat lopen: dan alsnog stoppen
+  if (away > TREKTEL_PAUSE_MAX_MS) {
+    stopTrektel('hidden');
+    return;
+  }
+  trektel.status = 'starting';
+  try {
+    await openMic();
+  } catch (error) {
+    logEvent('mic_error', { name: (error as Error).name, message: (error as Error).message });
+    trektel.status = 'paused';
+    stopTrektel('hidden');
+    return;
+  }
+  pausedMs += away;
+  pausedAt = undefined;
+  trektel.status = 'running';
+  logEvent('trektel_resumed', { pausedMs: away });
+  handlers?.onResumed?.();
+  // Intussen alweer weg (de microfoon aanzetten duurt even): opnieuw pauzeren
+  if (document.hidden) pauseTrektel();
+}
+
+/** Geeft true terug als de trektelling loopt. */
+export async function startTrektel(next: TrektelHandlers): Promise<boolean> {
+  if (trektel.status !== 'idle') return false;
+  trektel.status = 'starting';
+  trektel.error = undefined;
+  handlers = next;
+  try {
+    await openMic();
+  } catch (error) {
+    closeMic();
+    handlers = undefined;
+    logEvent('mic_error', { name: (error as Error).name, message: (error as Error).message });
+    trektel.status = 'idle';
+    trektel.error =
+      error instanceof DOMException && error.name === 'NotAllowedError'
+        ? 'Geen toegang tot de microfoon. Sta dit toe in de browserinstellingen.'
+        : 'De microfoon gaat niet aan.';
+    return false;
+  }
+
+  maxTimer = setTimeout(() => stopTrektel('max'), TREKTEL_MAX_MS);
+  document.addEventListener('visibilitychange', onVisibility);
+  pauses = 0;
+  pausedMs = 0;
+
+  Object.assign(trektel, { status: 'running', startedAt: Date.now(), sent: 0, skipped: 0 });
+  logEvent('trektel_started');
+  return true;
+}
+
+/** Stopt de trektelling; het laatste stuk wordt nog verwerkt. */
+export function stopTrektel(reason?: 'max' | 'hidden'): void {
+  if (trektel.status !== 'running' && trektel.status !== 'paused') return;
+  clearTimeout(maxTimer);
+  clearTimeout(pauseTimer);
+  document.removeEventListener('visibilitychange', onVisibility);
+  closeMic();
+  if (pausedAt !== undefined) pausedMs += Date.now() - pausedAt;
+  pausedAt = undefined;
 
   logEvent('trektel_stopped', {
     reason: reason ?? 'button',
     durationMs: Date.now() - (trektel.startedAt ?? Date.now()),
     sent: trektel.sent,
     skipped: trektel.skipped,
+    ...(pauses > 0 ? { pauses, pausedMs } : {}),
   });
   if (reason) handlers?.onStopped(reason);
   handlers = undefined;

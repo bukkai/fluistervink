@@ -60,6 +60,8 @@ Eerst een korte proef-PR (opnemen in de service, één opname doorgeven, meten),
 
 Zodra de microfoon lang open staat (trektelmodus nu al, het wake word straks), botst dat met Merlin en met bellen. Met `AudioRecordingCallback` merkt de app dat een andere app de microfoon wil, laat hem los, en pakt hem daarna terug (twee korte trillen bij pauzeren en hervatten). Staat in de latere roadmap van `CLAUDE.md`; wordt pas nodig bij stap 5, of eerder als Maarten er bij het trektellen last van heeft.
 
+**Stand (11 nov):** het deel dat nu al kan, zit achter een ontwikkeloptie: een trektelling pauzeert bij een andere app in plaats van te stoppen, en gaat verder als je terugkomt (binnen 15 minuten). De native `AudioRecordingCallback` voegt pas iets toe als de app ook op de achtergrond opneemt (stap 3): zolang Fluistervink alleen op het scherm opneemt, geeft Android de microfoon vanzelf aan de app op het scherm.
+
 ## Stap 5: het wake word "Fluistervink"
 
 Pas na stap 3 en 4: de app moet dan continu luisteren, met het scherm uit, en de microfoon kunnen delen.
