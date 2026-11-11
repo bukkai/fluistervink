@@ -76,8 +76,14 @@ Gebouwd en gemerged op 11 nov:
 
 Nog te doen:
 
-- **Tag v0.3 gezet (11 nov)** met #185–#187, #198 en #199: beide AAB's uploaden in de Play Console (beta naar de interne test, stabiel naar de gesloten test). Debug-APK `apk/fluistervink-0.582-beta.apk`. Nog niets op de telefoon geprobeerd: volumeknop, snelkoppeling en tegel (koude start, vanaf de achtergrond, vergrendelscherm, één sessie), stem met en zonder oortjes en met een podcast, Merlin tijdens een trektelling, afspelen in "Wat zei ik?", kopiëren van de samenvatting.
-- De overgebleven ontwikkelopties een paar wandelingen meenemen en per optie beslissen. Bij #191 tellen hoe vaak een zeldzame soort echt was (nu voor iedereen aan).
+- **Tag v0.3 (11 nov)**: beide AAB's geüpload in de Play Console, en op de telefoon geprobeerd (volumeknop, snelkoppeling, tegel, stem, Merlin tijdens een trektelling, "Wat zei ik?", samenvatting): geen feedback.
+- De overgebleven ontwikkelopties (stem, voorbeeldzin, "Wat zei ik?") een paar wandelingen meenemen en per optie beslissen.
+
+**Nagemeten 11 nov** (feedback-pull, alle testers; analysescript niet bewaard):
+
+- **Plek met de stem (#156) werkt.** 7 keer echt gebruikt (alleen door de eigenaar), elke keer goed verwerkt. 11 uitspraken met een plek 3× door het huidige model: steeds dezelfde plekvelden, afstand en windrichting goed. Eén keer zonder afstand ("honderd meter …"): dat was vóór 75d3fab (8 nov), dat de afstand nu uit de omschrijving haalt. Twijfelgeval: "richting het zuiden, niet in het zuidoosten van hier" werd 3 van de 3 keer een plek ten zuiden, terwijl de vliegrichting bedoeld was; zo gelaten.
+- **Latijnse namen (#157):** geen enkele tester heeft ze nog gebruikt. 13 zelfgemaakte transcripten ("Twee Turdus merula.", "Parus mayor.") 3× door het model: 39 van de 39 goed. Of de spraakherkenning ze goed verstaat, is nog niet gemeten (daar zijn opnames voor nodig).
+- **Zeldzame soort onzeker (#191):** het model koos maar 8 keer een soort met zeldzaamheid 3–4. Van de 5 die nagelopen zijn, klopten er 2; 3 waren fout (Bijeneter uit "Bijenboomijster", Klapekster uit "Klapke", Roodhalsfuut verwijderd). De regel vangt dus vooral fouten: **standaard aan laten.** Te weinig gevallen om meer te zeggen.
 - Volgende stappen uit de roadmap: stap 3 en 5 na de productierelease.
 
 ## Roadmap naar v1.0 (13 okt)
@@ -126,7 +132,7 @@ Tweede ronde op 28 okt, direct na de release (stable bijgewerkt, tag v0.2), vana
 - **STT gaf één keer zelf antwoord** in plaats van te transcriberen ("Sorry, ik kan niet voldoen aan het verzoek …", 11 okt) en liet daarbij het woord "feedback" weg. Onschuldig, maar in de gaten houden.
 - Cloudflare-previews: vermoedelijk onthoudt Cloudflare het deploy-commando per branch vanaf de eerste build. Bij problemen: nieuwe branch maken.
 - Een branch-regel op `main` met verplichte check kan niet: GitHub biedt dat niet voor privérepo's zonder Pro. De check draait wel bij elke PR.
-- **`gpt-4o-transcribe` verdwijnt 26 feb 2027.** Opvolger `gpt-transcribe` getest (6 nov, 401 opnames, vier sprekers): 84,5% tegen 82,0%, sneller, goedkoper; `keywords` hielpen niet. **PR #154** stapt over. Nog open: "ekster" → "extra", meerkoet → "merel" (zit in de opname).
+- **`gpt-4o-transcribe` verdwijnt 26 feb 2027.** Opvolger `gpt-transcribe` getest (6 nov, 401 opnames, vier sprekers): 84,5% tegen 82,0%, sneller, goedkoper; `keywords` hielpen niet. **PR #154** stapt over. "Ekster" → "extra" en meerkoet → "merel" (zit in de opname): laten liggen (besloten 11 nov).
 
 ## Ideeën voor later
 
