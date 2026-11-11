@@ -14,6 +14,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     date: '2026-11-11',
     items: [
+      '"Hoe werkt het?" is korter.',
       'Trektelling: op Stop drukken terwijl de microfoon net weer aanging (terug van Merlin) stopt de telling nu echt. Aanhoudende wind telt niet meer als spraak als de microfoon stil begon.',
       'Privacy: duidelijker dat de ontwikkelaar ziet hoeveel de app gebruikt wordt (alleen aantallen).',
       'Na een update zie je onderin even "Bijgewerkt naar versie …", en deze lijst met wat er nieuw is.',

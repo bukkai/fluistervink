@@ -183,7 +183,6 @@ export function listenVolumeKey(onPress: (key: string) => void): () => void {
 interface SnelkoppelingPlugin {
   zetten(options: { aan: boolean }): Promise<void>;
   wachtend(): Promise<{ actie?: string }>;
-  tegelVragen(): Promise<{ uitkomst: TileResult }>;
   addListener(
     event: 'actie',
     listener: (data: { actie: string }) => void,
@@ -198,22 +197,6 @@ export const shortcutSupported = isNativeApp && Capacitor.isPluginAvailable('Sne
 /** Snelkoppeling "Begin met vogelen" op het app-pictogram aan of uit */
 export async function setShortcut(on: boolean): Promise<void> {
   if (shortcutSupported) await Snelkoppeling.zetten({ aan: on }).catch(() => {});
-}
-
-export type TileResult = 'toegevoegd' | 'stond_er_al' | 'niet_toegevoegd' | 'niet_mogelijk';
-
-/**
- * Vraagt Android de tegel "Begin met vogelen" aan de snelle instellingen toe
- * te voegen (BeginTegel.java; vanaf Android 13). Anders `niet_mogelijk`: dan
- * zelf toevoegen via het potloodje.
- */
-export async function requestTile(): Promise<TileResult> {
-  if (!shortcutSupported) return 'niet_mogelijk';
-  try {
-    return (await Snelkoppeling.tegelVragen()).uitkomst;
-  } catch {
-    return 'niet_mogelijk';
-  }
 }
 
 /**
