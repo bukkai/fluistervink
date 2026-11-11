@@ -254,15 +254,19 @@
       </svg>
       <span>Stop trektelling · {clock(trektelElapsed)}</span>
     </button>
+    <!-- Altijd één regel even breed: liep hij over naar twee regels zodra de
+         app spraak hoorde, dan sprong de stopknop steeds op en neer (Maarten) -->
     <p class="mic listening">
       <span class="ear" class:speaking={trektel.speaking}></span>
-      {trektel.speaking ? 'Hoort spraak' : 'Luistert'} ·
+      <span class="hearing">{trektel.speaking ? 'Hoort spraak' : 'Luistert'}</span> ·
       <!-- De app knipt pas na ongeveer een minuut; stille stukken tellen niet mee -->
-      {#if trektel.sent === 0}
-        eerste stuk na een minuut
-      {:else}
-        {trektel.sent} {trektel.sent === 1 ? 'stuk' : 'stukken'} met spraak verstuurd
-      {/if}
+      <span class="sent">
+        {#if trektel.sent === 0}
+          eerste stuk na 1 minuut
+        {:else}
+          {trektel.sent} {trektel.sent === 1 ? 'stuk' : 'stukken'} verstuurd
+        {/if}
+      </span>
     </p>
   {:else}
     {#if trektelOn}
@@ -465,6 +469,19 @@
     justify-content: center;
     gap: 0.5rem;
     color: var(--fg);
+    white-space: nowrap;
+  }
+
+  /* Vaste breedte, zodat de regel niet verschuift tussen Luistert en Hoort spraak */
+  .hearing {
+    min-width: 6.5em;
+    text-align: right;
+  }
+
+  .sent {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* Lampje: brandt als de app spraak hoort, zodat je ziet dat hij luistert */
