@@ -81,6 +81,8 @@
       privateNote: privateNote.trim() || undefined,
       uncertain,
       uncertainReason: uncertain ? original.uncertainReason : undefined,
+      candidates:
+        uncertain && selectedSpecies.id === original.speciesId ? original.candidates : undefined,
       position: place.position,
       recordedPosition: place.recordedPosition,
       placedByVoice: place.placedByVoice,

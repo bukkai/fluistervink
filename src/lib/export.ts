@@ -275,6 +275,7 @@ function checkImport(data: {
         optional(o.position, isPosition) &&
         optional(o.recordedPosition, isPosition) &&
         optional(o.spokenPlace, isSpokenPlace) &&
+        optional(o.candidates, (c) => Array.isArray(c) && c.every(isNumber)) &&
         optional(o.area, isArea);
       if (!ok) fail('waarneming');
     }

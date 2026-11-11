@@ -34,6 +34,11 @@
       label: 'eBird: duur en afstand bij het nalopen',
       hint: 'Bij een sessie staat een kaartje met de duur, de afgelegde afstand en het protocol zoals die straks naar eBird gaan. Om te zien of de afstand klopt.',
     },
+    {
+      option: 'kandidaten',
+      label: 'Twijfel tussen soorten',
+      hint: 'Twijfel je tussen twee of drie soorten ("fitis of tjiftjaf"), dan wordt het de verzamelsoort als waarneming.nl die heeft, anders de meest waarschijnlijke. Bij het nalopen kies je de soort met één tik.',
+    },
   ];
 
   const shown = items.filter((item) => item.available !== false);

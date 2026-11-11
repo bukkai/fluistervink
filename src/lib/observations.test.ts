@@ -7,6 +7,8 @@ import { interpret } from './interpret';
 import {
   HAND_ACCURACY,
   STEAL_AFTER_MS,
+  chooseCandidate,
+  confirmObservation,
   copyObservation,
   editObservation,
   isAccidental,
@@ -931,5 +933,64 @@ describe('onzeker door instellingen en ontwikkelopties', () => {
     expect(example.uncertain).toBe(true);
     expect(example.uncertainReason).toMatch(/voorbeeldzin/);
     expect(real.uncertain).toBe(false);
+  });
+});
+
+describe('twijfel tussen soorten', () => {
+  const FITIS = 89;
+  const TJIFTJAF = 186;
+  const TJIFTJAF_OF_FITIS = 595858;
+  const twijfel = [
+    'add_observation',
+    {
+      species_name: 'Tjiftjaf of Fitis',
+      species_id: TJIFTJAF_OF_FITIS,
+      count: 1,
+      uncertain: true,
+      candidate_species: ['Fitis', 'Tjiftjaf'],
+    },
+  ] as [string, object];
+
+  it('bewaart de kandidaten bij de verzamelsoort', async () => {
+    await say('fitis of tjiftjaf', twijfel);
+    const [obs] = await listObservations(SESSION);
+    expect(obs).toMatchObject({
+      speciesId: TJIFTJAF_OF_FITIS,
+      uncertain: true,
+      candidates: [FITIS, TJIFTJAF],
+    });
+  });
+
+  it('kiezen maakt hem zeker, met die soort', async () => {
+    await say('fitis of tjiftjaf', twijfel);
+    const [obs] = await listObservations(SESSION);
+    await chooseCandidate(obs.id, FITIS);
+    const chosen = await db.observations.get(obs.id);
+    expect(chosen).toMatchObject({ speciesId: FITIS, uncertain: false, status: 'reviewed' });
+    expect(chosen?.candidates).toBeUndefined();
+  });
+
+  it('"Klopt" houdt de verzamelsoort, zonder kandidaten', async () => {
+    await say('fitis of tjiftjaf', twijfel);
+    const [obs] = await listObservations(SESSION);
+    await confirmObservation(obs.id);
+    const confirmed = await db.observations.get(obs.id);
+    expect(confirmed).toMatchObject({ speciesId: TJIFTJAF_OF_FITIS, uncertain: false });
+    expect(confirmed?.candidates).toBeUndefined();
+  });
+
+  it('een correctie met de stem haalt de kandidaten weg, een opmerking niet', async () => {
+    await say('fitis of tjiftjaf', twijfel);
+    await say('zat op het hek', ['update_observation', { ref: 1, remarks: 'zat op het hek' }]);
+    let [obs] = await listObservations(SESSION);
+    expect(obs.candidates).toEqual([FITIS, TJIFTJAF]);
+
+    await say('het was een tjiftjaf', [
+      'update_observation',
+      { ref: 1, species_name: 'Tjiftjaf', species_id: TJIFTJAF },
+    ]);
+    [obs] = await listObservations(SESSION);
+    expect(obs).toMatchObject({ speciesId: TJIFTJAF, uncertain: false });
+    expect(obs.candidates).toBeUndefined();
   });
 });

@@ -15,6 +15,8 @@
 //   --max <n>         alleen de eerste n uitspraken
 //   --parallel <n>    zoveel tegelijk (standaard 4)
 //   --stil            alleen de samenvatting, niet elke fout
+//   --kandidaten      met twijfel tussen soorten (ontwikkeloptie 'kandidaten');
+//                     een verzamelsoort ("Tjiftjaf of Fitis") telt dan als fout
 //   --laadtest        alleen de code van de app laden en stoppen (zonder
 //                     export of sleutels; draait in CI, zie check.yml)
 //
@@ -62,6 +64,7 @@ const { values: opts, positionals } = parseArgs({
     parallel: { type: 'string', default: '4' },
     stil: { type: 'boolean', default: false },
     laadtest: { type: 'boolean', default: false },
+    kandidaten: { type: 'boolean', default: false },
   },
 });
 
@@ -138,7 +141,7 @@ const loader = await createServer({
   optimizeDeps: { noDiscovery: true },
   server: { middlewareMode: true, hmr: false, ws: false },
 });
-const { MODEL, interpret, parseResponse, promptVersion } =
+const { MODEL, interpret, parseResponse, promptVersionFor } =
   await loader.ssrLoadModule('/src/lib/interpret.ts');
 const { transcribe } = await loader.ssrLoadModule('/src/lib/transcribe.ts');
 const { devNoteText } = await loader.ssrLoadModule('/src/lib/devNotePrefix.ts');
@@ -147,7 +150,9 @@ const { DEFAULT_ACTIVITY, DEFAULT_METHOD, DEFAULT_COUNTING_METHOD } = vocab;
 
 if (opts.laadtest) {
   await loader.close();
-  console.log(`Code van de app geladen (model ${MODEL}, prompt ${await promptVersion}).`);
+  console.log(
+    `Code van de app geladen (model ${MODEL}, prompt ${await promptVersionFor(opts.kandidaten)}).`,
+  );
   process.exit(0);
 }
 
@@ -346,7 +351,11 @@ async function run(item) {
   }
   // Stond de context van destijds erbij, dan precies die; anders nagebouwd
   const contextText = u.metrics?.contextIds ? u.metrics.context : undefined;
-  const r = await interpret(result.transcript, context, { model, contextText });
+  const r = await interpret(result.transcript, context, {
+    model,
+    contextText,
+    candidates: opts.kandidaten,
+  });
   return {
     ...result,
     actions: r.actions,
@@ -552,7 +561,7 @@ const median = (xs) => {
   return s.length ? `${(s[Math.floor(s.length / 2)] / 1000).toFixed(1)} s` : '–';
 };
 
-const version = await promptVersion;
+const version = await promptVersionFor(opts.kandidaten);
 console.log(`\nTestset: ${positionals[0]}`);
 console.log(`Spraak: ${opts.stt} · model: ${model} · prompt ${version}`);
 console.log(

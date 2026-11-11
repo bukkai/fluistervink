@@ -4,6 +4,7 @@
   import ObservationEditor from './ObservationEditor.svelte';
   import RarityMark from './RarityMark.svelte';
   import {
+    chooseCandidate,
     confirmObservation,
     deleteObservation,
     listObservations,
@@ -109,6 +110,15 @@
             “{source.transcript}”
           </p>
         {/if}
+        {#if current.candidates?.length}
+          <div class="candidates" role="group" aria-label="Welke soort was het?">
+            {#each current.candidates as candidate (candidate)}
+              <button class="btn secondary" onclick={() => chooseCandidate(current.id, candidate)}
+                >{getSpecies(candidate)?.name ?? candidate}</button
+              >
+            {/each}
+          </div>
+        {/if}
         <div class="buttons">
           <button class="btn secondary discard" onclick={() => deleteObservation(current.id)}
             >Weg</button
@@ -196,6 +206,19 @@
   }
 
   .buttons .btn {
+    min-height: 3rem;
+    padding-inline: 0.5rem;
+  }
+
+  /* Kandidaten: elk een eigen knop, zodat de keuze één tik is */
+  .candidates {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .candidates .btn {
     min-height: 3rem;
     padding-inline: 0.5rem;
   }
