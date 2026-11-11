@@ -210,3 +210,25 @@ export function listenShortcut(onAction: (action: string) => void): void {
     .then(({ actie }) => actie && onAction(actie))
     .catch(() => {});
 }
+
+interface SprekenPlugin {
+  zeg(options: { tekst: string }): Promise<{ gesproken: boolean; reden?: string }>;
+}
+
+const Spreken = registerPlugin<SprekenPlugin>('Spreken');
+
+/** Kan deze app hardop praten in de oortjes (SprekenPlugin.java)? */
+export const speechSupported = isNativeApp && Capacitor.isPluginAvailable('Spreken');
+
+/**
+ * Zegt de tekst in de oortjes, met de spraak van Android. Zonder oortjes
+ * zegt hij niets (nooit via de luidspreker): `gesproken` is dan false.
+ */
+export async function speakNative(text: string): Promise<{ gesproken: boolean; reden?: string }> {
+  if (!speechSupported) return { gesproken: false, reden: 'web' };
+  try {
+    return await Spreken.zeg({ tekst: text });
+  } catch (error) {
+    return { gesproken: false, reden: String(error) };
+  }
+}
