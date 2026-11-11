@@ -21,7 +21,18 @@ export const TRANSCRIBE_MODEL = 'gpt-transcribe';
 const speciesNames = species.filter((s) => s.type === 'S' && s.rarity <= 2).map((s) => s.name);
 const aliasNames = aliases.flatMap((a) => a.bijnamen);
 
-const PROMPT = `Vogelwaarnemingen, ingesproken tijdens het vogelen. Bijvoorbeeld: "Fluistervink, zes overvliegende houtduiven." "Roepje vink." "Twee zingende tjiftjaffen." "Nee, keep in plaats van vink." "Nog drie erbij." "Die laatste weg." "Feedback: de knop reageert traag."
+/** Voorbeeldzinnen in de prompt, voor de stijl */
+export const PROMPT_EXAMPLES = [
+  'Fluistervink, zes overvliegende houtduiven.',
+  'Roepje vink.',
+  'Twee zingende tjiftjaffen.',
+  'Nee, keep in plaats van vink.',
+  'Nog drie erbij.',
+  'Die laatste weg.',
+  'Feedback: de knop reageert traag.',
+];
+
+const PROMPT = `Vogelwaarnemingen, ingesproken tijdens het vogelen. Bijvoorbeeld: ${PROMPT_EXAMPLES.map((e) => `"${e}"`).join(' ')}
 
 Vogelnamen: ${speciesNames.join(', ')}.
 
@@ -46,4 +57,24 @@ export async function transcribe(
 ): Promise<{ text: string; confidence?: number; timing: Timing }> {
   const { data, timing } = await transcribeAudio(audio, { model, prompt: PROMPT, sessionId });
   return { text: data.text.trim(), confidence: data.confidence, timing };
+}
+
+function words(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N} ]+/gu, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .join(' ');
+}
+
+const EXAMPLE_WORDS = new Set(PROMPT_EXAMPLES.map(words));
+
+/**
+ * Het transcript is letterlijk een voorbeeldzin uit de prompt. Bij een
+ * onverstaanbare opname zet de spraakherkenning soms een voorbeeld neer
+ * ("Roepje vink." bij Jurians koperwiek, 6 nov): geloofwaardig en verzonnen.
+ */
+export function isPromptExample(transcript: string | undefined): boolean {
+  return !!transcript && EXAMPLE_WORDS.has(words(transcript));
 }
