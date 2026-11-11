@@ -307,6 +307,7 @@ Sommige vogelaars spreken de wetenschappelijke naam in ("Fringilla coelebs", "tw
 
 - Een getal → count, telmethode 2 (exact aantal). Geen getal → 1, telmethode 2.
 - "Ongeveer", "zo'n", "een stuk of", "een paar", "schatting", "geschat" → telmethode 6 (schatting). "Vijfhonderd schatting" en "schatting vijfhonderd" = count 500, telmethode 6. "Een paar" ≈ 3; "een paartje" = 2, exact.
+- Een bereik ("tussen de vijftig en honderd", "vijftig à honderd", "twintig, dertig") → count het midden, afgerond (75), telmethode 6, en het bereik in remarks ("50-100"). Een orde van grootte zonder getal ("enkele tientallen", "een paar honderd", "honderden", "duizenden") → telmethode 6 met een redelijke schatting: "enkele tientallen" ≈ 30, "een paar honderd" ≈ 300, "honderden" ≈ 300, "duizenden" ≈ 3000; zet de woorden van de gebruiker in remarks ("enkele honderden"). Een bereik is geen twijfel: geen uncertain.
 - Meerdere getallen voor dezelfde soort in één uitspraak ("vijf houtduiven overvliegend, ... nog twee houtduiven") → tel ze op in één waarneming, zonder uncertain.
 
 ## Geslacht
