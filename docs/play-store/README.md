@@ -21,7 +21,7 @@ Education (daar staan Merlin, eBird, BirdNET en iNaturalist), met tags over voge
 
 ## Gegevensveiligheid
 
-Overal alleen **Collected**, nergens **Shared**: OpenAI, Anthropic, Cloudflare en Google (Play Integrity) verwerken namens ons (service providers); export en back-up doet de gebruiker zelf. "Processed ephemerally" overal **No**: elk type wordt ook ergens bewaard (delen, verbruik).
+Overal alleen **Collected**, nergens **Shared**: OpenAI, Anthropic, Cloudflare, Google (Play Integrity), waarneming.nl (gebiedsnaam) en OpenStreetMap (kaarttegels) verwerken namens ons (service providers); export en back-up doet de gebruiker zelf. "Processed ephemerally" overal **No**: elk type wordt ook ergens bewaard (delen, verbruik).
 
 | Gegevenstype | Required / optional | Purposes |
 | --- | --- | --- |
@@ -34,6 +34,18 @@ Overal alleen **Collected**, nergens **Shared**: OpenAI, Anthropic, Cloudflare e
 | Name | Optional | App functionality |
 
 Verder: versleuteld onderweg ja; geen accounts; verwijderen aanvragen ja, via `https://fluistervink.nl/privacy`. Bijwerken als gegevens een nieuwe kant op gaan (zelfde moment als `#privacy`).
+
+**Nagekeken op 11 nov 2026** (kwaliteitsronde, tegen `#privacy` en de code op `82c1b73`): het formulier in de Play Console hoeft niet aangepast. Wat er sinds 9 nov bij kwam, valt onder wat er al staat:
+
+- Het scherm Statistieken (hoeveel installaties de app gebruiken, per dag en week) rekent met het verbruik dat de proxy al telde: dat is **App interactions → Analytics**, met het installatie-id onder **Device or other IDs → Analytics**.
+- Trektelmodus, volumeknop, snelkoppeling, tegel, samenvatting en exportherinnering sturen geen nieuwe gegevens. De gesproken bevestiging (ontwikkeloptie) spreekt op de telefoon zelf.
+- Losse feedback gaat nu meteen weg in plaats van bij de volgende ronde, nog steeds alleen na toestemming: **Other user-generated content**.
+
+Keuzes om te onthouden:
+
+- **Waarneming.nl en OpenStreetMap** tellen we ook als verwerkers, niet als **Shared**. Waarneming.nl krijgt alleen coördinaten van onze server, zonder iets van de gebruiker erbij (gebiedsnaam opzoeken); OpenStreetMap levert de kaarttegels en ziet daarbij het IP-adres en welk gebied iemand bekijkt. Beide doen alleen iets voor de app zelf. Vindt Google dat ooit anders, dan wordt het **Precise location → Shared → App functionality**.
+- **Back-up van Android** (`allowBackup`, staat aan): de telefoon neemt de app-opslag mee in de back-up naar het eigen Google-account van de gebruiker. Dat is niet iets wat de app of de ontwikkelaar verzamelt, dus het staat niet in het formulier en niet in `#privacy` (besloten 11 nov, zie `docs/kwaliteitsronde.md`).
+- **Diagnostics** en de **Analytics** bij locatie, opnames en inhoud gelden vooral voor wie deelt met de ontwikkelaar (vrijwillig). Ze staan toch op Required, omdat het logboek van de server en het verbruik er altijd zijn; te veel aangeven is veiliger dan te weinig.
 
 ## Verklaring foreground service
 
