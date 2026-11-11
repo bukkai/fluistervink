@@ -30,8 +30,8 @@ Claude (in PR's):
 - [x] **Privacypagina als losse pagina** (`/privacy`), uit dezelfde bron als `#privacy`, zodat Google hem kan lezen zonder JavaScript. Plus wat de Play-regels vragen: wie de app maakt, contact, hoe lang gegevens blijven, je rechten (AVG).
 - [x] **Teksten voor de winkelvermelding** in `docs/play-store/README.md`: korte beschrijving (80 tekens), lange beschrijving (tot 4000), categorie. Noem de native functies (trillen met scherm uit, melding tijdens een sessie): Google wijst apps die alleen een website tonen soms af.
 - [x] **Antwoorden voor Gegevensveiligheid** (`docs/play-store/README.md`), uit de code afgeleid: audio, precieze locatie, installatie-id, app-activiteit, diagnose (log); verwerkers OpenAI, Anthropic, Cloudflare, Google (Play Integrity); versleuteld onderweg; wissen via feedback.
-- [ ] **Tekst voor de verklaring Foreground service** (`FOREGROUND_SERVICE_LOCATION`): waarom, wat de gebruiker ziet. De video (een sessie met de melding, niet-openbaar op YouTube) neemt de eigenaar op.
-- [ ] **Schermafbeeldingen** (minstens 2, staand) van de stabiele versie op telefoonformaat, met voorbeeldgegevens.
+- [x] **Tekst voor de verklaring Foreground service** (`FOREGROUND_SERVICE_LOCATION`, in `docs/play-store/README.md`, met een draaiboek voor de video): waarom, wat de gebruiker ziet. De video (een sessie met de melding, niet-openbaar op YouTube) neemt de eigenaar op.
+- [x] **Schermafbeeldingen** (`docs/play-store/screenshots/`, `npm run play-screenshots`; minstens 2, staand) van de stabiele versie op telefoonformaat, met voorbeeldgegevens.
 
 ## 2. Play Console invullen (Dashboard → App instellen)
 

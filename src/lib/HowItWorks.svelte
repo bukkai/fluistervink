@@ -12,9 +12,14 @@
   <div class="card-body">
     <h3>Waarom Fluistervink?</h3>
     <p>
-      Waarnemingen op waarneming.nl helpen onderzoekers volgen hoe het met de vogels gaat. Maar
-      alles achteraf invoeren kost tijd. Met Fluistervink zeg je onderweg wat je ziet of hoort, en
-      thuis staat je lijst klaar.
+      Elke waarneming die op waarneming.nl komt, telt. Onderzoekers en natuurbeschermers gebruiken
+      ze om te volgen hoe het met de vogels gaat. Zo draag je als vogelaar bij aan de wetenschap
+      (citizen science).
+    </p>
+    <p>
+      Maar alles achteraf met de hand invoeren is saai en kost veel tijd, dus blijft het vaak
+      liggen. Met Fluistervink zeg je onderweg gewoon wat je ziet of hoort, en een vogelmaatje
+      schrijft mee. Jij blijft kijken en luisteren; thuis staat je lijst klaar.
     </p>
   </div>
 </section>

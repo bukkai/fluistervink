@@ -11,6 +11,10 @@ Wat er in de Play Console is ingevuld (9 nov 2026), zodat het later na te kijken
 sips -s format jpeg -s formatOptions 92 /tmp/fg.png --out docs/play-store/feature-graphic.jpg
 ```
 
+## Schermafbeeldingen
+
+`screenshots/1-inspreken.png` t/m `5-start.png` (1082×1922, staand), in deze volgorde uploaden bij Winkelvermelding → Telefoon: lopende sessie, samenvatting na een sessie, onzeker nalopen met de kaart, export naar waarneming.nl, startscherm. Van de stabiele versie (zonder "beta") met verzonnen voorbeeldgegevens: een ochtend in de Amsterdamse Waterleidingduinen en een in Zuid-Kennemerland (`scripts/play-screenshots/seed.ts`), geen echte plekken van gebruikers. Opnieuw maken (bv. met het nieuwe logo) met `npm run play-screenshots`: start de dev-server in de stand van stable en een headless Chrome (in `/Applications`), en vraagt internet voor de kaarttegels.
+
 ## Categorie
 
 Education (daar staan Merlin, eBird, BirdNET en iNaturalist), met tags over vogels en natuur.
@@ -30,6 +34,30 @@ Overal alleen **Collected**, nergens **Shared**: OpenAI, Anthropic, Cloudflare e
 | Name | Optional | App functionality |
 
 Verder: versleuteld onderweg ja; geen accounts; verwijderen aanvragen ja, via `https://fluistervink.nl/privacy`. Bijwerken als gegevens een nieuwe kant op gaan (zelfde moment als `#privacy`).
+
+## Verklaring foreground service
+
+Play Console → Beleid en programma's → App-content → **Foreground service-rechten**. De app heeft één foreground service, `WandelingService` (type `location`, recht `FOREGROUND_SERVICE_LOCATION`): de melding "Aan het vogelen" tijdens een sessie. Hij doet zelf niets, maar houdt Android ervan af de app te bevriezen met het scherm uit, zodat de GPS warm blijft, uitspraken verwerkt worden en de tril komt. Geen `ACCESS_BACKGROUND_LOCATION`: de service start altijd vanuit de app op het scherm, dus de toestemming "tijdens gebruik" volstaat, en een aparte verklaring voor locatie op de achtergrond is niet nodig.
+
+Taaktype: **Other** (geen navigatie of fitness; "Location sharing" klopt ook niet, er wordt niets live gedeeld). De tekst in het Engels, voor de beoordelaars:
+
+```
+Fluistervink is a voice notebook for birdwatchers. During a birding session (a walk, a bike ride, an hour in a bird hide) the user presses a button and speaks an observation, e.g. "six wood pigeons flying over". The app records the time and the precise GPS position of that moment, turns the speech into a structured bird observation, and confirms with a vibration, so the user can keep their eyes on the birds. At home the user reviews the session on a map and exports it to waarneming.nl / observation.org, the Dutch and international biodiversity database.
+
+The location foreground service runs only while a session is active. The user starts it explicitly with "Begin met vogelen" (start birding) and stops it with the "Stop" button; it also stops automatically 8 hours after the last observation. A persistent notification "Aan het vogelen" (birding) is shown the whole time, and tapping it opens the app. The service starts while the app is in the foreground, and the app only holds the "while in use" location permission (no background location permission).
+
+Why it is needed: birders put the phone in their pocket with the screen off between observations. Without the foreground service Android freezes the app, so (1) the GPS goes cold and the next observation gets no position or a position from minutes ago, often hundreds of metres off, while the location of each observation is required by the observation database; (2) an observation spoken just before the screen turned off is not processed, and the confirming vibration never arrives, so the user does not know whether it was saved. With the service, GPS stays warm and each observation gets an accurate position the moment the user starts speaking.
+
+User impact if deferred or interrupted: observations get no or wrong locations and cannot be exported correctly, and the user must look at the screen to check every observation, which defeats the purpose of the app. No location history or GPS track is stored: only the position at the moment of each spoken observation.
+```
+
+Video (de eigenaar neemt hem op, niet-openbaar op YouTube, link in het formulier), zo'n 30–60 seconden op de telefoon met schermopname:
+
+1. App openen, "Begin met vogelen": de melding "Aan het vogelen" verschijnt (meldingenbalk even omlaag trekken).
+2. Een waarneming inspreken ("zes overvliegende houtduiven"); hij verschijnt in de lijst met de plek.
+3. Scherm uit, een paar seconden wachten, scherm aan: de sessie loopt nog en de melding staat er.
+4. Op de melding tikken opent de app. "Stop": de melding verdwijnt.
+5. De sessie openen: de waarneming op de kaart.
 
 ## Short description
 
