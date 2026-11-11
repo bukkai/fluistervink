@@ -1,10 +1,12 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import { nameFromStart } from './area';
   import type { PositionLookup, Session } from './db';
   import { vibrate } from './feedback';
   import { devOptionOn } from './devOptions';
   import { logEvent } from './log';
   import { listenVolumeKey, volumeKeySupported } from './native';
+  import { recordFix } from './effort';
   import { currentPosition, gps, startTracking, stopTracking } from './location.svelte';
   import { onAudioLimit, submitRecording, submitText } from './observations';
   import { recorder, startRecording, stopRecording } from './recorder.svelte';
@@ -50,6 +52,28 @@
       // Sessie gestopt tijdens een opname: microfoon uit, opname bewaren
       if (recorder.status === 'recording') finishRecording();
       stopTrektel();
+    };
+  });
+
+  // Afgelegde afstand: elke GPS-meting gaat naar de teller (effort.ts). Bij
+  // het verlaten van dit scherm een telling in het log, om de drempels te
+  // kunnen bijstellen.
+  // Het id zonder afhankelijkheid: de sessie verandert bij elke getelde stap.
+  const fixCounts: Record<string, number> = {};
+  $effect(() => {
+    const fix = gps.latest;
+    if (!fix) return;
+    recordFix(
+      untrack(() => session.id),
+      $state.snapshot(fix),
+    ).then((kind) => {
+      if (kind) fixCounts[kind] = (fixCounts[kind] ?? 0) + 1;
+    });
+  });
+  $effect(() => {
+    const sessionId = untrack(() => session.id);
+    return () => {
+      if (Object.keys(fixCounts).length) logEvent('distance_fixes', fixCounts, { sessionId });
     };
   });
 

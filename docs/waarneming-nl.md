@@ -34,6 +34,7 @@ Gevolgen:
 - Dankzij `uuid` kan dezelfde waarneming niet twee keer worden ingevoerd: de hele import wordt dan geweigerd.
 - Waarnemingen zonder positie kunnen niet mee (`lat`/`lng` verplicht).
 - `Location`/gebied is geen kolom: waarneming.nl bepaalt het gebied zelf uit de coördinaten.
+- Geen inspanning: de bulkimport heeft geen kolommen voor duur, afstand, waarnemers of een volledige lijst (nagegaan 11 nov 2026, `docs/plan-ebird.md`). Elke regel is een losse waarneming. Of de API iets als een telling of lijst kent, nagaan bij de aanvraag van een client-ID.
 - Nog na te gaan bij de eerste echte import: of verzamelsoorten als `Anatinae indet.` ("Eend onbekend") worden herkend.
 
 ## 2. Soortenlijst

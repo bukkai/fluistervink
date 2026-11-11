@@ -3,6 +3,7 @@ import {
   audioSize,
   db,
   type DeletedObservation,
+  type Effort,
   type Observation,
   type Position,
   type Session,
@@ -225,13 +226,28 @@ function checkImport(data: {
       optional(p.direction, (d) => typeof d === 'string' && Object.hasOwn(DIRECTIONS, d))
     );
   };
+  const isEffort = (value: unknown) => {
+    const e = value as Effort;
+    return (
+      isNumber(e?.activeMs) &&
+      isNumber(e.distanceM) &&
+      optional(e.activeSince, isNumber) &&
+      optional(e.anchor, isPosition)
+    );
+  };
   const isArea = (value: unknown) => {
     const a = value as Area;
     return isNumber(a?.id) && typeof a?.name === 'string';
   };
 
   for (const s of data.sessions as Session[]) {
-    if (!isId(s?.id) || !isNumber(s.startedAt) || !optional(s.endedAt, isNumber)) fail('sessie');
+    if (
+      !isId(s?.id) ||
+      !isNumber(s.startedAt) ||
+      !optional(s.endedAt, isNumber) ||
+      !optional(s.effort, isEffort)
+    )
+      fail('sessie');
   }
   for (const u of data.utterances as (Utterance & { audioData?: unknown })[]) {
     const ok =

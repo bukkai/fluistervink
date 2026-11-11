@@ -1,5 +1,6 @@
 import { nameFromWalk } from './area';
 import { db, type Session } from './db';
+import { newEffort, resumedEffort, stoppedEffort } from './effort';
 import { logEvent } from './log';
 
 /** De lopende sessie, als die er is. */
@@ -13,10 +14,12 @@ export async function startSession(): Promise<Session> {
     const active = await getActiveSession();
     if (active) return active;
 
+    const startedAt = Date.now();
     const session: Session = {
       id: crypto.randomUUID(),
-      startedAt: Date.now(),
+      startedAt,
       status: 'active',
+      effort: newEffort(startedAt),
     };
     await db.sessions.add(session);
     return session;
@@ -25,7 +28,15 @@ export async function startSession(): Promise<Session> {
 
 /** Stopt een sessie. `endedAt` alleen anders dan nu als hij vergeten is. */
 export async function stopSession(id: string, endedAt = Date.now()): Promise<void> {
-  await db.sessions.update(id, { status: 'ended', endedAt });
+  await db.transaction('rw', db.sessions, async () => {
+    const session = await db.sessions.get(id);
+    if (!session) return;
+    await db.sessions.update(id, {
+      status: 'ended',
+      endedAt,
+      ...(session.effort && { effort: stoppedEffort(session.effort, endedAt) }),
+    });
+  });
   await nameFromWalk(id);
 }
 
@@ -82,7 +93,15 @@ export async function checkStaleSession(now = Date.now()): Promise<StaleCheck | 
 export async function resumeSession(id: string): Promise<boolean> {
   return db.transaction('rw', db.sessions, async () => {
     if (await getActiveSession()) return false;
-    await db.sessions.update(id, { status: 'active', endedAt: undefined, resumedAt: Date.now() });
+    const session = await db.sessions.get(id);
+    if (!session) return false;
+    const now = Date.now();
+    await db.sessions.update(id, {
+      status: 'active',
+      endedAt: undefined,
+      resumedAt: now,
+      ...(session.effort && { effort: resumedEffort(session.effort, now) }),
+    });
     return true;
   });
 }

@@ -4,6 +4,9 @@
   import { renameSession } from './area';
   import { countSpecies, listObservations } from './observations';
   import { deleteSessions, formatDuration, resumeSession } from './sessions';
+  import { devOptionOn } from './devOptions';
+  import EbirdEffort from './EbirdEffort.svelte';
+  import { sessionDurationMs } from './effort';
   import { confirmDeleteText, countRecordings, deleteRecordings } from './recordings';
   import ObservationMap from './ObservationMap.svelte';
   import SessionLog from './SessionLog.svelte';
@@ -130,7 +133,7 @@
   <dl class="stats">
     <div>
       <dt>Duur</dt>
-      <dd>{formatDuration((session.endedAt ?? session.startedAt) - session.startedAt)}</dd>
+      <dd>{formatDuration(sessionDurationMs(session, session.endedAt ?? session.startedAt))}</dd>
     </div>
     <div>
       <dt>Soorten</dt>
@@ -144,6 +147,10 @@
       </dd>
     </div>
   </dl>
+{/if}
+
+{#if devOptionOn('ebird')}
+  <EbirdEffort {session} />
 {/if}
 
 {#if preferenceOn('samenvatting')}
