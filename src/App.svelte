@@ -20,7 +20,6 @@
   import { instance } from './lib/instance.svelte';
   import { processQueue } from './lib/observations';
   import { syncWalkService } from './lib/walkService';
-  import { devOptionOn } from './lib/devOptions';
   import { preferenceOn } from './lib/preferences';
   import { exportReminder, reminderText, snooze, snoozedAt } from './lib/exportReminder';
   import { listenShortcut, setShortcut } from './lib/native';
@@ -174,17 +173,10 @@
     snoozed = Date.now();
   }
 
-  // Snelkoppeling "Begin met vogelen" op het app-pictogram (ontwikkeloptie,
-  // alleen de eigenaar). Zonder code of met de optie uit: weghalen, zodat hij
-  // niet blijft staan als de code weg is. Tikken: naar het hoofdscherm en een
-  // sessie starten (startSession doet niets als er al een loopt).
-  let shortcutOn: boolean | undefined;
-  $effect(() => {
-    const on = isOwner && devOptionOn('snelkoppeling');
-    if (on === shortcutOn) return;
-    shortcutOn = on;
-    setShortcut(on);
-  });
+  // Snelkoppeling "Begin met vogelen" op het app-pictogram, voor iedereen.
+  // Tikken: naar het hoofdscherm en een sessie starten (startSession doet
+  // niets als er al een loopt).
+  setShortcut(true);
   listenShortcut((action) => {
     if (action !== 'begin') return;
     location.hash = '';

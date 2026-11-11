@@ -1,7 +1,7 @@
 <script lang="ts">
   // Ontwikkelopties: alleen voor de eigenaar (devOptions.ts)
   import { devOptionOn, setDevOption, type DevOption } from './devOptions';
-  import { setShortcut, shortcutSupported, speechSupported } from './native';
+  import { speechSupported } from './native';
 
   interface Item {
     option: DevOption;
@@ -10,7 +10,6 @@
     /** Alleen tonen als de app het kan */
     available?: boolean;
     /** Extra bij omzetten */
-    onChange?: (on: boolean) => void;
   }
 
   const items: Item[] = [
@@ -19,13 +18,6 @@
       label: 'Gesproken bevestiging in de oortjes',
       hint: 'Na het trillen zegt de app wat hij heeft vastgelegd ("houtduif, 6, overvliegend"). Alleen als er oortjes of een headset aan zitten, nooit via de luidspreker. Een podcast gaat even zachter.',
       available: speechSupported,
-    },
-    {
-      option: 'snelkoppeling',
-      label: 'Snelkoppeling "Begin met vogelen"',
-      hint: 'Lang drukken op het pictogram van de app (of de snelkoppeling op je beginscherm slepen) start meteen een sessie.',
-      available: shortcutSupported,
-      onChange: setShortcut,
     },
     {
       option: 'voorbeeldzinOnzeker',
@@ -46,7 +38,6 @@
 
   function toggle(item: Item) {
     setDevOption(item.option, checked[item.option]);
-    item.onChange?.(checked[item.option]);
   }
 </script>
 
