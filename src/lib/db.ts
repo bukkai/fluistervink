@@ -240,6 +240,13 @@ export interface Observation {
   /** Waarom het model twijfelde, om de review makkelijker te maken */
   uncertainReason?: string;
   /**
+   * Twijfel tussen bepaalde soorten ("fitis of tjiftjaf"): hun ID's, om bij
+   * het nalopen met één tik te kiezen. `speciesId` is dan de verzamelsoort
+   * als waarneming.nl die heeft, anders de meest waarschijnlijke kandidaat.
+   * Alleen bij een onzekere waarneming.
+   */
+  candidates?: number[];
+  /**
    * Opmerking voor waarneming.nl ("met ring", "zat op het hek"). Gaat mee in
    * de export.
    */

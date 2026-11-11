@@ -137,6 +137,7 @@ export async function approveSession(sessionId: string): Promise<void> {
         if (!obs.uncertain) return;
         obs.uncertain = false;
         delete obs.uncertainReason;
+        delete obs.candidates;
         obs.editedAt = editedAt;
       });
     await markReady(sessionId, true);

@@ -53,6 +53,7 @@ export interface ObservationFields {
   remarks?: string;
   privateNote?: string;
   spokenPlace?: SpokenPlace;
+  candidates?: number[];
 }
 
 export type Action =
@@ -150,106 +151,134 @@ const fieldProperties = {
   },
 } as const;
 
+/**
+ * Twijfel tussen bepaalde soorten (ontwikkeloptie 'kandidaten'). Alleen in
+ * de tools als die aan staat, zodat de prompt van de testers niet verandert.
+ */
+const candidateProperty = {
+  candidate_species: {
+    type: 'array',
+    items: { type: 'string' },
+    description:
+      'Alleen bij twijfel tussen twee of drie bepaalde soorten: hun namen precies zoals in de soortenlijst, bv. ["Fitis", "Tjiftjaf"]. Zie "Twijfel".',
+  },
+} as const;
+
+/** Hooguit zoveel kandidaten; meer is geen twijfel tussen soorten maar een groep */
+const MAX_CANDIDATES = 3;
+
 const refProperty = {
   type: 'integer',
   description: 'Nummer van de waarneming in de lijst met recente waarnemingen (#1 = meest recent).',
 } as const;
 
-const TOOLS: Anthropic.Tool[] = [
-  {
-    name: 'add_observation',
-    description: 'Legt een nieuwe waarneming vast. Eén aanroep per soort.',
-    strict: true,
-    input_schema: {
-      type: 'object',
-      properties: fieldProperties,
-      // Gedrag, methode, kleed en geslacht verplicht: optionele velden laat het
-      // model te snel weg. Kleed en geslacht zijn null als ze niet genoemd worden.
-      required: [
-        'species_name',
-        'species_id',
-        'count',
-        'counting_method_id',
-        'activity_id',
-        'method_id',
-        'life_stage_id',
-        'sex',
-        'uncertain',
-      ],
-      additionalProperties: false,
-    },
-  },
-  {
-    name: 'update_observation',
-    description:
-      'Past een eerdere waarneming aan, bv. bij "nee, keep in plaats van vink" of "nog drie erbij". Geef alleen de velden mee die veranderen.',
-    strict: true,
-    input_schema: {
-      type: 'object',
-      properties: {
-        ref: refProperty,
-        ...fieldProperties,
-        add_count: {
-          type: 'integer',
-          description:
-            'Tel dit op bij het bestaande aantal ("nog drie erbij" = 3, "twee minder" = -2).',
-        },
+const buildTools = (withCandidates: boolean): Anthropic.Tool[] => {
+  const properties = withCandidates
+    ? { ...fieldProperties, ...candidateProperty }
+    : fieldProperties;
+  return [
+    {
+      name: 'add_observation',
+      description: 'Legt een nieuwe waarneming vast. Eén aanroep per soort.',
+      strict: true,
+      input_schema: {
+        type: 'object',
+        properties,
+        // Gedrag, methode, kleed en geslacht verplicht: optionele velden laat het
+        // model te snel weg. Kleed en geslacht zijn null als ze niet genoemd worden.
+        required: [
+          'species_name',
+          'species_id',
+          'count',
+          'counting_method_id',
+          'activity_id',
+          'method_id',
+          'life_stage_id',
+          'sex',
+          'uncertain',
+        ],
+        additionalProperties: false,
       },
-      required: ['ref'],
-      additionalProperties: false,
     },
-  },
-  {
-    name: 'delete_observation',
-    description:
-      'Verwijdert een eerdere waarneming, bv. bij "die laatste weg" of "schrap de vink".',
-    strict: true,
-    input_schema: {
-      type: 'object',
-      properties: { ref: refProperty },
-      required: ['ref'],
-      additionalProperties: false,
-    },
-  },
-  {
-    name: 'undo',
-    description:
-      'Draait de vorige uitspraak volledig terug, bij "ongedaan maken", "terug" of "dat was fout".',
-    strict: true,
-    input_schema: { type: 'object', properties: {}, additionalProperties: false },
-  },
-  {
-    name: 'redo',
-    description:
-      'Zet terug wat de laatste undo terugdraaide, bij "toch niet ongedaan maken" of "zet terug wat je net ongedaan maakte".',
-    strict: true,
-    input_schema: { type: 'object', properties: {}, additionalProperties: false },
-  },
-  {
-    name: 'add_dev_note',
-    description: 'Bewaart een opmerking over de app zelf (in plaats van over vogels) als feedback.',
-    strict: true,
-    input_schema: {
-      type: 'object',
-      properties: {
-        text: {
-          type: 'string',
-          description:
-            'Alleen de opmerking over de app, in de woorden van de gebruiker, zonder "feedback" ervoor en zonder de waarnemingen eromheen.',
+    {
+      name: 'update_observation',
+      description:
+        'Past een eerdere waarneming aan, bv. bij "nee, keep in plaats van vink" of "nog drie erbij". Geef alleen de velden mee die veranderen.',
+      strict: true,
+      input_schema: {
+        type: 'object',
+        properties: {
+          ref: refProperty,
+          ...properties,
+          add_count: {
+            type: 'integer',
+            description:
+              'Tel dit op bij het bestaande aantal ("nog drie erbij" = 3, "twee minder" = -2).',
+          },
         },
+        required: ['ref'],
+        additionalProperties: false,
       },
-      required: ['text'],
-      additionalProperties: false,
     },
-  },
-];
+    {
+      name: 'delete_observation',
+      description:
+        'Verwijdert een eerdere waarneming, bv. bij "die laatste weg" of "schrap de vink".',
+      strict: true,
+      input_schema: {
+        type: 'object',
+        properties: { ref: refProperty },
+        required: ['ref'],
+        additionalProperties: false,
+      },
+    },
+    {
+      name: 'undo',
+      description:
+        'Draait de vorige uitspraak volledig terug, bij "ongedaan maken", "terug" of "dat was fout".',
+      strict: true,
+      input_schema: { type: 'object', properties: {}, additionalProperties: false },
+    },
+    {
+      name: 'redo',
+      description:
+        'Zet terug wat de laatste undo terugdraaide, bij "toch niet ongedaan maken" of "zet terug wat je net ongedaan maakte".',
+      strict: true,
+      input_schema: { type: 'object', properties: {}, additionalProperties: false },
+    },
+    {
+      name: 'add_dev_note',
+      description:
+        'Bewaart een opmerking over de app zelf (in plaats van over vogels) als feedback.',
+      strict: true,
+      input_schema: {
+        type: 'object',
+        properties: {
+          text: {
+            type: 'string',
+            description:
+              'Alleen de opmerking over de app, in de woorden van de gebruiker, zonder "feedback" ervoor en zonder de waarnemingen eromheen.',
+          },
+        },
+        required: ['text'],
+        additionalProperties: false,
+      },
+    },
+  ];
+};
 
 // ---------------------------------------------------------------------------
 // Systeemprompt: vast, zodat hij gecachet kan worden
 
 const codeList = (codes: Code[]) => codes.map((c) => `${c.id} ${c.name}`).join('; ');
 
-const SYSTEM_PROMPT = `Je bent de interpretatielaag van Fluistervink, een app waarmee een vogelaar tijdens het vogelen waarnemingen inspreekt. Je krijgt de tekst van één uitspraak, meestal uit spraakherkenning (dus met mogelijke verhaspelingen), plus de recente waarnemingen van deze sessie. Je antwoordt uitsluitend met tool calls; de app voert ze uit. Je kunt niets terugvragen.
+const CANDIDATE_RULES = `
+
+Twijfel je tussen twee of drie bepaalde soorten (de gebruiker zegt "fitis of tjiftjaf", "kleine of grote zilverreiger", of de spraakherkenning laat twee soorten open), zet die dan in candidate_species, met de namen precies zoals in de soortenlijst, en uncertain: true. Kies voor species_name dan de verzamelsoort die precies die soorten omvat als die in de lijst staat ("Tjiftjaf of Fitis", "Wilde of Kleine Zwaan"), anders de meest waarschijnlijke kandidaat. Laat candidate_species weg als je maar één soort in gedachten hebt, en bij een hele groep ("een meeuw" → Meeuw onbekend, zonder kandidaten). Kiest de gebruiker later ("het was een fitis"), dan update_observation met die soort en uncertain: false.`;
+
+const buildPrompt = (
+  withCandidates: boolean,
+) => `Je bent de interpretatielaag van Fluistervink, een app waarmee een vogelaar tijdens het vogelen waarnemingen inspreekt. Je krijgt de tekst van één uitspraak, meestal uit spraakherkenning (dus met mogelijke verhaspelingen), plus de recente waarnemingen van deze sessie. Je antwoordt uitsluitend met tool calls; de app voert ze uit. Je kunt niets terugvragen.
 
 ## Wat je doet
 
@@ -356,7 +385,7 @@ Vogelaars korten leeftijd en kleed af. Spraakherkenning schrijft ze soms als cij
 
 Twijfel je over soort, aantal of welke waarneming bedoeld wordt, voer dan de meest waarschijnlijke actie uit met uncertain: true en een korte uncertain_reason. Liever een onzekere waarneming dan geen.
 
-Twijfelt de gebruiker zelf ("klinkt als een winterkoning", "lijkt op een fitis", "volgens mij een sperwer", "ik check het even in Merlin"), dan is het tóch een waarneming: add_observation met uncertain: true en de twijfel in uncertain_reason. Niet negeren; komt er later een bevestiging ("ja, het was een winterkoning"), dan gaat de twijfel eraf. Een opdracht voor later ("thuis nog terugluisteren", "even in Merlin checken") gaat in private_note.
+Twijfelt de gebruiker zelf ("klinkt als een winterkoning", "lijkt op een fitis", "volgens mij een sperwer", "ik check het even in Merlin"), dan is het tóch een waarneming: add_observation met uncertain: true en de twijfel in uncertain_reason. Niet negeren; komt er later een bevestiging ("ja, het was een winterkoning"), dan gaat de twijfel eraf. Een opdracht voor later ("thuis nog terugluisteren", "even in Merlin checken") gaat in private_note.${withCandidates ? CANDIDATE_RULES : ''}
 
 ## Bijnamen (bijnaam → ID|naam)
 
@@ -366,15 +395,39 @@ ${aliases.map((a) => `${a.bijnamen.join(', ')} → ${a.soort}|${a.naam}`).join('
 
 ${species.map((s) => `${s.id}|${s.name}|${s.scientific}`).join('\n')}`;
 
+interface Variant {
+  system: string;
+  tools: Anthropic.Tool[];
+  version: Promise<string>;
+}
+
+const variants = new Map<boolean, Variant>();
+
+/** Systeemprompt en tools, met of zonder kandidaten; vast per variant, dus te cachen */
+function variant(withCandidates: boolean): Variant {
+  let found = variants.get(withCandidates);
+  if (!found) {
+    const system = buildPrompt(withCandidates);
+    const tools = buildTools(withCandidates);
+    const version = crypto.subtle
+      .digest('SHA-256', new TextEncoder().encode(system + JSON.stringify(tools)))
+      .then((hash) =>
+        [...new Uint8Array(hash).slice(0, 4)].map((b) => b.toString(16).padStart(2, '0')).join(''),
+      );
+    found = { system, tools, version };
+    variants.set(withCandidates, found);
+  }
+  return found;
+}
+
 /**
  * Korte hash van systeemprompt en tools. Bij elke uitspraak bewaard, zodat
  * resultaten van verschillende promptversies uit elkaar te houden zijn.
  */
-export const promptVersion: Promise<string> = crypto.subtle
-  .digest('SHA-256', new TextEncoder().encode(SYSTEM_PROMPT + JSON.stringify(TOOLS)))
-  .then((hash) =>
-    [...new Uint8Array(hash).slice(0, 4)].map((b) => b.toString(16).padStart(2, '0')).join(''),
-  );
+export const promptVersionFor = (withCandidates = false) => variant(withCandidates).version;
+
+/** De gewone promptversie (zonder ontwikkelopties), voor de testset */
+export const promptVersion: Promise<string> = promptVersionFor(false);
 
 // ---------------------------------------------------------------------------
 // Aanroep
@@ -422,6 +475,9 @@ function describe(obs: Observation, here?: Position): string {
     codeName(allLifeStages, obs.lifeStageId),
     obs.sex === 'male' ? 'man' : obs.sex === 'female' ? 'vrouw' : undefined,
     obs.uncertain ? 'onzeker' : undefined,
+    obs.candidates?.length
+      ? `twijfel tussen: ${obs.candidates.map(speciesName).join(', ')}`
+      : undefined,
     obs.remarks ? `opmerking: "${obs.remarks}"` : undefined,
     obs.privateNote ? `notitie: "${obs.privateNote}"` : undefined,
     obs.spokenPlace ? `plek: "${obs.spokenPlace.text}"` : undefined,
@@ -457,13 +513,21 @@ export function parseResponse(
  * @param options `here`: positie van de uitspraak, voor de afstand tot eerdere
  *   waarnemingen. `model` en `contextText` alleen voor de testset
  *   (scripts/testset.mjs): een ander model, of de context precies zoals hij
- *   destijds was. `sessionId`: voor het verbruik per sessie
+ *   destijds was. `sessionId`: voor het verbruik per sessie. `candidates`:
+ *   twijfel tussen soorten (ontwikkeloptie)
  */
 export async function interpret(
   transcript: string,
   recent: Observation[],
-  options: { here?: Position; model?: string; contextText?: string; sessionId?: string } = {},
+  options: {
+    here?: Position;
+    model?: string;
+    contextText?: string;
+    sessionId?: string;
+    candidates?: boolean;
+  } = {},
 ): Promise<Interpretation> {
+  const { system, tools } = variant(options.candidates ?? false);
   const context = recent.slice(0, CONTEXT_SIZE);
   const contextText = options.contextText ?? describeContext(context, options.here);
 
@@ -473,10 +537,10 @@ export async function interpret(
       max_tokens: 4096,
       // Weinig nadenken: snelheid telt in het veld, en de taak is eenvoudig
       output_config: { effort: 'low' },
-      tools: TOOLS,
+      tools,
       // Tools en systeemprompt veranderen nooit; met dit cachepunt worden ze na
       // de eerste aanroep goedkoop en sneller ingelezen.
-      system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
+      system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
       messages: [
         {
           role: 'user',
@@ -527,6 +591,7 @@ interface RawFields {
   place_description?: string | null;
   place_distance_m?: number | null;
   place_direction?: string | null;
+  candidate_species?: string[];
 }
 
 /**
@@ -564,6 +629,25 @@ function toSpokenPlace(
     ...(distanceM !== undefined && { distanceM }),
     ...(direction !== undefined && { direction: direction as Direction }),
   };
+}
+
+/**
+ * Soorten waartussen het model twijfelt. Een naam die niet in de lijst staat
+ * valt weg; blijven er minder dan twee over, dan is er niets te kiezen.
+ */
+function toCandidates(tool: string, names: unknown, warnings: string[]): number[] | undefined {
+  if (!Array.isArray(names) || names.length === 0) return undefined;
+  const ids: number[] = [];
+  for (const name of names) {
+    const found = typeof name === 'string' ? findPromptSpecies(name) : undefined;
+    if (!found) warnings.push(`${tool}: kandidaat "${String(name)}" staat niet in de lijst`);
+    else if (!ids.includes(found.id)) ids.push(found.id);
+  }
+  if (ids.length < 2 || ids.length > MAX_CANDIDATES) {
+    warnings.push(`${tool}: ${ids.length} kandidaten, genegeerd`);
+    return undefined;
+  }
+  return ids;
 }
 
 const validCode = (codes: Code[], id: number | undefined) =>
@@ -635,6 +719,13 @@ function toAction(
     fields.uncertainReason = `Dwaalgast, niet in de vaste lijst (gezegd: "${said}")`;
   } else if (said) {
     warnings.push(`${block.name}: "${said}" niet gevonden bij de dwaalgasten`);
+  }
+
+  const candidates = toCandidates(block.name, input.candidate_species, warnings);
+  if (candidates) {
+    fields.candidates = candidates;
+    fields.uncertain = true;
+    fields.uncertainReason ??= `${candidates.map(speciesName).join(' of ')}?`;
   }
 
   if (

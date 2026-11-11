@@ -60,6 +60,7 @@ describe('importJson', () => {
     ],
     ['een gezegde plek zonder tekst', { spokenPlace: { distanceM: 500 } }],
     ['een soort die geen getal is', { speciesId: 'vink' }],
+    ['kandidaten met tekst', { candidates: [89, '<b>'] }],
   ])('weigert een waarneming met %s, en zet dan niets terug', async (_, fields) => {
     const file = exportFile({ observations: [{ ...observation({ id: 'o1' }), ...fields }] });
     await expect(importJson(file)).rejects.toThrow('Ongeldige export');

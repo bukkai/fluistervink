@@ -206,6 +206,49 @@ describe('parseResponse', () => {
 
 // De afstand in de context laat het model "nog een X" van een paar kilometer
 // verderop als nieuwe waarneming zien (feedback 13 okt, Aalscholver op de A12).
+describe('kandidaten', () => {
+  const twijfel = (names: unknown[]) =>
+    parseResponse(
+      toolResponse([
+        'add_observation',
+        {
+          species_name: 'Tjiftjaf of Fitis',
+          species_id: 595858,
+          count: 1,
+          uncertain: true,
+          candidate_species: names,
+        },
+      ]),
+      [],
+    );
+
+  it("zet de namen om naar ID's en maakt de waarneming onzeker", () => {
+    const { actions, warnings } = twijfel(['Fitis', 'tjiftjaf', 'Fitis']);
+    expect(warnings).toEqual([]);
+    expect(actions[0]).toMatchObject({
+      type: 'add',
+      fields: { candidates: [89, 186], uncertain: true, uncertainReason: 'Fitis of Tjiftjaf?' },
+    });
+  });
+
+  it('negeert ze als er minder dan twee of meer dan drie geldig zijn', () => {
+    for (const names of [
+      ['Fitis', 'Bosfitis-achtige'],
+      ['Fitis'],
+      ['Fitis', 'Tjiftjaf', 'Vink', 'Keep'],
+    ]) {
+      const { actions, warnings } = twijfel(names);
+      expect(actions[0]).not.toHaveProperty('fields.candidates');
+      expect(warnings.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('staan in de context voor het model', () => {
+    const obs = observation({ speciesId: 595858, uncertain: true, candidates: [89, 186] });
+    expect(describeContext([obs])).toContain('twijfel tussen: Fitis, Tjiftjaf');
+  });
+});
+
 describe('plek uit de uitspraak', () => {
   const add = (input: object) =>
     parseResponse(toolResponse(['add_observation', { species_id: VINK, count: 1, ...input }]), []);

@@ -14,7 +14,7 @@ import { ApiError } from './api';
 import { attachArea } from './area';
 import { utteranceFeedback, vibrate } from './feedback';
 import { confirmAloud } from './spoken';
-import { MODEL, interpret, promptVersion, type Action, type Interpretation } from './interpret';
+import { MODEL, interpret, promptVersionFor, type Action, type Interpretation } from './interpret';
 import { currentPosition } from './location.svelte';
 import { placeFromSpeech, placeReason, type Place } from './spokenPlace';
 import { INSTANCE_ID } from './instance.svelte';
@@ -198,7 +198,13 @@ export function recordedPlace(current: Place): Place {
 export async function copyObservation(id: string): Promise<string | undefined> {
   const original = await db.observations.get(id);
   if (!original) return undefined;
-  const { editedAt: _edited, uncertainReason: _reason, skipExport: _skip, ...fields } = original;
+  const {
+    editedAt: _edited,
+    uncertainReason: _reason,
+    candidates: _candidates,
+    skipExport: _skip,
+    ...fields
+  } = original;
   const copy: Observation = {
     ...fields,
     id: crypto.randomUUID(),
@@ -213,7 +219,21 @@ export async function copyObservation(id: string): Promise<string | undefined> {
 
 /** Onzekere waarneming nagelopen en goed bevonden ("Klopt") */
 export async function confirmObservation(id: string): Promise<void> {
-  await editObservation(id, { uncertain: false, uncertainReason: undefined });
+  await editObservation(id, {
+    uncertain: false,
+    uncertainReason: undefined,
+    candidates: undefined,
+  });
+}
+
+/** Twijfel tussen soorten opgelost: deze kandidaat was het */
+export async function chooseCandidate(id: string, speciesId: number): Promise<void> {
+  await editObservation(id, {
+    speciesId,
+    uncertain: false,
+    uncertainReason: undefined,
+    candidates: undefined,
+  });
 }
 
 /**
@@ -500,6 +520,8 @@ async function processUtterance(utterance: Utterance): Promise<void> {
   const attempts = (utterance.attempts ?? 0) + 1;
   const ids = { sessionId: utterance.sessionId, utteranceId: utterance.id };
   await db.utterances.update(utterance.id, { status: 'processing', attempts });
+  // Twijfel tussen soorten (ontwikkeloptie): een andere prompt, dus een eigen versie
+  const candidates = devOptionOn('kandidaten');
 
   let step: 'transcribe' | 'interpret' = 'transcribe';
   let interpretation: Interpretation;
@@ -535,7 +557,11 @@ async function processUtterance(utterance: Utterance): Promise<void> {
     ]);
     const here = fresh?.position;
     contextMs = Date.now() - contextStart;
-    interpretation = await interpret(transcript, recent, { here, sessionId: utterance.sessionId });
+    interpretation = await interpret(transcript, recent, {
+      here,
+      sessionId: utterance.sessionId,
+      candidates,
+    });
     if (interpretation.warnings.length) {
       logEvent('species_id_fixed', { warnings: interpretation.warnings }, ids);
     }
@@ -573,7 +599,7 @@ async function processUtterance(utterance: Utterance): Promise<void> {
     appVersion: APP_VERSION,
     platform: PLATFORM,
     model: MODEL,
-    promptVersion: await promptVersion,
+    promptVersion: await promptVersionFor(candidates),
     context: interpretation.context,
     contextIds: interpretation.contextIds,
     instance: INSTANCE_ID,
@@ -865,6 +891,17 @@ async function applyActions(utterance: Utterance, actions: Action[]): Promise<Ch
           patch.uncertainReason = patch.uncertainReason
             ? `${patch.uncertainReason}; ${reason}`
             : reason;
+        }
+        // Kandidaten horen bij de twijfel over de soort: weg als de twijfel weg
+        // is, of als er een andere soort gekozen is zonder nieuwe kandidaten
+        if (
+          current.candidates &&
+          !action.fields.candidates &&
+          (patch.uncertain === false ||
+            (action.fields.speciesId !== undefined &&
+              action.fields.speciesId !== current.speciesId))
+        ) {
+          patch.candidates = undefined;
         }
         if (action.fields.spokenPlace) {
           // Opnieuw vanaf de GPS-positie van de gebruiker, niet vanaf de vorige plek
