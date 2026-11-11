@@ -265,6 +265,8 @@ export interface Tester {
   blocked?: boolean;
   /** Naam die een installatie zelf opgaf */
   displayName?: string;
+  /** Laatste dag met een uitspraak ("2026-11-03"), ook zonder delen; uit het verbruik */
+  lastUsed?: string;
   /** Wat de tester gedeeld heeft; leeg als er (nog) niets gedeeld is */
   usage?: {
     walks: number;

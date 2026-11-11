@@ -17,7 +17,14 @@ import {
   verifyTurnstile,
   type InstallSecrets,
 } from './install';
-import { activitySince, recordUsage, sessionFrom, usageSince, type Usage } from './usage';
+import {
+  activitySince,
+  lastUsedPerTester,
+  recordUsage,
+  sessionFrom,
+  usageSince,
+  type Usage,
+} from './usage';
 
 // Proxy tussen de app en de API's van OpenAI (spraak naar tekst), Anthropic
 // (interpretatie) en waarneming.nl (gebiedsnamen). De API-sleutels blijven hier; de app stuurt alleen een
@@ -686,7 +693,18 @@ async function testers(request: Request, env: WorkerEnv, tester: string): Promis
         displayName,
       }));
     const usage = await testerUsage(env);
-    return json({ testers: installs.map((t) => ({ ...t, usage: usage.get(t.name) })) });
+    // Zonder D1 toch de lijst, alleen zonder "laatst gebruikt"
+    const lastUsed = await lastUsedPerTester(env.USAGE).catch((error) => {
+      console.error('Laatst gebruikt niet te lezen', error);
+      return new Map<string, string>();
+    });
+    return json({
+      testers: installs.map((t) => ({
+        ...t,
+        usage: usage.get(t.name),
+        lastUsed: lastUsed.get(t.name),
+      })),
+    });
   }
   if (request.method === 'DELETE') {
     const params = new URL(request.url).searchParams;

@@ -903,6 +903,32 @@ describe('/api/feedback/notes (feedback inzien)', () => {
     );
   });
 
+  it('geeft per installatie de laatste dag met een uitspraak, ook zonder delen', async () => {
+    await putInstall(testersKv as never, ANNA_ID, {
+      name: ANNA,
+      registeredAt: 1000,
+      via: 'turnstile',
+    });
+    const list = async () =>
+      (
+        (await (await call('/api/testers', { code: OWNER_CODE })).json()) as {
+          testers: { name: string; lastUsed?: string }[];
+        }
+      ).testers.find((t) => t.name === ANNA);
+    expect((await list())?.lastUsed).toBeUndefined(); // maakt ook de tabel aan
+    const insert = (day: string, session: string) =>
+      (env.USAGE as ReturnType<typeof memoryD1>)
+        .prepare(
+          `INSERT INTO usage (day, tester, channel, session, model) VALUES (?, ?, 'beta', ?, 'm')`,
+        )
+        .bind(day, ANNA, session)
+        .run();
+    await insert('2026-10-01', 's1');
+    await insert('2026-11-03', 's2');
+    await insert('2026-11-09', ''); // zonder sessie (testset) telt niet
+    expect((await list())?.lastUsed).toBe('2026-11-03');
+  });
+
   it('telt per tester sessies, uitspraken, feedback en de laatste actie', async () => {
     await share('w2', {
       sessions: [{ startedAt: 4000, endedAt: 5000 }],

@@ -49,6 +49,18 @@ function ensureTable(db: D1Database): Promise<unknown> {
   return promise;
 }
 
+/**
+ * Per tester de laatste dag met een uitspraak in een sessie ("2026-11-03"),
+ * ook van wie delen uit heeft staan. Voor de lijst met installaties.
+ */
+export async function lastUsedPerTester(db: D1Database): Promise<Map<string, string>> {
+  await ensureTable(db);
+  const { results } = await db
+    .prepare(`SELECT tester, MAX(day) AS day FROM usage WHERE session != '' GROUP BY tester`)
+    .all<{ tester: string; day: string }>();
+  return new Map(results.map((row) => [row.tester, row.day]));
+}
+
 /** Een id van de app (`crypto.randomUUID()`); al het andere telt als "geen sessie". */
 const SESSION_ID = /^[\w-]{1,64}$/;
 
