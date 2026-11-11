@@ -33,6 +33,7 @@
   } from './lib/share';
   import DevNotes from './lib/DevNotes.svelte';
   import Developer from './lib/Developer.svelte';
+  import Changelog from './lib/Changelog.svelte';
   import HowItWorks from './lib/HowItWorks.svelte';
   import PastSession from './lib/PastSession.svelte';
   import PastSessions from './lib/PastSessions.svelte';
@@ -42,6 +43,7 @@
   import Welcome from './lib/Welcome.svelte';
   import { setWelcomeDone, welcomeDone } from './lib/welcome';
   import Zeemeeuwen from './lib/Zeemeeuwen.svelte';
+  import UpdateStatus from './lib/UpdateStatus.svelte';
 
   // Uitspraken die bij het afsluiten nog niet verwerkt waren, alsnog verwerken.
   // Dit exemplaar neemt de wachtrij over van een eventueel ander (tabblad).
@@ -311,6 +313,8 @@
     />
   {:else if route === 'instellingen'}
     <Settings />
+  {:else if route === 'nieuw'}
+    <Changelog />
   {:else if route === 'uitleg'}
     <HowItWorks />
   {:else if route === 'privacy'}
@@ -405,6 +409,8 @@
     </section>
   {/if}
 </main>
+
+<UpdateStatus hidden={!!active} />
 
 <Zeemeeuwen />
 

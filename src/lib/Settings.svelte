@@ -123,7 +123,7 @@
 
 <p class="version">
   Fluistervink{CHANNEL === 'beta' ? ' beta' : ''} · versie {APP_VERSION}{#if appVersion}<br
-    />Android-app {appVersion}{/if}
+    />Android-app {appVersion}{/if}<br /><a class="link" href="#nieuw">Wat is er nieuw?</a>
 </p>
 
 <details class="owner-code">
