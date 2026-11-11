@@ -567,17 +567,17 @@ async function sharedNotes(env: WorkerEnv): Promise<SharedNote[]> {
   const done = await processedNotes(env);
   const notes = await Promise.all(
     keys.map(async (key) => {
-      const data = await env.FEEDBACK.get<SharedSession>(key, 'json').catch(() => null);
+      const data = await readShared(env, key);
       const tester = key.split('/')[0];
-      return (data?.utterances ?? [])
+      return data.utterances
         .filter((u) => u.kind === 'dev_note')
         .map((u) => ({
           id: u.id,
           tester,
           recordedAt: u.recordedAt,
           text: devNoteText(u.transcript ?? '') || (u.transcript ?? ''),
-          appVersion: u.metrics?.appVersion ?? data?.appVersion,
-          sessionName: data?.sessions?.[0]?.place?.name ?? data?.sessions?.[0]?.name,
+          appVersion: u.metrics?.appVersion ?? (data.appVersion || undefined),
+          sessionName: data.sessions[0]?.place?.name ?? data.sessions[0]?.name,
           processed: done.has(u.id),
         }));
     }),
@@ -602,6 +602,47 @@ interface SharedSession {
   }[];
 }
 
+/**
+ * Een gedeeld bestand, voor zover het de verwachte vorm heeft. Iedereen met
+ * een browser kan delen (aanmelden zonder code), dus de inhoud is niet te
+ * vertrouwen: één kapot bestand mag Developer niet voor alle testers laten
+ * vastlopen. Wat niet klopt, telt niet mee.
+ */
+async function readShared(env: WorkerEnv, key: string): Promise<Required<SharedSession>> {
+  const data = await env.FEEDBACK.get<SharedSession>(key, 'json').catch(() => null);
+  const list = (value: unknown): unknown[] => (Array.isArray(value) ? value : []);
+  const isObject = (value: unknown) => typeof value === 'object' && value !== null;
+  const text = (value: unknown) => (typeof value === 'string' ? value : undefined);
+  const number = (value: unknown) =>
+    typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+  return {
+    appVersion: text(data?.appVersion) ?? '',
+    sessions: (list(data?.sessions).filter(isObject) as Record<string, unknown>[]).map((s) => ({
+      name: text(s.name),
+      place: { name: text((s.place as { name?: unknown } | null)?.name) },
+      startedAt: number(s.startedAt),
+      endedAt: number(s.endedAt),
+    })),
+    utterances: (list(data?.utterances).filter(isObject) as Record<string, unknown>[]).flatMap(
+      (u) => {
+        const id = text(u.id);
+        const recordedAt = number(u.recordedAt);
+        if (!id || recordedAt === undefined) return [];
+        const appVersion = text((u.metrics as { appVersion?: unknown } | null)?.appVersion);
+        return [
+          {
+            id,
+            recordedAt,
+            kind: text(u.kind),
+            transcript: text(u.transcript),
+            metrics: { appVersion },
+          },
+        ];
+      },
+    ),
+  };
+}
+
 /** Hoeveel een tester gedeeld heeft, om te zien of de app echt gebruikt wordt. */
 export interface TesterUsage {
   walks: number;
@@ -621,7 +662,7 @@ async function testerUsage(env: WorkerEnv): Promise<Map<string, TesterUsage>> {
   const files = await Promise.all(
     keys.map(async (key) => ({
       tester: key.split('/')[0],
-      data: await env.FEEDBACK.get<SharedSession>(key, 'json').catch(() => null),
+      data: await readShared(env, key),
     })),
   );
   type Entry = { walks: number; utterances: Map<string, boolean>; lastActivity?: number };
@@ -629,13 +670,13 @@ async function testerUsage(env: WorkerEnv): Promise<Map<string, TesterUsage>> {
   for (const { tester, data } of files) {
     const entry: Entry = perTester.get(tester) ?? { walks: 0, utterances: new Map() };
     perTester.set(tester, entry);
-    entry.walks += data?.sessions?.length ?? 0;
+    entry.walks += data.sessions.length;
     const times = [
-      ...(data?.utterances ?? []).map((u) => u.recordedAt),
-      ...(data?.sessions ?? []).map((s) => s.endedAt ?? s.startedAt ?? 0),
+      ...data.utterances.map((u) => u.recordedAt),
+      ...data.sessions.map((s) => s.endedAt ?? s.startedAt ?? 0),
     ];
     // Op id, want losse feedback kan in twee bestanden staan
-    for (const u of data?.utterances ?? []) entry.utterances.set(u.id, u.kind === 'dev_note');
+    for (const u of data.utterances) entry.utterances.set(u.id, u.kind === 'dev_note');
     if (times.length) entry.lastActivity = Math.max(entry.lastActivity ?? 0, ...times);
   }
 

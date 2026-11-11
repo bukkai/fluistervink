@@ -31,7 +31,8 @@
         apart aanzet.
       </li>
       <li>
-        Geen account, geen advertenties, geen statistieken, geen route van waar je geweest bent.
+        Geen account, geen advertenties, geen route van waar je geweest bent. De ontwikkelaar ziet
+        alleen hoeveel de app gebruikt wordt, niet wat je zegt of waar je bent (tenzij je deelt).
       </li>
     </ul>
   </div>
@@ -78,8 +79,9 @@
     <p>
       Alles gaat eerst langs de eigen server van Fluistervink. Die bewaart niets, behalve wat je
       deelt (hieronder) en hoeveel je liet verwerken: per dag en per sessie het aantal uitspraken en
-      hoe lang die waren, zonder wat je zei, om de kosten bij te houden. Wel houdt hij een paar
-      dagen bij wanneer je de app gebruikte en of er iets misging.
+      hoe lang die waren, zonder wat je zei, om de kosten bij te houden en te zien hoeveel mensen de
+      app gebruiken en of ze terugkomen. Wel houdt hij een paar dagen bij wanneer je de app
+      gebruikte en of er iets misging.
     </p>
     <dl>
       <dt>OpenAI</dt>
@@ -206,7 +208,7 @@
 </section>
 
 <p class="sources">
-  Bijgewerkt op 8 november 2026. Bronnen, nagekeken op 28 oktober 2026:
+  Bijgewerkt op 11 november 2026. Bronnen, nagekeken op 11 november 2026:
   <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noopener"
     >OpenAI</a
   >,

@@ -121,6 +121,11 @@
         indrukken, dan ging de microfoon niet aan en is er niets opgenomen: tik nog eens.
       </dd>
     </dl>
+    <p>
+      In de trektelmodus (aan te zetten bij Instellingen) zijn er nog twee: één lange tril als de
+      telling pauzeert omdat je naar een andere app gaat of het scherm op slot gaat, en twee lange
+      als hij vanzelf gestopt is.
+    </p>
     {#if isNativeApp}
       <p>
         Zolang een sessie loopt, staat er een melding van Fluistervink bovenin je telefoon. Daardoor

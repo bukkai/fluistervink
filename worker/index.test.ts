@@ -885,6 +885,16 @@ describe('/api/feedback/notes (feedback inzien)', () => {
     ]);
   });
 
+  it('een kapot gedeeld bestand laat de feedback van anderen staan', async () => {
+    await share('kapot-1', { sessions: 5, utterances: 'nee' });
+    await share('kapot-2', {
+      sessions: [null, 'x'],
+      utterances: [null, { id: 7, recordedAt: 'gisteren', kind: 'dev_note' }],
+    });
+    expect((await notes()).map((n) => n.id)).toEqual(['n2', 'n1']);
+    expect((await call('/api/testers', { code: OWNER_CODE })).status).toBe(200);
+  });
+
   it('toont feedback die in twee bestanden staat maar één keer', async () => {
     await share('losse-feedback-a1b2c3d4', {
       sessions: [],

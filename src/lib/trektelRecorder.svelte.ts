@@ -69,6 +69,11 @@ let pauseTimer: ReturnType<typeof setTimeout> | undefined;
 /** Bij een pauze: hoe vaak en hoe lang, voor het log bij het stoppen */
 let pauses = 0;
 let pausedMs = 0;
+/**
+ * Op Stop gedrukt (of de sessie gestopt) terwijl de microfoon nog aanging:
+ * stoppen zodra hij aan is. Anders liep de telling door zonder stopknop.
+ */
+let stopWhenStarted = false;
 
 export function trektelSupported(): boolean {
   return 'MediaRecorder' in window && !!navigator.mediaDevices && 'AudioContext' in window;
@@ -190,6 +195,7 @@ async function resumeTrektel(): Promise<void> {
     return;
   }
   trektel.status = 'starting';
+  stopWhenStarted = false;
   try {
     await openMic();
   } catch (error) {
@@ -202,6 +208,10 @@ async function resumeTrektel(): Promise<void> {
   pausedAt = undefined;
   trektel.status = 'running';
   logEvent('trektel_resumed', { pausedMs: away });
+  if (stopWhenStarted) {
+    stopTrektel();
+    return;
+  }
   handlers?.onResumed?.();
   // Intussen alweer weg (de microfoon aanzetten duurt even): opnieuw pauzeren
   if (document.hidden) pauseTrektel();
@@ -212,6 +222,7 @@ export async function startTrektel(next: TrektelHandlers): Promise<boolean> {
   if (trektel.status !== 'idle') return false;
   trektel.status = 'starting';
   trektel.error = undefined;
+  stopWhenStarted = false;
   handlers = next;
   try {
     await openMic();
@@ -234,11 +245,16 @@ export async function startTrektel(next: TrektelHandlers): Promise<boolean> {
 
   Object.assign(trektel, { status: 'running', startedAt: Date.now(), sent: 0, skipped: 0 });
   logEvent('trektel_started');
+  if (stopWhenStarted) {
+    stopTrektel();
+    return false;
+  }
   return true;
 }
 
 /** Stopt de trektelling; het laatste stuk wordt nog verwerkt. */
 export function stopTrektel(reason?: 'max' | 'hidden'): void {
+  if (trektel.status === 'starting') stopWhenStarted = true;
   if (trektel.status !== 'running' && trektel.status !== 'paused') return;
   clearTimeout(maxTimer);
   clearTimeout(pauseTimer);

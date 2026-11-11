@@ -96,9 +96,10 @@ const FRACTIONS: Record<string, number> = {
 export function parseNumber(word: string): number | undefined {
   const w = word.toLowerCase();
   if (/^\d+([.,]\d+)?$/.test(w)) return Number(w.replace(',', '.'));
-  if (w in FRACTIONS) return FRACTIONS[w];
-  if (w in UNITS) return UNITS[w];
-  if (w in TENS) return TENS[w];
+  // Object.hasOwn: "constructor" staat ook "in" een object
+  if (Object.hasOwn(FRACTIONS, w)) return FRACTIONS[w];
+  if (Object.hasOwn(UNITS, w)) return UNITS[w];
+  if (Object.hasOwn(TENS, w)) return TENS[w];
   for (const [name, factor] of [
     ['duizend', 1000],
     ['honderd', 100],
@@ -114,7 +115,7 @@ export function parseNumber(word: string): number | undefined {
   }
   const compound =
     /^(.+?)[eë]n(twintig|dertig|veertig|vijftig|zestig|zeventig|tachtig|negentig)$/.exec(w);
-  if (compound && compound[1] in UNITS && UNITS[compound[1]] < 10) {
+  if (compound && Object.hasOwn(UNITS, compound[1]) && UNITS[compound[1]] < 10) {
     return UNITS[compound[1]] + TENS[compound[2]];
   }
   return undefined;
