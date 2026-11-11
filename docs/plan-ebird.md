@@ -1,6 +1,6 @@
 # Plan: inspanning vastleggen en export naar eBird
 
-Voorstel van 11 nov 2026, nog niet goedgekeurd. Aanleiding: de brainstorm over inspanningsgegevens (nov 2026), en de eigenaar en een paar mensen in zijn omgeving gebruiken eBird.
+Voorstel van 11 nov 2026, dezelfde dag goedgekeurd (drempels 50 m, onzekere waarnemingen mee met een waarschuwing, de vraag bij het stoppen alleen voor eBird-gebruikers). Fase 1 gebouwd (11 nov). Aanleiding: de brainstorm over inspanningsgegevens (nov 2026), en de eigenaar en een paar mensen in zijn omgeving gebruiken eBird.
 
 ## Doel
 
@@ -34,7 +34,7 @@ Oude sessies hebben geen `effort`. Daarvoor rekent de app de duur uit begin- en 
 - In `src/lib/location.svelte.ts` draait tijdens een sessie al `watchPosition`. Bij elke meting telt de app de afstand tot het vorige **ankerpunt** op als die groter is dan de onnauwkeurigheid van beide metingen (en minstens 20 m). Dan wordt de nieuwe meting het ankerpunt. Metingen met een onnauwkeurigheid boven 50 m slaat hij over. Zo loopt de teller niet op door GPS-ruis terwijl je in een vogelhut zit.
 - Het ankerpunt staat tijdelijk bij de lopende sessie (één punt, steeds overschreven), zodat een herstart van de app niet de hele afstand tot dan toe kwijtraakt. Bij het stoppen gaat het weg.
 - Staat de app op de achtergrond of het scherm op slot, dan komen er geen metingen. Bij terugkomst telt de app de rechte lijn vanaf het ankerpunt. Dat is een onderschatting, maar eBird vraagt ook om een schatting.
-- De afstand wordt bijgewerkt in de database als hij minstens 50 m gegroeid is, niet bij elke meting.
+- De afstand wordt bijgewerkt in de database bij elke stap die meetelt (dus hooguit om de 20 m), en een sprong van meer dan 180 km/u telt niet: dat is de GPS, geen verplaatsing.
 - De rekenregels (wel of niet optellen, afstand tussen twee punten) komen in een losse functie zonder browser-API's (`src/lib/effort.ts`), met tests.
 - CLAUDE.md en `#privacy` aanpassen: de app telt de afstand op, maar bewaart geen route.
 
@@ -92,4 +92,4 @@ Elke fase is één PR.
 - Zijn de drempels goed: Stationary onder 50 m, metingen boven 50 m onnauwkeurigheid overslaan?
 - Onzekere waarnemingen: meesturen (zoals nu bij waarneming.nl, met een waarschuwing) of eruit laten?
 - Moet de vraag "Alles genoteerd?" later ook voor wie geen eBird gebruikt? Dat maakt de gegevens beter (bijvoorbeeld voor het idee met de kilometerhokken), maar is een extra tik voor iedereen.
-- Apart nagaan: bewaart de bulkimport van waarneming.nl iets van lijsten of inspanning? Zo niet, dan blijft eBird de enige plek waar die gegevens heen gaan.
+- Bewaart de bulkimport van waarneming.nl iets van lijsten of inspanning? Nee (11 nov): de import kent alleen losse waarnemingen, zie `docs/waarneming-nl.md`. eBird blijft dus de enige plek waar de inspanning heen gaat. De API nog nagaan bij de aanvraag van een client-ID.

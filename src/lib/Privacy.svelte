@@ -54,9 +54,10 @@
     <h3>Op je telefoon</h3>
     <p>
       De opname van elke uitspraak, de tekst, het tijdstip, de locatie (alleen op het moment dat je
-      begint met inspreken), je waarnemingen en een logboek van wat de app deed (fouten,
-      wachttijden) staan in de opslag van de app (of van de browser) op je telefoon. Daar blijven ze
-      tot je ze verwijdert. De opnames kun je ook los wissen (zie hieronder).
+      begint met inspreken), je waarnemingen, de duur en afgelegde afstand van een sessie en een
+      logboek van wat de app deed (fouten, wachttijden) staan in de opslag van de app (of van de
+      browser) op je telefoon. Daar blijven ze tot je ze verwijdert. De opnames kun je ook los
+      wissen (zie hieronder).
     </p>
     <p>
       Maak je bij <a href="{app}#instellingen">Instellingen</a> een back-up, dan komt alles (opnames alleen
@@ -68,7 +69,8 @@
       In de Android-app staat tijdens een sessie een melding van Fluistervink. Daardoor mag de app
       doorwerken met het scherm uit, en blijft hij je locatie volgen om bij een uitspraak meteen te
       weten waar je bent. Bewaard wordt nog steeds alleen de locatie bij het begin van een
-      uitspraak, geen route. Na "Stop" houdt het volgen op.
+      uitspraak, geen route. Wel telt de app tijdens een sessie de afgelegde afstand op, zoals een
+      kilometerteller: alleen het getal blijft bewaard. Na "Stop" houdt het volgen op.
     </p>
   </div>
 </section>

@@ -80,6 +80,14 @@ describe('importJson', () => {
     await expect(importJson(file)).rejects.toThrow('Ongeldige export');
   });
 
+  it('weigert een sessie met een ongeldige inspanning', async () => {
+    const session = { id: 'sessie', startedAt: 1, endedAt: 2, status: 'ended' };
+    const file = exportFile({
+      sessions: [{ ...session, effort: { activeMs: 1, distanceM: '5' } }],
+    });
+    await expect(importJson(file)).rejects.toThrow('Ongeldige export');
+  });
+
   it('weigert een prullenbak met een ongeldige waarneming', async () => {
     const file = exportFile({ deletedObservations: [{ ...observation(), count: '3' }] });
     await expect(importJson(file)).rejects.toThrow('Ongeldige export');

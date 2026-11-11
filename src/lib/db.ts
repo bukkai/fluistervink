@@ -54,6 +54,23 @@ export interface Session {
   exportedAt?: number;
   /** Naam van de sessie ("Amsterdamse Waterleidingduinen"), zie `area.ts` */
   place?: SessionPlace;
+  /** Hoe lang en hoe ver er gevogeld is (`effort.ts`); leeg bij sessies van vóór 11 nov 2026 */
+  effort?: Effort;
+}
+
+/**
+ * Inspanning van een sessie, voor een eBird-checklist (docs/plan-ebird.md).
+ * Geen route: alleen de opgetelde afstand en het laatste ankerpunt.
+ */
+export interface Effort {
+  /** Tijd dat de sessie liep, zonder de tijd tussen stoppen en voortzetten */
+  activeMs: number;
+  /** Begin van het lopende stuk; leeg als de sessie gestopt is */
+  activeSince?: number;
+  /** Opgetelde afstand in meters */
+  distanceM: number;
+  /** Laatst meegetelde GPS-meting, alleen zolang de sessie loopt */
+  anchor?: Position;
 }
 
 export interface SessionPlace {
