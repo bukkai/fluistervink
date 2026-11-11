@@ -67,7 +67,8 @@
     <p>
       Snel beginnen in de Android-app: houd het pictogram van Fluistervink ingedrukt en kies "Begin
       met vogelen". Dat start meteen een sessie. Sleep je die keuze naar je beginscherm, dan heb je
-      er een eigen knop voor.
+      er een eigen knop voor. Of zet een tegel in de snelle instellingen (Instellingen, "Snel
+      beginnen"): dan veeg je vanuit elke app naar beneden en tik je.
     </p>
   </div>
 </section>

@@ -30,6 +30,18 @@
             android:exported="false"
             android:foregroundServiceType="location" />
 
+        <!-- Tegel "Begin met vogelen" in de snelle instellingen -->
+        <service
+            android:name=".BeginTegel"
+            android:exported="true"
+            android:label="Begin met vogelen"
+            android:icon="@drawable/ic_stat_vink"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
