@@ -3,6 +3,7 @@
   import type { PositionLookup, Session } from './db';
   import { vibrate } from './feedback';
   import { logEvent } from './log';
+  import { listenVolumeKey, volumeKeySupported } from './native';
   import { currentPosition, gps, startTracking, stopTracking } from './location.svelte';
   import { submitRecording, submitText } from './observations';
   import { recorder, startRecording, stopRecording } from './recorder.svelte';
@@ -11,6 +12,7 @@
   import { createTalkButton } from './talkButton';
   import { trektelEnabled } from './trektel';
   import { startTrektel, stopTrektel, trektel, trektelSupported } from './trektelRecorder.svelte';
+  import { volumeKeyEnabled } from './volumeKey';
 
   let { session }: { session: Session } = $props();
 
@@ -98,6 +100,17 @@
     },
     finish: finishRecording,
     log: (type, data) => logEvent(type, data, { sessionId: session.id }),
+  });
+
+  // Volumeknop als inspreekknop (Android-app, instelling): elke druk is een
+  // tik op de knop. Niet tijdens een trektelling: die heeft een eigen knop.
+  const volumeKeyOn = volumeKeySupported && volumeKeyEnabled();
+  $effect(() => {
+    if (!volumeKeyOn || trektel.status !== 'idle') return;
+    return listenVolumeKey((key) => {
+      logEvent('talk_volume_key', { key, status: recorder.status }, { sessionId: session.id });
+      talk.tap();
+    });
   });
 
   function press(event: PointerEvent) {

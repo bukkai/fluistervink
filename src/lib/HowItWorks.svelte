@@ -59,6 +59,11 @@
       thuis zet je hem op de kaart. "Links" of "voor me" weet de app niet; zeg liever een
       windrichting.
     </p>
+    <p>
+      In de Android-app kan ook de volumeknop de opname starten en stoppen (aanzetten bij
+      Instellingen). Dan hoef je niet te zoeken waar de knop op het scherm zit, en werkt het ook met
+      handschoenen of met een Bluetooth-knopje voor selfies.
+    </p>
   </div>
 </section>
 

@@ -95,5 +95,15 @@ export function createTalkButton({
     up();
   }
 
-  return { down, up, cancel };
+  /**
+   * Eén druk zonder vasthouden, zoals de volumeknop (volumeKey.ts): starten,
+   * of stoppen als hij al loopt. Vlak na elkaar telt als één druk.
+   */
+  function tap() {
+    const started = down();
+    up();
+    return started;
+  }
+
+  return { down, up, cancel, tap };
 }

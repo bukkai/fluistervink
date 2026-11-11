@@ -1,6 +1,7 @@
 package nl.hegmus.fluistervink;
 
 import android.os.Bundle;
+import android.view.KeyEvent;
 import androidx.activity.OnBackPressedCallback;
 import com.getcapacitor.BridgeActivity;
 
@@ -14,6 +15,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(BestandPlugin.class);
         registerPlugin(VersiePlugin.class);
         registerPlugin(IntegriteitPlugin.class);
+        registerPlugin(KnopPlugin.class);
         super.onCreate(savedInstanceState);
 
         // Terugknop: een pagina terug in de app (de schermen zijn #-adressen),
@@ -30,5 +32,13 @@ public class MainActivity extends BridgeActivity {
                 }
             }
         });
+    }
+
+    // Volumeknop als inspreekknop, alleen als de webcode hem aanzette
+    // (KnopPlugin): dan verandert het volume niet.
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (KnopPlugin.handle(event)) return true;
+        return super.dispatchKeyEvent(event);
     }
 }

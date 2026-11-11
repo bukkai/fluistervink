@@ -10,11 +10,12 @@
     setDisplayName,
   } from './api';
   import { APP_VERSION, CHANNEL } from './log';
-  import { nativeAppVersion } from './native';
+  import { nativeAppVersion, volumeKeySupported } from './native';
   import BackupSettings from './BackupSettings.svelte';
   import RecordingSettings from './RecordingSettings.svelte';
   import ShareSettings from './ShareSettings.svelte';
   import TrektelSettings from './TrektelSettings.svelte';
+  import VolumeKeySettings from './VolumeKeySettings.svelte';
 
   let code = $state(getAccessCode());
   let status = $state<'idle' | 'busy' | 'ok' | 'error'>('idle');
@@ -102,6 +103,10 @@
 <RecordingSettings />
 
 <TrektelSettings />
+
+{#if volumeKeySupported}
+  <VolumeKeySettings />
+{/if}
 
 <p class="version">
   Fluistervink{CHANNEL === 'beta' ? ' beta' : ''} · versie {APP_VERSION}{#if appVersion}<br
