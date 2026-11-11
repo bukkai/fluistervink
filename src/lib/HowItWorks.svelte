@@ -111,7 +111,8 @@
         Er ging iets mis, bijvoorbeeld geen bereik. De opname is bewaard en gaat niet verloren, maar
         wordt niet vanzelf opnieuw verwerkt: tik later, als je weer bereik hebt, bij de sessie onder
         "Uitspraken" op "Opnieuw". Bij heel slecht bereik kan deze tril tot een halve minuut op zich
-        laten wachten, na een lange opname tot een minuut.
+        laten wachten, na een lange opname tot een minuut. Komen de drie korte meteen na het
+        indrukken, dan ging de microfoon niet aan en is er niets opgenomen: tik nog eens.
       </dd>
     </dl>
     {#if isNativeApp}

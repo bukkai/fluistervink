@@ -36,13 +36,10 @@ export function createTalkButton({
   let mode: 'tap' | 'hold' | undefined;
   /** Loslaten na vasthouden: stoppen, tenzij de vinger snel terugkomt. */
   let stopTimer: ReturnType<typeof setTimeout> | undefined;
-  /** Losgelaten na vasthouden terwijl de microfoon nog aanging. */
-  let stopWhenStarted = false;
 
   function stop() {
     stopTimer = undefined;
-    if (status() === 'starting') stopWhenStarted = true;
-    else if (status() === 'recording') finish();
+    if (status() === 'recording') finish();
   }
 
   async function down() {
@@ -67,11 +64,7 @@ export function createTalkButton({
     }
     pressedAt = t;
     mode = undefined;
-    stopWhenStarted = false;
-    if ((await start()) && stopWhenStarted) {
-      stopWhenStarted = false;
-      finish();
-    }
+    await start();
   }
 
   function up() {
@@ -80,7 +73,10 @@ export function createTalkButton({
     const current = status();
     if (current !== 'recording' && current !== 'starting') return;
     if (mode === 'tap') return;
-    if (mode === undefined && t - pressedAt < HOLD_MS) {
+    // Losgelaten voordat de microfoon aan was (een toestemmingsvraag, een
+    // trage Bluetooth-microfoon): er kon nog niets gezegd zijn, dus geen
+    // vasthouden maar een tik. Stoppen bij loslaten gaf een lege opname (11 nov).
+    if (current === 'starting' || (mode === undefined && t - pressedAt < HOLD_MS)) {
       mode = 'tap';
       return;
     }

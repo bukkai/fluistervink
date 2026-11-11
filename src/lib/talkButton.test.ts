@@ -126,15 +126,26 @@ describe('opnameknop', () => {
     expect(log).toHaveBeenCalledWith('talk_pointercancel', { status: 'recording' });
   });
 
-  it('losgelaten na vasthouden terwijl de microfoon nog aangaat: stopt zodra hij loopt', async () => {
+  it('losgelaten terwijl de microfoon nog aangaat (toestemmingsvraag): blijft opnemen tot een tik', async () => {
+    const { talk, finish, status } = setup(3000);
+    talk.down();
+    await wait(HOLD_MS + 500);
+    talk.up();
+    await wait(5000);
+    // Vroeger stopte hij zodra hij liep: een lege opname (11 nov)
+    expect(finish).not.toHaveBeenCalled();
+    expect(status()).toBe('recording');
+    talk.down();
+    expect(finish).toHaveBeenCalledOnce();
+  });
+
+  it('vasthouden en loslaten nadat de microfoon aanging: stopt', async () => {
     const { talk, finish } = setup(1500);
     talk.down();
-    await wait(HOLD_MS + 100);
+    await wait(2500);
     talk.up();
     await wait(REGRIP_MS);
-    expect(finish).not.toHaveBeenCalled();
-    await wait(1500);
-    expect(finish).toHaveBeenCalledTimes(1);
+    expect(finish).toHaveBeenCalledOnce();
   });
 
   it('drukken terwijl de microfoon aangaat doet niets', async () => {

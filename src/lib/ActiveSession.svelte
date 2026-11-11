@@ -95,7 +95,11 @@
       lookup = currentPosition();
       // Lukte de service bij de start nog niet (geen locatietoestemming), dan nu
       syncWalkService(session.id);
-      if (!(await startRecording())) return false;
+      if (!(await startRecording())) {
+        // Niet stil mislukken: wie niet naar het scherm kijkt, denkt anders dat hij opneemt
+        if (recorder.failed) vibrate('failed');
+        return false;
+      }
       vibrate('recording');
       maxTimer = setTimeout(finishRecording, MAX_RECORDING_MS);
       return true;
@@ -339,8 +343,10 @@
         {recorder.status === 'recording' ? `Stop · ${Math.floor(elapsed / 1000)} s` : 'Inspreken'}
       </span>
     </button>
-    <p class="mic {recorder.status}">
-      {micLabels[recorder.status]}
+    <p class="mic {recorder.status}" class:failed={recorder.failed && recorder.status === 'idle'}>
+      {recorder.failed && recorder.status === 'idle'
+        ? 'De microfoon ging niet aan. Tik nog eens.'
+        : micLabels[recorder.status]}
     </p>
   {/if}
 </div>
@@ -381,6 +387,7 @@
   .gps.denied,
   .gps.unavailable,
   .mic.denied,
+  .mic.failed,
   .mic.unsupported {
     color: var(--red);
   }
