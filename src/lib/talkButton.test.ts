@@ -150,4 +150,24 @@ describe('opnameknop', () => {
     expect(finish).not.toHaveBeenCalled();
     expect(status()).toBe('recording');
   });
+
+  it('volumeknop: een druk start, een volgende stopt, ook als de microfoon traag is', async () => {
+    const { talk, finish, status } = setup(1000);
+    talk.tap();
+    await wait(5000);
+    expect(status()).toBe('recording');
+    talk.tap();
+    expect(finish).toHaveBeenCalledOnce();
+    expect(status()).toBe('idle');
+  });
+
+  it('volumeknop: twee drukken vlak na elkaar tellen als één', async () => {
+    const { talk, finish, status } = setup();
+    talk.tap();
+    await wait(100);
+    talk.tap();
+    await wait(2000);
+    expect(status()).toBe('recording');
+    expect(finish).not.toHaveBeenCalled();
+  });
 });

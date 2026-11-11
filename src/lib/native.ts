@@ -1,4 +1,4 @@
-import { Capacitor, registerPlugin } from '@capacitor/core';
+import { Capacitor, registerPlugin, type PluginListenerHandle } from '@capacitor/core';
 
 // Het enige bestand dat weet of de app in de Android-app draait (Capacitor) of
 // in de browser. Elke native functie heeft een terugval op de web-API, zodat
@@ -143,4 +143,39 @@ export async function playIntegrityToken(
   } catch {
     return undefined;
   }
+}
+
+interface KnopPlugin {
+  aan(): Promise<void>;
+  uit(): Promise<void>;
+  addListener(
+    event: 'druk',
+    listener: (data: { toets: string }) => void,
+  ): Promise<PluginListenerHandle>;
+}
+
+const Knop = registerPlugin<KnopPlugin>('Knop');
+
+/** Kan deze app de volumeknop opvangen? Niet in de browser en niet in een app van vóór KnopPlugin.java */
+export const volumeKeySupported = isNativeApp && Capacitor.isPluginAvailable('Knop');
+
+/**
+ * De volumeknoppen als inspreekknop (KnopPlugin.java): zolang dit loopt,
+ * verandert de volumeknop het volume niet maar roept hij `onPress` aan.
+ * Geeft een functie terug die het weer uitzet.
+ */
+export function listenVolumeKey(onPress: (key: string) => void): () => void {
+  if (!volumeKeySupported) return () => {};
+  let handle: PluginListenerHandle | undefined;
+  let stopped = false;
+  Knop.addListener('druk', ({ toets }) => onPress(toets)).then((h) => {
+    if (stopped) h.remove();
+    else handle = h;
+  });
+  Knop.aan().catch(() => {});
+  return () => {
+    stopped = true;
+    handle?.remove();
+    Knop.uit().catch(() => {});
+  };
 }
