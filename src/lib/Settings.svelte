@@ -10,13 +10,14 @@
     setDisplayName,
   } from './api';
   import { APP_VERSION, CHANNEL } from './log';
-  import { nativeAppVersion, volumeKeySupported } from './native';
+  import { nativeAppVersion, shortcutSupported, volumeKeySupported } from './native';
   import BackupSettings from './BackupSettings.svelte';
   import RecordingSettings from './RecordingSettings.svelte';
   import ShareSettings from './ShareSettings.svelte';
   import PreferenceSettings from './PreferenceSettings.svelte';
   import TrektelSettings from './TrektelSettings.svelte';
   import VolumeKeySettings from './VolumeKeySettings.svelte';
+  import QuickStartSettings from './QuickStartSettings.svelte';
   import DevSettings from './DevSettings.svelte';
 
   let code = $state(getAccessCode());
@@ -110,6 +111,10 @@
 
 {#if volumeKeySupported}
   <VolumeKeySettings />
+{/if}
+
+{#if shortcutSupported}
+  <QuickStartSettings />
 {/if}
 
 {#if isOwner}
