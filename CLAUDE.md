@@ -105,6 +105,7 @@ De zeven bouwstappen van de MVP zijn klaar: projectopzet, proxy, interpretatie m
 ## Werkafspraken
 
 - Werk in kleine stappen: één feature per branch en pull request, met een duidelijke beschrijving.
+- Changelog: elke PR die voor gebruikers iets zichtbaars verandert, zet bovenaan `src/lib/changelog.ts` een regel in gewone taal (pagina `#nieuw`, "Wat is er nieuw?", gelinkt bij Instellingen en vanuit de melding "Bijgewerkt naar versie …" na een update, `src/lib/UpdateStatus.svelte`). Geen ontwikkelopties of schermen van de eigenaar.
 - De eigenaar programmeert zelf weinig maar heeft een front-end-achtergrond (JavaScript): leg keuzes kort uit in de PR-beschrijving.
 - Houd dit bestand actueel wanneer ontwerpkeuzes veranderen.
 - Tests: `npm test` (Vitest, `src/**/*.test.ts` en `worker/index.test.ts`), met een database in het geheugen (fake-indexeddb), een nagebootst model en voor de proxy een nep-KV en nagebootste `fetch`; nooit echte API-aanroepen. Bij elke PR draaien de opmaakcheck, `check`, de tests, een proefbuild en `npm audit --omit=dev` in GitHub Actions (`.github/workflows/check.yml`). Nieuwe logica in de wachtrij, de validatie van het model, de export of de proxy krijgt een test.
