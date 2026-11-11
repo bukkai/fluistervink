@@ -91,9 +91,18 @@ Nog te doen:
 Brainstorm (nov 2026): inspanning vastleggen, kilometerhokken als spel, een Telegram-bot, "Ik zag een merel". Besloten: alleen de inspanning met export naar eBird nu in Fluistervink (de eigenaar en een paar mensen in zijn omgeving gebruiken eBird); de rest zijn losse projecten, eerst overleggen (het spel en de merel-app botsen met "geen accounts"; de merel-app pas na contact met Sovon/DWHC; een gedeeld kernpakket pas als er echt een tweede app komt).
 
 - Plan: `docs/plan-ebird.md` (goedgekeurd 11 nov): drempels 50 m (Stationary en onnauwkeurige metingen), onzekere waarnemingen gaan mee met een waarschuwing, de vraag "Heb je alles genoteerd?" alleen voor wie eBird gebruikt.
-- **Fase 1: PR #212** (open): duur zonder pauzes en afgelegde afstand als kilometerteller (geen route, `src/lib/effort.ts`), ontwikkeloptie "eBird: duur en afstand bij het nalopen". Getest met nagebootste GPS. **Na het mergen:** ontwikkeloptie aan, een wandeling en een fietstocht naast Strava of Komoot; telling van overgeslagen metingen in het log (`distance_fixes`).
+- **Fase 1: PR #212** (gemerged 11 nov): duur zonder pauzes en afgelegde afstand als kilometerteller (geen route, `src/lib/effort.ts`), ontwikkeloptie "eBird: duur en afstand bij het nalopen". Getest met nagebootste GPS. **Na het mergen:** ontwikkeloptie aan, een wandeling en een fietstocht naast Strava of Komoot; telling van overgeslagen metingen in het log (`distance_fixes`).
 - Nagegaan: de bulkimport van waarneming.nl kent geen inspanning (`docs/waarneming-nl.md`).
 - **Fase 2** (export naar eBird) pas na die veldtest. Vóór de bouw: kolomvolgorde tegen de sjabloon van eBird, en of het uploadveld van eBird in de Android-app een .csv neemt.
+
+## Licentie (11 nov)
+
+**PR #213** (gemerged): Fluistervink staat nu onder **AGPL-3.0-only**; versies tot en met `8dbc86f` blijven MIT. Reden: de eigenaar wil de code zelf ook onder andere voorwaarden kunnen gebruiken (dubbele licentie), maar een ander mag er geen gesloten kloon van maken, ook niet als dienst. Dat kan alleen zolang de eigenaar de enige auteur is: `CONTRIBUTING.md` zegt dat pull requests met code niet gemerged worden (ideeën als issue, die bouwt de eigenaar zelf opnieuw), en `CLAUDE.md` heeft een werkafspraak om nooit code van anderen over te nemen. Dependabot-updates mogen wel.
+
+## Twijfel en aantallen (12 nov)
+
+- **Twijfel tussen soorten: PR #214** (gemerged 12 nov, ontwikkeloptie "Twijfel tussen soorten"): "fitis of tjiftjaf" wordt de verzamelsoort ("Tjiftjaf of Fitis", anders de waarschijnlijkste) met de kandidaten erbij; bij Onzeker nalopen kies je met één tik. Eigen promptvariant, de testers houden de oude prompt (`140d4832`). **Na het mergen:** optie aan, een paar wandelingen, en `npm run testset -- <export> --kandidaten` naast een gewone run (een verzamelsoort telt daar als fout; kijk of er geen twijfel bijkomt waar het model eerst goed zat). Daarna beslissen of hij voor iedereen aangaat.
+- **Bereik als schatting: PR #215** (gemerged 12 nov, voor iedereen, alleen de prompt, versie `0d423ac8`): "tussen de vijftig en honderd" wordt 75 als schatting met "50-100" als opmerking; "enkele tientallen" ≈ 30, "honderden" ≈ 300, "duizenden" ≈ 3000, met de eigen woorden als opmerking. Nog niet gemeten: na een wandeling met grote groepen nagaan of het model het doet.
 
 ## Roadmap naar v1.0 (13 okt)
 
@@ -154,6 +163,8 @@ Nog niet gepland; eerst overleggen.
   - OAuth: `/api/v1/oauth2/authorize/` en `/api/v1/oauth2/token/` (authorization code of password grant, met client-ID en secret). Testomgeving: `waarneming-test.nl`.
   - Eerst een client-ID aanvragen via het contactformulier (concept in de sessie van 13 okt: app, nalopen vóór inzenden, vaste soortenlijst, 88% goed; vragen: inlogmethode, client secret, testaccount op waarneming-test.nl, `create/` met `external_id` en welke scope, redirect-URL). Daarna: account koppelen bij Instellingen, route `/api/waarneming` in de proxy (CORS, secret), knop "Inzenden" voor de klaarstaande wandelingen, ID/link van waarneming.nl bewaren, `#privacy` en `#uitleg` bijwerken.
 - Foto koppelen aan een waarneming via tijd en locatie.
+- **Weer bij een sessie** (12 nov): automatisch ophalen bij start en stop (temperatuur, wind, bewolking, neerslag). trektellen.nl vraagt het bij een telling, en het past bij de inspanning voor eBird. Nieuwe externe bron, dus ook `#privacy` en de CSP.
+- **Niets verloren laten gaan** (12 nov): een uitspraak waarin het model geen waarneming vond, staat nu alleen in het log. Bij het nalopen zichtbaar maken met transcript en opname, zodat je een half verstane soort nog kunt redden.
 - **App in het Engels, voor een internationaal publiek** (idee eigenaar, 11 nov). Exporteren naar observation.org, eBird en iNaturalist.
   - *Teksten:* alle schermen, `#uitleg`, `#privacy`, changelog en de Play-vermelding vertalen. Een eenvoudig woordenboek per taal (bv. `src/lib/i18n.ts`) is genoeg; taal volgt de telefoon, met een keuze bij Instellingen.
   - *Inspreken:* `gpt-transcribe` kan Engels; de STT-prompt krijgt Engelse soortnamen. Het model krijgt de soortenlijst met Engelse namen en een Engelse systeemprompt (aparte promptversie, met de testset nagaan; er is nog geen Engelse testset: eerst een paar Engelstalige sprekers zoeken). Engelse bijnamen en jargon ("BOP", "LBJ", "sprawk") in een eigen bestand naast `data/bijnamen.json`. Gedrag en methode in het Engels: de Engelse namen van waarneming.nl hebben we al (`en` in `data/attributen-vogels.json`).
