@@ -55,6 +55,12 @@
     },
     "xcode": {
       "uuid": "^11.1.1"
+    },
+    "workbox-build": {
+      "glob": "^14.0.5"
+    },
+    "rimraf": {
+      "glob": "^14.0.5"
     }
   }
 }
