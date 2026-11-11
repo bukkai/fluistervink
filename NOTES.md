@@ -64,6 +64,7 @@ Gebouwd en gemerged op 11 nov:
 - #198 Voor iedereen (11 nov): zeldzame soort onzeker, samenvatting en exportherinnering bij Instellingen → "Nalopen en export" (standaard aan, `src/lib/preferences.ts`); trektelpauze en snelkoppeling zonder keuze. Getypte losse feedback gaat meteen weg. Ontwikkelopties nog: stem, voorbeeldzin, "Wat zei ik?".
 - #199 Tegel "Begin met vogelen" in de snelle instellingen (native `BeginTegel.java`), toevoegen via Instellingen → "Snel beginnen".
 - #200 Update zichtbaar (geen native code): onderin "Nieuwe versie laden…" terwijl de service worker installeert (niet bij de eerste installatie, niet tijdens een sessie), na het herladen tien seconden "Bijgewerkt naar versie <commit>" (laatste versie in localStorage). Changelog op `#nieuw` ("Wat is er nieuw?", link bij Instellingen onder de versie), met de hand in `src/lib/changelog.ts`; afspraak in `CLAUDE.md`: elke PR met iets zichtbaars zet er een regel bij. Het laadbalkje is nog niet echt gezien (de browser van Claude draait geen service workers): bij de volgende deploy de app afsluiten en openen.
+- #201 (open) "Laatst verstaan" na de feedback van 11 nov (18:10, 18:16; die stonden al als verwerkt, maar er was nog niets mee gedaan): tijdens het afspelen regelt de volumeknop het volume (vlag `playback.playing`, `src/lib/playback.svelte.ts`); het kaartje is één regel in de vaste balk boven de inspreekknop, tik op de tekst voor het hele transcript. Geen native code. Volumeknop nog op de telefoon proberen.
 
 Nog te doen:
 
