@@ -27,6 +27,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026-11-12',
+    topics: {
+      Inspreken: [
+        'Een bereik als "tussen de vijftig en honderd" of "enkele honderden" wordt een schatting (75, of 300), met je eigen woorden als opmerking voor waarneming.nl.',
+      ],
+    },
+  },
+  {
     date: '2026-11-11',
     topics: {
       Inspreken: ['De eerste opname na de vraag om de microfoon is niet meer leeg.'],
