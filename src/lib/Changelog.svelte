@@ -1,6 +1,6 @@
 <script lang="ts">
   // Wat is er nieuw? De lijst staat in changelog.ts.
-  import { CHANGELOG } from './changelog';
+  import { CHANGELOG, TOPICS } from './changelog';
   import { APP_VERSION } from './log';
 
   const dateFormat = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'long' });
@@ -15,11 +15,14 @@
   <section class="card">
     <div class="card-body">
       <h3>{formatDate(entry.date)}</h3>
-      <ul>
-        {#each entry.items as item, i (i)}
-          <li>{item}</li>
-        {/each}
-      </ul>
+      {#each TOPICS.filter((topic) => entry.topics[topic]?.length) as topic (topic)}
+        <h4>{topic}</h4>
+        <ul>
+          {#each entry.topics[topic] ?? [] as item, i (i)}
+            <li>{item}</li>
+          {/each}
+        </ul>
+      {/each}
     </div>
   </section>
 {/each}
@@ -30,6 +33,19 @@
   h3 {
     margin: 0 0 0.5rem;
     font-size: 1rem;
+  }
+
+  h4 {
+    margin: 0.85rem 0 0.35rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  h3 + h4 {
+    margin-top: 0;
   }
 
   ul {
