@@ -32,6 +32,9 @@ export const CHANGELOG: ChangelogEntry[] = [
       Inspreken: [
         'Een bereik als "tussen de vijftig en honderd" of "enkele honderden" wordt een schatting (75, of 300), met je eigen woorden als opmerking voor waarneming.nl.',
       ],
+      Nalopen: [
+        'De samenvatting van een sessie noemt niet meer welke soorten nieuw zijn dit jaar: de app is er niet om soorten te verzamelen, dat doet waarneming.nl.',
+      ],
     },
   },
   {
