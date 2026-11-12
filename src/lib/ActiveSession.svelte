@@ -3,21 +3,18 @@
   import { nameFromStart } from './area';
   import type { PositionLookup, Session } from './db';
   import { vibrate } from './feedback';
-  import { devOptionOn } from './devOptions';
   import { logEvent } from './log';
   import { listenVolumeKey, volumeKeySupported } from './native';
   import { recordFix } from './effort';
   import { currentPosition, gps, startTracking, stopTracking } from './location.svelte';
   import { onAudioLimit, submitRecording, submitText } from './observations';
   import { recorder, startRecording, stopRecording } from './recorder.svelte';
-  import LastUtterance from './LastUtterance.svelte';
   import SessionLog from './SessionLog.svelte';
   import { syncWalkService } from './walkService';
   import { createTalkButton } from './talkButton';
   import { trektelEnabled } from './trektel';
   import { startTrektel, stopTrektel, trektel, trektelSupported } from './trektelRecorder.svelte';
   import { volumeKeyEnabled } from './volumeKey';
-  import { playback } from './playback.svelte';
 
   let { session }: { session: Session } = $props();
 
@@ -135,10 +132,9 @@
 
   // Volumeknop als inspreekknop (Android-app, instelling): elke druk is een
   // tik op de knop. Niet tijdens een trektelling: die heeft een eigen knop.
-  // Ook niet zolang "Laatst verstaan" afspeelt: dan regelt hij het volume.
   const volumeKeyOn = volumeKeySupported && volumeKeyEnabled();
   $effect(() => {
-    if (!volumeKeyOn || trektel.status !== 'idle' || playback.playing) return;
+    if (!volumeKeyOn || trektel.status !== 'idle') return;
     return listenVolumeKey((key) => {
       logEvent('talk_volume_key', { key, status: recorder.status }, { sessionId: session.id });
       talk.tap();
@@ -325,11 +321,6 @@
   class:hidden={typing && recorder.status !== 'recording'}
   bind:clientHeight={barHeight}
 >
-  <!-- "Wat zei ik?" hier, als één regel boven de knop: bovenaan de lijst nam
-       het zoveel ruimte dat er maar één waarneming zichtbaar bleef -->
-  {#if devOptionOn('watZeiIk')}
-    <LastUtterance sessionId={session.id} />
-  {/if}
   <!-- Ook tijdens een pauze en het weer aanzetten van de microfoon (startedAt staat dan) -->
   {#if trektel.startedAt !== undefined}
     <button class="talk recording" onclick={endTrektel}>
@@ -452,7 +443,8 @@
     z-index: 10;
     display: grid;
     justify-items: center;
-    padding: 1.25rem 1rem calc(0.25rem + env(safe-area-inset-bottom));
+    /* Onderaan ruimte voor de gloed van de opnamepuls (14 px, feedback 12 nov) */
+    padding: 1.25rem 1rem calc(1rem + env(safe-area-inset-bottom));
     /* De lijst schuift er zichtbaar onderdoor */
     background: linear-gradient(transparent, var(--bg) 1.25rem);
     pointer-events: none;
