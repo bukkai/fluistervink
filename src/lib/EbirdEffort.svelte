@@ -159,8 +159,9 @@
         Beantwoord eerst de vraag hierboven.
       {/if}
       Importeer het bestand bij
-      <a href={EBIRD_IMPORT_URL} target="_blank" rel="noopener">eBird</a> als "eBird Record Format". Soorten
-      die eBird niet herkent, kies je daar zelf.
+      <a href={EBIRD_IMPORT_URL} target="_blank" rel="noopener">eBird</a> en kies daar bij Format "eBird
+      Record Format (Extended)": eBird zet zelf het andere formaat aan, en dan mislukt de import met "Missing
+      location name". Soorten die eBird niet herkent, kies je daar zelf.
     </p>
   </div>
 </section>
