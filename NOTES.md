@@ -93,7 +93,7 @@ Brainstorm (nov 2026): inspanning vastleggen, kilometerhokken als spel, een Tele
 - Plan: `docs/plan-ebird.md` (goedgekeurd 11 nov): drempels 50 m (Stationary en onnauwkeurige metingen), onzekere waarnemingen gaan mee met een waarschuwing, de vraag "Heb je alles genoteerd?" alleen voor wie eBird gebruikt.
 - **Fase 1: PR #212** (gemerged 11 nov): duur zonder pauzes en afgelegde afstand als kilometerteller (geen route, `src/lib/effort.ts`), ontwikkeloptie "eBird: duur en afstand bij het nalopen". Getest met nagebootste GPS. **Na het mergen:** ontwikkeloptie aan, een wandeling en een fietstocht naast Strava of Komoot; telling van overgeslagen metingen in het log (`distance_fixes`).
 - Nagegaan: de bulkimport van waarneming.nl kent geen inspanning (`docs/waarneming-nl.md`).
-- **Fase 2** (export naar eBird) pas na die veldtest. Vóór de bouw: kolomvolgorde tegen de sjabloon van eBird, en of het uploadveld van eBird in de Android-app een .csv neemt.
+- **Fase 2, deel 1: PR #220** (12 nov, ontwikkeloptie "eBird"): het eBird-kaartje bij het nalopen is invulbaar (soort telling, afstand, waarnemers, alles genoteerd) en exporteert de sessie als eBird Record Format, één regel per soort met de wetenschappelijke naam. Kolomvolgorde nagekeken tegen bijlage A en het voorbeeldbestand van eBird. Antwoorden in een eigen veld `checklist` (niet in `effort`); oude sessies zonder afstand worden Incidental. **Na het mergen:** een eigen sessie echt importeren bij eBird (noteren welke soorten "Fix Species" nodig hadden) en in de Android-app nagaan of het uploadveld de .csv neemt. Daarna beslissen over deel 2 (soortnamen van eBird) en fase 3 (vraag bij het stoppen, voor iedereen).
 
 ## Licentie (11 nov)
 
