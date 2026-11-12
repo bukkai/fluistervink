@@ -131,7 +131,7 @@ Geen standaardantwoord ("ik noteer meestal alles"). eBird leidt uit dat veld af 
    - **Deel 2, soortnamen van eBird** (punt 5): pas als blijkt hoe vaak "Fix Species" nodig is bij een echte import. Bekende gevallen: verzamelsoorten ("Anatinae indet."), *Nannus troglodytes* (eBird: *Troglodytes troglodytes*), Stadsduif.
    - Echte import (12 nov): twee sessies van de eigenaar geïmporteerd. Bij eBird moet je zelf "eBird Record Format (Extended)" kiezen; met het voorgekozen "Checklist Format (Grid)" mislukt het met "Missing location name detected in first row". De uitleg onder de knop zegt dat nu (#225).
    - Nog te doen na deel 1: noteren welke soorten "Fix Species" nodig hadden, en in de Android-app nagaan of het uploadveld van eBird de .csv neemt. Export van alle sessies tegelijk (scherm Sessies): zie punt 8.
-3. **Voor iedereen** (punt 7 en 8): de instelling "Ik gebruik eBird" bij Instellingen onder "Nalopen en export" (standaard uit), uitleg, privacy, een regel in de changelog. Daarna testers uit de eigen omgeving die eBird gebruiken.
+3. **Voor iedereen** (punt 7 en 8; de eerste PR gebouwd op 12 nov: de instelling, de vraag na Stop en bij het klaarzetten, uitleg, privacy en changelog; de knop op het scherm Sessies met de status per doel volgt): de instelling "Ik gebruik eBird" bij Instellingen onder "Nalopen en export" (standaard uit), uitleg, privacy, een regel in de changelog. Daarna testers uit de eigen omgeving die eBird gebruiken.
 
 Elke fase is één PR, behalve fase 2 en 3 (elk twee).
 

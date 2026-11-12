@@ -5,7 +5,7 @@
   import { renameSession } from './area';
   import { countSpecies, listObservations } from './observations';
   import { deleteSessions, formatDuration, resumeSession } from './sessions';
-  import { devOptionOn } from './devOptions';
+  import ChecklistAnswers from './ChecklistAnswers.svelte';
   import EbirdEffort from './EbirdEffort.svelte';
   import { sessionDurationMs } from './effort';
   import { confirmDeleteText, countRecordings, deleteRecordings } from './recordings';
@@ -68,6 +68,28 @@
     if (name !== null) await renameSession(session.id, name);
   }
 
+  // Voor wie eBird gebruikt: de vraag "alles genoteerd?" meteen na Stop, en nog
+  // één keer bij het klaarzetten als hij dan nog open is (docs/plan-ebird.md,
+  // punt 8). Wegtikken mag; het eBird-kaartje blijft de plek om het aan te passen.
+  const ebird = preferenceOn('ebird');
+  /** Net op "Alles klopt" getikt: de vraag staat dan bij die knop, niet bovenaan */
+  let askedAtReady = $state(false);
+  let dismissed = $state(false);
+  /** Hier beantwoord: de vraag blijft staan voor het aantal waarnemers, tot "Klaar" */
+  let answered = $state(false);
+  let asking = $derived(
+    ebird &&
+      !dismissed &&
+      (justSaved || askedAtReady) &&
+      !!$observations?.length &&
+      (answered || session.checklist?.complete === undefined),
+  );
+
+  function closeQuestion() {
+    dismissed = true;
+    answered = false;
+  }
+
   /** Uitkomst van de laatste export, om onder de knop te tonen */
   let exportResult = $state<string>();
 
@@ -84,6 +106,9 @@
     )
       return;
     await approveSession(session.id);
+    askedAtReady = true;
+    dismissed = false;
+    answered = false;
   }
 
   async function exportOnlyThis() {
@@ -92,6 +117,18 @@
 
   const dateFormat = new Intl.DateTimeFormat('nl-NL', { dateStyle: 'full' });
 </script>
+
+{#snippet checklistQuestion()}
+  <section class="card question" aria-label="Vraag voor eBird">
+    <div class="card-head"><h2>Voor eBird</h2></div>
+    <div class="card-body">
+      <ChecklistAnswers {session} onanswer={() => (answered = true)} />
+      <button class="btn secondary block" onclick={closeQuestion}
+        >{answered ? 'Klaar' : 'Nu niet'}</button
+      >
+    </div>
+  </section>
+{/snippet}
 
 <a class="back" href="#sessies">Sessies</a>
 
@@ -103,6 +140,10 @@
       waarneming.nl.
     </p>
   </div>
+{/if}
+
+{#if asking && !askedAtReady}
+  {@render checklistQuestion()}
 {/if}
 
 <header>
@@ -149,7 +190,7 @@
   </dl>
 {/if}
 
-{#if devOptionOn('ebird')}
+{#if ebird}
   <EbirdEffort {session} />
 {/if}
 
@@ -220,6 +261,10 @@
   </div>
 </section>
 
+{#if asking && askedAtReady}
+  {@render checklistQuestion()}
+{/if}
+
 <!-- Knoppen in plaats van linkjes: ook met dikke vingers of handschoenen te raken -->
 <div class="footer actions">
   {#if resumable}
@@ -253,6 +298,10 @@
   .saved p {
     margin: 0.25rem 0 0;
     font-size: 0.9rem;
+  }
+
+  .question .btn {
+    min-height: 3rem;
   }
 
   header {

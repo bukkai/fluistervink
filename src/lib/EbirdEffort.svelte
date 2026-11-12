@@ -1,9 +1,10 @@
 <script lang="ts">
   import { dateYearTimeFormat } from './format';
   // Een sessie als eBird-checklist: inspanning nakijken, aanvullen wat de app
-  // niet kan weten, en exporteren (ontwikkeloptie 'ebird', docs/plan-ebird.md,
-  // fase 2). Wijzigingen gaan meteen naar de database (`setChecklist`).
+  // niet kan weten, en exporteren (instelling "Ik gebruik eBird",
+  // docs/plan-ebird.md). Wijzigingen gaan meteen naar de database (`setChecklist`).
   import type { EbirdProtocol, Session } from './db';
+  import ChecklistAnswers from './ChecklistAnswers.svelte';
   import { ebirdProtocol } from './effort';
   import { EBIRD_IMPORT_URL, exportForEbird, resolveChecklist, setChecklist } from './ebirdExport';
 
@@ -107,42 +108,7 @@
       </div>
     {/if}
 
-    <div class="field">
-      <span class="label" id="observers-label">Aantal waarnemers</span>
-      <div class="stepper" role="group" aria-labelledby="observers-label">
-        <button
-          class="btn secondary"
-          aria-label="Eén minder"
-          disabled={checklist.observers <= 1}
-          onclick={() => setChecklist(session.id, { observers: checklist.observers - 1 })}>−</button
-        >
-        <output aria-live="polite">{checklist.observers}</output>
-        <button
-          class="btn secondary"
-          aria-label="Eén meer"
-          onclick={() => setChecklist(session.id, { observers: checklist.observers + 1 })}>+</button
-        >
-      </div>
-    </div>
-
-    <div class="field">
-      <span class="label" id="complete-label">Heb je alles genoteerd wat je kon herkennen?</span>
-      <div class="choice" role="group" aria-labelledby="complete-label">
-        <button
-          class="btn secondary"
-          aria-pressed={checklist.complete === true}
-          onclick={() => setChecklist(session.id, { complete: true })}>Ja</button
-        >
-        <button
-          class="btn secondary"
-          aria-pressed={checklist.complete === false}
-          onclick={() => setChecklist(session.id, { complete: false })}>Nee</button
-        >
-      </div>
-      <span class="muted small">
-        Dat betekent niet dat je elke vogel telde, wel dat je geen soort bewust wegliet.
-      </span>
-    </div>
+    <ChecklistAnswers {session} />
 
     {#if exportResult}
       <p role="status">{exportResult}</p>
@@ -201,39 +167,6 @@
 
   a {
     color: var(--brand-strong);
-  }
-
-  /* Knoppen van 48 px: ook met handschoenen te raken */
-  .stepper,
-  .choice {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-  }
-
-  .stepper .btn,
-  .choice .btn {
-    min-width: 3rem;
-    min-height: 3rem;
-    font-size: 1.1rem;
-  }
-
-  .choice .btn {
-    flex: 1;
-  }
-
-  .choice .btn[aria-pressed='true'] {
-    color: var(--on-brand);
-    background: var(--brand);
-    box-shadow: none;
-  }
-
-  output {
-    min-width: 2rem;
-    font-size: 1.2rem;
-    font-weight: 600;
-    text-align: center;
-    font-variant-numeric: tabular-nums;
   }
 
   .badge {

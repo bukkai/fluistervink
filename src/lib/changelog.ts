@@ -29,6 +29,9 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     date: '2026-11-12',
     topics: {
+      Export: [
+        'Gebruik je eBird? Zet bij Instellingen "Ik gebruik eBird" aan. Na het stoppen vraagt de app of je alles hebt genoteerd, en bij een sessie staat een kaartje waarmee je hem als checklist voor eBird exporteert, met duur en afstand.',
+      ],
       Trektelling: [
         'Geen "niet begrepen"-tril meer als je op Stop drukt en het laatste stuk leeg is. Onder de stopknop staat niet meer "eerste stuk na 1 minuut".',
       ],
