@@ -96,7 +96,7 @@ Claude (in PR's):
 - `CLAUDE.md`: onder Platform iOS naast Android, en dat `native.ts` ook Swift-plugins heeft.
 - `README.md`: iOS bouwen en op de eigen iPhone zetten.
 - `docs/plan-capacitor.md` en `docs/google-play.md`: "iPhone-testers houden de PWA" bijwerken zodra er een TestFlight-link is.
-- `NOTES.md`: verwijzen naar dit plan.
+- `NOTES.md` en `docs/README.md`: verwijzen naar dit plan.
 
 ## Bronnen (nagezocht 11 nov 2026)
 

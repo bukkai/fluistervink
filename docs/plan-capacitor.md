@@ -1,6 +1,6 @@
 # Plan: de native laag (Capacitor)
 
-Goedgekeurd op 13 okt 2026: live laden, app-ID `nl.hegmus.fluistervink`, verspreiden via de interne test van Google Play. Telefoon van de eigenaar: Android 15. Volgt op de roadmap naar v1.0 in `NOTES.md` (spoor 1) en de conclusie van `docs/mijlpaal-mvp.md`.
+Goedgekeurd op 13 okt 2026: live laden, app-ID `nl.hegmus.fluistervink`, verspreiden via de interne test van Google Play. Telefoon van de eigenaar: Android 15. Volgt op de roadmap naar v1.0 (nu `docs/roadmap.md`) (spoor 1) en de conclusie van `docs/archief/mijlpaal-mvp.md`.
 
 ## Doel
 

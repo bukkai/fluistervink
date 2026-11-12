@@ -7,7 +7,7 @@ description: Bekijkt Fluistervink door de ogen van een vogelaar in het veld — 
 
 Fluistervink wordt gebruikt tijdens het vogelen: de telefoon in één hand, een verrekijker in de andere, vaak buiten in de zon of de kou, op plekken met slecht bereik. Wat op een bureau prima werkt, kan daar mislukken: een knop die net te klein is voor een duim met handschoen, een grijs label dat in de zon wegvalt, een uitspraak die stil verdwijnt als het netwerk hapert. Deze review zoekt zulke problemen vóór de volgende sessie, en lost de duidelijke gevallen meteen op.
 
-Lees eerst `CLAUDE.md` (werkwijze, MVP-scope, vormgeving) en `NOTES.md` (recente bevindingen uit het veld). Wat testers al gemeld hebben weegt zwaarder dan wat je zelf bedenkt.
+Lees eerst `CLAUDE.md` (werkwijze, MVP-scope, vormgeving) en `NOTES.md` (wat nu speelt; oudere bevindingen uit het veld in `docs/archief/`). Wat testers al gemeld hebben weegt zwaarder dan wat je zelf bedenkt.
 
 ## De vier veldomstandigheden
 

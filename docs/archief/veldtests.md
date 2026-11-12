@@ -1,6 +1,6 @@
 # Veldtests en bevindingen (archief)
 
-Bevindingen uit de proeven en wandelingen van 9–12 okt 2026, verplaatst uit `NOTES.md`. Alles wat hier als probleem of voorstel staat, is verwerkt in de genoemde PR's, tenzij `NOTES.md` het nog als open punt noemt. De beoordeling van de mijlpaal staat in `docs/mijlpaal-mvp.md`.
+Bevindingen uit de proeven en wandelingen van 9–12 okt 2026, verplaatst uit `NOTES.md`. Alles wat hier als probleem of voorstel staat, is verwerkt in de genoemde PR's, tenzij `NOTES.md` het nog als open punt noemt. De beoordeling van de mijlpaal staat in `docs/archief/mijlpaal-mvp.md`.
 
 ## Proefwandeling 11 okt, avond (versie e4fe837)
 

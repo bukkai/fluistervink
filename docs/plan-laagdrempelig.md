@@ -1,6 +1,6 @@
 # Plan: de app gebruiken zonder toegangscode
 
-Voorstel van 28 okt 2026, dezelfde dag goedgekeurd met deze keuzes: de eigenaar betaalt voorlopig alles; plafond en daglimiet stelt hij in bij de consoles van OpenAI en Anthropic (fase 1 en de daglimiet per installatie vervallen dus; de snelheidslimiet per installatie blijft); ook de PWA zonder code; openbaar in Play pas na genoeg testen. Fase 2 tot 4 gebouwd in één PR. Volgt op het besluit van 13 okt in `NOTES.md` (roadmap naar v1.0): v1.0 voorlopig voor een besloten kring met toegangscodes; openbaar pas als duidelijk is wie de API-kosten betaalt en hoe misbruik wordt afgevangen. Dit plan werkt dat tweede deel uit.
+Voorstel van 28 okt 2026, dezelfde dag goedgekeurd met deze keuzes: de eigenaar betaalt voorlopig alles; plafond en daglimiet stelt hij in bij de consoles van OpenAI en Anthropic (fase 1 en de daglimiet per installatie vervallen dus; de snelheidslimiet per installatie blijft); ook de PWA zonder code; openbaar in Play pas na genoeg testen. Fase 2 tot 4 gebouwd in één PR. Volgt op het besluit van 13 okt (roadmap naar v1.0, nu `docs/roadmap.md`; origineel in `docs/archief/werklog-2026.md`): v1.0 voorlopig voor een besloten kring met toegangscodes; openbaar pas als duidelijk is wie de API-kosten betaalt en hoe misbruik wordt afgevangen. Dit plan werkt dat tweede deel uit.
 
 ## Doel
 

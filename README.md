@@ -1,6 +1,14 @@
 # Fluistervink
 
-Spraakgestuurde vogelwaarnemingen. Zie `CLAUDE.md` voor het ontwerp en `NOTES.md` voor de stand van zaken.
+Spraakgestuurde vogelwaarnemingen. Tijdens het vogelen druk je op een knop en spreek je in wat je ziet of hoort ("zes overvliegende houtduiven", "roepje vink"). De app legt tijd en plek vast, maakt er een waarneming van en bevestigt met een tril, zodat je niet naar het scherm hoeft te kijken. Thuis loop je de waarnemingen na en exporteer je ze naar [waarneming.nl](https://waarneming.nl).
+
+Fluistervink is een Android-app (in test in Google Play) en werkt ook in de browser op [fluistervink.nl](https://fluistervink.nl). Hoe het werkt en wat er met je gegevens gebeurt, staat in de app onder "Hoe werkt het?" en "Privacy".
+
+## Waar staat wat
+
+- `CLAUDE.md`: het ontwerp, de vastgelegde keuzes en de werkafspraken.
+- `NOTES.md`: de stand van vandaag en wat nog moet.
+- `docs/`: roadmap, plannen en naslag; `docs/README.md` geeft een overzicht.
 
 ## Ontwikkelen
 
