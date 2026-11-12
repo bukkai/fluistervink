@@ -62,3 +62,14 @@ export function utteranceFeedback(utterance: Pick<Utterance, 'status' | 'result'
   if (utterance.result === 'uncertain') return 'uncertain';
   return 'saved';
 }
+
+/**
+ * Een trektelstuk waarin niets verstaan is (geruis, de tik op Stop): de app
+ * knipte het zelf, de gebruiker probeerde niets te zeggen. Dan geen "niet
+ * begrepen" (feedback 12 nov).
+ */
+export function isEmptyTrektelChunk(
+  utterance: Pick<Utterance, 'trektel' | 'transcript' | 'result'>,
+): boolean {
+  return !!utterance.trektel && utterance.result === 'ignored' && !utterance.transcript?.trim();
+}

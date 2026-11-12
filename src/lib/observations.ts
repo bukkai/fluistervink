@@ -12,7 +12,7 @@ import {
 } from './db';
 import { ApiError } from './api';
 import { attachArea } from './area';
-import { utteranceFeedback, vibrate } from './feedback';
+import { isEmptyTrektelChunk, utteranceFeedback, vibrate } from './feedback';
 import { confirmAloud } from './spoken';
 import { MODEL, interpret, promptVersionFor, type Action, type Interpretation } from './interpret';
 import { currentPosition } from './location.svelte';
@@ -417,7 +417,7 @@ async function runQueue(): Promise<void> {
       continue;
     }
     const processed = await db.utterances.get(next.id);
-    if (processed) {
+    if (processed && !isEmptyTrektelChunk(processed)) {
       vibrate(utteranceFeedback(processed));
       // Niet wachten: de volgende uitspraak hoeft niet op de stem te wachten
       confirmAloud(processed).catch(() => {});

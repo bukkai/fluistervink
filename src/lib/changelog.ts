@@ -29,6 +29,9 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     date: '2026-11-12',
     topics: {
+      Trektelling: [
+        'Geen "niet begrepen"-tril meer als je op Stop drukt en het laatste stuk leeg is. Onder de stopknop staat niet meer "eerste stuk na 1 minuut".',
+      ],
       Inspreken: [
         'Een bereik als "tussen de vijftig en honderd" of "enkele honderden" wordt een schatting (75, of 300), met je eigen woorden als opmerking voor waarneming.nl.',
       ],
