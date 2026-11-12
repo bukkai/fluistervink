@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { timeFormat } from './format';
   import { liveQuery } from 'dexie';
   import type { Session } from './db';
   import { renameSession } from './area';
@@ -90,7 +91,6 @@
   }
 
   const dateFormat = new Intl.DateTimeFormat('nl-NL', { dateStyle: 'full' });
-  const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
 </script>
 
 <a class="back" href="#sessies">Sessies</a>

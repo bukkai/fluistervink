@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { dayFormat, timeFormat } from './format';
   import { liveQuery } from 'dexie';
   import type { Session } from './db';
   import { countPerSession, deleteSessions, formatDuration } from './sessions';
@@ -81,13 +82,6 @@
     stopSelecting();
   }
 
-  const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
-  const dateFormat = new Intl.DateTimeFormat('nl-NL', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  });
-
   /** "1 u 5 min · 12 uitspraken · 15 waarnemingen" */
   function summary(session: Session): string {
     const c = $counts?.get(session.id);
@@ -144,7 +138,7 @@
     </section>
   {/if}
   {#if selecting}
-    <p class="muted hint">Vink de sessies aan die weg mogen.</p>
+    <p class="muted select-hint">Vink de sessies aan die weg mogen.</p>
     <p class="quick">
       <button class="link" onclick={toggleAll}>{allSelected ? 'Niets' : 'Alles'} aanvinken</button>
       {#if exportedIds.length > 0}
@@ -209,7 +203,7 @@
       {/if}
     </span>
     <span class="when">
-      {dateFormat.format(session.startedAt)}, {timeFormat.format(session.startedAt)}
+      {dayFormat.format(session.startedAt)}, {timeFormat.format(session.startedAt)}
     </span>
     <span class="muted summary">{summary(session)}</span>
   </span>
@@ -235,7 +229,7 @@
     font-size: 0.9rem;
   }
 
-  .hint {
+  .select-hint {
     margin: 0 0 0.25rem;
   }
 

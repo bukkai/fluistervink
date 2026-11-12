@@ -37,6 +37,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         'De inspreekknop staat iets hoger, zodat je de gloed tijdens het opnemen helemaal ziet.',
       ],
       Nalopen: [
+        'Een opname terugluisteren bij het nalopen of aanpassen: nog eens tikken pauzeert, en er speelt nooit meer dan één opname tegelijk.',
         'De samenvatting van een sessie noemt niet meer welke soorten nieuw zijn dit jaar: de app is er niet om soorten te verzamelen, dat doet waarneming.nl.',
       ],
     },

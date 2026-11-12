@@ -214,6 +214,31 @@ h2 {
   color: var(--muted);
 }
 
+/* Kleine toelichting onder een knop of keuze */
+.hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.error {
+  color: var(--red);
+}
+
+/* Onderdelen onder elkaar, met gelijke tussenruimte (instellingen) */
+.stack {
+  display: grid;
+  gap: 0.75rem;
+}
+
+/* Vinkje met tekst ernaast */
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
 /* Zeldzaamheid: vulkleur van de vormpjes (src/lib/rarity.ts); 0 = onbekend */
 .rarity-0 {
   fill: var(--brand);

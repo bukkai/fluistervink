@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { dateTimeFormat } from './format';
   import { liveQuery } from 'dexie';
   import {
     addTypedNote,
@@ -60,13 +61,6 @@
     copied = true;
     setTimeout(() => (copied = false), 2000);
   }
-
-  const dateTimeFormat = new Intl.DateTimeFormat('nl-NL', {
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 </script>
 
 <a class="back" href="#/">Terug</a>

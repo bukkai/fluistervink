@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { dateYearTimeFormat } from './format';
   // Back-up maken en terugzetten, voor een nieuwe telefoon of als de app weg
   // was. Zie backup.ts.
   import { onMount } from 'svelte';
@@ -54,8 +55,6 @@
     }
   }
 
-  const dateFormat = new Intl.DateTimeFormat('nl-NL', { dateStyle: 'medium', timeStyle: 'short' });
-
   function sessions(n: number): string {
     return n === 1 ? '1 sessie' : `${n} sessies`;
   }
@@ -73,7 +72,7 @@
     </p>
     <p class="hint" class:warn={status && status.sinceBackup > 0 && status.sessions > 0}>
       {#if backedUpAt}
-        Laatste back-up: {dateFormat.format(backedUpAt)}.
+        Laatste back-up: {dateYearTimeFormat.format(backedUpAt)}.
         {#if status && status.sinceBackup > 0}
           Sindsdien {sessions(status.sinceBackup)} erbij.
         {/if}
@@ -107,27 +106,12 @@
 </section>
 
 <style>
-  .stack {
-    display: grid;
-    gap: 0.75rem;
-  }
-
-  .hint {
-    margin: 0;
-    font-size: 0.85rem;
-    color: var(--muted);
-  }
-
   .warn {
     color: var(--fg);
   }
 
   .message {
     margin: 0;
-  }
-
-  .error {
-    color: var(--red);
   }
 
   .file {

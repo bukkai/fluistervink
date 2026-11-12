@@ -154,10 +154,6 @@
     height: 1.25rem;
   }
 
-  .error {
-    color: var(--red);
-  }
-
   .totals {
     margin: 0;
     display: grid;

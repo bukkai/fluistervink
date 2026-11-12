@@ -1,7 +1,9 @@
 <script lang="ts">
+  import { timeFormat } from './format';
   import { liveQuery } from 'dexie';
   import { tick, untrack } from 'svelte';
-  import { audioBlob, type Observation, type Session, type Utterance } from './db';
+  import { type Observation, type Session, type Utterance } from './db';
+  import { player } from './player.svelte';
   import { fillMissingAreas } from './area';
   import { mapsUrl } from './devNotes';
   import ObservationEditor from './ObservationEditor.svelte';
@@ -119,8 +121,6 @@
 
   const deletedByLabel = { hand: 'met de hand', voice: 'met de stem', undo: 'ongedaan gemaakt' };
 
-  const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
-
   function details(obs: Observation) {
     return [...behaviour(obs), obs.area?.name].filter(Boolean).join(' · ');
   }
@@ -164,44 +164,8 @@
     return seconds(u.metrics.finishedAt - spokenAt(u));
   }
 
-  /** De opname die nu geladen is; er speelt er hooguit één tegelijk */
-  let player: { id: string; audio: HTMLAudioElement; url: string } | undefined;
-  /** Uitspraak waarvan de opname nu speelt, voor ▶ of ⏸ op de knop */
-  let playingId = $state<string>();
-  // Met U+FE0E als tekst tonen, niet als gekleurde emoji (Android)
-  const PLAY = '▶\uFE0E';
-  const PAUSE = '⏸\uFE0E';
-
-  /** Speelt de opname af, om te horen wat er gezegd werd; nog eens tikken pauzeert. */
-  function togglePlay(u: Utterance) {
-    if (player?.id === u.id) {
-      if (player.audio.paused) player.audio.play();
-      else player.audio.pause();
-      return;
-    }
-    stopPlayer();
-    const url = URL.createObjectURL(audioBlob(u.audio!));
-    const audio = new Audio(url);
-    audio.onplay = () => (playingId = u.id);
-    audio.onpause = () => {
-      if (playingId === u.id) playingId = undefined;
-    };
-    // Afgelopen: volgende tik begint weer vooraan
-    audio.onended = stopPlayer;
-    player = { id: u.id, audio, url };
-    audio.play();
-  }
-
-  function stopPlayer() {
-    if (!player) return;
-    player.audio.pause();
-    URL.revokeObjectURL(player.url);
-    player = undefined;
-    playingId = undefined;
-  }
-
   // Stoppen bij het verlaten van de sessie
-  $effect(() => stopPlayer);
+  $effect(() => player.stop);
 
   function seconds(ms: number): string {
     return `${(ms / 1000).toLocaleString('nl-NL', { maximumFractionDigits: 1 })} s`;
@@ -395,9 +359,8 @@
             {#if u.audio}
               <button
                 class="play"
-                onclick={() => togglePlay(u)}
-                aria-label={playingId === u.id ? 'Opname pauzeren' : 'Opname afspelen'}
-                >{playingId === u.id ? PAUSE : PLAY}</button
+                onclick={() => player.toggle(u.id, u.audio!)}
+                aria-label={player.label(u.id)}>{player.symbol(u.id)}</button
               >
             {/if}
             {#if u.audioDeletedAt}

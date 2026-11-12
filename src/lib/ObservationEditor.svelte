@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { audioBlob, type Observation, type Utterance } from './db';
+  import { type Observation, type Utterance } from './db';
+  import { player } from './player.svelte';
   import LocationPicker from './LocationPicker.svelte';
   import LocationPreview from './LocationPreview.svelte';
   import { placeReason } from './spokenPlace';
@@ -123,21 +124,18 @@
     const id = await copyObservation(original.id);
     if (id) oncopy?.(id);
   }
-
-  /** Speelt de opname af waaruit deze waarneming kwam. */
-  function play() {
-    const url = URL.createObjectURL(audioBlob(utterance!.audio!));
-    const audio = new Audio(url);
-    audio.onended = () => URL.revokeObjectURL(url);
-    audio.play();
-  }
 </script>
 
 <form onsubmit={save}>
   {#if utterance?.transcript}
     <p class="source">
       {#if utterance.audio}
-        <button type="button" class="play" onclick={play} aria-label="Opname afspelen">▶</button>
+        <button
+          type="button"
+          class="play"
+          onclick={() => player.toggle(utterance!.id, utterance!.audio!)}
+          aria-label={player.label(utterance.id)}>{player.symbol(utterance.id)}</button
+        >
       {:else if utterance.audioDeletedAt}
         <span class="muted">(opname gewist)</span>
       {/if}

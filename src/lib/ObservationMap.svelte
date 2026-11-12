@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { timeFormat } from './format';
   import { liveQuery } from 'dexie';
   import type {
     Circle,
@@ -50,7 +51,6 @@
   /** Waarnemingen per stip, voor het popup-venster van een cluster */
   let groupOf = new Map<Marker, Observation[]>();
 
-  const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
   /** Popup-venster niet achter de zoomknoppen linksboven */
   const popupOptions = { autoPanPaddingTopLeft: [52, 10] as [number, number] };
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { dateTimeFormat } from './format';
   // Alleen voor de eigenaar (menu en route in App.svelte): feedback van testers
   // lezen, installaties bekijken en afsluiten, kosten bekijken, exporteren voor
   // de testset en importeren. Afgeschermd in de interface; de proxy staat het
@@ -83,13 +84,6 @@
     }
   }
 
-  const noteDateFormat = new Intl.DateTimeFormat('nl-NL', {
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-
   // Verbruik zoals de proxy het telt (worker/usage.ts), in dollars met de
   // prijstabel in costs.ts. Vanaf het begin van de vorige maand.
   let costs = $state<CostSummary>();
@@ -142,7 +136,7 @@
     const text = `geteld ${money(check.counted)} · rekening ${money(check.billed)}${diff} vanaf ${dateFormat.format(new Date(check.since))}`;
     // Opnieuw ophalen mislukte: de laatst bekende rekening, met de fout erbij
     return bill.stale
-      ? `${text} · stand van ${timeFormat.format(new Date(bill.fetchedAt))} (${bill.stale})`
+      ? `${text} · stand van ${dateTimeFormat.format(new Date(bill.fetchedAt))} (${bill.stale})`
       : text;
   }
 
@@ -193,12 +187,6 @@
   }
 
   const dateFormat = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'short' });
-  const timeFormat = new Intl.DateTimeFormat('nl-NL', {
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 
   const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
@@ -273,7 +261,7 @@
             <li class:processed={note.processed}>
               <div class="note-meta muted">
                 <span>
-                  {who(note.tester)} · {noteDateFormat.format(note.recordedAt)}{note.sessionName
+                  {who(note.tester)} · {dateTimeFormat.format(note.recordedAt)}{note.sessionName
                     ? ` · ${note.sessionName}`
                     : ''}
                 </span>
@@ -482,11 +470,6 @@
 </section>
 
 <style>
-  .stack {
-    display: grid;
-    gap: 0.75rem;
-  }
-
   label:not(.check, .file) {
     display: grid;
     gap: 0.25rem;
@@ -521,10 +504,6 @@
   .testers .usage {
     display: block;
     font-size: 0.85rem;
-  }
-
-  .error {
-    color: var(--red);
   }
 
   h3 {
@@ -627,13 +606,6 @@
     display: none;
   }
 
-  .check {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.95rem;
-  }
-
   .file {
     display: flex;
     font-size: 1rem;
@@ -646,11 +618,5 @@
 
   .message {
     margin: 0;
-  }
-
-  .hint {
-    margin: 0;
-    font-size: 0.85rem;
-    color: var(--muted);
   }
 </style>

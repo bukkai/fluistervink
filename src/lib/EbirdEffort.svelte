@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { dateYearTimeFormat } from './format';
   // Een sessie als eBird-checklist: inspanning nakijken, aanvullen wat de app
   // niet kan weten, en exporteren (ontwikkeloptie 'ebird', docs/plan-ebird.md,
   // fase 2). Wijzigingen gaan meteen naar de database (`setChecklist`).
@@ -23,7 +24,6 @@
   );
 
   const kmFormat = new Intl.NumberFormat('nl-NL', { maximumFractionDigits: 2 });
-  const dateFormat = new Intl.DateTimeFormat('nl-NL', { dateStyle: 'medium', timeStyle: 'short' });
 
   function km(meters: number): string {
     return kmFormat.format(meters / 1000);
@@ -147,7 +147,7 @@
     {#if exportResult}
       <p role="status">{exportResult}</p>
     {:else if session.ebirdExportedAt}
-      <p class="muted">Geëxporteerd op {dateFormat.format(session.ebirdExportedAt)}.</p>
+      <p class="muted">Geëxporteerd op {dateYearTimeFormat.format(session.ebirdExportedAt)}.</p>
     {/if}
     <button
       class="btn block"
