@@ -104,6 +104,16 @@ Brainstorm (nov 2026): inspanning vastleggen, kilometerhokken als spel, een Tele
 - **Twijfel tussen soorten: PR #214** (gemerged 12 nov, ontwikkeloptie "Twijfel tussen soorten"): "fitis of tjiftjaf" wordt de verzamelsoort ("Tjiftjaf of Fitis", anders de waarschijnlijkste) met de kandidaten erbij; bij Onzeker nalopen kies je met één tik. Eigen promptvariant, de testers houden de oude prompt (`140d4832`). **Na het mergen:** optie aan, een paar wandelingen, en `npm run testset -- <export> --kandidaten` naast een gewone run (een verzamelsoort telt daar als fout; kijk of er geen twijfel bijkomt waar het model eerst goed zat). Daarna beslissen of hij voor iedereen aangaat.
 - **Bereik als schatting: PR #215** (gemerged 12 nov, voor iedereen, alleen de prompt, versie `0d423ac8`): "tussen de vijftig en honderd" wordt 75 als schatting met "50-100" als opmerking; "enkele tientallen" ≈ 30, "honderden" ≈ 300, "duizenden" ≈ 3000, met de eigen woorden als opmerking. Nog niet gemeten: na een wandeling met grote groepen nagaan of het model het doet.
 
+## Feedback 12 nov (00:20–00:34)
+
+Tien punten van de eigenaar, alle als verwerkt gemarkeerd, in vier PR's:
+
+- **PR #216** 400-fout bij elke uitspraak met de optie "Twijfel tussen soorten": de strikte tools hadden 26 optionele velden, Anthropic staat er 24 toe (zonder kandidaten zitten we er precies op). `candidate_species` nu alleen in `add_observation`, verplicht met null; een test telt de optionele velden. **Een nieuw optioneel veld in de tools moet voortaan ook verplicht-met-null.** Niet live geprobeerd (testset bleef hangen op wrangler/D1); na het mergen "tjiftjaf of fitis" inspreken met de optie aan.
+- **PR #217** Trektelling: leeg laatste stuk bij Stop geeft geen "niet begrepen"-tril meer; "eerste stuk na 1 minuut" weg. Terugluisteren speelt het hele stuk met pauzes: zo gelaten.
+- **PR #218** Inspreekknop 16 px van de onderkant (gloed zichtbaar); "Wat zei ik?" helemaal weggehaald (daarmee ook het oranje pauzeknopje).
+- **PR #219** Samenvatting zonder "nieuw dit jaar".
+- Open gelaten: ontwikkeloptie "voorbeeldzin wordt onzeker" ("Roepje vink" kan echt zijn). In de gaten houden hoe vaak hij terecht/onterecht aanslaat, dan beslissen.
+
 ## Roadmap naar v1.0 (13 okt)
 
 Werkdefinitie van v1.0: een vogelaar die je niet persoonlijk begeleidt, kan de app installeren, een hele wandeling gebruiken zonder naar het scherm te kijken, en thuis zonder gedoe naar waarneming.nl exporteren.
