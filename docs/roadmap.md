@@ -38,3 +38,5 @@ Afgerond en alleen nog naslag: `docs/plan-capacitor.md` (fase 0–2 en 4; fase 3
 ## Bewust niet
 
 Niet zonder overleg (zie ook `CLAUDE.md`, MVP-scope): GPS-track (ook later niet), accounts of multi-user. Overweging 8 nov: later hooguit een **optioneel** account, alleen als iemand daar zelf voor kiest (automatische back-up, nieuwe telefoon); standaard blijft gratis en anoniem.
+
+Ook met opzet niet (12 nov): eigen lijsten en statistieken in de app (jaarlijst, lijst per plek, "eerste van dit jaar" in de samenvatting). Fluistervink legt vast en geeft door. Misschien later een samenwerking met vogelchecklist.nl.
