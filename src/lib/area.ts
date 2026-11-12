@@ -54,7 +54,7 @@ export async function fillMissingAreas(sessionId: string): Promise<void> {
     }
     // Bv. gestopt zonder verbinding, of een sessie van vóór deze functie
     const session = await db.sessions.get(sessionId);
-    if (session?.status === 'ended') await nameFromWalk(sessionId);
+    if (session?.status === 'ended') await nameFromSession(sessionId);
   } finally {
     filling = false;
   }
@@ -103,7 +103,7 @@ export async function nameFromStart(sessionId: string, position: Position): Prom
  * stand het gebied dat het eerst voorkwam. Zonder waarnemingen met een gebied
  * blijft de startnaam staan.
  */
-export async function nameFromWalk(sessionId: string): Promise<void> {
+export async function nameFromSession(sessionId: string): Promise<void> {
   const observations = await db.observations
     .where('sessionId')
     .equals(sessionId)
@@ -128,5 +128,5 @@ export async function renameSession(sessionId: string, name: string): Promise<vo
     return;
   }
   await db.sessions.update(sessionId, { place: undefined });
-  await nameFromWalk(sessionId);
+  await nameFromSession(sessionId);
 }

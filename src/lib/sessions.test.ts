@@ -14,7 +14,10 @@ import {
 const HOUR = 60 * 60_000;
 const now = Date.parse('2026-10-11T20:00:00');
 
-async function walk(startedHoursAgo: number, lastUtteranceHoursAgo?: number): Promise<Session> {
+async function activeSession(
+  startedHoursAgo: number,
+  lastUtteranceHoursAgo?: number,
+): Promise<Session> {
   const session: Session = {
     id: 'sessie',
     startedAt: now - startedHoursAgo * HOUR,
@@ -38,12 +41,12 @@ describe('checkStaleSession', () => {
   });
 
   it('doet niets als er net nog iets ingesproken is', async () => {
-    await walk(3, 0.5);
+    await activeSession(3, 0.5);
     expect(await checkStaleSession(now)).toBeUndefined();
   });
 
   it('vraagt na een uur zonder uitspraken, vanaf de laatste uitspraak', async () => {
-    await walk(3, 2);
+    await activeSession(3, 2);
     expect(await checkStaleSession(now)).toEqual({
       kind: 'ask',
       session: expect.objectContaining({ id: 'sessie' }),
@@ -52,12 +55,12 @@ describe('checkStaleSession', () => {
   });
 
   it('telt de start als er nog niets ingesproken is', async () => {
-    await walk(ASK_AFTER_MS / HOUR);
+    await activeSession(ASK_AFTER_MS / HOUR);
     expect((await checkStaleSession(now))?.kind).toBe('ask');
   });
 
   it('stopt na 8 uur, met de laatste uitspraak als eindtijd', async () => {
-    await walk(10, AUTO_STOP_AFTER_MS / HOUR);
+    await activeSession(10, AUTO_STOP_AFTER_MS / HOUR);
     expect((await checkStaleSession(now))?.kind).toBe('stopped');
     expect(await db.sessions.get('sessie')).toMatchObject({
       status: 'ended',
@@ -66,7 +69,7 @@ describe('checkStaleSession', () => {
   });
 
   it('"ja, ga door" telt als activiteit', async () => {
-    await walk(3, 2);
+    await activeSession(3, 2);
     await keepSession('sessie');
     expect(await checkStaleSession()).toBeUndefined();
   });

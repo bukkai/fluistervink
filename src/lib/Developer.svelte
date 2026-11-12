@@ -23,7 +23,7 @@
     type CostSummary,
     type Provider,
     type UsageRow,
-    type WalkCost,
+    type SessionCost,
   } from './costs';
   import { db } from './db';
   import { ACTIVE_DAYS, lastSeen, splitActive } from './testers';
@@ -93,15 +93,15 @@
   let billing = $state<Billing>();
   let billingError = $state('');
   /** Namen van eigen sessies; die van testers staan niet op dit apparaat */
-  let walkNames = $state<Record<string, string>>({});
+  let sessionNames = $state<Record<string, string>>({});
 
   async function loadCosts() {
     try {
       usageRows = await listUsage(startOfLastMonth(new Date()));
       costs = summarize(usageRows);
       costsError = '';
-      const sessions = await db.sessions.bulkGet(costs.topWalks.map((w) => w.session));
-      walkNames = Object.fromEntries(
+      const sessions = await db.sessions.bulkGet(costs.topSessions.map((w) => w.session));
+      sessionNames = Object.fromEntries(
         sessions.flatMap((session) => (session?.place ? [[session.id, session.place.name]] : [])),
       );
     } catch (error) {
@@ -155,11 +155,11 @@
   const money = (amount: number) =>
     (amount > 0 && amount < 0.01 ? smallFormat : centsFormat).format(amount);
   /** "anna · 24 okt · 42 uitspraken" (de tester alleen als de naam van de sessie ervoor staat) */
-  function walkMeta(walk: WalkCost): string {
+  function sessionMeta(entry: SessionCost): string {
     return [
-      walkNames[walk.session] ? who(walk.tester) : undefined,
-      dateFormat.format(new Date(walk.day)),
-      walk.utterances ? count(walk.utterances, 'uitspraak', 'uitspraken') : undefined,
+      sessionNames[entry.session] ? who(entry.tester) : undefined,
+      dateFormat.format(new Date(entry.day)),
+      entry.utterances ? count(entry.utterances, 'uitspraak', 'uitspraken') : undefined,
     ]
       .filter(Boolean)
       .join(' · ');
@@ -197,7 +197,7 @@
     return [
       usage
         ? [
-            count(usage.walks, 'sessie', 'sessies'),
+            count(usage.sessions, 'sessie', 'sessies'),
             count(usage.utterances, 'uitspraak', 'uitspraken'),
             `${usage.notes}× feedback`,
           ].join(' · ')
@@ -371,7 +371,7 @@
           costs.anthropic,
         )}{costs.perUtterance !== undefined
           ? ` · ${money(costs.perUtterance)} per uitspraak`
-          : ''}{costs.perWalk !== undefined ? ` · ${money(costs.perWalk)} per sessie` : ''}
+          : ''}{costs.perSession !== undefined ? ` · ${money(costs.perSession)} per sessie` : ''}
       </p>
       {#if costs.perTester.length}
         <h3>Per tester, deze maand</h3>
@@ -394,16 +394,16 @@
           {/each}
         </ul>
       {/if}
-      {#if costs.topWalks.length}
+      {#if costs.topSessions.length}
         <h3>Duurste sessies</h3>
-        <ul class="walks">
-          {#each costs.topWalks as walk (`${walk.tester}/${walk.session}`)}
+        <ul class="amounts">
+          {#each costs.topSessions as entry (`${entry.tester}/${entry.session}`)}
             <li>
               <span>
-                {walkNames[walk.session] ?? who(walk.tester)}
-                <span class="muted">· {walkMeta(walk)}</span>
+                {sessionNames[entry.session] ?? who(entry.tester)}
+                <span class="muted">· {sessionMeta(entry)}</span>
               </span>
-              <span>{money(walk.cost)}</span>
+              <span>{money(entry.cost)}</span>
             </li>
           {/each}
         </ul>
@@ -412,7 +412,7 @@
       {#if billingError}
         <p class="message error">{billingError}</p>
       {:else if billing}
-        <ul class="walks">
+        <ul class="amounts">
           {#each providers as provider (provider.id)}
             <li>
               <span>{provider.name}</span>
@@ -531,7 +531,7 @@
   }
 
   .bars,
-  .walks {
+  .amounts {
     margin: 0;
     padding: 0;
     list-style: none;
@@ -540,7 +540,7 @@
   }
 
   .bar-label,
-  .walks li {
+  .amounts li {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
@@ -552,7 +552,7 @@
     font-size: 0.85rem;
   }
 
-  .walks .muted {
+  .amounts .muted {
     font-size: 0.85rem;
   }
 

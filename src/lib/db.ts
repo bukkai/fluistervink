@@ -103,7 +103,9 @@ export interface SessionPlace {
   /**
    * `start`: gebied van de startpositie (voorlopig). `walk`: gebied met de
    * meeste waarnemingen, bepaald bij het stoppen. `hand`: zelf ingevuld; wordt
-   * nooit meer automatisch overschreven.
+   * nooit meer automatisch overschreven. `walk` heet nog zo uit de tijd dat
+   * een sessie "wandeling" heette: de waarde staat in opgeslagen sessies,
+   * back-ups en gedeelde sessies, dus blijft.
    */
   source: 'start' | 'walk' | 'hand';
 }

@@ -17,7 +17,7 @@ describe('lijst met installaties', () => {
         tester('a', {
           invitedAt: daysAgo(60),
           lastUsed: '2026-11-01',
-          usage: { walks: 1, utterances: 3, notes: 0, lastActivity: daysAgo(20) },
+          usage: { sessions: 1, utterances: 3, notes: 0, lastActivity: daysAgo(20) },
         }),
       ),
     ).toBe(Date.parse('2026-11-01T12:00:00Z'));
@@ -25,7 +25,7 @@ describe('lijst met installaties', () => {
   });
 
   it('zet recent gebruikte installaties bovenaan en de rest apart', () => {
-    const shared = { walks: 1, utterances: 3, notes: 0 };
+    const shared = { sessions: 1, utterances: 3, notes: 0 };
     const { active, inactive } = splitActive(
       [
         tester('oud', { invitedAt: daysAgo(90), lastUsed: '2026-09-01', usage: shared }),

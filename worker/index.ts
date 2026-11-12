@@ -695,7 +695,7 @@ async function readShared(env: WorkerEnv, key: string): Promise<Required<SharedS
 
 /** Hoeveel een tester gedeeld heeft, om te zien of de app echt gebruikt wordt. */
 export interface TesterUsage {
-  walks: number;
+  sessions: number;
   utterances: number;
   notes: number;
   /** Laatste uitspraak, feedback of einde van een sessie */
@@ -715,12 +715,12 @@ async function testerUsage(env: WorkerEnv): Promise<Map<string, TesterUsage>> {
       data: await readShared(env, key),
     })),
   );
-  type Entry = { walks: number; utterances: Map<string, boolean>; lastActivity?: number };
+  type Entry = { sessions: number; utterances: Map<string, boolean>; lastActivity?: number };
   const perTester = new Map<string, Entry>();
   for (const { tester, data } of files) {
-    const entry: Entry = perTester.get(tester) ?? { walks: 0, utterances: new Map() };
+    const entry: Entry = perTester.get(tester) ?? { sessions: 0, utterances: new Map() };
     perTester.set(tester, entry);
-    entry.walks += data.sessions.length;
+    entry.sessions += data.sessions.length;
     const times = [
       ...data.utterances.map((u) => u.recordedAt),
       ...data.sessions.map((s) => s.endedAt ?? s.startedAt ?? 0),
@@ -731,12 +731,12 @@ async function testerUsage(env: WorkerEnv): Promise<Map<string, TesterUsage>> {
   }
 
   return new Map(
-    [...perTester].map(([tester, { walks, utterances, lastActivity }]) => {
+    [...perTester].map(([tester, { sessions, utterances, lastActivity }]) => {
       const notes = [...utterances.values()].filter(Boolean).length;
       return [
         tester,
         {
-          walks,
+          sessions,
           utterances: utterances.size - notes,
           notes,
           lastActivity: lastActivity || undefined,

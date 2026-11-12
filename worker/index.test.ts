@@ -996,7 +996,7 @@ describe('/api/feedback/notes (feedback inzien)', () => {
       testers: { name: string; usage?: object }[];
     };
     expect(testers.find((t) => t.name === ANNA)?.usage).toEqual({
-      walks: 2,
+      sessions: 2,
       utterances: 2,
       notes: 2,
       lastActivity: 5000,

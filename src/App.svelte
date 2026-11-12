@@ -20,7 +20,7 @@
   import { vibrate } from './lib/feedback';
   import { instance } from './lib/instance.svelte';
   import { processQueue } from './lib/observations';
-  import { syncWalkService } from './lib/walkService';
+  import { syncSessionService } from './lib/sessionService';
   import { preferenceOn } from './lib/preferences';
   import { exportReminder, reminderText, snooze, snoozedAt } from './lib/exportReminder';
   import { listenShortcut, setShortcut } from './lib/native';
@@ -80,10 +80,10 @@
   let past = $derived($sessions?.filter((s) => s.status === 'ended') ?? []);
 
   // Android-app: melding zolang er een sessie loopt, zodat
-  // de app met het scherm uit doorwerkt (walkService.ts). Pas na het laden.
+  // de app met het scherm uit doorwerkt (sessionService.ts). Pas na het laden.
   let activeId = $derived($sessions ? (active?.id ?? null) : undefined);
   $effect(() => {
-    if (activeId !== undefined) syncWalkService(activeId ?? undefined);
+    if (activeId !== undefined) syncSessionService(activeId ?? undefined);
   });
 
   // Elk scherm heeft een eigen adres (#sessies, #sessie/<id>,
@@ -200,25 +200,25 @@
     if (document.hidden) return;
     checkStale();
     // Android kan de service intussen gestopt hebben
-    if (activeId) syncWalkService(activeId);
+    if (activeId) syncSessionService(activeId);
   };
   document.addEventListener('visibilitychange', onVisible);
   onDestroy(() => document.removeEventListener('visibilitychange', onVisible));
 
-  let askStillWalking = $derived(
+  let askStillBirding = $derived(
     stale?.kind === 'ask' && stale.session.id === active?.id ? stale : undefined,
   );
 
-  async function keepWalking() {
-    if (!askStillWalking) return;
-    await keepSession(askStillWalking.session.id);
+  async function keepBirding() {
+    if (!askStillBirding) return;
+    await keepSession(askStillBirding.session.id);
     stale = undefined;
   }
 
   /** Vergeten te stoppen: eindtijd is de laatste uitspraak, niet nu */
   async function stopForgotten() {
-    if (!askStillWalking) return;
-    const { session, lastActivityAt } = askStillWalking;
+    if (!askStillBirding) return;
+    const { session, lastActivityAt } = askStillBirding;
     stale = undefined;
     await stopSession(session.id, lastActivityAt);
     justStopped = session.id;
@@ -320,8 +320,8 @@
   {:else if route === 'feedback' || route === 'devnotes'}
     <DevNotes />
   {:else if active}
-    <section class="walk">
-      <div class="walk-info">
+    <section class="session-head">
+      <div class="session-info">
         <h1>{active.place?.name ?? 'Vogelsessie'}</h1>
         <p class="muted">
           Sinds {timeFormat.format(active.startedAt)} ·
@@ -330,12 +330,12 @@
       </div>
       <button class="stop" onclick={stop}>Stop</button>
     </section>
-    {#if askStillWalking}
-      <div class="still-walking card">
+    {#if askStillBirding}
+      <div class="still-birding card">
         <strong>Ben je nog aan het vogelen?</strong>
-        <p>Sinds {formatMoment(askStillWalking.lastActivityAt)} is er niets ingesproken.</p>
+        <p>Sinds {formatMoment(askStillBirding.lastActivityAt)} is er niets ingesproken.</p>
         <div class="buttons">
-          <button class="btn" onclick={keepWalking}>Ja, ga door</button>
+          <button class="btn" onclick={keepBirding}>Ja, ga door</button>
           <button class="btn secondary" onclick={stopForgotten}>Nee, stoppen</button>
         </div>
       </div>
@@ -568,19 +568,19 @@
   }
 
   .consent-buttons,
-  .still-walking .buttons {
+  .still-birding .buttons {
     display: flex;
     gap: 0.5rem;
   }
 
-  .still-walking {
+  .still-birding {
     display: grid;
     gap: 0.5rem;
     margin-top: 0.75rem;
     padding: 0.9rem 1rem;
   }
 
-  .still-walking p {
+  .still-birding p {
     margin: 0;
   }
 
@@ -618,19 +618,19 @@
       0 6px 16px rgb(60 55 50 / 0.18);
   }
 
-  .walk {
+  .session-head {
     display: flex;
     align-items: center;
     gap: 1rem;
     margin-top: 1rem;
   }
 
-  .walk-info {
+  .session-info {
     flex: 1;
     min-width: 0;
   }
 
-  .walk h1 {
+  .session-head h1 {
     margin: 0;
     overflow: hidden;
     font-size: 1.5rem;
@@ -640,7 +640,7 @@
     white-space: nowrap;
   }
 
-  .walk p {
+  .session-head p {
     margin: 0.15rem 0 0;
   }
 
