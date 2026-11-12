@@ -349,15 +349,11 @@
             ? 'Hoort spraak'
             : 'Luistert'}</span
       >
-      ·
-      <!-- De app knipt pas na ongeveer een minuut; stille stukken tellen niet mee -->
-      <span class="sent">
-        {#if trektel.sent === 0}
-          eerste stuk na 1 minuut
-        {:else}
-          {trektel.sent} {trektel.sent === 1 ? 'stuk' : 'stukken'} verstuurd
-        {/if}
-      </span>
+      <!-- Pas na het eerste stuk: "eerste stuk na 1 minuut" was onduidelijk (feedback 12 nov) -->
+      {#if trektel.sent > 0}
+        ·
+        <span class="sent">{trektel.sent} {trektel.sent === 1 ? 'stuk' : 'stukken'} verstuurd</span>
+      {/if}
     </p>
   {:else}
     {#if trektelOn && trektel.error}
