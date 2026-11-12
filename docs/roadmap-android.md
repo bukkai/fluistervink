@@ -1,6 +1,6 @@
 # Roadmap: de Android-app na Terschelling
 
-Voorstel van 11 nov 2026, dezelfde dag goedgekeurd (besluiten onderaan). Bundelt de ideeën voor de native laag die sinds oktober op verschillende plekken staan (`docs/plan-capacitor.md` fase 3, `docs/plan-trektelmodus.md`, de lijst "Voorstellen van Claude" en de roadmap naar v1.0 in `NOTES.md`) en zet ze in een volgorde. Loopt naast de lancering in Play (`docs/lancering.md`), en houdt die niet op.
+Voorstel van 11 nov 2026, dezelfde dag goedgekeurd (besluiten onderaan). Bundelt de ideeën voor de native laag die sinds oktober op verschillende plekken staan (`docs/plan-capacitor.md` fase 3, `docs/plan-trektelmodus.md`, de lijst "Voorstellen van Claude" en de roadmap naar v1.0 (nu `docs/roadmap.md`)) en zet ze in een volgorde. Loopt naast de lancering in Play (`docs/lancering.md`), en houdt die niet op.
 
 ## Rode draad
 
