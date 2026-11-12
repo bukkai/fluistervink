@@ -41,23 +41,3 @@
     {/each}
   </div>
 </section>
-
-<style>
-  .stack {
-    display: grid;
-    gap: 0.75rem;
-  }
-
-  .check {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.95rem;
-  }
-
-  .hint {
-    margin: 0;
-    font-size: 0.85rem;
-    color: var(--muted);
-  }
-</style>

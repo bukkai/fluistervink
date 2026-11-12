@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { dateYearTimeFormat } from './format';
   // Delen met de ontwikkelaar aan/uit, met of zonder opnames, en handmatig
   // versturen. Zie share.ts; de eerste keuze vraagt het hoofdscherm.
   import {
@@ -36,11 +37,6 @@
       shareMessage = `Versturen mislukt: ${error instanceof Error ? error.message : error}`;
     }
   }
-
-  const sharedAtFormat = new Intl.DateTimeFormat('nl-NL', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  });
 </script>
 
 <section class="card">
@@ -71,7 +67,7 @@
       <p class="hint" class:error={shareStatus === 'error'}>
         {shareMessage ||
           (sharedAt
-            ? `Laatst verstuurd: ${sharedAtFormat.format(sharedAt)}.`
+            ? `Laatst verstuurd: ${dateYearTimeFormat.format(sharedAt)}.`
             : 'Nog niets verstuurd.')}
       </p>
     {/if}
@@ -79,29 +75,7 @@
 </section>
 
 <style>
-  .stack {
-    display: grid;
-    gap: 0.75rem;
-  }
-
-  .check {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.95rem;
-  }
-
-  .hint {
-    margin: 0;
-    font-size: 0.85rem;
-    color: var(--muted);
-  }
-
   .hint a {
     color: inherit;
-  }
-
-  .error {
-    color: var(--red);
   }
 </style>

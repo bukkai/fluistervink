@@ -181,12 +181,6 @@
     margin-top: 0.5rem;
   }
 
-  .hint {
-    margin: 0;
-    font-size: 0.85rem;
-    color: var(--muted);
-  }
-
   .version {
     margin: 1.5rem 0 0.5rem;
     font-size: 0.8rem;
@@ -196,9 +190,5 @@
 
   .ok {
     color: var(--brand-strong);
-  }
-
-  .error {
-    color: var(--red);
   }
 </style>

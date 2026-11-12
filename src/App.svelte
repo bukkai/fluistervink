@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { dayFormat, timeFormat } from './lib/format';
   import { liveQuery } from 'dexie';
   import { onDestroy } from 'svelte';
   import {
@@ -227,7 +228,7 @@
   /** "vandaag 14:32" of "ma 12 okt 14:32" */
   function formatMoment(at: number): string {
     const day =
-      new Date(at).toDateString() === new Date().toDateString() ? 'vandaag' : dateFormat.format(at);
+      new Date(at).toDateString() === new Date().toDateString() ? 'vandaag' : dayFormat.format(at);
     return `${day} ${timeFormat.format(at)}`;
   }
 
@@ -243,13 +244,6 @@
     vibrate('saved');
     location.hash = `sessie/${id}`;
   }
-
-  const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
-  const dateFormat = new Intl.DateTimeFormat('nl-NL', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  });
 </script>
 
 <header>
@@ -401,7 +395,7 @@
           <span>
             <span class="muted">Laatste sessie</span><br />
             <strong>{past[0].place?.name ?? 'Vogelsessie'}</strong>
-            <span class="muted">· {dateFormat.format(past[0].startedAt)}</span>
+            <span class="muted">· {dayFormat.format(past[0].startedAt)}</span>
           </span>
           <span class="chevron" aria-hidden="true">›</span>
         </a>

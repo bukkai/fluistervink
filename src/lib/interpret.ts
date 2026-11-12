@@ -1,4 +1,5 @@
 import type Anthropic from '@anthropic-ai/sdk';
+import { timeFormat } from './format';
 import { createMessage, type Timing } from './api';
 import type { Observation, Position, SpokenPlace } from './db';
 import {
@@ -444,8 +445,6 @@ export const promptVersion: Promise<string> = promptVersionFor(false);
 
 // ---------------------------------------------------------------------------
 // Aanroep
-
-const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
 
 /** Vanaf deze afstand staat de afstand in de context (zie "nog een X" in de prompt) */
 const FAR_AWAY_M = 250;

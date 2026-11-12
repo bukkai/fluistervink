@@ -1,6 +1,8 @@
 <script lang="ts">
+  import { timeFormat } from './format';
   import { liveQuery } from 'dexie';
-  import { audioBlob, type Session } from './db';
+  import { type Session } from './db';
+  import { player } from './player.svelte';
   import ObservationEditor from './ObservationEditor.svelte';
   import RarityMark from './RarityMark.svelte';
   import {
@@ -59,15 +61,8 @@
     return () => window.removeEventListener('popstate', onPopState);
   });
 
-  /** Speelt de opname af waaruit deze waarneming kwam. */
-  function play() {
-    const url = URL.createObjectURL(audioBlob(source!.audio!));
-    const audio = new Audio(url);
-    audio.onended = () => URL.revokeObjectURL(url);
-    audio.play();
-  }
-
-  const timeFormat = new Intl.DateTimeFormat('nl-NL', { timeStyle: 'short' });
+  // Stoppen met afspelen bij het verlaten van het scherm
+  $effect(() => player.stop);
 </script>
 
 {#if uncertain.length > 0}
@@ -103,7 +98,11 @@
         {#if source?.transcript}
           <p class="source">
             {#if source.audio}
-              <button class="play" onclick={play} aria-label="Opname afspelen">▶&#xFE0E;</button>
+              <button
+                class="play"
+                onclick={() => player.toggle(source!.id, source!.audio!)}
+                aria-label={player.label(source.id)}>{player.symbol(source.id)}</button
+              >
             {:else if source.audioDeletedAt}
               <span class="muted">(opname gewist)</span>
             {/if}
