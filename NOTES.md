@@ -18,21 +18,12 @@ Uit de PR's van 6–12 nov; elk punt na het proberen hier weghalen.
 - **Bereik als schatting** (#215): na een wandeling met grote groepen nagaan of het model "tussen de vijftig en honderd" als schatting met opmerking geeft.
 - **Ontwikkelopties** stem en "voorbeeldzin wordt onzeker" een paar wandelingen meenemen en per optie beslissen ("Roepje vink" kan echt zijn: tellen hoe vaak hij terecht aanslaat).
 - **Latijnse namen** (#157): het model doet het (39/39), maar of de spraakherkenning ze verstaat, is nog niet gemeten. Een paar opnames inspreken en door de testset halen.
-- **Laadbalkje bij een update** (#200): nog niet echt gezien; bij een deploy de app afsluiten en openen.
 - Bij de volgende import naar waarneming.nl een Bonte Kraai meenemen (nieuwe ondersoort, #153).
-
-Status onbekend sinds Terschelling (8 nov), even nalopen en dan weghalen: slepen op het locatiekaartje (#155) en Jurian laten weten dat het er is; toetsenbord dicht met de terugknop (inspreekknop moet terugkomen, #161); hoe vaak de grens van 3 minuten knelt bij trek.
 
 ## Steeds
 
 - Bij elke nieuwe gedeelde sessie `npm run feedback -- pull`, `npm run feedback -- notes` en `npm run testset`.
 - Prompt alleen aanpassen als de testset het laat zien. Uit de analyse van 24 okt: de meeste echte fouten zitten in de spraakherkenning (korte uitspraken, verward met een andere vogelnaam), niet in het model.
-
-## In de gaten houden
-
-- **STT gaf één keer zelf antwoord** in plaats van te transcriberen ("Sorry, ik kan niet voldoen aan het verzoek …", 11 okt) en liet daarbij het woord "feedback" weg. Onschuldig.
-- Cloudflare-previews: vermoedelijk onthoudt Cloudflare het deploy-commando per branch vanaf de eerste build. Bij problemen: nieuwe branch maken.
-- Verstaanfouten die blijven: "ekster" → "extra", meerkoet → "merel"/"meeuw" (zit in de opname; laten liggen, besloten 11 nov).
 
 ## Branch-regel op main
 
