@@ -1,6 +1,6 @@
 # Plan: inspanning vastleggen en export naar eBird
 
-Voorstel van 11 nov 2026, dezelfde dag goedgekeurd (drempels 50 m, onzekere waarnemingen mee met een waarschuwing, de vraag bij het stoppen alleen voor eBird-gebruikers). Fase 1 gebouwd (11 nov). Fase 2 deel 1, het exportbestand, gebouwd op 12 nov (zie Fasen). Aanleiding: de brainstorm over inspanningsgegevens (nov 2026), en de eigenaar en een paar mensen in zijn omgeving gebruiken eBird.
+Voorstel van 11 nov 2026, dezelfde dag goedgekeurd (drempels 50 m, onzekere waarnemingen mee met een waarschuwing, de vraag bij het stoppen alleen voor eBird-gebruikers). Fase 1 gebouwd (11 nov). Fase 2 deel 1, het exportbestand, gebouwd op 12 nov (zie Fasen). Dezelfde dag de eerste echte imports bij eBird gelukt. Fase 3 is uitgewerkt in punt 8 (12 nov, dezelfde dag goedgekeurd). Aanleiding: de brainstorm over inspanningsgegevens (nov 2026), en de eigenaar en een paar mensen in zijn omgeving gebruiken eBird.
 
 ## Doel
 
@@ -79,16 +79,61 @@ Oude sessies hebben geen `effort`. Daarvoor rekent de app de duur uit begin- en 
 - De inspanning gaat mee in de JSON-export en het delen met de ontwikkelaar (zit in het sessie-object). Zo is te zien of de afstand redelijk klopt.
 - Gebeurtenissenlog: hoe vaak de teller een meting oversloeg wegens onnauwkeurigheid, zodat de drempels bij te stellen zijn.
 
+### 8. Workflow voor wie eBird gebruikt (fase 3)
+
+Voorstel van 12 nov, dezelfde dag goedgekeurd. Aanleiding: de eerste echte imports werkten, en de eigenaar wil een exportknop op het scherm Sessies. Twee eisen: wie geen eBird gebruikt, krijgt geen vraag en geen knop; en de vraag "alles genoteerd?" mag niet pas komen bij een export van een stapel sessies, als je het niet meer weet.
+
+**De instelling**
+
+- "Ik gebruik eBird" bij Instellingen onder "Nalopen en export", standaard uit. Hij vervangt de ontwikkeloptie `ebird` (`src/lib/devOptions.ts`); de eigenaar zet hem daarna zelf aan.
+- `src/lib/preferences.ts` kent nu alleen keuzes die standaard aan staan (alleen "uit" wordt bewaard). Deze staat standaard uit, dus `preferenceOn` krijgt per keuze een standaard.
+- Alles hieronder bestaat alleen als de instelling aan staat.
+
+**De vraag, op het moment dat je het nog weet**
+
+De vraag komt op drie plekken langs, steeds dezelfde, en elk antwoord geldt overal (`checklist.complete`):
+
+1. **Na Stop** (punt 3, zoals goedgekeurd): één vraag met Ja en Nee, daaronder het aantal waarnemers. Wegtikken mag.
+2. **Bij het klaarzetten** (`approveSession`, "Alles klopt"): is de vraag nog open, dan komt hij daar nog één keer. Wegtikken mag weer. Het eBird-kaartje bij het nalopen (`src/lib/EbirdEffort.svelte`) blijft de plek om alles aan te passen.
+3. **Op het scherm Sessies**, als vangnet: zie hieronder.
+
+Geen standaardantwoord ("ik noteer meestal alles"). eBird leidt uit dat veld af welke soorten er niet waren; een automatisch "ja" maakt de gegevens ongemerkt onjuist.
+
+**Het scherm Sessies** (`src/lib/PastSessions.svelte`)
+
+- Een tweede knop onder die van waarneming.nl: **"Exporteren voor eBird (3 sessies)"**. Hij neemt alle sessies die klaarstaan of al naar waarneming.nl zijn geëxporteerd en nog geen `ebirdExportedAt` hebben. Eén bestand; `buildEbirdExport` kan dat al.
+- Sessies waar de vraag nog open is, staan boven de knop als korte lijst: datum, gebied, en **Ja** / **Nee**. Eén tik per sessie. Zolang er een open is, is de knop uit, met de regel "Beantwoord eerst de vraag bij 2 sessies".
+- Waarnemers en soort telling vraagt de lijst niet: de app kiest die al (laatst gekozen aantal, protocol uit de afstand), en ze zijn aan te passen in de sessie zelf.
+- De waarschuwingen (langer dan 8 km, over middernacht, onzekere waarnemingen) komen samen in één bevestiging, met de naam van de sessie ervoor. Dat doet `exportForEbird` al.
+- Onder de knop de uitleg over "eBird Record Format (Extended)", zoals bij de losse export.
+- De keuze welke sessies meegaan komt als losse functie in `src/lib/ebirdExport.ts`, met tests.
+
+**Status per doel**
+
+- "Klaar" blijft één status voor beide. "Geëxporteerd" wordt per doel bijgehouden; dat doet de code al (`exportedAt` en `ebirdExportedAt`).
+- In de lijst met sessies ziet een eBird-gebruiker per sessie waar hij heen is: "waarneming.nl" en "eBird", elk met een vinkje. Wie geen eBird gebruikt, ziet wat hij nu ziet.
+- De herinnering aan de export (`src/lib/exportReminder.ts`) blijft alleen over waarneming.nl gaan.
+
+**Ook in deze fase** (punt 7): een alinea in `#uitleg`, `#privacy` (het bestand gaat alleen naar eBird als je het zelf uploadt), een regel in de changelog onder Export.
+
+**Twee PR's:** eerst de instelling met de vraag na Stop en bij het klaarzetten; daarna de knop en de lijst op het scherm Sessies met de status per doel.
+
+**Besloten bij de goedkeuring (12 nov)**
+
+- Een sessie kan "niet naar eBird" krijgen (een lijstje uit de tuin dat je alleen bij waarneming.nl wilt): een derde keuze in de lijst op het scherm Sessies, naast Ja en Nee. Zo'n sessie telt niet meer mee in de eBird-knop.
+- De vraag komt na Stop én bij het klaarzetten, zoals hierboven.
+
 ## Fasen
 
 1. **Inspanning vastleggen** (punt 1 en 2, plus het eBird-kaartje bij het nalopen, alleen kijken). Voor iedereen, onzichtbaar: de app bewaart duur en afstand. Zichtbaar alleen voor de eigenaar (ontwikkeloptie). Een paar wandelingen en een fietstocht laten zien of de afstand redelijk klopt met wat Strava of Komoot zegt.
 2. **Export naar eBird** (punt 3 tot 6), als ontwikkeloptie. De eigenaar importeert een paar eigen sessies echt bij eBird en controleert soorten, plek en inspanning. In twee PR's:
    - **Deel 1, het exportbestand** (12 nov, `src/lib/ebirdExport.ts`): het eBird-kaartje bij het nalopen wordt invulbaar (soort telling, afstand, waarnemers, alles genoteerd) met een knop "Exporteren voor eBird" voor die ene sessie. Afwijkend van punt 1 en 3: de antwoorden staan in een eigen veld `checklist` bij de sessie, niet in `effort` (dat meet de app zelf; zo werkt het ook bij sessies van vóór de inspanning, die zonder afstand standaard Incidental worden). De vraag bij het stoppen komt pas in fase 3; tot dan blokkeert de export zolang "alles genoteerd" niet beantwoord is. Soorten gaan alleen met de wetenschappelijke naam (kolommen Genus en Species); land vast `NL`. Kolomvolgorde nagekeken op 12 nov tegen bijlage A en het voorbeeldbestand van eBird (namen van de 19 kolommen; vastgelegd in een test).
    - **Deel 2, soortnamen van eBird** (punt 5): pas als blijkt hoe vaak "Fix Species" nodig is bij een echte import. Bekende gevallen: verzamelsoorten ("Anatinae indet."), *Nannus troglodytes* (eBird: *Troglodytes troglodytes*), Stadsduif.
-   - Nog te doen na deel 1: een echte import bij eBird, en in de Android-app nagaan of het uploadveld van eBird de .csv neemt. Export van alle sessies tegelijk (scherm Sessies) pas als er behoefte aan is.
-3. **Voor iedereen** (punt 7): de instelling "Ik gebruik eBird" bij Instellingen onder "Nalopen en export" (standaard uit), uitleg, privacy, een regel in de changelog. Daarna testers uit de eigen omgeving die eBird gebruiken.
+   - Echte import (12 nov): twee sessies van de eigenaar geïmporteerd. Bij eBird moet je zelf "eBird Record Format (Extended)" kiezen; met het voorgekozen "Checklist Format (Grid)" mislukt het met "Missing location name detected in first row". De uitleg onder de knop zegt dat nu (#225).
+   - Nog te doen na deel 1: noteren welke soorten "Fix Species" nodig hadden, en in de Android-app nagaan of het uploadveld van eBird de .csv neemt. Export van alle sessies tegelijk (scherm Sessies): zie punt 8.
+3. **Voor iedereen** (punt 7 en 8): de instelling "Ik gebruik eBird" bij Instellingen onder "Nalopen en export" (standaard uit), uitleg, privacy, een regel in de changelog. Daarna testers uit de eigen omgeving die eBird gebruiken.
 
-Elke fase is één PR.
+Elke fase is één PR, behalve fase 2 en 3 (elk twee).
 
 ## Open vragen voor de eigenaar
 
