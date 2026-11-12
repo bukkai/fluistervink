@@ -45,7 +45,7 @@ Feedback opgehaald op 6 nov: 8 testers en installaties met gedeelde wandelingen 
 
 Roadmap in `docs/lancering.md`: eerst 14 dagen een gesloten test met minstens 12 testers (regel van Google voor nieuwe persoonlijke accounts), dan productietoegang aanvragen; openbaar rond begin december. Logo is bij een artiest aangevraagd; mag tijdens de gesloten test als nieuwe app-versie.
 
-**Stand 9 nov:** privacypagina live op `fluistervink.nl/privacy` (#170, release naar stable gedaan), winkelvermelding en gegevensveiligheid ingevuld (`docs/play-store/`), eerste release in de gesloten test ingediend ter beoordeling. Daarna: deelnamelink in `PLAY_TEST_LINKS.stable`, testers werven (15–20).
+**Stand 9 nov:** privacypagina live op `fluistervink.nl/privacy` (#170, release naar stable gedaan), winkelvermelding en gegevensveiligheid ingevuld (`docs/play-store/`), eerste release in de gesloten test ingediend ter beoordeling. Deelnamelink ingesteld (`docs/lancering.md`; `PLAY_TEST_LINKS` is op 9 nov met de testercodes verdwenen, je stuurt de link zelf). Nog: testers werven (15–20), en plafond en daglimiet bij OpenAI en Anthropic nalopen.
 
 ## Kwaliteitsronde (11 nov)
 
