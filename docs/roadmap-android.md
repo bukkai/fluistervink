@@ -81,7 +81,7 @@ Uit de voorstellen van 8 nov, nog open; kunnen tussen de stappen door, want ze v
 
 - **Geen verzonnen soort uit de STT-prompt** ("Roepje vink." bij een onverstaanbare opname). Meten met de testset.
 - **Onwaarschijnlijke soort wordt onzeker** (zeldzaamheid van waarneming.nl; de dwaalgasten uit #182 zijn al altijd onzeker).
-- **"Wat zei ik?"** in het veld: tik op de laatste waarneming speelt de opname af en toont het transcript.
+- ~~**"Wat zei ik?"** in het veld~~: gebouwd als ontwikkeloptie (#192), op 12 nov weer weggehaald: de lijst met uitspraken onderaan laat hetzelfde zien.
 - **Samenvatting na een sessie** en een **herinnering aan de export**.
 - **Trektelmodus fase 2 en 3** (beveiligingen, plafond in de proxy, uitleg), na de proef met Maarten; daarna eventueel export naar trektellen.nl.
 
