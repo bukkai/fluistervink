@@ -3,6 +3,7 @@ import {
   audioSize,
   db,
   type DeletedObservation,
+  type Checklist,
   type Effort,
   type Observation,
   type Position,
@@ -235,6 +236,18 @@ function checkImport(data: {
       optional(e.anchor, isPosition)
     );
   };
+  // Gaat letterlijk in het bestand voor eBird: alleen bekende waarden
+  const isChecklist = (value: unknown) => {
+    const c = value as Checklist;
+    return (
+      typeof c === 'object' &&
+      c !== null &&
+      optional(c.observers, (n) => Number.isInteger(n) && (n as number) >= 1) &&
+      optional(c.complete, (b) => typeof b === 'boolean') &&
+      optional(c.protocol, (p) => p === 'Stationary' || p === 'Traveling' || p === 'Incidental') &&
+      optional(c.distanceM, isNumber)
+    );
+  };
   const isArea = (value: unknown) => {
     const a = value as Area;
     return isNumber(a?.id) && typeof a?.name === 'string';
@@ -245,7 +258,9 @@ function checkImport(data: {
       !isId(s?.id) ||
       !isNumber(s.startedAt) ||
       !optional(s.endedAt, isNumber) ||
-      !optional(s.effort, isEffort)
+      !optional(s.effort, isEffort) ||
+      !optional(s.checklist, isChecklist) ||
+      !optional(s.ebirdExportedAt, isNumber)
     )
       fail('sessie');
   }

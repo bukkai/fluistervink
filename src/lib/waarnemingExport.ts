@@ -255,15 +255,15 @@ function csvField(value: string): string {
 }
 
 /** Datum in de lokale tijd van het apparaat, als YYYY-MM-DD */
-function isoDate(date: Date): string {
+export function isoDate(date: Date): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
 /** Datum en begintijd voor de bestandsnaam, als YYYY-MM-DD-HHMM */
-function fileTimestamp(date: Date): string {
+export function fileTimestamp(date: Date): string {
   return `${isoDate(date)}-${pad(date.getHours())}${pad(date.getMinutes())}`;
 }
 
-function pad(n: number): string {
+export function pad(n: number): string {
   return String(n).padStart(2, '0');
 }

@@ -1,6 +1,6 @@
 # Plan: inspanning vastleggen en export naar eBird
 
-Voorstel van 11 nov 2026, dezelfde dag goedgekeurd (drempels 50 m, onzekere waarnemingen mee met een waarschuwing, de vraag bij het stoppen alleen voor eBird-gebruikers). Fase 1 gebouwd (11 nov). Aanleiding: de brainstorm over inspanningsgegevens (nov 2026), en de eigenaar en een paar mensen in zijn omgeving gebruiken eBird.
+Voorstel van 11 nov 2026, dezelfde dag goedgekeurd (drempels 50 m, onzekere waarnemingen mee met een waarschuwing, de vraag bij het stoppen alleen voor eBird-gebruikers). Fase 1 gebouwd (11 nov). Fase 2 deel 1, het exportbestand, gebouwd op 12 nov (zie Fasen). Aanleiding: de brainstorm over inspanningsgegevens (nov 2026), en de eigenaar en een paar mensen in zijn omgeving gebruiken eBird.
 
 ## Doel
 
@@ -82,7 +82,10 @@ Oude sessies hebben geen `effort`. Daarvoor rekent de app de duur uit begin- en 
 ## Fasen
 
 1. **Inspanning vastleggen** (punt 1 en 2, plus het eBird-kaartje bij het nalopen, alleen kijken). Voor iedereen, onzichtbaar: de app bewaart duur en afstand. Zichtbaar alleen voor de eigenaar (ontwikkeloptie). Een paar wandelingen en een fietstocht laten zien of de afstand redelijk klopt met wat Strava of Komoot zegt.
-2. **Export naar eBird** (punt 3 tot 6), als ontwikkeloptie. De eigenaar importeert een paar eigen sessies echt bij eBird en controleert soorten, plek en inspanning.
+2. **Export naar eBird** (punt 3 tot 6), als ontwikkeloptie. De eigenaar importeert een paar eigen sessies echt bij eBird en controleert soorten, plek en inspanning. In twee PR's:
+   - **Deel 1, het exportbestand** (12 nov, `src/lib/ebirdExport.ts`): het eBird-kaartje bij het nalopen wordt invulbaar (soort telling, afstand, waarnemers, alles genoteerd) met een knop "Exporteren voor eBird" voor die ene sessie. Afwijkend van punt 1 en 3: de antwoorden staan in een eigen veld `checklist` bij de sessie, niet in `effort` (dat meet de app zelf; zo werkt het ook bij sessies van vóór de inspanning, die zonder afstand standaard Incidental worden). De vraag bij het stoppen komt pas in fase 3; tot dan blokkeert de export zolang "alles genoteerd" niet beantwoord is. Soorten gaan alleen met de wetenschappelijke naam (kolommen Genus en Species); land vast `NL`. Kolomvolgorde nagekeken op 12 nov tegen bijlage A en het voorbeeldbestand van eBird (namen van de 19 kolommen; vastgelegd in een test).
+   - **Deel 2, soortnamen van eBird** (punt 5): pas als blijkt hoe vaak "Fix Species" nodig is bij een echte import. Bekende gevallen: verzamelsoorten ("Anatinae indet."), *Nannus troglodytes* (eBird: *Troglodytes troglodytes*), Stadsduif.
+   - Nog te doen na deel 1: een echte import bij eBird, en in de Android-app nagaan of het uploadveld van eBird de .csv neemt. Export van alle sessies tegelijk (scherm Sessies) pas als er behoefte aan is.
 3. **Voor iedereen** (punt 7): de instelling "Ik gebruik eBird" bij Instellingen onder "Nalopen en export" (standaard uit), uitleg, privacy, een regel in de changelog. Daarna testers uit de eigen omgeving die eBird gebruiken.
 
 Elke fase is één PR.
