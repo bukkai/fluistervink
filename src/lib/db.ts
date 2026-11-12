@@ -56,7 +56,30 @@ export interface Session {
   place?: SessionPlace;
   /** Hoe lang en hoe ver er gevogeld is (`effort.ts`); leeg bij sessies van vóór 11 nov 2026 */
   effort?: Effort;
+  /** Wat de gebruiker over de sessie als checklist invulde (eBird); leeg = nog niets */
+  checklist?: Checklist;
+  /** Laatst geëxporteerd voor eBird (`ebirdExport.ts`) */
+  ebirdExportedAt?: number;
 }
+
+/**
+ * Antwoorden van de gebruiker bij een sessie als checklist (docs/plan-ebird.md).
+ * Los van `Effort`, dat de app zelf meet: dit vult de gebruiker in, ook bij
+ * sessies van vóór de inspanning. "Alles genoteerd" is later ook bruikbaar
+ * voor waarneming.nl (`all_species_counted`), dus niet alleen voor eBird.
+ */
+export interface Checklist {
+  /** Aantal waarnemers, inclusief de gebruiker */
+  observers?: number;
+  /** Alles genoteerd wat je kon herkennen (geen soort bewust weggelaten) */
+  complete?: boolean;
+  /** Zelf gekozen protocol; leeg = de app kiest uit de afstand */
+  protocol?: EbirdProtocol;
+  /** Zelf verbeterde afstand in meters; leeg = de gemeten afstand */
+  distanceM?: number;
+}
+
+export type EbirdProtocol = 'Stationary' | 'Traveling' | 'Incidental';
 
 /**
  * Inspanning van een sessie, voor een eBird-checklist (docs/plan-ebird.md).

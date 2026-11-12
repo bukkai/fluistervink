@@ -89,6 +89,14 @@ describe('importJson', () => {
     await expect(importJson(file)).rejects.toThrow('Ongeldige export');
   });
 
+  it('weigert een sessie met een ongeldige checklist', async () => {
+    const session = { id: 'sessie', startedAt: 1, endedAt: 2, status: 'ended' };
+    for (const checklist of [{ protocol: 'Traveling,Y' }, { observers: 0 }, { complete: 'ja' }]) {
+      const file = exportFile({ sessions: [{ ...session, checklist }] });
+      await expect(importJson(file)).rejects.toThrow('Ongeldige export');
+    }
+  });
+
   it('weigert een prullenbak met een ongeldige waarneming', async () => {
     const file = exportFile({ deletedObservations: [{ ...observation(), count: '3' }] });
     await expect(importJson(file)).rejects.toThrow('Ongeldige export');
