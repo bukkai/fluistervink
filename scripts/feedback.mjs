@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Haalt op wat testers met de app gedeeld hebben (zie src/lib/share.ts en
-// /api/feedback in worker/index.ts) en zet het in testset/feedback/.
+// /api/feedback in worker/feedback.ts) en zet het in testset/feedback/.
 //
 //   npm run feedback -- pull     nieuwe en gewijzigde sessies en opnames ophalen
 //   npm run feedback -- notes    nieuwe feedback als Markdown, nieuwste eerst (--alle: ook verwerkte)

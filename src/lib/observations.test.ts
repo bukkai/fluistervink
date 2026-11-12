@@ -24,7 +24,7 @@ import {
   submitText,
 } from './observations';
 import { UNKNOWN_PLACE_ACCURACY } from './spokenPlace';
-import { distanceMeters } from './interpret';
+import { distanceMeters } from './geo';
 
 // De wachtrij van begin tot eind, met een nagebootst model: wat het model
 // teruggeeft gaat door de echte validatie (parseResponse) en wordt echt in de

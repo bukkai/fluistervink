@@ -27,3 +27,10 @@ export const dateYearTimeFormat = new Intl.DateTimeFormat('nl-NL', {
   dateStyle: 'medium',
   timeStyle: 'short',
 });
+
+/** "vandaag 14:32" of "ma 12 okt 14:32" */
+export function formatMoment(at: number): string {
+  const day =
+    new Date(at).toDateString() === new Date().toDateString() ? 'vandaag' : dayFormat.format(at);
+  return `${day} ${timeFormat.format(at)}`;
+}

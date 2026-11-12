@@ -1,5 +1,6 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import { timeFormat } from './format';
+import { distanceMeters } from './geo';
 import { createMessage, type Timing } from './api';
 import type { Observation, Position, SpokenPlace } from './db';
 import {
@@ -448,16 +449,6 @@ export const promptVersion: Promise<string> = promptVersionFor(false);
 
 /** Vanaf deze afstand staat de afstand in de context (zie "nog een X" in de prompt) */
 const FAR_AWAY_M = 250;
-
-/** Afstand in meters tussen twee posities (haversine) */
-export function distanceMeters(a: Position, b: Position): number {
-  const rad = (deg: number) => (deg * Math.PI) / 180;
-  const dLat = rad(b.lat - a.lat);
-  const dLon = rad(b.lon - a.lon);
-  const h =
-    Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLon / 2) ** 2;
-  return 2 * 6_371_000 * Math.asin(Math.sqrt(h));
-}
 
 /** De systeemprompt verwijst naar deze woorden ("… m hiervandaan"); houd ze gelijk */
 function farAway(obs: Observation, here: Position | undefined): string | undefined {
