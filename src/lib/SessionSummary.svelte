@@ -1,6 +1,6 @@
 <script lang="ts">
-  // Samenvatting van een sessie (ontwikkeloptie, summary.ts): soortenlijst met
-  // aantallen en wat dit jaar nieuw is, ook te kopiëren (bv. voor een appgroep).
+  // Samenvatting van een sessie (instelling, summary.ts): soortenlijst met
+  // aantallen, ook te kopiëren (bv. voor een appgroep).
   import { liveQuery } from 'dexie';
   import type { Session } from './db';
   import { sessionSummary } from './summary';
@@ -8,7 +8,6 @@
   let { session }: { session: Session } = $props();
 
   const lines = $derived(liveQuery(() => sessionSummary(session)));
-  let newOnes = $derived($lines?.filter((line) => line.newThisYear) ?? []);
   let copied = $state(false);
 
   async function copy() {
@@ -20,9 +19,7 @@
     });
     const text = [
       `${title}, ${date}: ${$lines.length} soorten`,
-      ...$lines.map(
-        (line) => `${line.name} ${line.count}${line.newThisYear ? ' (nieuw dit jaar)' : ''}`,
-      ),
+      ...$lines.map((line) => `${line.name} ${line.count}`),
     ].join('\n');
     try {
       await navigator.clipboard.writeText(text);
@@ -41,16 +38,10 @@
       <button class="link" onclick={copy}>{copied ? 'Gekopieerd' : 'Kopiëren'}</button>
     </div>
     <div class="card-body">
-      {#if newOnes.length}
-        <p class="new">
-          Nieuw dit jaar: {newOnes.map((line) => line.name).join(', ')}
-        </p>
-      {/if}
       <ul>
         {#each $lines as line (line.speciesId)}
           <li>
             <span>{line.name}</span>
-            {#if line.newThisYear}<span class="badge">nieuw</span>{/if}
             <span class="count">{line.count}</span>
           </li>
         {/each}
@@ -60,11 +51,6 @@
 {/if}
 
 <style>
-  .new {
-    margin: 0 0 0.75rem;
-    font-weight: 600;
-  }
-
   ul {
     list-style: none;
     margin: 0;
@@ -91,13 +77,5 @@
     margin-left: auto;
     font-variant-numeric: tabular-nums;
     color: var(--muted);
-  }
-
-  .badge {
-    font-size: 0.7rem;
-    padding: 0 0.35rem;
-    border-radius: 0.5rem;
-    background: var(--amber-soft);
-    color: var(--amber);
   }
 </style>
