@@ -181,10 +181,10 @@ export async function exportForWaarneming(sessions: Session[]): Promise<string |
   }
   await markExported(result.sessions, result.exported);
   const n = result.exported.length;
-  const walks = result.sessions.length;
+  const sessionCount = result.sessions.length;
   return [
     `${n === 1 ? '1 waarneming' : `${n} waarnemingen`}` +
-      (walks > 1 ? ` uit ${walks} sessies` : '') +
+      (sessionCount > 1 ? ` uit ${sessionCount} sessies` : '') +
       ' geëxporteerd.',
     saved.folder && `Het bestand staat in ${saved.folder}.`,
     result.skipped.length &&

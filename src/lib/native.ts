@@ -28,7 +28,7 @@ export async function vibrateNative(pattern: number[]): Promise<boolean> {
   }
 }
 
-export interface WalkServiceResult {
+export interface SessionServiceResult {
   ok: boolean;
   /** Waarom het niet lukte */
   reden?: string;
@@ -37,7 +37,7 @@ export interface WalkServiceResult {
 }
 
 interface WandelingPlugin {
-  start(): Promise<WalkServiceResult>;
+  start(): Promise<SessionServiceResult>;
   stop(): Promise<void>;
   status(): Promise<{ draait: boolean; fout?: string; meldingen: boolean }>;
 }
@@ -50,7 +50,7 @@ const Wandeling = registerPlugin<WandelingPlugin>('Wandeling');
  * houdt de app in leven met het scherm uit, zodat de wachtrij doorloopt en de
  * tril na het verwerken toch komt. In de browser bestaat dit niet.
  */
-export async function startWalkService(): Promise<WalkServiceResult> {
+export async function startSessionService(): Promise<SessionServiceResult> {
   if (!isNativeApp) return { ok: false, reden: 'web' };
   try {
     return await Wandeling.start();
@@ -59,11 +59,11 @@ export async function startWalkService(): Promise<WalkServiceResult> {
   }
 }
 
-export async function stopWalkService(): Promise<void> {
+export async function stopSessionService(): Promise<void> {
   if (isNativeApp) await Wandeling.stop().catch(() => {});
 }
 
-export async function walkServiceStatus(): Promise<{ draait: boolean; fout?: string }> {
+export async function sessionServiceStatus(): Promise<{ draait: boolean; fout?: string }> {
   if (!isNativeApp) return { draait: false };
   return Wandeling.status().catch((error) => ({ draait: false, fout: String(error) }));
 }

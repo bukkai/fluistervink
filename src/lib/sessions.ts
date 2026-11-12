@@ -1,4 +1,4 @@
-import { nameFromWalk } from './area';
+import { nameFromSession } from './area';
 import { db, type Session } from './db';
 import { newEffort, resumedEffort, stoppedEffort } from './effort';
 import { logEvent } from './log';
@@ -37,7 +37,7 @@ export async function stopSession(id: string, endedAt = Date.now()): Promise<voi
       ...(session.effort && { effort: stoppedEffort(session.effort, endedAt) }),
     });
   });
-  await nameFromWalk(id);
+  await nameFromSession(id);
 }
 
 /** Antwoord "ja, loopt nog" op de vraag hieronder: telt als voortzetten. */

@@ -5,32 +5,32 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const native = vi.hoisted(() => ({
   isNativeApp: true,
-  startWalkService: vi.fn(),
-  stopWalkService: vi.fn(),
-  walkServiceStatus: vi.fn(),
+  startSessionService: vi.fn(),
+  stopSessionService: vi.fn(),
+  sessionServiceStatus: vi.fn(),
 }));
 vi.mock('./native', () => native);
 
 const logEvent = vi.hoisted(() => vi.fn());
 vi.mock('./log', () => ({ logEvent }));
 
-const { syncWalkService } = await import('./walkService');
+const { syncSessionService } = await import('./sessionService');
 
-describe('syncWalkService', () => {
+describe('syncSessionService', () => {
   beforeEach(async () => {
     vi.useFakeTimers();
-    native.startWalkService.mockResolvedValue({ ok: true, meldingen: true });
-    native.walkServiceStatus.mockResolvedValue({ draait: true });
-    await syncWalkService(undefined);
+    native.startSessionService.mockResolvedValue({ ok: true, meldingen: true });
+    native.sessionServiceStatus.mockResolvedValue({ draait: true });
+    await syncSessionService(undefined);
     vi.clearAllMocks();
   });
   // Vóór het opruimen van de database (src/test-setup.ts), die echte timers nodig heeft
   afterEach(() => vi.useRealTimers());
 
   it('start bij een sessie en logt dat één keer', async () => {
-    await syncWalkService('w1');
-    await syncWalkService('w1');
-    expect(native.startWalkService).toHaveBeenCalledTimes(2);
+    await syncSessionService('w1');
+    await syncSessionService('w1');
+    expect(native.startSessionService).toHaveBeenCalledTimes(2);
     expect(logEvent).toHaveBeenCalledTimes(1);
     expect(logEvent).toHaveBeenCalledWith(
       'walk_service_started',
@@ -40,9 +40,12 @@ describe('syncWalkService', () => {
   });
 
   it('logt opnieuw als het eerst niet lukte en daarna wel', async () => {
-    native.startWalkService.mockResolvedValueOnce({ ok: false, reden: 'geen locatietoestemming' });
-    await syncWalkService('w1');
-    await syncWalkService('w1');
+    native.startSessionService.mockResolvedValueOnce({
+      ok: false,
+      reden: 'geen locatietoestemming',
+    });
+    await syncSessionService('w1');
+    await syncSessionService('w1');
     expect(logEvent.mock.calls.map((call) => call[1])).toEqual([
       { ok: false, reden: 'geen locatietoestemming' },
       { ok: true, meldingen: true },
@@ -50,8 +53,8 @@ describe('syncWalkService', () => {
   });
 
   it('logt als de service na het starten toch niet draait', async () => {
-    native.walkServiceStatus.mockResolvedValue({ draait: false, fout: 'SecurityException' });
-    await syncWalkService('w1');
+    native.sessionServiceStatus.mockResolvedValue({ draait: false, fout: 'SecurityException' });
+    await syncSessionService('w1');
     await vi.advanceTimersByTimeAsync(2000);
     expect(logEvent).toHaveBeenLastCalledWith(
       'walk_service_failed',
@@ -61,9 +64,9 @@ describe('syncWalkService', () => {
   });
 
   it('stopt zonder sessie', async () => {
-    await syncWalkService('w1');
-    await syncWalkService(undefined);
-    expect(native.stopWalkService).toHaveBeenCalled();
+    await syncSessionService('w1');
+    await syncSessionService(undefined);
+    expect(native.stopSessionService).toHaveBeenCalled();
     expect(logEvent).toHaveBeenLastCalledWith('walk_service_stopped');
   });
 });

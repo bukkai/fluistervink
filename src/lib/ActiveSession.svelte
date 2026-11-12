@@ -10,7 +10,7 @@
   import { onAudioLimit, submitRecording, submitText } from './observations';
   import { recorder, startRecording, stopRecording } from './recorder.svelte';
   import SessionLog from './SessionLog.svelte';
-  import { syncWalkService } from './walkService';
+  import { syncSessionService } from './sessionService';
   import { createTalkButton } from './talkButton';
   import { trektelEnabled } from './trektel';
   import { startTrektel, stopTrektel, trektel, trektelSupported } from './trektelRecorder.svelte';
@@ -116,7 +116,7 @@
       // Tijd en positie horen bij het begin van de opname, niet bij het eind
       lookup = currentPosition();
       // Lukte de service bij de start nog niet (geen locatietoestemming), dan nu
-      syncWalkService(session.id);
+      syncSessionService(session.id);
       if (!(await startRecording())) {
         // Niet stil mislukken: wie niet naar het scherm kijkt, denkt anders dat hij opneemt
         if (recorder.failed) vibrate('failed');
@@ -182,7 +182,7 @@
 
   async function beginTrektel() {
     if (recorder.status !== 'idle') return;
-    syncWalkService(session.id);
+    syncSessionService(session.id);
     const sessionId = session.id;
     const started = await startTrektel({
       onChunkStart: () => currentPosition(),

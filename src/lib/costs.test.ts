@@ -83,11 +83,11 @@ describe('summarize', () => {
 
   it('middelt per uitspraak en per sessie (zonder de testset)', () => {
     expect(summary.perUtterance).toBeCloseTo((3 + 0.5) / 3);
-    expect(summary.perWalk).toBeCloseTo((3 + 0.5) / 2);
+    expect(summary.perSession).toBeCloseTo((3 + 0.5) / 2);
   });
 
   it('zet de duurste sessies bovenaan, ook die van vorige maand', () => {
-    expect(summary.topWalks.map((w) => [w.session, w.utterances])).toEqual([
+    expect(summary.topSessions.map((w) => [w.session, w.utterances])).toEqual([
       ['sessie-1', 2],
       ['oud', 0],
       ['sessie-2', 1],

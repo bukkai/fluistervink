@@ -213,7 +213,7 @@ describe('meer sessies in één export', () => {
 });
 
 describe('exportForWaarneming', () => {
-  async function walkWithObservation() {
+  async function sessionWithObservation() {
     await db.sessions.add(session);
     const obs = observation({ position });
     await db.observations.add(obs);
@@ -221,7 +221,7 @@ describe('exportForWaarneming', () => {
   }
 
   it('markeert als geëxporteerd als het bestand is opgeslagen', async () => {
-    const obs = await walkWithObservation();
+    const obs = await sessionWithObservation();
     saveFile.mockResolvedValueOnce({});
     expect(await exportForWaarneming([session])).toBe('1 waarneming geëxporteerd.');
     expect((await db.sessions.get(session.id))?.exportedAt).toBeDefined();
@@ -229,7 +229,7 @@ describe('exportForWaarneming', () => {
   });
 
   it('zegt in de app in welke map het bestand staat', async () => {
-    await walkWithObservation();
+    await sessionWithObservation();
     saveFile.mockResolvedValueOnce({ folder: 'Downloads' });
     expect(await exportForWaarneming([session])).toBe(
       '1 waarneming geëxporteerd. Het bestand staat in Downloads.',
@@ -237,7 +237,7 @@ describe('exportForWaarneming', () => {
   });
 
   it('markeert niets als de gebruiker het opslaan annuleert', async () => {
-    const obs = await walkWithObservation();
+    const obs = await sessionWithObservation();
     saveFile.mockResolvedValueOnce(false);
     expect(await exportForWaarneming([session])).toBeUndefined();
     expect((await db.sessions.get(session.id))?.exportedAt).toBeUndefined();
@@ -245,7 +245,7 @@ describe('exportForWaarneming', () => {
   });
 
   it('meldt het en markeert niets als het opslaan mislukt', async () => {
-    await walkWithObservation();
+    await sessionWithObservation();
     saveFile.mockRejectedValueOnce(new Error('geen ruimte'));
     expect(await exportForWaarneming([session])).toBe('Opslaan mislukt: geen ruimte');
     expect((await db.sessions.get(session.id))?.exportedAt).toBeUndefined();

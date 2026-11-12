@@ -66,7 +66,7 @@ export function rowCost(row: UsageRow): number | undefined {
 /** Spraakherkenning: één verzoek per opgenomen uitspraak. */
 export const isTranscription = (row: UsageRow) => !row.model.startsWith('claude-');
 
-export interface WalkCost {
+export interface SessionCost {
   session: string;
   tester: string;
   /** Eerste dag met verbruik */
@@ -87,9 +87,9 @@ export interface CostSummary {
   /** Gemiddeld per opgenomen uitspraak in een sessie, deze maand */
   perUtterance?: number;
   /** Gemiddeld per sessie, deze maand (zonder de testset) */
-  perWalk?: number;
+  perSession?: number;
   /** Duurste sessies over alle opgehaalde regels */
-  topWalks: WalkCost[];
+  topSessions: SessionCost[];
   /** Modellen zonder prijs: die tellen niet mee */
   unknownModels: string[];
 }
@@ -120,15 +120,15 @@ export function summarize(rows: UsageRow[], now = new Date()): CostSummary {
     openai: 0,
     anthropic: 0,
     perTester: [],
-    topWalks: [],
+    topSessions: [],
     unknownModels: [],
   };
   const testers = new Map<string, { cost: number; utterances: number }>();
-  const walks = new Map<string, WalkCost>();
+  const sessions = new Map<string, SessionCost>();
   const unknown = new Set<string>();
   // Alleen sessies, niet de testset: die zou het gemiddelde vertekenen
-  let walkCost = 0;
-  let walkUtterances = 0;
+  let sessionCost = 0;
+  let sessionUtterances = 0;
 
   for (const row of rows) {
     const cost = rowCost(row);
@@ -148,37 +148,38 @@ export function summarize(rows: UsageRow[], now = new Date()): CostSummary {
       tester.utterances += spoken;
       testers.set(row.tester, tester);
       if (row.session) {
-        walkCost += cost;
-        walkUtterances += spoken;
+        sessionCost += cost;
+        sessionUtterances += spoken;
       }
     }
     if (row.session) {
       // Per tester: twee apparaten maken nooit hetzelfde id, maar zo blijft
       // een sessie bij de tester van wie hij is
       const key = `${row.tester}/${row.session}`;
-      const walk = walks.get(key) ?? {
+      const entry = sessions.get(key) ?? {
         session: row.session,
         tester: row.tester,
         day: row.day,
         cost: 0,
         utterances: 0,
       };
-      walk.cost += cost;
-      walk.utterances += spoken;
-      if (row.day < walk.day) walk.day = row.day;
-      walks.set(key, walk);
+      entry.cost += cost;
+      entry.utterances += spoken;
+      if (row.day < entry.day) entry.day = row.day;
+      sessions.set(key, entry);
     }
   }
 
   summary.perTester = [...testers]
     .map(([tester, totals]) => ({ tester, ...totals }))
     .sort((a, b) => b.cost - a.cost);
-  if (walkUtterances) summary.perUtterance = walkCost / walkUtterances;
-  const walksThisMonth = [...walks.values()].filter((w) => w.day.startsWith(month));
-  if (walksThisMonth.length) {
-    summary.perWalk = walksThisMonth.reduce((sum, w) => sum + w.cost, 0) / walksThisMonth.length;
+  if (sessionUtterances) summary.perUtterance = sessionCost / sessionUtterances;
+  const sessionsThisMonth = [...sessions.values()].filter((w) => w.day.startsWith(month));
+  if (sessionsThisMonth.length) {
+    summary.perSession =
+      sessionsThisMonth.reduce((sum, w) => sum + w.cost, 0) / sessionsThisMonth.length;
   }
-  summary.topWalks = [...walks.values()].sort((a, b) => b.cost - a.cost).slice(0, 5);
+  summary.topSessions = [...sessions.values()].sort((a, b) => b.cost - a.cost).slice(0, 5);
   summary.unknownModels = [...unknown];
   return summary;
 }

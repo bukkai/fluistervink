@@ -275,7 +275,7 @@ export interface Tester {
   lastUsed?: string;
   /** Wat de tester gedeeld heeft; leeg als er (nog) niets gedeeld is */
   usage?: {
-    walks: number;
+    sessions: number;
     utterances: number;
     notes: number;
     lastActivity?: number;
