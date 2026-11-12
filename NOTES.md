@@ -7,13 +7,15 @@ Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/ro
 ## Nu (12 nov)
 
 - **Lancering in Play** (`docs/lancering.md`): gesloten test loopt sinds 9 nov. Nog: 15–20 testers werven en de deelnamelink sturen; plafond en daglimiet bij OpenAI en Anthropic nalopen.
-- **Laatst gemerged:** eBird-export deel 1 (#220), samenvatting zonder "nieuw dit jaar" (#219), inspreekknop hoger en "Wat zei ik?" weg (#218), trektelling zonder lege tril bij Stop (#217), kandidaten-fix (#216).
+- **Code opruimen:** drie PR's gemerged (#222 gedeelde stijlen, datumopmaak en één audiospeler; #223 "walk" uit de code; #224 `geo.ts`, `worker/feedback.ts`, `StillBirding.svelte`). Nog één stap, pas na de lancering: `src/lib/observations.ts` (ruim 1.000 regels) splitsen in wachtrij, acties toepassen en bewerken, als pure verplaatsing.
+- **Laatst gemerged:** opruimen (#222–#224), eBird-export deel 1 (#220), samenvatting zonder "nieuw dit jaar" (#219), inspreekknop hoger en "Wat zei ik?" weg (#218), trektelling zonder lege tril bij Stop (#217), kandidaten-fix (#216).
 
 ## Na het mergen nog proberen
 
 Uit de PR's van 6–12 nov; elk punt na het proberen hier weghalen.
 
 - **eBird** (ontwikkeloptie, `docs/plan-ebird.md`): een wandeling en een fietstocht naast Strava of Komoot vergelijken (#212; telling van overgeslagen metingen in het log, `distance_fixes`). Een eigen sessie echt importeren bij eBird en noteren welke soorten "Fix Species" nodig hadden; in de Android-app nagaan of het uploadveld de .csv neemt (#220). Daarna beslissen over deel 2 (soortnamen van eBird) en fase 3 (voor iedereen).
+- **Opname afspelen** (#222): op de telefoon bij het nalopen en in het bewerkformulier een opname afspelen; nog eens tikken moet pauzeren (⏸), en een tweede opname stopt de eerste.
 - **Twijfel tussen soorten** (ontwikkeloptie, #214/#216): "tjiftjaf of fitis" inspreken (moet zonder 400-fout), een paar wandelingen, dan `npm run testset -- <export> --kandidaten` naast een gewone run. Daarna beslissen of hij voor iedereen aangaat.
 - **Bereik als schatting** (#215): na een wandeling met grote groepen nagaan of het model "tussen de vijftig en honderd" als schatting met opmerking geeft.
 - **Ontwikkelopties** stem en "voorbeeldzin wordt onzeker" een paar wandelingen meenemen en per optie beslissen ("Roepje vink" kan echt zijn: tellen hoe vaak hij terecht aanslaat).
