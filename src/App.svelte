@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { dayFormat, timeFormat } from './lib/format';
+  import { dayFormat, formatMoment, timeFormat } from './lib/format';
+  import StillBirding from './lib/StillBirding.svelte';
   import { liveQuery } from 'dexie';
   import { onDestroy } from 'svelte';
   import {
@@ -225,13 +226,6 @@
     location.hash = `sessie/${session.id}`;
   }
 
-  /** "vandaag 14:32" of "ma 12 okt 14:32" */
-  function formatMoment(at: number): string {
-    const day =
-      new Date(at).toDateString() === new Date().toDateString() ? 'vandaag' : dayFormat.format(at);
-    return `${day} ${timeFormat.format(at)}`;
-  }
-
   /** Net gestopte sessie, voor de bevestiging "opgeslagen" */
   let justStopped = $state<string>();
 
@@ -331,14 +325,11 @@
       <button class="stop" onclick={stop}>Stop</button>
     </section>
     {#if askStillBirding}
-      <div class="still-birding card">
-        <strong>Ben je nog aan het vogelen?</strong>
-        <p>Sinds {formatMoment(askStillBirding.lastActivityAt)} is er niets ingesproken.</p>
-        <div class="buttons">
-          <button class="btn" onclick={keepBirding}>Ja, ga door</button>
-          <button class="btn secondary" onclick={stopForgotten}>Nee, stoppen</button>
-        </div>
-      </div>
+      <StillBirding
+        lastActivityAt={askStillBirding.lastActivityAt}
+        onkeep={keepBirding}
+        onstop={stopForgotten}
+      />
     {/if}
     <ActiveSession session={active} />
   {:else}
@@ -568,22 +559,6 @@
   }
 
   .consent-buttons,
-  .still-birding .buttons {
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  .still-birding {
-    display: grid;
-    gap: 0.5rem;
-    margin-top: 0.75rem;
-    padding: 0.9rem 1rem;
-  }
-
-  .still-birding p {
-    margin: 0;
-  }
-
   .last {
     display: flex;
     align-items: center;

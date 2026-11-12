@@ -1,5 +1,5 @@
 import { db, type Effort, type Position, type Session } from './db';
-import { distanceMeters } from './interpret';
+import { distanceMeters } from './geo';
 
 // Inspanning van een sessie: hoe lang en hoe ver er gevogeld is, voor een
 // eBird-checklist (docs/plan-ebird.md). De afstand werkt als een

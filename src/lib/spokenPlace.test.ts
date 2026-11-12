@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { distanceMeters } from './interpret';
+import { distanceMeters } from './geo';
 import {
   UNKNOWN_PLACE_ACCURACY,
   describePlace,

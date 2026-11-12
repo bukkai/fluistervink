@@ -8,13 +8,7 @@ import {
   observation,
   toolResponse,
 } from '../test-helpers';
-import {
-  describeContext,
-  distanceMeters,
-  MAX_OPTIONAL_PARAMETERS,
-  parseResponse,
-  toolsFor,
-} from './interpret';
+import { describeContext, MAX_OPTIONAL_PARAMETERS, parseResponse, toolsFor } from './interpret';
 
 // parseResponse is de poortwachter tussen model en database: wat hier
 // doorkomt, voert de app uit. Het model mag geen soorten verzinnen en niet
@@ -315,11 +309,6 @@ describe('plek uit de uitspraak', () => {
 describe('describeContext', () => {
   const here = { lat: 52.0557, lon: 5.4, accuracy: 10, fixedAt: 0 };
   const at = (lat: number, lon: number) => ({ lat, lon, accuracy: 10, fixedAt: 0 });
-
-  it('meet afstanden in meters', () => {
-    // 0,01° noorderbreedte is ruim 1,1 km
-    expect(distanceMeters(here, at(52.0657, 5.4))).toBeCloseTo(1112, -1);
-  });
 
   it('noemt de afstand alleen als een waarneming ver weg is', () => {
     const text = describeContext(
