@@ -157,12 +157,19 @@ const fieldProperties = {
  */
 const candidateProperty = {
   candidate_species: {
-    type: 'array',
-    items: { type: 'string' },
+    anyOf: [{ type: 'array', items: { type: 'string' } }, { type: 'null' }],
     description:
-      'Alleen bij twijfel tussen twee of drie bepaalde soorten: hun namen precies zoals in de soortenlijst, bv. ["Fitis", "Tjiftjaf"]. Zie "Twijfel".',
+      'Alleen bij twijfel tussen twee of drie bepaalde soorten: hun namen precies zoals in de soortenlijst, bv. ["Fitis", "Tjiftjaf"], anders null. Zie "Twijfel".',
   },
 } as const;
+
+/**
+ * Anthropic weigert strikte tools met samen meer optionele velden dan dit
+ * (400 "too many optional parameters"). Zonder kandidaten zitten we er precies
+ * op; daarom is candidate_species verplicht (null als er geen twijfel is) en
+ * alleen in add_observation. Een test bewaakt de grens.
+ */
+export const MAX_OPTIONAL_PARAMETERS = 24;
 
 /** Hooguit zoveel kandidaten; meer is geen twijfel tussen soorten maar een groep */
 const MAX_CANDIDATES = 3;
@@ -176,6 +183,7 @@ const buildTools = (withCandidates: boolean): Anthropic.Tool[] => {
   const properties = withCandidates
     ? { ...fieldProperties, ...candidateProperty }
     : fieldProperties;
+  const candidateRequired = withCandidates ? ['candidate_species'] : [];
   return [
     {
       name: 'add_observation',
@@ -196,6 +204,7 @@ const buildTools = (withCandidates: boolean): Anthropic.Tool[] => {
           'life_stage_id',
           'sex',
           'uncertain',
+          ...candidateRequired,
         ],
         additionalProperties: false,
       },
@@ -209,7 +218,7 @@ const buildTools = (withCandidates: boolean): Anthropic.Tool[] => {
         type: 'object',
         properties: {
           ref: refProperty,
-          ...properties,
+          ...fieldProperties,
           add_count: {
             type: 'integer',
             description:
@@ -274,7 +283,7 @@ const codeList = (codes: Code[]) => codes.map((c) => `${c.id} ${c.name}`).join('
 
 const CANDIDATE_RULES = `
 
-Twijfel je tussen twee of drie bepaalde soorten (de gebruiker zegt "fitis of tjiftjaf", "kleine of grote zilverreiger", of de spraakherkenning laat twee soorten open), zet die dan in candidate_species, met de namen precies zoals in de soortenlijst, en uncertain: true. Kies voor species_name dan de verzamelsoort die precies die soorten omvat als die in de lijst staat ("Tjiftjaf of Fitis", "Wilde of Kleine Zwaan"), anders de meest waarschijnlijke kandidaat. Laat candidate_species weg als je maar één soort in gedachten hebt, en bij een hele groep ("een meeuw" → Meeuw onbekend, zonder kandidaten). Kiest de gebruiker later ("het was een fitis"), dan update_observation met die soort en uncertain: false.`;
+Twijfel je tussen twee of drie bepaalde soorten (de gebruiker zegt "fitis of tjiftjaf", "kleine of grote zilverreiger", of de spraakherkenning laat twee soorten open), zet die dan bij add_observation in candidate_species, met de namen precies zoals in de soortenlijst, en uncertain: true. Kies voor species_name dan de verzamelsoort die precies die soorten omvat als die in de lijst staat ("Tjiftjaf of Fitis", "Wilde of Kleine Zwaan"), anders de meest waarschijnlijke kandidaat. Zet candidate_species op null als je maar één soort in gedachten hebt, en bij een hele groep ("een meeuw" → Meeuw onbekend, zonder kandidaten). Kiest de gebruiker later ("het was een fitis"), dan update_observation met die soort en uncertain: false.`;
 
 const buildPrompt = (
   withCandidates: boolean,
@@ -426,6 +435,9 @@ function variant(withCandidates: boolean): Variant {
  * resultaten van verschillende promptversies uit elkaar te houden zijn.
  */
 export const promptVersionFor = (withCandidates = false) => variant(withCandidates).version;
+
+/** De tools van een variant (voor de tests) */
+export const toolsFor = (withCandidates = false) => variant(withCandidates).tools;
 
 /** De gewone promptversie (zonder ontwikkelopties), voor de testset */
 export const promptVersion: Promise<string> = promptVersionFor(false);

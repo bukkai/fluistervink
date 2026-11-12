@@ -8,7 +8,13 @@ import {
   observation,
   toolResponse,
 } from '../test-helpers';
-import { describeContext, distanceMeters, parseResponse } from './interpret';
+import {
+  describeContext,
+  distanceMeters,
+  MAX_OPTIONAL_PARAMETERS,
+  parseResponse,
+  toolsFor,
+} from './interpret';
 
 // parseResponse is de poortwachter tussen model en database: wat hier
 // doorkomt, voert de app uit. Het model mag geen soorten verzinnen en niet
@@ -336,5 +342,18 @@ describe('describeContext', () => {
   it('noemt geen afstand als de uitspraak nog geen positie heeft', () => {
     const text = describeContext([observation({ position: at(52.051, 5.4583) })]);
     expect(text).not.toMatch(/hiervandaan/);
+  });
+});
+
+// Anthropic weigert anders elke uitspraak met een 400 (feedback 12 nov: met
+// de kandidaten aan waren het er 26). Een nagebootst model merkt dat niet.
+describe('tools', () => {
+  it.each([false, true])('blijven onder de grens van optionele velden (kandidaten: %s)', (k) => {
+    let optional = 0;
+    for (const tool of toolsFor(k)) {
+      const schema = tool.input_schema as { properties?: object; required?: string[] };
+      optional += Object.keys(schema.properties ?? {}).length - (schema.required?.length ?? 0);
+    }
+    expect(optional).toBeLessThanOrEqual(MAX_OPTIONAL_PARAMETERS);
   });
 });
