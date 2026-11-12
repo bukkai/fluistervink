@@ -32,8 +32,11 @@ Status onbekend sinds Terschelling (8 nov), even nalopen en dan weghalen: slepen
 
 - **STT gaf één keer zelf antwoord** in plaats van te transcriberen ("Sorry, ik kan niet voldoen aan het verzoek …", 11 okt) en liet daarbij het woord "feedback" weg. Onschuldig.
 - Cloudflare-previews: vermoedelijk onthoudt Cloudflare het deploy-commando per branch vanaf de eerste build. Bij problemen: nieuwe branch maken.
-- Een branch-regel op `main` met verplichte check kon niet zolang de repo privé was (GitHub zonder Pro). De repo is nu publiek, dus het kan wel; nog niet ingesteld.
 - Verstaanfouten die blijven: "ekster" → "extra", meerkoet → "merel"/"meeuw" (zit in de opname; laten liggen, besloten 11 nov).
+
+## Branch-regel op main
+
+Sinds 12 nov een ruleset "main beschermen" (GitHub → Settings → Rules): een PR kan pas gemerged worden als de check `check` groen is; geen force-push, `main` niet te verwijderen. De eigenaar (beheerder) mag er altijd omheen, dus NOTES-commits direct op `main` blijven werken, en een PR met een hangende check kun je toch mergen ("bypass rules"). De PR's van de soortenlijst-workflow krijgen geen check vanzelf (GITHUB_TOKEN): sluiten en heropenen, of omheen mergen.
 
 ## Overstappen tussen computers
 
