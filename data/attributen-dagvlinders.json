@@ -1,0 +1,164 @@
+{
+ "activity": [
+  {
+   "id": 20,
+   "name": "ter plaatse"
+  },
+  {
+   "id": 3181,
+   "name": "foeragerend"
+  },
+  {
+   "id": 23,
+   "name": "dood"
+  },
+  {
+   "id": 33,
+   "name": "in copula"
+  },
+  {
+   "id": 73,
+   "name": "langstrekkend noord"
+  },
+  {
+   "id": 75,
+   "name": "langstrekkend oost"
+  },
+  {
+   "id": 76,
+   "name": "langstrekkend west"
+  },
+  {
+   "id": 74,
+   "name": "langstrekkend zuid"
+  },
+  {
+   "id": 3123,
+   "name": "overvliegend"
+  },
+  {
+   "id": 3065,
+   "name": "overwinterend"
+  },
+  {
+   "id": 3270,
+   "name": "slachtoffer verdrinking"
+  },
+  {
+   "id": 3102,
+   "name": "vangst door kat"
+  },
+  {
+   "id": 2037,
+   "name": "slachtoffer verkeer"
+  },
+  {
+   "id": 3132,
+   "name": "spinselnest"
+  },
+  {
+   "id": 3282,
+   "name": "verplaatst van locatie"
+  },
+  {
+   "id": 3200,
+   "name": "zonnend"
+  },
+  {
+   "id": 34,
+   "name": "eileggend"
+  },
+  {
+   "id": 3201,
+   "name": "op licht"
+  },
+  {
+   "id": 3202,
+   "name": "geparasiteerd"
+  },
+  {
+   "id": 3320,
+   "name": "Balts gedrag"
+  }
+ ],
+ "method": [
+  {
+   "id": 172,
+   "name": "onbekend"
+  },
+  {
+   "id": 173,
+   "name": "gezien"
+  },
+  {
+   "id": 152,
+   "name": "gevangen"
+  },
+  {
+   "id": 612,
+   "name": "lichtval"
+  },
+  {
+   "id": 613,
+   "name": "malaiseval"
+  },
+  {
+   "id": 614,
+   "name": "kleurval"
+  },
+  {
+   "id": 615,
+   "name": "andere val"
+  },
+  {
+   "id": 616,
+   "name": "uitgekweekt en losgelaten"
+  },
+  {
+   "id": 157,
+   "name": "verzameld (in collectie)"
+  },
+  {
+   "id": 167,
+   "name": "(e)dna barcoding"
+  },
+  {
+   "id": 617,
+   "name": "binnenshuis"
+  },
+  {
+   "id": 797,
+   "name": "op smeer"
+  },
+  {
+   "id": 816,
+   "name": "translocatie"
+  }
+ ],
+ "life_stage": [
+  {
+   "id": 19,
+   "name": "onbekend"
+  },
+  {
+   "id": 29,
+   "name": "imago"
+  },
+  {
+   "id": 23,
+   "name": "rups"
+  },
+  {
+   "id": 26,
+   "name": "pop"
+  },
+  {
+   "id": 66,
+   "name": "ei"
+  },
+  {
+   "id": 89,
+   "name": "afwijkend"
+  }
+ ]
+}

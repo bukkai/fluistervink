@@ -1,10 +1,23 @@
+import dragonflyAttributes from '../../data/attributen-libellen.json';
+import butterflyAttributes from '../../data/attributen-dagvlinders.json';
+import herpAttributes from '../../data/attributen-reptielen-amfibieen.json';
 import attributes from '../../data/attributen-vogels.json';
+import mammalAttributes from '../../data/attributen-zoogdieren.json';
 import aliasList from '../../data/bijnamen.json';
 import allSpeciesList from '../../data/soorten-nl-alle.json';
 import speciesList from '../../data/soorten-nl.json';
 
 // Vaste lijsten met waarneming.nl-ID's: soorten, gedrag, methode, kleed en
-// telmethode. Zie docs/waarneming-nl.md.
+// telmethode. Zie docs/waarneming-nl.md. Naast vogels ook zoogdieren,
+// reptielen en amfibieën, dagvlinders en libellen (docs/plan-soortgroepen.md);
+// die zijn nog niet in de app te kiezen.
+
+/**
+ * Soortgroep van waarneming.nl: 1 vogels, 2 zoogdieren, 3 reptielen en
+ * amfibieën, 4 dagvlinders, 5 libellen
+ */
+export type GroupId = 1 | 2 | 3 | 4 | 5;
+export const BIRDS: GroupId = 1;
 
 export interface Species {
   id: number;
@@ -17,6 +30,7 @@ export interface Species {
    */
   type: 'S' | 'M' | 'Y' | 'F' | 'I';
   rarity: number;
+  group: GroupId;
 }
 
 export interface Code {
@@ -25,16 +39,27 @@ export interface Code {
   name: string;
 }
 
-/** Soorten in de prompt: het model kiest alleen hieruit */
-export const species = speciesList as Species[];
+/** Soorten in de prompt van alle groepen; voorlopig gaan alleen de vogels naar het model */
+const promptSpeciesAllGroups = speciesList as Species[];
+
+/** Vogels in de prompt: het model kiest alleen hieruit */
+export const species = promptSpeciesAllGroups.filter((s) => s.group === BIRDS);
 const promptSpeciesIds = new Set(species.map((s) => s.id));
 
+/** Soorten van een andere groep die in de prompt kunnen (nog niet gebruikt) */
+export function promptSpeciesOf(group: GroupId): Species[] {
+  return promptSpeciesAllGroups.filter((s) => s.group === group);
+}
+
+/** Alle soorten van alle groepen, ook zeer zeldzame: om een ID op te zoeken */
+const allSpeciesAllGroups = allSpeciesList as Species[];
+const speciesById = new Map(allSpeciesAllGroups.map((s) => [s.id, s]));
+
 /**
- * Alle Nederlandse soorten van waarneming.nl, ook zeer zeldzame dwaalgasten.
+ * Alle Nederlandse vogels van waarneming.nl, ook zeer zeldzame dwaalgasten.
  * Voor het bewerkformulier, zodat je zo'n waarneming thuis goed kunt zetten.
  */
-export const allSpecies = allSpeciesList as Species[];
-const speciesById = new Map(allSpecies.map((s) => [s.id, s]));
+export const allSpecies = allSpeciesAllGroups.filter((s) => s.group === BIRDS);
 
 /**
  * Soort-ID's die waarneming.nl heeft vervangen. Oude waarnemingen houden het
@@ -186,7 +211,11 @@ const FIELD_LIFE_STAGES = [
 ];
 
 function pick(codes: Code[], ids: number[]): Code[] {
-  return ids.map((id) => codes.find((c) => c.id === id)!);
+  return ids.map((id) => {
+    const code = codes.find((c) => c.id === id);
+    if (!code) throw new Error(`Code ${id} staat niet in de lijst van waarneming.nl`);
+    return code;
+  });
 }
 
 /** Alle codes van waarneming.nl: voor het formulier, de weergave en de export */
@@ -215,4 +244,234 @@ export const DEFAULT_COUNTING_METHOD = 2; // exact aantal
 
 export function codeName(codes: Code[], id: number | undefined): string | undefined {
   return codes.find((c) => c.id === id)?.name;
+}
+
+// ---------------------------------------------------------------------------
+// Codes per soortgroep. Elke groep heeft bij waarneming.nl eigen ID's voor
+// gedrag, methode en kleed: "ter plaatse" is 1 bij vogels, 15 bij zoogdieren.
+// Een waarneming bewaart de ID's van de groep van haar soort.
+
+export interface GroupCodes {
+  /** Alle codes van waarneming.nl: voor het formulier, de weergave en de export */
+  allActivities: Code[];
+  allMethods: Code[];
+  allLifeStages: Code[];
+  /** Codes in de prompt: wat je tijdens het vogelen zegt */
+  activities: Code[];
+  methods: Code[];
+  lifeStages: Code[];
+  /** Ter plaatse */
+  defaultActivity: number;
+  /** Gezien */
+  defaultMethod: number;
+}
+
+export interface Group {
+  id: GroupId;
+  /** Zoals op waarneming.nl */
+  name: string;
+  codes: GroupCodes;
+}
+
+interface Attributes {
+  activity: Code[];
+  method: Code[];
+  life_stage: Code[];
+}
+
+function groupCodes(
+  source: Attributes,
+  field: { activities: number[]; methods: number[]; lifeStages: number[] },
+  defaults: { activity: number; method: number },
+): GroupCodes {
+  return {
+    allActivities: source.activity,
+    allMethods: source.method,
+    allLifeStages: source.life_stage,
+    activities: pick(source.activity, field.activities),
+    methods: pick(source.method, field.methods),
+    lifeStages: pick(source.life_stage, field.lifeStages),
+    defaultActivity: pick(source.activity, [defaults.activity])[0].id,
+    defaultMethod: pick(source.method, [defaults.method])[0].id,
+  };
+}
+
+// De korte lijsten voor de prompt, per groep. Uit de volledige lijst alleen
+// wat je in het veld ziet of zegt; geen vallen, collecties of DNA.
+const GROUPS: Record<GroupId, Group> = {
+  1: {
+    id: 1,
+    name: 'Vogels',
+    codes: {
+      allActivities,
+      allMethods,
+      allLifeStages,
+      activities,
+      methods,
+      lifeStages,
+      defaultActivity: DEFAULT_ACTIVITY,
+      defaultMethod: DEFAULT_METHOD,
+    },
+  },
+  2: {
+    id: 2,
+    name: 'Zoogdieren',
+    codes: groupCodes(
+      mammalAttributes,
+      {
+        // ter plaatse, foeragerend, overvliegend (vleermuizen), roepend, vluchtend,
+        // zwemmend, dood, slachtoffer verkeer, ziek/gewond, (nabij) nest / burcht
+        activities: [15, 16, 72, 71, 2022, 2029, 18, 67, 2021, 2023],
+        // gezien, gehoord, gezien en gehoord, batdetector, uitwerpselen, prenten,
+        // vraatsporen, andere sporen, op geluidsrecorder
+        methods: [123, 124, 126, 119, 591, 592, 593, 595, 597],
+        // adult, juveniel, subadult
+        lifeStages: [20, 27, 1002],
+      },
+      { activity: 15, method: 123 },
+    ),
+  },
+  3: {
+    id: 3,
+    name: 'Reptielen en amfibieën',
+    codes: groupCodes(
+      herpAttributes,
+      {
+        // ter plaatse, foeragerend, roepend, parend, eileggend, zonnend, dood,
+        // slachtoffer verkeer
+        activities: [19, 3180, 64, 3198, 3271, 3155, 21, 2005],
+        // gezien, gehoord, gezien en gehoord
+        methods: [148, 149, 151],
+        // adult, juveniel, subadult, larve, ei, vervellingshuidje
+        lifeStages: [21, 71, 73, 74, 24, 1094],
+      },
+      { activity: 19, method: 148 },
+    ),
+  },
+  4: {
+    id: 4,
+    name: 'Dagvlinders',
+    codes: groupCodes(
+      butterflyAttributes,
+      {
+        // ter plaatse, foeragerend, in copula, eileggend, zonnend, overvliegend,
+        // langstrekkend noord, zuid, oost, west, dood
+        activities: [20, 3181, 33, 34, 3200, 3123, 73, 74, 75, 76, 23],
+        // gezien
+        methods: [173],
+        // imago, rups, pop, ei
+        lifeStages: [29, 23, 26, 66],
+      },
+      { activity: 20, method: 173 },
+    ),
+  },
+  5: {
+    id: 5,
+    name: 'Libellen',
+    codes: groupCodes(
+      dragonflyAttributes,
+      {
+        // ter plaatse, foeragerend, in copula, tandem, eileggend, territoriaal,
+        // vervellend (uitsluipend), overvliegend, dood
+        activities: [45, 3183, 47, 3272, 48, 3235, 50, 3127, 46],
+        // gezien
+        methods: [198],
+        // imago, larve/nimf, imago niet uitgekleurd, larvenhuidje
+        lifeStages: [37, 41, 75, 131],
+      },
+      { activity: 45, method: 198 },
+    ),
+  },
+};
+
+export const groups: Group[] = Object.values(GROUPS);
+
+export function getGroup(id: GroupId): Group {
+  return GROUPS[id];
+}
+
+/** Groep van een soort; vogels als het ID onbekend is (oude of vervangen soort) */
+export function groupOf(speciesId: number): GroupId {
+  return getSpecies(speciesId)?.group ?? BIRDS;
+}
+
+/** Gedrag, methode en kleed van de groep van deze soort */
+export function codesFor(speciesId: number): GroupCodes {
+  return GROUPS[groupOf(speciesId)].codes;
+}
+
+/**
+ * Namen die per groep anders heten maar hetzelfde betekenen. Bij een wissel
+ * van groep zoekt de app eerst dezelfde naam, dan een naam uit dezelfde rij.
+ */
+const SAME_MEANING = [
+  ['dood', 'vondst (dood)'],
+  ['adult', 'imago'],
+];
+
+function convertCode(
+  from: Code[],
+  to: Code[],
+  id: number | undefined,
+  fallback: number | undefined,
+): number | undefined {
+  const name = codeName(from, id);
+  if (name === undefined) return fallback;
+  const byName = (n: string) => to.find((c) => c.name === n)?.id;
+  const same = byName(name);
+  if (same !== undefined) return same;
+  for (const row of SAME_MEANING) {
+    if (!row.includes(name)) continue;
+    for (const other of row) {
+      const found = byName(other);
+      if (found !== undefined) return found;
+    }
+  }
+  // "overvliegend noord" bij vogels, maar alleen "overvliegend" bij zoogdieren
+  if (name.startsWith('overvliegend ')) return byName('overvliegend') ?? fallback;
+  return fallback;
+}
+
+export interface GroupFields {
+  activityId?: number;
+  methodId?: number;
+  lifeStageId?: number;
+}
+
+/**
+ * Gedrag, methode en kleed van een waarneming die van soortgroep wisselt
+ * ("nee, een vos"), omgezet naar de codes van de nieuwe groep: op naam, anders
+ * ter plaatse en gezien, en zonder kleed. Binnen dezelfde groep verandert er niets.
+ */
+export function convertCodes<T extends GroupFields>(
+  fields: T,
+  fromSpeciesId: number,
+  toSpeciesId: number,
+): T {
+  const from = codesFor(fromSpeciesId);
+  const to = codesFor(toSpeciesId);
+  if (from === to) return fields;
+  const result = { ...fields };
+  if (fields.activityId !== undefined)
+    result.activityId = convertCode(
+      from.allActivities,
+      to.allActivities,
+      fields.activityId,
+      to.defaultActivity,
+    );
+  if (fields.methodId !== undefined)
+    result.methodId = convertCode(
+      from.allMethods,
+      to.allMethods,
+      fields.methodId,
+      to.defaultMethod,
+    );
+  if (fields.lifeStageId !== undefined)
+    result.lifeStageId = convertCode(
+      from.allLifeStages,
+      to.allLifeStages,
+      fields.lifeStageId,
+      undefined,
+    );
+  return result;
 }

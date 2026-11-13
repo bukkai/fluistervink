@@ -1,6 +1,6 @@
 # Plan: andere soortgroepen (zoogdieren, reptielen en amfibieën, dagvlinders, libellen)
 
-Voorstel van 13 nov 2026, dezelfde dag goedgekeurd, met reptielen en amfibieën als vierde groep. Aanleiding: het idee van 12 nov in `docs/ideeen.md`. Een vogelaar die een ree, een vos of een atalanta ziet, wil die ook kwijt, en waarneming.nl neemt ze in dezelfde import.
+Voorstel van 13 nov 2026, dezelfde dag goedgekeurd, met reptielen en amfibieën als vierde groep. Fase 1 (gegevens en codes per groep) gebouwd op 13 nov. Aanleiding: het idee van 12 nov in `docs/ideeen.md`. Een vogelaar die een ree, een vos of een atalanta ziet, wil die ook kwijt, en waarneming.nl neemt ze in dezelfde import.
 
 ## Doel
 

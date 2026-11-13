@@ -1,0 +1,280 @@
+{
+ "activity": [
+  {
+   "id": 15,
+   "name": "ter plaatse"
+  },
+  {
+   "id": 3194,
+   "name": "onbekend"
+  },
+  {
+   "id": 3193,
+   "name": "zonnend"
+  },
+  {
+   "id": 3192,
+   "name": "sociaal gedrag"
+  },
+  {
+   "id": 18,
+   "name": "dood"
+  },
+  {
+   "id": 3269,
+   "name": "slachtoffer verdrinking"
+  },
+  {
+   "id": 3267,
+   "name": "zwermend (aan zomerverblijf)"
+  },
+  {
+   "id": 16,
+   "name": "foeragerend"
+  },
+  {
+   "id": 2026,
+   "name": "in kolonie anders"
+  },
+  {
+   "id": 3100,
+   "name": "vangst door kat"
+  },
+  {
+   "id": 2028,
+   "name": "winterslaap"
+  },
+  {
+   "id": 3093,
+   "name": "verplaatsend richting zuid"
+  },
+  {
+   "id": 3095,
+   "name": "verplaatsend richting west"
+  },
+  {
+   "id": 3094,
+   "name": "verplaatsend richting noord"
+  },
+  {
+   "id": 3096,
+   "name": "verplaatsend richting oost"
+  },
+  {
+   "id": 72,
+   "name": "overvliegend"
+  },
+  {
+   "id": 3196,
+   "name": "zwermend (aan winterverblijf)"
+  },
+  {
+   "id": 2027,
+   "name": "parend"
+  },
+  {
+   "id": 71,
+   "name": "roepend"
+  },
+  {
+   "id": 2022,
+   "name": "vluchtend"
+  },
+  {
+   "id": 2029,
+   "name": "zwemmend"
+  },
+  {
+   "id": 2025,
+   "name": "in kolonie op gebouw"
+  },
+  {
+   "id": 2024,
+   "name": "in kolonie in bomen"
+  },
+  {
+   "id": 3156,
+   "name": "kraamkolonie"
+  },
+  {
+   "id": 3195,
+   "name": "bezet nest"
+  },
+  {
+   "id": 2023,
+   "name": "(nabij) nest / burcht"
+  },
+  {
+   "id": 3152,
+   "name": "zogend"
+  },
+  {
+   "id": 2021,
+   "name": "ziek/gewond"
+  },
+  {
+   "id": 67,
+   "name": "slachtoffer verkeer"
+  },
+  {
+   "id": 3151,
+   "name": "zwanger"
+  },
+  {
+   "id": 3175,
+   "name": "dood exemplaar in collectie"
+  },
+  {
+   "id": 3153,
+   "name": "slachtoffer windmolen"
+  },
+  {
+   "id": 3266,
+   "name": "slachtoffer hoogspanningsleiding"
+  },
+  {
+   "id": 3179,
+   "name": "gemerkt/zenderdragend"
+  }
+ ],
+ "method": [
+  {
+   "id": 122,
+   "name": "onbekend"
+  },
+  {
+   "id": 123,
+   "name": "gezien"
+  },
+  {
+   "id": 124,
+   "name": "gehoord"
+  },
+  {
+   "id": 126,
+   "name": "gezien en gehoord"
+  },
+  {
+   "id": 590,
+   "name": "zichtwaarneming met zoeklicht"
+  },
+  {
+   "id": 591,
+   "name": "uitwerpselen"
+  },
+  {
+   "id": 592,
+   "name": "prenten"
+  },
+  {
+   "id": 593,
+   "name": "vraatsporen"
+  },
+  {
+   "id": 594,
+   "name": "verlaten nest"
+  },
+  {
+   "id": 595,
+   "name": "andere sporen"
+  },
+  {
+   "id": 596,
+   "name": "met fotoval"
+  },
+  {
+   "id": 119,
+   "name": "batdetector"
+  },
+  {
+   "id": 597,
+   "name": "op geluidsrecorder"
+  },
+  {
+   "id": 102,
+   "name": "gevangen"
+  },
+  {
+   "id": 598,
+   "name": "bodemval"
+  },
+  {
+   "id": 796,
+   "name": "warmtekijker"
+  },
+  {
+   "id": 109,
+   "name": "telemetrie"
+  },
+  {
+   "id": 599,
+   "name": "in braakbal"
+  },
+  {
+   "id": 107,
+   "name": "verzameld (in collectie)"
+  },
+  {
+   "id": 117,
+   "name": "(e)dna barcoding"
+  },
+  {
+   "id": 600,
+   "name": "fossiel"
+  },
+  {
+   "id": 601,
+   "name": "binnenshuis"
+  },
+  {
+   "id": 773,
+   "name": "sporenbed"
+  },
+  {
+   "id": 833,
+   "name": "op voederplaats"
+  },
+  {
+   "id": 798,
+   "name": "latrine"
+  },
+  {
+   "id": 814,
+   "name": "translocatie"
+  },
+  {
+   "id": 831,
+   "name": "Nest(kast)"
+  }
+ ],
+ "life_stage": [
+  {
+   "id": 17,
+   "name": "onbekend"
+  },
+  {
+   "id": 20,
+   "name": "adult"
+  },
+  {
+   "id": 27,
+   "name": "juveniel"
+  },
+  {
+   "id": 97,
+   "name": "afwijkend"
+  },
+  {
+   "id": 1002,
+   "name": "subadult"
+  },
+  {
+   "id": 1004,
+   "name": "zomerkleed"
+  },
+  {
+   "id": 1005,
+   "name": "winterkleed"
+  }
+ ]
+}
