@@ -12,8 +12,9 @@ Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/ro
 
 ## Na het mergen nog proberen
 
-Uit de PR's van 6–12 nov; elk punt na het proberen hier weghalen.
+Uit de PR's van 6–13 nov; elk punt na het proberen hier weghalen.
 
+- **Andere soortgroepen** (ontwikkeloptie, #228/#229, `docs/plan-soortgroepen.md` fase 3): de optie aanzetten en een paar wandelingen ook zoogdieren, vlinders, libellen en amfibieën inspreken (een ree, "koevinkje", "bloedrode heidelibel", "pad"). Daarna: één echte import bij waarneming.nl met een zoogdier, een vlinder en een libel (komen gedrag en kleed goed binnen?), en de testset met en zonder `--soortgroepen` (minder dan een dollar per run) om te zien of de vogels er niet slechter van worden. Dan beslissen over fase 4 (voor iedereen).
 - **eBird** (ontwikkeloptie, `docs/plan-ebird.md`): een wandeling en een fietstocht naast Strava of Komoot vergelijken (#212; telling van overgeslagen metingen in het log, `distance_fixes`). Een eigen sessie echt importeren bij eBird en noteren welke soorten "Fix Species" nodig hadden; in de Android-app nagaan of het uploadveld de .csv neemt (#220). Daarna beslissen over deel 2 (soortnamen van eBird) en fase 3 (voor iedereen).
 - **Opname afspelen** (#222): op de telefoon bij het nalopen en in het bewerkformulier een opname afspelen; nog eens tikken moet pauzeren (⏸), en een tweede opname stopt de eerste.
 - **Twijfel tussen soorten** (ontwikkeloptie, #214/#216): "tjiftjaf of fitis" inspreken (moet zonder 400-fout), een paar wandelingen, dan `npm run testset -- <export> --kandidaten` naast een gewone run. Daarna beslissen of hij voor iedereen aangaat.
