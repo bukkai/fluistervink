@@ -18,7 +18,8 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 | `plan-laagdrempelig.md` | aanmelden zonder code; klaar, naslag voor het instellen |
 | `plan-trektelmodus.md` | trektelmodus; gebouwd, proef met tester Maarten |
 | `roadmap-android.md` | vogelen zonder naar de telefoon te kijken, vijf stappen; stap 1–2 gebouwd |
-| `plan-ebird.md` | inspanning en export naar eBird; fase 1 en 2 (deel 1) gebouwd; fase 3 (voor iedereen, instelling "Ik gebruik eBird") half gebouwd: de knop op het scherm Sessies volgt |
+| `plan-ebird.md` | inspanning en export naar eBird; fase 1 en 2 (deel 1) gebouwd als ontwikkeloptie; fase 3 (voor iedereen) goedgekeurd op 12 nov, nog te bouwen |
+| `plan-soortgroepen.md` | zoogdieren, reptielen en amfibieën, dagvlinders en libellen inspreken; goedgekeurd 13 nov, fase 1 in aanbouw |
 | `plan-ios.md` | iPhone-app; voorstel, na de lancering |
 
 ## Naslag
