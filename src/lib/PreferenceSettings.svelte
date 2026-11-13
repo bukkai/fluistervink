@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Keuzes die standaard aan staan (preferences.ts)
+  // Keuzes voor iedereen (preferences.ts); alleen eBird staat standaard uit
   import { preferenceOn, setPreference, type Preference } from './preferences';
 
   const items: { preference: Preference; label: string; hint: string }[] = [
@@ -17,6 +17,11 @@
       preference: 'exportHerinnering',
       label: 'Herinnering aan de export',
       hint: 'Staan sessies een week klaar voor waarneming.nl, of wachten ze al een week om nagelopen te worden, dan zie je een melding op het hoofdscherm. Met "Later" drie dagen niet.',
+    },
+    {
+      preference: 'ebird',
+      label: 'Ik gebruik eBird',
+      hint: 'Na het stoppen vraagt de app of je alles hebt genoteerd, en bij een sessie staat een kaartje eBird met de duur en de afstand. Bij Sessies exporteer je de nagelopen sessies in één bestand, dat je zelf bij eBird uploadt. Sessies van vóór het aanzetten doen alleen mee als je de vraag erbij beantwoordt.',
     },
   ];
 

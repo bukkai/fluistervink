@@ -174,6 +174,8 @@
       </li>
       <li>
         Naar waarneming.nl gaat alleen wat je zelf exporteert en daar importeert (zonder opnames).
+        Voor eBird geldt hetzelfde: de app maakt een bestand, en dat gaat alleen naar eBird als je
+        het daar zelf uploadt.
       </li>
     </ul>
   </div>

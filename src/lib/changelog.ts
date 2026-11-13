@@ -27,6 +27,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026-11-13',
+    topics: {
+      Export: [
+        'Gebruik je eBird? Zet bij Instellingen "Ik gebruik eBird" aan. Na het stoppen vraagt de app of je alles hebt genoteerd, en bij een sessie staat een kaartje waarmee je hem als checklist voor eBird exporteert, met duur en afstand.',
+        'Voor wie eBird gebruikt: bij Sessies staat een knop "Exporteren voor eBird" voor alle nagelopen sessies in één bestand. Is de vraag "alles genoteerd?" bij een sessie nog open, dan beantwoord je hem daar met één tik, of je kiest "Niet naar eBird". In de lijst zie je per sessie wat al naar waarneming.nl en naar eBird is.',
+      ],
+    },
+  },
+  {
     date: '2026-11-12',
     topics: {
       Trektelling: [
