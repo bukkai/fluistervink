@@ -91,7 +91,12 @@ describe('importJson', () => {
 
   it('weigert een sessie met een ongeldige checklist', async () => {
     const session = { id: 'sessie', startedAt: 1, endedAt: 2, status: 'ended' };
-    for (const checklist of [{ protocol: 'Traveling,Y' }, { observers: 0 }, { complete: 'ja' }]) {
+    for (const checklist of [
+      { protocol: 'Traveling,Y' },
+      { observers: 0 },
+      { complete: 'ja' },
+      { skipEbird: 1 },
+    ]) {
       const file = exportFile({ sessions: [{ ...session, checklist }] });
       await expect(importJson(file)).rejects.toThrow('Ongeldige export');
     }

@@ -9,6 +9,7 @@ export type Preference = 'zeldzaamOnzeker' | 'exportHerinnering' | 'samenvatting
 const OFF_BY_DEFAULT: readonly Preference[] = ['ebird'];
 
 const PREFIX = 'fluistervink.pref.';
+const SINCE = '.sinds';
 
 export function preferenceOn(preference: Preference): boolean {
   const byDefault = !OFF_BY_DEFAULT.includes(preference);
@@ -20,8 +21,31 @@ export function preferenceOn(preference: Preference): boolean {
   }
 }
 
+/**
+ * Sinds wanneer een keuze aan staat die standaard uit is: wat eraan
+ * voorafging, hoeft er niet alsnog aan mee te doen (oude sessies en eBird).
+ * Stond hij al aan voordat dit werd bijgehouden, dan vanaf nu.
+ */
+export function preferenceSince(preference: Preference): number | undefined {
+  if (!preferenceOn(preference)) return undefined;
+  try {
+    const stored = Number(localStorage.getItem(PREFIX + preference + SINCE));
+    if (stored > 0) return stored;
+    const now = Date.now();
+    localStorage.setItem(PREFIX + preference + SINCE, String(now));
+    return now;
+  } catch {
+    return undefined;
+  }
+}
+
 export function setPreference(preference: Preference, on: boolean): void {
   try {
+    // Sinds wanneer een keuze aan staat die standaard uit is (`preferenceSince`)
+    if (OFF_BY_DEFAULT.includes(preference)) {
+      if (on) localStorage.setItem(PREFIX + preference + SINCE, String(Date.now()));
+      else localStorage.removeItem(PREFIX + preference + SINCE);
+    }
     if (on === !OFF_BY_DEFAULT.includes(preference)) localStorage.removeItem(PREFIX + preference);
     else localStorage.setItem(PREFIX + preference, on ? '1' : '0');
   } catch {

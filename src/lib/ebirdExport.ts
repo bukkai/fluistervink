@@ -113,6 +113,25 @@ export async function setChecklist(sessionId: string, changes: Partial<Checklist
   });
 }
 
+/**
+ * Sessies voor "Exporteren voor eBird" op het scherm Sessies: nagelopen
+ * (klaar, of al naar waarneming.nl), nog niet naar eBird, en niet op "niet
+ * naar eBird" gezet. Sessies van voordat de gebruiker eBird aanzette (`since`)
+ * doen alleen mee als hij de vraag "alles genoteerd?" er zelf bij beantwoordde:
+ * anders stond na het aanzetten meteen de hele geschiedenis klaar.
+ */
+export function pendingForEbird(sessions: Session[], since: number | undefined): Session[] {
+  return sessions.filter(
+    (s) =>
+      s.status === 'ended' &&
+      (s.readyAt || s.exportedAt) &&
+      !s.ebirdExportedAt &&
+      !s.checklist?.skipEbird &&
+      (s.checklist?.complete !== undefined ||
+        (since !== undefined && (s.endedAt ?? s.startedAt) >= since)),
+  );
+}
+
 export interface EbirdExport {
   file: Blob;
   filename: string;

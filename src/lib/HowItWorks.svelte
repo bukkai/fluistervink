@@ -123,7 +123,8 @@
     <p>
       Gebruik je ook eBird? Zet dan bij Instellingen "Ik gebruik eBird" aan. Na het stoppen vraagt
       de app of je alles hebt genoteerd wat je kon herkennen, en bij de sessie staat een kaartje
-      waarmee je hem als checklist exporteert, met de duur en de afstand erbij.
+      waarmee je hem als checklist exporteert, met de duur en de afstand erbij. Bij Sessies
+      exporteer je alle nagelopen sessies in één bestand voor eBird.
     </p>
     <p>Alles staat alleen op je telefoon: maak af en toe een back-up bij Instellingen.</p>
   </div>

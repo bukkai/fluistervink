@@ -3,6 +3,8 @@
   import { liveQuery } from 'dexie';
   import type { Session } from './db';
   import { countPerSession, deleteSessions, formatDuration } from './sessions';
+  import { EBIRD_IMPORT_URL, exportForEbird, pendingForEbird, setChecklist } from './ebirdExport';
+  import { preferenceOn, preferenceSince } from './preferences';
   import { IMPORT_URL, exportForWaarneming, readyForExport } from './waarnemingExport';
 
   let { sessions }: { sessions: Session[] } = $props();
@@ -19,6 +21,31 @@
 
   async function exportReady() {
     exportResult = (await exportForWaarneming(ready)) ?? exportResult;
+  }
+
+  // Voor wie eBird gebruikt: dezelfde nagelopen sessies ook als checklists,
+  // in één bestand (docs/plan-ebird.md, punt 8). Lege sessies doen niet mee.
+  const ebird = preferenceOn('ebird');
+  const ebirdSince = preferenceSince('ebird');
+  let ebirdPending = $derived(
+    ebird
+      ? pendingForEbird(sessions, ebirdSince).filter(
+          (s) => !$counts || ($counts.get(s.id)?.observations ?? 0) > 0,
+        )
+      : [],
+  );
+  /** Vangnet: waar "alles genoteerd?" nog open is; tot die beantwoord zijn, is de knop uit */
+  let ebirdOpen = $derived(ebirdPending.filter((s) => s.checklist?.complete === undefined));
+  let ebirdResult = $state<string>();
+  let ebirdBusy = $state(false);
+
+  async function exportEbird() {
+    ebirdBusy = true;
+    try {
+      ebirdResult = (await exportForEbird(ebirdPending)) ?? ebirdResult;
+    } finally {
+      ebirdBusy = false;
+    }
   }
 
   let exportedIds = $derived(sessions.filter((s) => s.exportedAt).map((s) => s.id));
@@ -137,6 +164,67 @@
       </div>
     </section>
   {/if}
+  {#if !selecting && (ebirdPending.length > 0 || ebirdResult)}
+    <section class="card export">
+      <div class="card-body">
+        {#if ebirdPending.length > 0}
+          <p>
+            <strong
+              >{ebirdPending.length === 1 ? '1 sessie' : `${ebirdPending.length} sessies`} voor eBird</strong
+            >
+          </p>
+          {#if ebirdOpen.length > 0}
+            <p id="ebird-open">Heb je alles genoteerd wat je kon herkennen?</p>
+            <ul class="open" aria-labelledby="ebird-open">
+              {#each ebirdOpen as session (session.id)}
+                <li>
+                  <a href="#sessie/{session.id}">
+                    <strong>{session.place?.name ?? 'Vogelsessie'}</strong>
+                    <span class="when">
+                      {dayFormat.format(session.startedAt)}, {timeFormat.format(session.startedAt)}
+                    </span>
+                  </a>
+                  <div class="answers">
+                    <button
+                      class="btn secondary"
+                      onclick={() => setChecklist(session.id, { complete: true })}>Ja</button
+                    >
+                    <button
+                      class="btn secondary"
+                      onclick={() => setChecklist(session.id, { complete: false })}>Nee</button
+                    >
+                    <button
+                      class="btn secondary"
+                      onclick={() => setChecklist(session.id, { skipEbird: true })}
+                      >Niet naar eBird</button
+                    >
+                  </div>
+                </li>
+              {/each}
+            </ul>
+          {/if}
+          <button
+            class="btn block large"
+            disabled={ebirdBusy || ebirdOpen.length > 0}
+            onclick={exportEbird}>Exporteren voor eBird</button
+          >
+        {/if}
+        {#if ebirdResult}
+          <p role="status">{ebirdResult}</p>
+        {/if}
+        <p class="muted">
+          {#if ebirdOpen.length > 0}
+            Beantwoord eerst de vraag bij {ebirdOpen.length === 1
+              ? '1 sessie'
+              : `${ebirdOpen.length} sessies`}.
+          {/if}
+          Importeer het bestand bij
+          <a href={EBIRD_IMPORT_URL} target="_blank" rel="noopener">eBird</a> en kies daar bij Format
+          "eBird Record Format (Extended)". Soorten die eBird niet herkent, kies je daar zelf.
+        </p>
+      </div>
+    </section>
+  {/if}
   {#if selecting}
     <p class="muted select-hint">Vink de sessies aan die weg mogen.</p>
     <p class="quick">
@@ -194,13 +282,18 @@
   <span class="text">
     <span class="top">
       <strong>{session.place?.name ?? 'Vogelsessie'}</strong>
-      {#if session.exportedAt}
-        <span class="badge exported">geëxporteerd</span>
-      {:else if session.readyAt}
-        <span class="badge ready">klaar</span>
-      {:else}
-        <span class="badge">niet geëxporteerd</span>
-      {/if}
+      <span class="badges">
+        {#if session.exportedAt}
+          <span class="badge exported">{ebird ? 'waarneming.nl ✓' : 'geëxporteerd'}</span>
+        {:else if session.readyAt}
+          <span class="badge ready">klaar</span>
+        {:else if !session.ebirdExportedAt}
+          <span class="badge">niet geëxporteerd</span>
+        {/if}
+        {#if ebird && session.ebirdExportedAt}
+          <span class="badge exported">eBird ✓</span>
+        {/if}
+      </span>
     </span>
     <span class="when">
       {dayFormat.format(session.startedAt)}, {timeFormat.format(session.startedAt)}
@@ -227,6 +320,35 @@
   .export p:last-child {
     margin: 0.75rem 0 0;
     font-size: 0.9rem;
+  }
+
+  /* Vangnet voor eBird: per sessie de vraag, met knoppen van 48 px */
+  .export .open {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0 0 1rem;
+  }
+
+  .open li + li {
+    padding-top: 0.75rem;
+  }
+
+  .open a {
+    display: grid;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .answers {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.4rem;
+  }
+
+  .answers .btn {
+    flex: 1;
+    min-height: 3rem;
+    padding-inline: 0.5rem;
   }
 
   .select-hint {
@@ -301,6 +423,14 @@
   .chevron {
     font-size: 1.5rem;
     color: var(--muted);
+  }
+
+  .badges {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: 0.2rem;
+    align-items: flex-end;
   }
 
   .badge {

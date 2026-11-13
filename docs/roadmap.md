@@ -21,7 +21,7 @@ De vier sporen van 13 okt, met de stand op 12 nov:
 | --- | --- |
 | `docs/lancering.md` | gesloten test loopt; testers werven |
 | `docs/roadmap-android.md` | stap 1 (volumeknop) en 2 (gesproken bevestiging, ontwikkeloptie) gebouwd; stap 3 en 5 na de productierelease |
-| `docs/plan-ebird.md` | fase 1 en fase 2 deel 1 gebouwd; fase 3 half (instelling "Ik gebruik eBird"), de knop op het scherm Sessies volgt |
+| `docs/plan-ebird.md` | fase 1 en fase 2 deel 1 gebouwd; fase 3 gebouwd (instelling "Ik gebruik eBird"); open: soortnamen van eBird |
 | `docs/plan-trektelmodus.md` | gebouwd, proef met tester Maarten; vervolg na de proef |
 | `docs/plan-soortgroepen.md` | goedgekeurd 13 nov: zoogdieren, reptielen en amfibieën, dagvlinders, libellen; fase 1 in aanbouw |
 | `docs/plan-ios.md` | voorstel, nog niet goedgekeurd; pas na de lancering in Play |
