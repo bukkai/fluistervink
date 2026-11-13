@@ -77,6 +77,8 @@ export interface Checklist {
   protocol?: EbirdProtocol;
   /** Zelf verbeterde afstand in meters; leeg = de gemeten afstand */
   distanceM?: number;
+  /** Deze sessie hoeft niet naar eBird: telt niet mee bij "Exporteren voor eBird" op Sessies */
+  skipEbird?: boolean;
 }
 
 export type EbirdProtocol = 'Stationary' | 'Traveling' | 'Incidental';

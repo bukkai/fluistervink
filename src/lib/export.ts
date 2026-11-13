@@ -245,7 +245,8 @@ function checkImport(data: {
       optional(c.observers, (n) => Number.isInteger(n) && (n as number) >= 1) &&
       optional(c.complete, (b) => typeof b === 'boolean') &&
       optional(c.protocol, (p) => p === 'Stationary' || p === 'Traveling' || p === 'Incidental') &&
-      optional(c.distanceM, isNumber)
+      optional(c.distanceM, isNumber) &&
+      optional(c.skipEbird, (b) => typeof b === 'boolean')
     );
   };
   const isArea = (value: unknown) => {

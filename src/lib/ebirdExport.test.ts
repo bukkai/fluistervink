@@ -7,6 +7,7 @@ import {
   clean,
   exportForEbird,
   lastObservers,
+  pendingForEbird,
   resolveChecklist,
   setChecklist,
 } from './ebirdExport';
@@ -241,5 +242,33 @@ describe('exportForEbird', () => {
 describe('clean', () => {
   it('maakt van alles één regel zonder komma’s en aanhalingstekens', () => {
     expect(clean(' a,  "b"\r\n“c” ')).toBe('a; b c');
+  });
+});
+
+describe('pendingForEbird', () => {
+  const since = session.startedAt;
+  const ready: Session = { ...session, readyAt: session.endedAt, checklist: undefined };
+  const ids = (sessions: Session[], from: number | undefined = since) =>
+    pendingForEbird(sessions, from).map((s) => s.id);
+
+  it('neemt nagelopen sessies: klaar, of al naar waarneming.nl', () => {
+    const exported: Session = { ...ready, id: 'wnl', readyAt: undefined, exportedAt: 1 };
+    const notReviewed: Session = { ...ready, id: 'open', readyAt: undefined };
+    const active: Session = { ...ready, id: 'loopt', status: 'active' };
+    expect(ids([ready, exported, notReviewed, active])).toEqual(['sessie', 'wnl']);
+  });
+
+  it('slaat over wat al naar eBird is of er niet heen hoeft', () => {
+    const done: Session = { ...ready, id: 'al', ebirdExportedAt: 1 };
+    const skipped: Session = { ...ready, id: 'tuin', checklist: { skipEbird: true } };
+    expect(ids([done, skipped])).toEqual([]);
+  });
+
+  it('neemt een sessie van vóór het aanzetten alleen met een antwoord op "alles genoteerd?"', () => {
+    const old: Session = { ...ready, id: 'oud', startedAt: since - 9000, endedAt: since - 1 };
+    const answered: Session = { ...old, id: 'beantwoord', checklist: { complete: false } };
+    expect(ids([old, answered])).toEqual(['beantwoord']);
+    // Niet bekend sinds wanneer: dan alleen de beantwoorde
+    expect(pendingForEbird([ready, answered], undefined)).toEqual([answered]);
   });
 });

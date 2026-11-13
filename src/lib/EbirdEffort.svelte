@@ -110,6 +110,19 @@
 
     <ChecklistAnswers {session} />
 
+    <label class="check">
+      <input
+        type="checkbox"
+        checked={session.checklist?.skipEbird ?? false}
+        onchange={(event) =>
+          setChecklist(session.id, { skipEbird: event.currentTarget.checked || undefined })}
+      />
+      Deze sessie hoeft niet naar eBird
+    </label>
+    <p class="muted small">
+      Hij telt dan niet mee bij "Exporteren voor eBird" op het scherm Sessies.
+    </p>
+
     {#if exportResult}
       <p role="status">{exportResult}</p>
     {:else if session.ebirdExportedAt}

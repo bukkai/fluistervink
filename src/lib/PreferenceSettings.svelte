@@ -21,7 +21,7 @@
     {
       preference: 'ebird',
       label: 'Ik gebruik eBird',
-      hint: 'Na het stoppen vraagt de app of je alles hebt genoteerd, en bij een sessie staat een kaartje eBird met de duur, de afstand en een exportknop. Het bestand upload je zelf bij eBird.',
+      hint: 'Na het stoppen vraagt de app of je alles hebt genoteerd, en bij een sessie staat een kaartje eBird met de duur en de afstand. Bij Sessies exporteer je de nagelopen sessies in één bestand, dat je zelf bij eBird uploadt. Sessies van vóór het aanzetten doen alleen mee als je de vraag erbij beantwoordt.',
     },
   ];
 
