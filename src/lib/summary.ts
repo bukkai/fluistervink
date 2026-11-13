@@ -3,13 +3,35 @@
 // app is er niet om soorten te verzamelen, dat doet waarneming.nl.
 
 import { db, type Observation, type Session } from './db';
-import { speciesName } from './vocab';
+import { BIRDS, getGroup, groupOf, speciesName, type GroupId } from './vocab';
 
 export interface SummaryLine {
   speciesId: number;
   name: string;
   /** Opgeteld over alle waarnemingen van deze soort */
   count: number;
+}
+
+/** De regels van één soortgroep; vogels zonder kopje */
+export interface SummaryGroup {
+  /** Leeg bij vogels */
+  title?: string;
+  lines: SummaryLine[];
+}
+
+/** Vogels eerst, daarna de andere dieren per groep (ontwikkeloptie 'soortgroepen') */
+export function byGroup(lines: SummaryLine[]): SummaryGroup[] {
+  const groups = new Map<GroupId, SummaryLine[]>();
+  for (const line of lines) {
+    const group = groupOf(line.speciesId);
+    groups.set(group, [...(groups.get(group) ?? []), line]);
+  }
+  return [...groups.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([group, lines]) => ({
+      ...(group !== BIRDS && { title: getGroup(group).name }),
+      lines,
+    }));
 }
 
 export function summarize(observations: Observation[]): SummaryLine[] {

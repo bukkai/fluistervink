@@ -27,16 +27,16 @@ import {
   TRANSCRIBE_MODEL,
   isPromptExample,
   transcribe,
-  transcribePromptVersion,
+  transcribePromptVersionFor,
 } from './transcribe';
 import { checkZeemeeuw } from './zeemeeuw.svelte';
 import { devNoteText } from './devNotePrefix';
 
 export { devNoteText };
 import {
-  DEFAULT_ACTIVITY,
+  codesFor,
+  convertCodes,
   DEFAULT_COUNTING_METHOD,
-  DEFAULT_METHOD,
   getSpecies,
   isVagrant,
   speciesName,
@@ -142,7 +142,37 @@ export function spokenAt(utterance: Utterance): number {
  * nagelopen; met de stem kan hij nog steeds aangepast worden.
  */
 export async function editObservation(id: string, patch: Partial<Observation>): Promise<void> {
-  await db.observations.update(id, { ...patch, editedAt: Date.now(), status: 'reviewed' });
+  await db.transaction('rw', db.observations, async () => {
+    const current = await db.observations.get(id);
+    await db.observations.update(id, {
+      ...patch,
+      ...(current && codesForNewSpecies(current, patch)),
+      editedAt: Date.now(),
+      status: 'reviewed',
+    });
+  });
+}
+
+/**
+ * Wordt een waarneming een soort van een andere groep ("nee, een vos"), dan
+ * moeten gedrag, methode en kleed mee naar de codes van die groep. Alleen de
+ * velden die de wijziging zelf niet zet: die zijn al van de nieuwe groep.
+ */
+export function codesForNewSpecies(
+  current: Observation,
+  patch: Partial<Observation>,
+): Partial<Observation> {
+  if (patch.speciesId === undefined || patch.speciesId === current.speciesId) return {};
+  const keep: Partial<Observation> = {};
+  for (const key of ['activityId', 'methodId', 'lifeStageId'] as const) {
+    if (!(key in patch) && current[key] !== undefined) keep[key] = current[key];
+  }
+  const converted = convertCodes(keep, current.speciesId, patch.speciesId);
+  if (converted === keep) return {};
+  // Een kleed dat niet bestaat in de nieuwe groep: leeg, ook in de database
+  if ('lifeStageId' in keep && converted.lifeStageId === undefined)
+    converted.lifeStageId = undefined;
+  return converted;
 }
 
 /** Nauwkeurigheid van een met de hand gezette plek, in meters */
@@ -522,6 +552,8 @@ async function processUtterance(utterance: Utterance): Promise<void> {
   await db.utterances.update(utterance.id, { status: 'processing', attempts });
   // Twijfel tussen soorten (ontwikkeloptie): een andere prompt, dus een eigen versie
   const candidates = devOptionOn('kandidaten');
+  // Ook andere dieren (ontwikkeloptie): ook een andere prompt
+  const groups = devOptionOn('soortgroepen');
 
   let step: 'transcribe' | 'interpret' = 'transcribe';
   let interpretation: Interpretation;
@@ -561,6 +593,7 @@ async function processUtterance(utterance: Utterance): Promise<void> {
       here,
       sessionId: utterance.sessionId,
       candidates,
+      groups,
     });
     if (interpretation.warnings.length) {
       logEvent('species_id_fixed', { warnings: interpretation.warnings }, ids);
@@ -599,7 +632,7 @@ async function processUtterance(utterance: Utterance): Promise<void> {
     appVersion: APP_VERSION,
     platform: PLATFORM,
     model: MODEL,
-    promptVersion: await promptVersionFor(candidates),
+    promptVersion: await promptVersionFor(candidates, groups),
     context: interpretation.context,
     contextIds: interpretation.contextIds,
     instance: INSTANCE_ID,
@@ -678,14 +711,16 @@ async function finishWithout(
 
 /** Zet de opname om in tekst en slaat het transcript op. */
 async function transcribeUtterance(utterance: Utterance): Promise<Utterance> {
+  const groups = devOptionOn('soortgroepen');
   const { text, confidence, timing } = await transcribe(audioBlob(utterance.audio!), {
     sessionId: utterance.sessionId,
+    groups,
   });
   const changes = {
     transcript: text,
     transcription: {
       model: TRANSCRIBE_MODEL,
-      promptVersion: await transcribePromptVersion,
+      promptVersion: await transcribePromptVersionFor(groups),
       ...timing,
       confidence,
     },
@@ -838,8 +873,9 @@ async function applyActions(utterance: Utterance, actions: Action[]): Promise<Ch
           sessionId: utterance.sessionId,
           utteranceId: utterance.id,
           countingMethodId: DEFAULT_COUNTING_METHOD,
-          activityId: DEFAULT_ACTIVITY,
-          methodId: DEFAULT_METHOD,
+          // Ter plaatse en gezien, in de codes van de groep van de soort
+          activityId: codesFor(action.fields.speciesId).defaultActivity,
+          methodId: codesFor(action.fields.speciesId).defaultMethod,
           ...action.fields,
           uncertain: action.fields.uncertain ?? false,
           ...placeUncertainty(action.fields),
@@ -869,6 +905,7 @@ async function applyActions(utterance: Utterance, actions: Action[]): Promise<Ch
         const current = await db.observations.get(action.observationId);
         if (!current) break;
         const patch: Partial<Observation> = { ...action.fields };
+        Object.assign(patch, codesForNewSpecies(current, patch));
         if (action.addCount) {
           patch.count = Math.max(1, (patch.count ?? current.count) + action.addCount);
         }

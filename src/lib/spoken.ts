@@ -9,7 +9,7 @@ import { devOptionOn } from './devOptions';
 import { logEvent } from './log';
 import { speakNative, speechSupported } from './native';
 import { isComputable, type Direction } from './spokenPlace';
-import { allActivities, codeName, DEFAULT_ACTIVITY, speciesName } from './vocab';
+import { activityName, codesFor, speciesName } from './vocab';
 
 /** Meer dan zoveel waarnemingen: alleen het aantal noemen */
 const MAX_NAMED = 2;
@@ -48,8 +48,8 @@ type Described = Pick<
  */
 function describe(obs: Described): string {
   const parts = [speciesName(obs.speciesId).toLowerCase(), String(obs.count)];
-  if (obs.activityId !== undefined && obs.activityId !== DEFAULT_ACTIVITY) {
-    const activity = codeName(allActivities, obs.activityId);
+  if (obs.activityId !== undefined && obs.activityId !== codesFor(obs.speciesId).defaultActivity) {
+    const activity = activityName(obs.speciesId, obs.activityId);
     // "baltsend / zingend": geen schuine streep voorlezen
     if (activity) parts.push(activity.toLowerCase().replaceAll(' / ', ' of '));
   }

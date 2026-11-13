@@ -34,6 +34,11 @@
       label: 'Twijfel tussen soorten',
       hint: 'Twijfel je tussen twee of drie soorten ("fitis of tjiftjaf"), dan wordt het de verzamelsoort als waarneming.nl die heeft, anders de meest waarschijnlijke. Bij het nalopen kies je de soort met één tik.',
     },
+    {
+      option: 'soortgroepen',
+      label: 'Ook zoogdieren, reptielen en amfibieën, dagvlinders en libellen',
+      hint: 'Spreek ook een ree, een pad, een atalanta of een bloedrode heidelibel in. Ze krijgen het gedrag en kleed van hun eigen groep en gaan mee naar waarneming.nl; eBird neemt alleen vogels. Een andere prompt, dus een eigen versie in de testset.',
+    },
   ];
 
   const shown = items.filter((item) => item.available !== false);

@@ -1,14 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ATALANTA,
   BOOMKLEVER,
   BOOMKRUIPER,
   HOUTDUIF,
   KEEP,
   VINK,
   observation,
+  REE,
   toolResponse,
 } from '../test-helpers';
-import { describeContext, MAX_OPTIONAL_PARAMETERS, parseResponse, toolsFor } from './interpret';
+import {
+  describeContext,
+  MAX_OPTIONAL_PARAMETERS,
+  parseResponse,
+  promptVersionFor,
+  toolsFor,
+} from './interpret';
 
 // parseResponse is de poortwachter tussen model en database: wat hier
 // doorkomt, voert de app uit. Het model mag geen soorten verzinnen en niet
@@ -337,12 +345,84 @@ describe('describeContext', () => {
 // Anthropic weigert anders elke uitspraak met een 400 (feedback 12 nov: met
 // de kandidaten aan waren het er 26). Een nagebootst model merkt dat niet.
 describe('tools', () => {
-  it.each([false, true])('blijven onder de grens van optionele velden (kandidaten: %s)', (k) => {
+  it.each([
+    [false, false],
+    [true, false],
+    [false, true],
+    [true, true],
+  ])('blijven onder de grens van optionele velden (kandidaten: %s, soortgroepen: %s)', (k, g) => {
     let optional = 0;
-    for (const tool of toolsFor(k)) {
+    for (const tool of toolsFor(k, g)) {
       const schema = tool.input_schema as { properties?: object; required?: string[] };
       optional += Object.keys(schema.properties ?? {}).length - (schema.required?.length ?? 0);
     }
     expect(optional).toBeLessThanOrEqual(MAX_OPTIONAL_PARAMETERS);
+  });
+});
+
+describe('andere soortgroepen', () => {
+  it('accepteert ze alleen met de ontwikkeloptie', () => {
+    const response = toolResponse([
+      'add_observation',
+      { species_name: 'Ree', species_id: REE, count: 2, activity_id: 16, method_id: 123 },
+    ]);
+    expect(parseResponse(response, []).rejected).toHaveLength(1);
+    const { actions, rejected, warnings } = parseResponse(response, [], true);
+    expect(rejected).toEqual([]);
+    expect(warnings).toEqual([]);
+    expect(actions).toEqual([
+      { type: 'add', fields: { speciesId: REE, count: 2, activityId: 16, methodId: 123 } },
+    ]);
+  });
+
+  it('zet een vogelcode bij een ree om naar die van zoogdieren', () => {
+    // vogels: foeragerend 2, gezien 48, zingend 4 (bestaat niet bij zoogdieren)
+    const { actions, warnings } = parseResponse(
+      toolResponse([
+        'add_observation',
+        { species_name: 'Ree', species_id: REE, count: 1, activity_id: 2, method_id: 48 },
+      ]),
+      [],
+      true,
+    );
+    expect(actions[0]).toMatchObject({ fields: { activityId: 16, methodId: 123 } });
+    expect(warnings).toHaveLength(2);
+  });
+
+  it('controleert de codes bij een aanpassing tegen de soort van die waarneming', () => {
+    const ree = observation({ speciesId: REE, activityId: 15 });
+    const { actions } = parseResponse(
+      toolResponse(['update_observation', { ref: 1, activity_id: 6 }]),
+      [ree],
+      true,
+    );
+    // vogels: overvliegend 6 → zoogdieren: overvliegend 72
+    expect(actions[0]).toMatchObject({ type: 'update', fields: { activityId: 72 } });
+  });
+
+  it('kent een vlinder op naam', () => {
+    const { actions } = parseResponse(
+      toolResponse(['add_observation', { species_name: 'Atalanta', species_id: 1, count: 1 }]),
+      [],
+      true,
+    );
+    expect(actions[0]).toMatchObject({ fields: { speciesId: ATALANTA } });
+  });
+
+  it('laat de prompt zonder de optie ongemoeid: alleen vogelcodes in de tools', async () => {
+    expect(await promptVersionFor(false, true)).not.toBe(await promptVersionFor(false));
+    const activityEnum = (withGroups: boolean) => {
+      const add = toolsFor(false, withGroups).find((t) => t.name === 'add_observation')!;
+      const props = add.input_schema.properties as Record<string, { enum?: number[] }>;
+      return props.activity_id.enum!;
+    };
+    // 15 = ter plaatse bij zoogdieren
+    expect(activityEnum(false)).not.toContain(15);
+    expect(activityEnum(true)).toContain(15);
+  });
+
+  it('beschrijft de context met de codes van de groep', () => {
+    const text = describeContext([observation({ speciesId: REE, activityId: 16, methodId: 592 })]);
+    expect(text).toContain('Ree, foeragerend, prenten');
   });
 });

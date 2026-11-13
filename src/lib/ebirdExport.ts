@@ -3,7 +3,7 @@ import { ebirdProtocol, sessionDurationMs } from './effort';
 import { saveFile } from './export';
 import { logEvent } from './log';
 import { listObservations, listUtterances } from './observations';
-import { allActivities, allMethods, codeName, getSpecies } from './vocab';
+import { activityName, BIRDS, getSpecies, groupOf, methodName } from './vocab';
 import { fileTimestamp, isoDate, pad } from './waarnemingExport';
 
 // Export van sessies als eBird-checklists, voor de import bij eBird
@@ -123,6 +123,8 @@ export interface EbirdExport {
   rows: number;
   /** Uitgevinkt bij het nalopen */
   excluded: Observation[];
+  /** Andere dieren dan vogels: eBird neemt alleen vogels */
+  notBirds: Observation[];
   /** Waarom het (nog) niet kan; leeg = klaar om te exporteren */
   problems: string[];
   /** Kan wel, maar de gebruiker moet het weten */
@@ -135,6 +137,7 @@ export async function buildEbirdExport(sessions: Session[]): Promise<EbirdExport
   const rows: Row[] = [];
   const exported: Observation[] = [];
   const excluded: Observation[] = [];
+  const notBirds: Observation[] = [];
   const problems: string[] = [];
   const warnings: string[] = [];
   const several = sessions.length > 1;
@@ -145,7 +148,9 @@ export async function buildEbirdExport(sessions: Session[]): Promise<EbirdExport
       (a, b) => a.observedAt - b.observedAt || a.createdAt - b.createdAt,
     );
     excluded.push(...observations.filter((obs) => obs.skipExport));
-    const included = observations.filter((obs) => !obs.skipExport && getSpecies(obs.speciesId));
+    let included = observations.filter((obs) => !obs.skipExport && getSpecies(obs.speciesId));
+    notBirds.push(...included.filter((obs) => groupOf(obs.speciesId) !== BIRDS));
+    included = included.filter((obs) => groupOf(obs.speciesId) === BIRDS);
     if (included.length === 0) continue;
 
     const checklist = resolveChecklist(session);
@@ -188,6 +193,7 @@ export async function buildEbirdExport(sessions: Session[]): Promise<EbirdExport
     exported,
     rows: rows.length,
     excluded,
+    notBirds,
     problems,
     warnings,
   };
@@ -227,6 +233,9 @@ export async function exportForEbird(sessions: Session[]): Promise<string | unde
     `${n === 1 ? '1 soort' : `${n} soorten`} geëxporteerd voor eBird.`,
     saved.folder && `Het bestand staat in ${saved.folder}.`,
     result.excluded.length && `${result.excluded.length} uitgevinkt en niet geëxporteerd.`,
+    result.notBirds.length &&
+      `${result.notBirds.length === 1 ? '1 waarneming' : `${result.notBirds.length} waarnemingen`} ` +
+        'van andere dieren niet meegenomen: eBird is alleen voor vogels.',
   ]
     .filter(Boolean)
     .join(' ');
@@ -307,9 +316,9 @@ function toRow(
  */
 function speciesComments(group: Observation[]): string {
   const parts = group.map((obs) => {
-    const method = codeName(allMethods, obs.methodId);
+    const method = methodName(obs.speciesId, obs.methodId);
     return [
-      codeName(allActivities, obs.activityId),
+      activityName(obs.speciesId, obs.activityId),
       method !== 'onbekend' && method,
       obs.remarks && `(${obs.remarks})`,
     ]

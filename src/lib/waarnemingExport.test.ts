@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { HOUTDUIF, VINK, observation, unzipStored } from '../test-helpers';
+import { HOUTDUIF, REE, VINK, observation, unzipStored } from '../test-helpers';
 import { db, type Session } from './db';
 import { HAND_ACCURACY, placeByHand } from './observations';
 import {
@@ -67,6 +67,22 @@ describe('buildExport', () => {
     // Afsluitende CRLF
     expect(lines).toHaveLength(4);
     expect(lines[3]).toBe('');
+  });
+
+  it('schrijft gedrag, methode en kleed van een ander dier in de codes van zijn groep', async () => {
+    // zoogdieren: foeragerend 16, prenten 592, juveniel 27 (bij vogels andere ID's)
+    await db.observations.add(
+      observation({
+        speciesId: REE,
+        position,
+        activityId: 16,
+        methodId: 592,
+        lifeStageId: 27,
+        countingMethodId: 2,
+      }),
+    );
+    const [, line] = await csvLines();
+    expect(line).toMatch(/,Capreolus capreolus,.*,foeragerend,juveniel,prenten,exact aantal,/);
   });
 
   it('laat waarnemingen zonder positie en uitgevinkte waarnemingen eruit', async () => {

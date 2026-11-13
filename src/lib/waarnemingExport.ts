@@ -3,15 +3,7 @@ import { saveFile } from './export';
 import { logEvent } from './log';
 import { isNativeApp } from './native';
 import { listObservations } from './observations';
-import {
-  allActivities,
-  allLifeStages,
-  allMethods,
-  codeName,
-  countingMethods,
-  getSpecies,
-  type Code,
-} from './vocab';
+import { codeName, codesFor, countingMethods, getSpecies, type Code } from './vocab';
 import { buildXlsx } from './xlsx';
 
 // Export van een sessie voor de bulkimport van waarneming.nl
@@ -198,6 +190,7 @@ export async function exportForWaarneming(sessions: Session[]): Promise<string |
 function toRow(obs: Observation): Row {
   const position = obs.position!;
   const at = new Date(obs.observedAt);
+  const codes = codesFor(obs.speciesId);
   return {
     date: isoDate(at),
     time: `${pad(at.getHours())}:${pad(at.getMinutes())}`,
@@ -210,9 +203,10 @@ function toRow(obs: Observation): Row {
     notes: notes(obs),
     sex: obs.sex === 'male' ? 'M' : obs.sex === 'female' ? 'F' : 'U',
     'is certain': obs.uncertain ? 'False' : 'True',
-    activity: dutch(allActivities, obs.activityId),
-    'life stage': dutch(allLifeStages, obs.lifeStageId),
-    method: dutch(allMethods, obs.methodId),
+    // In de codes van de groep van de soort: ter plaatse bij een ree is niet die van een merel
+    activity: dutch(codes.allActivities, obs.activityId),
+    'life stage': dutch(codes.allLifeStages, obs.lifeStageId),
+    method: dutch(codes.allMethods, obs.methodId),
     'counting method': dutch(countingMethods, obs.countingMethodId),
     // Waarneming.nl weigert een import met een uuid die al bestaat: zo kan
     // dezelfde waarneming niet twee keer worden ingevoerd

@@ -7,6 +7,7 @@ import {
   findVagrant,
   getSpecies,
   groupOf,
+  groupOfCode,
   groups,
   isPromptSpecies,
   isVagrant,
@@ -156,5 +157,21 @@ describe('convertCodes', () => {
 
   it('laat velden weg die er niet waren', () => {
     expect(convertCodes({}, TURKSE_TORTEL, REE)).toEqual({});
+  });
+});
+
+describe('groupOfCode', () => {
+  it('de korte lijsten van de groepen hebben geen ID gemeen', () => {
+    for (const field of ['activities', 'methods', 'lifeStages'] as const) {
+      const ids = groups.flatMap((g) => g.codes[field].map((c) => c.id));
+      expect(new Set(ids).size).toBe(ids.length);
+    }
+  });
+
+  it('vindt de groep van een code uit de prompt', () => {
+    expect(groupOfCode('activityId', 1)).toBe(1);
+    expect(groupOfCode('activityId', 15)).toBe(2);
+    expect(groupOfCode('lifeStageId', 23)).toBe(4);
+    expect(groupOfCode('methodId', 999999)).toBeUndefined();
   });
 });

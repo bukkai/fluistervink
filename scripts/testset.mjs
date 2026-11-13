@@ -17,6 +17,9 @@
 //   --stil            alleen de samenvatting, niet elke fout
 //   --kandidaten      met twijfel tussen soorten (ontwikkeloptie 'kandidaten');
 //                     een verzamelsoort ("Tjiftjaf of Fitis") telt dan als fout
+//   --soortgroepen    ook zoogdieren, reptielen en amfibieën, dagvlinders en
+//                     libellen (ontwikkeloptie 'soortgroepen'): andere prompt
+//                     voor model en spraakherkenning
 //   --laadtest        alleen de code van de app laden en stoppen (zonder
 //                     export of sleutels; draait in CI, zie check.yml)
 //
@@ -65,6 +68,7 @@ const { values: opts, positionals } = parseArgs({
     stil: { type: 'boolean', default: false },
     laadtest: { type: 'boolean', default: false },
     kandidaten: { type: 'boolean', default: false },
+    soortgroepen: { type: 'boolean', default: false },
   },
 });
 
@@ -146,12 +150,17 @@ const { MODEL, interpret, parseResponse, promptVersionFor } =
 const { transcribe } = await loader.ssrLoadModule('/src/lib/transcribe.ts');
 const { devNoteText } = await loader.ssrLoadModule('/src/lib/devNotePrefix.ts');
 const vocab = await loader.ssrLoadModule('/src/lib/vocab.ts');
-const { DEFAULT_ACTIVITY, DEFAULT_METHOD, DEFAULT_COUNTING_METHOD } = vocab;
+const { DEFAULT_COUNTING_METHOD } = vocab;
+// Ter plaatse en gezien hebben per soortgroep een eigen ID; elk geldt als standaard
+const DEFAULTS = {
+  activityId: new Set(vocab.groups.map((g) => g.codes.defaultActivity)),
+  methodId: new Set(vocab.groups.map((g) => g.codes.defaultMethod)),
+};
 
 if (opts.laadtest) {
   await loader.close();
   console.log(
-    `Code van de app geladen (model ${MODEL}, prompt ${await promptVersionFor(opts.kandidaten)}).`,
+    `Code van de app geladen (model ${MODEL}, prompt ${await promptVersionFor(opts.kandidaten, opts.soortgroepen)}).`,
   );
   process.exit(0);
 }
@@ -339,7 +348,10 @@ async function run(item) {
   const { u, context } = item;
   const result = { transcript: u.transcript };
   if (opts.stt !== 'opgeslagen') {
-    const { text, timing } = await transcribe(fromDataUrl(u.audioData), { model: opts.stt });
+    const { text, timing } = await transcribe(fromDataUrl(u.audioData), {
+      model: opts.stt,
+      groups: opts.soortgroepen,
+    });
     result.transcript = text;
     result.sttMs = timing.requestMs;
     if (!u.trektel && devNoteText(text) !== undefined)
@@ -347,7 +359,7 @@ async function run(item) {
     if (!text) return { ...result, actions: [] };
   }
   if (model === 'origineel') {
-    return { ...result, ...parseResponse(u.llmOutput, context) };
+    return { ...result, ...parseResponse(u.llmOutput, context, opts.soortgroepen) };
   }
   // Stond de context van destijds erbij, dan precies die; anders nagebouwd
   const contextText = u.metrics?.contextIds ? u.metrics.context : undefined;
@@ -355,6 +367,7 @@ async function run(item) {
     model,
     contextText,
     candidates: opts.kandidaten,
+    groups: opts.soortgroepen,
   });
   return {
     ...result,
@@ -372,12 +385,10 @@ async function run(item) {
 /** Leeg en standaard gelijkstellen, zoals de app ze invult */
 function norm(field, value) {
   if (value === null || value === undefined || value === 'unknown') {
-    return {
-      countingMethodId: DEFAULT_COUNTING_METHOD,
-      activityId: DEFAULT_ACTIVITY,
-      methodId: DEFAULT_METHOD,
-    }[field];
+    if (field in DEFAULTS) return 'standaard';
+    return field === 'countingMethodId' ? DEFAULT_COUNTING_METHOD : undefined;
   }
+  if (DEFAULTS[field]?.has(value)) return 'standaard';
   if (field === 'lifeStageId' && value === 1) return undefined; // 1 = onbekend
   return value;
 }
@@ -487,15 +498,20 @@ const label = (f) =>
 function show(f, value) {
   const v = norm(f, value);
   if (v === undefined) return '—';
-  const lists = {
-    countingMethodId: vocab.countingMethods,
-    activityId: vocab.allActivities,
-    methodId: vocab.allMethods,
-    lifeStageId: vocab.allLifeStages,
-  };
+  if (v === 'standaard') return f === 'activityId' ? 'ter plaatse' : 'gezien';
   if (f === 'speciesId') return speciesName(v);
   if (f === 'sex') return v === 'male' ? 'man' : 'vrouw';
-  return lists[f] ? (vocab.codeName(lists[f], v) ?? String(v)) : String(v);
+  if (f === 'countingMethodId') return vocab.codeName(vocab.countingMethods, v) ?? String(v);
+  // De ID's van gedrag, methode en kleed verschillen per soortgroep
+  const key = { activityId: 'allActivities', methodId: 'allMethods', lifeStageId: 'allLifeStages' }[
+    f
+  ];
+  if (!key) return String(v);
+  for (const group of vocab.groups) {
+    const name = vocab.codeName(group.codes[key], v);
+    if (name) return name;
+  }
+  return String(v);
 }
 
 function describe(o) {
@@ -561,7 +577,7 @@ const median = (xs) => {
   return s.length ? `${(s[Math.floor(s.length / 2)] / 1000).toFixed(1)} s` : '–';
 };
 
-const version = await promptVersionFor(opts.kandidaten);
+const version = await promptVersionFor(opts.kandidaten, opts.soortgroepen);
 console.log(`\nTestset: ${positionals[0]}`);
 console.log(`Spraak: ${opts.stt} · model: ${model} · prompt ${version}`);
 console.log(

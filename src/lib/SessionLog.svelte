@@ -22,12 +22,12 @@
   } from './observations';
   import {
     DEFAULT_COUNTING_METHOD,
-    allActivities,
-    allLifeStages,
-    allMethods,
+    activityName,
     codeName,
     countingMethods,
     getSpecies,
+    lifeStageName,
+    methodName,
   } from './vocab';
 
   // Waarnemingen en uitspraken van één sessie; gebruikt voor de lopende
@@ -130,9 +130,9 @@
       obs.countingMethodId !== DEFAULT_COUNTING_METHOD
         ? codeName(countingMethods, obs.countingMethodId)
         : undefined,
-      codeName(allActivities, obs.activityId),
-      codeName(allMethods, obs.methodId),
-      codeName(allLifeStages, obs.lifeStageId),
+      activityName(obs.speciesId, obs.activityId),
+      methodName(obs.speciesId, obs.methodId),
+      lifeStageName(obs.speciesId, obs.lifeStageId),
       obs.sex === 'male' ? 'man' : obs.sex === 'female' ? 'vrouw' : undefined,
     ].filter(Boolean);
   }

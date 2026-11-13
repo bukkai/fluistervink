@@ -12,21 +12,29 @@ import {
 } from './spokenPlace';
 import {
   activities,
+  activityName,
   aliases,
-  allActivities,
-  allLifeStages,
-  allMethods,
-  codeName,
+  aliasesOf,
+  BIRDS,
+  codesFor,
+  convertCodesBetween,
   countingMethods,
   getSpecies,
+  groupOf,
+  groupOfCode,
+  groups,
+  lifeStageName,
+  methodName,
   speciesName,
   findPromptSpecies,
   findVagrant,
   isPromptSpecies,
   lifeStages,
   methods,
+  promptSpeciesOf,
   species,
   type Code,
+  type GroupFields,
 } from './vocab';
 
 // Zet een uitgesproken (of getypte) uitspraak om in acties. Het model krijgt
@@ -176,15 +184,41 @@ export const MAX_OPTIONAL_PARAMETERS = 24;
 /** Hooguit zoveel kandidaten; meer is geen twijfel tussen soorten maar een groep */
 const MAX_CANDIDATES = 3;
 
+/** Groepen naast vogels (ontwikkeloptie 'soortgroepen') */
+const otherGroups = groups.filter((g) => g.id !== BIRDS);
+
+/** Codes van alle groepen samen, voor het schema; de app controleert per groep */
+const allGroupCodes = (field: 'activities' | 'methods' | 'lifeStages') =>
+  groups.flatMap((g) => g.codes[field]);
+
+/**
+ * Velden met de andere soortgroepen erbij: de codes van alle groepen, en een
+ * verzamelsoort van de groep bij een onbekend dier. Zelfde volgorde van de
+ * sleutels, zodat de tools zonder de optie precies gelijk blijven.
+ */
+const fieldPropertiesWithGroups = {
+  ...fieldProperties,
+  unlisted_species: {
+    type: 'string',
+    description:
+      'Alleen als de gebruiker duidelijk een vogel noemt die niet in de soortenlijst staat (een zeldzame dwaalgast): de naam zoals gezegd, bv. "roodkopklauwier". species_name en species_id zijn dan de best passende verzamelsoort, anders Vogel onbekend. Niet voor andere dieren. Zie "Soorten".',
+  },
+  activity_id: { type: 'integer', enum: enumOf(allGroupCodes('activities')) },
+  method_id: { type: 'integer', enum: enumOf(allGroupCodes('methods')) },
+  life_stage_id: {
+    ...fieldProperties.life_stage_id,
+    anyOf: [{ type: 'integer', enum: enumOf(allGroupCodes('lifeStages')) }, { type: 'null' }],
+  },
+} as const;
+
 const refProperty = {
   type: 'integer',
   description: 'Nummer van de waarneming in de lijst met recente waarnemingen (#1 = meest recent).',
 } as const;
 
-const buildTools = (withCandidates: boolean): Anthropic.Tool[] => {
-  const properties = withCandidates
-    ? { ...fieldProperties, ...candidateProperty }
-    : fieldProperties;
+const buildTools = (withCandidates: boolean, withGroups: boolean): Anthropic.Tool[] => {
+  const fields = withGroups ? fieldPropertiesWithGroups : fieldProperties;
+  const properties = withCandidates ? { ...fields, ...candidateProperty } : fields;
   const candidateRequired = withCandidates ? ['candidate_species'] : [];
   return [
     {
@@ -220,7 +254,7 @@ const buildTools = (withCandidates: boolean): Anthropic.Tool[] => {
         type: 'object',
         properties: {
           ref: refProperty,
-          ...fieldProperties,
+          ...fields,
           add_count: {
             type: 'integer',
             description:
@@ -287,8 +321,40 @@ const CANDIDATE_RULES = `
 
 Twijfel je tussen twee of drie bepaalde soorten (de gebruiker zegt "fitis of tjiftjaf", "kleine of grote zilverreiger", of de spraakherkenning laat twee soorten open), zet die dan bij add_observation in candidate_species, met de namen precies zoals in de soortenlijst, en uncertain: true. Kies voor species_name dan de verzamelsoort die precies die soorten omvat als die in de lijst staat ("Tjiftjaf of Fitis", "Wilde of Kleine Zwaan"), anders de meest waarschijnlijke kandidaat. Zet candidate_species op null als je maar één soort in gedachten hebt, en bij een hele groep ("een meeuw" → Meeuw onbekend, zonder kandidaten). Kiest de gebruiker later ("het was een fitis"), dan update_observation met die soort en uncertain: false.`;
 
+/** Codes van een groep, zoals onder "Codes" voor vogels */
+const groupCodeLines = (g: (typeof groups)[number]) =>
+  `### ${g.name}
+- Activiteit: ${codeList(g.codes.activities)}
+- Methode: ${codeList(g.codes.methods)}
+- Kleed/leeftijd: ${codeList(g.codes.lifeStages)}`;
+
+const GROUP_RULES = `
+
+## Andere dieren
+
+Naast vogels spreekt de gebruiker ook zoogdieren, reptielen en amfibieën, dagvlinders en libellen in. Die staan in de soortenlijst onder een eigen kopje. Elke groep heeft eigen codes voor activiteit, methode en kleed (hieronder): gebruik bij een soort alleen de codes van zijn eigen groep, nooit die van vogels. Niets genoemd → ter plaatse en gezien van die groep. Aantal, telmethode, geslacht, plek, opmerkingen en twijfel werken net als bij vogels.
+
+- Namen die op een vogel lijken: "koevinkje" is een dagvlinder, geen vink. "Kleine vos" en "grote vos" zijn dagvlinders; alleen "vos" is het zoogdier. Ook "atalanta", "dagpauwoog", "groentje", "landkaartje" en "hooibeestje" zijn dagvlinders.
+- "Das", "ree", "haas", "mol" en "pad" zijn ook gewone woorden. Gaat de zin niet over een dier, roep dan geen tool aan. Is het wel een waarneming maar twijfel je aan de soort, dan uncertain.
+- Een dier dat niet in de lijst staat → de verzamelsoort van zijn groep ("Zoogdier onbekend", "Vleermuis onbekend", "Kikker/pad onbekend", "Hagedis onbekend", "Dagvlinder onbekend", "Libel onbekend"), met uncertain en de gezegde naam in uncertain_reason. unlisted_species is alleen voor vogels.
+- Vleermuizen: "op de batdetector", "met de detector" → methode batdetector.
+- Sporen van zoogdieren: "prenten", "pootafdrukken" → methode prenten; "keutels", "uitwerpselen" → uitwerpselen; "vraatsporen" → vraatsporen. Activiteit ter plaatse.
+- Libellen: "paring", "paringswiel", "in copula" → in copula; "tandem" → tandem; "eileggend", "eiafzettend" → eileggend; "uitsluipend" → vervellend.
+- Vlinders en libellen: "rups", "pop", "ei", "larve", "larvenhuidje", "net uitgeslopen" → het kleed van die groep ("net uitgeslopen" → imago, niet uitgekleurd).
+- Trekkende vlinders met windrichting ("atalanta's trekkend zuid") → langstrekkend met die richting.
+- Doodgereden → slachtoffer verkeer; dood gevonden → dood.
+
+${otherGroups.map(groupCodeLines).join('\n\n')}`;
+
+const speciesLines = (list: typeof species) =>
+  list.map((s) => `${s.id}|${s.name}|${s.scientific}`).join('\n');
+
+const aliasLines = (list: typeof aliases) =>
+  list.map((a) => `${a.bijnamen.join(', ')} → ${a.soort}|${a.naam}`).join('\n');
+
 const buildPrompt = (
   withCandidates: boolean,
+  withGroups: boolean,
 ) => `Je bent de interpretatielaag van Fluistervink, een app waarmee een vogelaar tijdens het vogelen waarnemingen inspreekt. Je krijgt de tekst van één uitspraak, meestal uit spraakherkenning (dus met mogelijke verhaspelingen), plus de recente waarnemingen van deze sessie. Je antwoordt uitsluitend met tool calls; de app voert ze uit. Je kunt niets terugvragen.
 
 ## Wat je doet
@@ -397,15 +463,22 @@ Vogelaars korten leeftijd en kleed af. Spraakherkenning schrijft ze soms als cij
 
 Twijfel je over soort, aantal of welke waarneming bedoeld wordt, voer dan de meest waarschijnlijke actie uit met uncertain: true en een korte uncertain_reason. Liever een onzekere waarneming dan geen.
 
-Twijfelt de gebruiker zelf ("klinkt als een winterkoning", "lijkt op een fitis", "volgens mij een sperwer", "ik check het even in Merlin"), dan is het tóch een waarneming: add_observation met uncertain: true en de twijfel in uncertain_reason. Niet negeren; komt er later een bevestiging ("ja, het was een winterkoning"), dan gaat de twijfel eraf. Een opdracht voor later ("thuis nog terugluisteren", "even in Merlin checken") gaat in private_note.${withCandidates ? CANDIDATE_RULES : ''}
+Twijfelt de gebruiker zelf ("klinkt als een winterkoning", "lijkt op een fitis", "volgens mij een sperwer", "ik check het even in Merlin"), dan is het tóch een waarneming: add_observation met uncertain: true en de twijfel in uncertain_reason. Niet negeren; komt er later een bevestiging ("ja, het was een winterkoning"), dan gaat de twijfel eraf. Een opdracht voor later ("thuis nog terugluisteren", "even in Merlin checken") gaat in private_note.${withCandidates ? CANDIDATE_RULES : ''}${withGroups ? GROUP_RULES : ''}
 
 ## Bijnamen (bijnaam → ID|naam)
 
-${aliases.map((a) => `${a.bijnamen.join(', ')} → ${a.soort}|${a.naam}`).join('\n')}
+${aliasLines(withGroups ? [...aliases, ...otherGroups.flatMap((g) => aliasesOf(g.id))] : aliases)}
 
 ## Soortenlijst (ID|naam|wetenschappelijke naam)
 
-${species.map((s) => `${s.id}|${s.name}|${s.scientific}`).join('\n')}`;
+${
+  withGroups
+    ? [
+        `### Vogels\n${speciesLines(species)}`,
+        ...otherGroups.map((g) => `### ${g.name}\n${speciesLines(promptSpeciesOf(g.id))}`),
+      ].join('\n\n')
+    : speciesLines(species)
+}`;
 
 interface Variant {
   system: string;
@@ -413,21 +486,25 @@ interface Variant {
   version: Promise<string>;
 }
 
-const variants = new Map<boolean, Variant>();
+const variants = new Map<string, Variant>();
 
-/** Systeemprompt en tools, met of zonder kandidaten; vast per variant, dus te cachen */
-function variant(withCandidates: boolean): Variant {
-  let found = variants.get(withCandidates);
+/**
+ * Systeemprompt en tools, met of zonder kandidaten en de andere soortgroepen;
+ * vast per variant, dus te cachen
+ */
+function variant(withCandidates: boolean, withGroups: boolean): Variant {
+  const key = `${withCandidates}-${withGroups}`;
+  let found = variants.get(key);
   if (!found) {
-    const system = buildPrompt(withCandidates);
-    const tools = buildTools(withCandidates);
+    const system = buildPrompt(withCandidates, withGroups);
+    const tools = buildTools(withCandidates, withGroups);
     const version = crypto.subtle
       .digest('SHA-256', new TextEncoder().encode(system + JSON.stringify(tools)))
       .then((hash) =>
         [...new Uint8Array(hash).slice(0, 4)].map((b) => b.toString(16).padStart(2, '0')).join(''),
       );
     found = { system, tools, version };
-    variants.set(withCandidates, found);
+    variants.set(key, found);
   }
   return found;
 }
@@ -436,10 +513,12 @@ function variant(withCandidates: boolean): Variant {
  * Korte hash van systeemprompt en tools. Bij elke uitspraak bewaard, zodat
  * resultaten van verschillende promptversies uit elkaar te houden zijn.
  */
-export const promptVersionFor = (withCandidates = false) => variant(withCandidates).version;
+export const promptVersionFor = (withCandidates = false, withGroups = false) =>
+  variant(withCandidates, withGroups).version;
 
 /** De tools van een variant (voor de tests) */
-export const toolsFor = (withCandidates = false) => variant(withCandidates).tools;
+export const toolsFor = (withCandidates = false, withGroups = false) =>
+  variant(withCandidates, withGroups).tools;
 
 /** De gewone promptversie (zonder ontwikkelopties), voor de testset */
 export const promptVersion: Promise<string> = promptVersionFor(false);
@@ -473,9 +552,9 @@ export function describeContext(context: Observation[], here?: Position): string
 function describe(obs: Observation, here?: Position): string {
   const parts = [
     `${obs.count} × ${speciesName(obs.speciesId)}`,
-    codeName(allActivities, obs.activityId),
-    codeName(allMethods, obs.methodId),
-    codeName(allLifeStages, obs.lifeStageId),
+    activityName(obs.speciesId, obs.activityId),
+    methodName(obs.speciesId, obs.methodId),
+    lifeStageName(obs.speciesId, obs.lifeStageId),
     obs.sex === 'male' ? 'man' : obs.sex === 'female' ? 'vrouw' : undefined,
     obs.uncertain ? 'onzeker' : undefined,
     obs.candidates?.length
@@ -497,13 +576,14 @@ function describe(obs: Observation, here?: Position): string {
 export function parseResponse(
   response: Anthropic.Message,
   context: Observation[],
+  withGroups = false,
 ): { actions: Action[]; rejected: string[]; warnings: string[] } {
   const actions: Action[] = [];
   const rejected: string[] = [];
   const warnings: string[] = [];
   for (const block of response.content) {
     if (block.type !== 'tool_use') continue;
-    const result = toAction(block, context, warnings);
+    const result = toAction(block, context, warnings, withGroups);
     if (typeof result === 'string') rejected.push(result);
     else actions.push(result);
   }
@@ -528,9 +608,11 @@ export async function interpret(
     contextText?: string;
     sessionId?: string;
     candidates?: boolean;
+    groups?: boolean;
   } = {},
 ): Promise<Interpretation> {
-  const { system, tools } = variant(options.candidates ?? false);
+  const withGroups = options.groups ?? false;
+  const { system, tools } = variant(options.candidates ?? false, withGroups);
   const context = recent.slice(0, CONTEXT_SIZE);
   const contextText = options.contextText ?? describeContext(context, options.here);
 
@@ -558,7 +640,7 @@ export async function interpret(
     throw new Error('Het model weigerde de uitspraak te verwerken');
   }
 
-  const { actions, rejected, warnings } = parseResponse(response, context);
+  const { actions, rejected, warnings } = parseResponse(response, context, withGroups);
   return {
     actions,
     rejected,
@@ -638,11 +720,16 @@ function toSpokenPlace(
  * Soorten waartussen het model twijfelt. Een naam die niet in de lijst staat
  * valt weg; blijven er minder dan twee over, dan is er niets te kiezen.
  */
-function toCandidates(tool: string, names: unknown, warnings: string[]): number[] | undefined {
+function toCandidates(
+  tool: string,
+  names: unknown,
+  warnings: string[],
+  withGroups: boolean,
+): number[] | undefined {
   if (!Array.isArray(names) || names.length === 0) return undefined;
   const ids: number[] = [];
   for (const name of names) {
-    const found = typeof name === 'string' ? findPromptSpecies(name) : undefined;
+    const found = typeof name === 'string' ? findPromptSpecies(name, withGroups) : undefined;
     if (!found) warnings.push(`${tool}: kandidaat "${String(name)}" staat niet in de lijst`);
     else if (!ids.includes(found.id)) ids.push(found.id);
   }
@@ -656,6 +743,43 @@ function toCandidates(tool: string, names: unknown, warnings: string[]): number[
 const validCode = (codes: Code[], id: number | undefined) =>
   id === undefined || codes.some((c) => c.id === id);
 
+const CODE_FIELDS = ['activityId', 'methodId', 'lifeStageId'] as const;
+const CODE_LISTS = {
+  activityId: 'activities',
+  methodId: 'methods',
+  lifeStageId: 'lifeStages',
+} as const;
+
+/**
+ * Gedrag, methode en kleed moeten bij de groep van de soort horen ("ter
+ * plaatse" is 1 bij vogels, 15 bij zoogdieren). Gaf het model een code van een
+ * andere groep, dan zet de app die op naam om (anders ter plaatse en gezien),
+ * met een waarschuwing. Geeft false bij een code die bij geen enkele groep hoort.
+ */
+function fitCodes(
+  tool: string,
+  fields: GroupFields,
+  speciesId: number | undefined,
+  warnings: string[],
+): boolean {
+  const codes = speciesId !== undefined ? codesFor(speciesId) : undefined;
+  const group = speciesId !== undefined ? groupOf(speciesId) : BIRDS;
+  for (const field of CODE_FIELDS) {
+    const id = fields[field];
+    if (id === undefined) continue;
+    if (codes && validCode(codes[CODE_LISTS[field]], id)) continue;
+    const from = groupOfCode(field, id);
+    if (from === undefined || !codes) return false;
+    const converted = convertCodesBetween({ [field]: id }, from, group)[field];
+    warnings.push(
+      `${tool}: code ${id} hoort bij een andere soortgroep; ${converted ?? 'geen'} gebruikt`,
+    );
+    if (converted === undefined) delete fields[field];
+    else fields[field] = converted;
+  }
+  return true;
+}
+
 /**
  * Geeft een actie terug, of een omschrijving van wat er mis was. Wat de app
  * zelf herstelde (soortnaam en ID die niet bij elkaar horen) komt in `warnings`.
@@ -664,6 +788,7 @@ function toAction(
   block: Anthropic.ToolUseBlock,
   context: Observation[],
   warnings: string[],
+  withGroups: boolean,
 ): Action | string {
   const input = block.input as RawFields;
 
@@ -696,7 +821,7 @@ function toAction(
   // Naam en ID horen bij elkaar; zo niet, dan geldt de naam (het model kiest
   // soms het ID van een soort die erop lijkt)
   if (input.species_name) {
-    const named = findPromptSpecies(input.species_name);
+    const named = findPromptSpecies(input.species_name, withGroups);
     if (!named) {
       warnings.push(
         `${block.name}: naam "${input.species_name}" staat niet in de lijst; ID ${fields.speciesId} aangehouden`,
@@ -724,7 +849,7 @@ function toAction(
     warnings.push(`${block.name}: "${said}" niet gevonden bij de dwaalgasten`);
   }
 
-  const candidates = toCandidates(block.name, input.candidate_species, warnings);
+  const candidates = toCandidates(block.name, input.candidate_species, warnings, withGroups);
   if (candidates) {
     fields.candidates = candidates;
     fields.uncertain = true;
@@ -733,7 +858,7 @@ function toAction(
 
   if (
     fields.speciesId !== undefined &&
-    !isPromptSpecies(fields.speciesId) &&
+    !isPromptSpecies(fields.speciesId, withGroups) &&
     fields.speciesId !== vagrant?.id
   ) {
     return `${block.name}: onbekende soort-ID ${fields.speciesId}`;
@@ -745,12 +870,18 @@ function toAction(
   if (input.add_count !== undefined && !Number.isInteger(input.add_count)) {
     return `${block.name}: ongeldig aantal erbij ${input.add_count}`;
   }
+  // De soort waar gedrag, methode en kleed bij moeten passen: de nieuwe soort,
+  // of bij een aanpassing zonder soort die van de waarneming waar het om gaat
+  const target = input.ref !== undefined ? context[input.ref - 1] : undefined;
+  const codesSpeciesId = fields.speciesId ?? target?.speciesId;
   if (
     (fields.sex !== undefined && fields.sex !== 'male' && fields.sex !== 'female') ||
     !validCode(countingMethods, fields.countingMethodId) ||
-    !validCode(activities, fields.activityId) ||
-    !validCode(methods, fields.methodId) ||
-    !validCode(lifeStages, fields.lifeStageId)
+    !(withGroups
+      ? fitCodes(block.name, fields, codesSpeciesId, warnings)
+      : validCode(activities, fields.activityId) &&
+        validCode(methods, fields.methodId) &&
+        validCode(lifeStages, fields.lifeStageId))
   ) {
     return `${block.name}: ongeldige code`;
   }
@@ -762,7 +893,6 @@ function toAction(
     return { type: 'add', fields: { ...fields, speciesId: fields.speciesId, count: fields.count } };
   }
 
-  const target = input.ref !== undefined ? context[input.ref - 1] : undefined;
   if (!target) return `${block.name}: verwijzing #${input.ref} bestaat niet`;
 
   if (block.name === 'delete_observation') {

@@ -12,7 +12,7 @@
     listObservations,
     listUtterances,
   } from './observations';
-  import { allActivities, allMethods, codeName, getSpecies } from './vocab';
+  import { activityName, getSpecies, methodName } from './vocab';
 
   // Snel nalopen: de onzekere waarnemingen één voor één, op volgorde van tijd,
   // met wat er gezegd werd. Per waarneming Klopt, Weg, Aanpassen of Overslaan;
@@ -84,8 +84,8 @@
             <span class="muted">
               {[
                 timeFormat.format(current.observedAt),
-                codeName(allActivities, current.activityId),
-                codeName(allMethods, current.methodId),
+                activityName(current.speciesId, current.activityId),
+                methodName(current.speciesId, current.methodId),
               ]
                 .filter(Boolean)
                 .join(' · ')}
