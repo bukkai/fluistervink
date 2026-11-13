@@ -1,7 +1,7 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import { Blob as NodeBlob } from 'node:buffer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { FakeLockManager, HOUTDUIF, KEEP, VINK, toolResponse } from '../test-helpers';
+import { FakeLockManager, HOUTDUIF, KEEP, REE, VINK, VOS, toolResponse } from '../test-helpers';
 import { db, storeAudio, type Observation, type PositionLookup, type Utterance } from './db';
 import { interpret } from './interpret';
 import {
@@ -23,6 +23,7 @@ import {
   setSkipExport,
   submitText,
 } from './observations';
+import { setDevOption } from './devOptions';
 import { UNKNOWN_PLACE_ACCURACY } from './spokenPlace';
 import { distanceMeters } from './geo';
 
@@ -42,16 +43,18 @@ vi.mock('./interpret', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./interpret')>();
   return {
     ...actual,
-    interpret: vi.fn(async (_transcript: string, recent: Observation[]) => {
-      const response = model.respond(recent);
-      return {
-        ...actual.parseResponse(response, recent),
-        response,
-        context: '',
-        contextIds: recent.map((obs) => obs.id),
-        timing: { requestMs: 0 },
-      };
-    }),
+    interpret: vi.fn(
+      async (_transcript: string, recent: Observation[], options?: { groups?: boolean }) => {
+        const response = model.respond(recent);
+        return {
+          ...actual.parseResponse(response, recent, options?.groups),
+          response,
+          context: '',
+          contextIds: recent.map((obs) => obs.id),
+          timing: { requestMs: 0 },
+        };
+      },
+    ),
   };
 });
 
@@ -992,5 +995,48 @@ describe('twijfel tussen soorten', () => {
     [obs] = await listObservations(SESSION);
     expect(obs).toMatchObject({ speciesId: TJIFTJAF, uncertain: false });
     expect(obs.candidates).toBeUndefined();
+  });
+});
+
+describe('andere soortgroepen', () => {
+  beforeEach(() => setDevOption('soortgroepen', true));
+  afterEach(() => setDevOption('soortgroepen', false));
+
+  it('vult ter plaatse en gezien in met de codes van de groep', async () => {
+    await say('een ree', ['add_observation', { species_id: REE, count: 1 }]);
+    const [obs] = await listObservations(SESSION);
+    expect(obs).toMatchObject({ speciesId: REE, activityId: 15, methodId: 123 });
+  });
+
+  it('"nee, een vos": gedrag, methode en kleed gaan mee naar de nieuwe groep', async () => {
+    await say('twee foeragerende juveniele vinken', [
+      'add_observation',
+      { species_id: VINK, count: 2, activity_id: 2, method_id: 48, life_stage_id: 5 },
+    ]);
+    await say('nee, een vos', ['update_observation', { ref: 1, species_id: VOS }]);
+    const [obs] = await listObservations(SESSION);
+    // foeragerend 2 → 16, gezien 48 → 123, juveniel 5 → 27
+    expect(obs).toMatchObject({ speciesId: VOS, activityId: 16, methodId: 123, lifeStageId: 27 });
+  });
+
+  it('zet de codes ook om bij een andere soort in het formulier of via de kandidaten', async () => {
+    await say('zingende vink', [
+      'add_observation',
+      { species_id: VINK, count: 1, activity_id: 4, method_id: 49, life_stage_id: 14 },
+    ]);
+    const [obs] = await listObservations(SESSION);
+    await editObservation(obs.id, { speciesId: REE });
+    const [after] = await listObservations(SESSION);
+    // zingend en eerste kalenderjaar bestaan niet bij zoogdieren; gehoord wel
+    expect(after).toMatchObject({ activityId: 15, methodId: 124 });
+    expect(after.lifeStageId).toBeUndefined();
+  });
+
+  it('laat codes die de wijziging zelf zet staan', async () => {
+    await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    const [obs] = await listObservations(SESSION);
+    await editObservation(obs.id, { speciesId: REE, activityId: 2029 });
+    const [after] = await listObservations(SESSION);
+    expect(after).toMatchObject({ activityId: 2029, methodId: 123 });
   });
 });

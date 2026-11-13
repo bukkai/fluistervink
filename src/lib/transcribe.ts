@@ -1,5 +1,5 @@
 import { transcribe as transcribeAudio, type Timing } from './api';
-import { aliases, species } from './vocab';
+import { aliases, aliasesOf, BIRDS, groups, promptSpeciesOf, species } from './vocab';
 
 // Spraak naar tekst via de proxy (OpenAI). De prompt stuurt de herkenning:
 // een paar voorbeeldzinnen voor de stijl, en de soortnamen en bijnamen, zodat
@@ -40,22 +40,54 @@ Bijnamen: ${aliasNames.join(', ')}.
 
 Leeftijd en kleed: 1kj, 2kj, 3kj, 1w, 2w, 1z, juv, ad, subad, imm, pullus, eclips, zomerkleed, winterkleed. Nocmig.`;
 
+/**
+ * Met de andere soortgroepen (ontwikkeloptie 'soortgroepen'): ook hun namen,
+ * met dezelfde keuze (gewoon en vrij gewoon, geen verzamelsoorten). Of dat de
+ * vogelnamen slechter maakt, meet de testset (`--soortgroepen`).
+ */
+const otherGroups = groups.filter((g) => g.id !== BIRDS);
+const PROMPT_WITH_GROUPS = `${PROMPT}
+
+${otherGroups
+  .map((g) => {
+    const names = promptSpeciesOf(g.id)
+      .filter((s) => s.type === 'S' && s.rarity <= 2)
+      .map((s) => s.name);
+    const nicknames = aliasesOf(g.id).flatMap((a) => a.bijnamen);
+    return `${g.name}: ${[...names, ...nicknames].join(', ')}.`;
+  })
+  .join('\n')}`;
+
+const promptFor = (withGroups: boolean) => (withGroups ? PROMPT_WITH_GROUPS : PROMPT);
+
 /** Korte hash van model en prompt, zoals bij de interpretatie. */
-export const transcribePromptVersion: Promise<string> = crypto.subtle
-  .digest('SHA-256', new TextEncoder().encode(TRANSCRIBE_MODEL + PROMPT))
-  .then((hash) =>
-    [...new Uint8Array(hash).slice(0, 4)].map((b) => b.toString(16).padStart(2, '0')).join(''),
-  );
+export function transcribePromptVersionFor(withGroups = false): Promise<string> {
+  return crypto.subtle
+    .digest('SHA-256', new TextEncoder().encode(TRANSCRIBE_MODEL + promptFor(withGroups)))
+    .then((hash) =>
+      [...new Uint8Array(hash).slice(0, 4)].map((b) => b.toString(16).padStart(2, '0')).join(''),
+    );
+}
+
+export const transcribePromptVersion: Promise<string> = transcribePromptVersionFor(false);
 
 /**
  * `model`: alleen anders voor de testset (scripts/testset.mjs). `sessionId`:
- * voor het verbruik per sessie.
+ * voor het verbruik per sessie. `groups`: ook namen van andere dieren.
  */
 export async function transcribe(
   audio: Blob,
-  { model = TRANSCRIBE_MODEL, sessionId }: { model?: string; sessionId?: string } = {},
+  {
+    model = TRANSCRIBE_MODEL,
+    sessionId,
+    groups = false,
+  }: { model?: string; sessionId?: string; groups?: boolean } = {},
 ): Promise<{ text: string; confidence?: number; timing: Timing }> {
-  const { data, timing } = await transcribeAudio(audio, { model, prompt: PROMPT, sessionId });
+  const { data, timing } = await transcribeAudio(audio, {
+    model,
+    prompt: promptFor(groups),
+    sessionId,
+  });
   return { text: data.text.trim(), confidence: data.confidence, timing };
 }
 

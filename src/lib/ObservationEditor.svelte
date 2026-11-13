@@ -12,17 +12,18 @@
     recordedPlace,
     type Place,
   } from './observations';
+  import { untrack } from 'svelte';
+  import { devOptionOn } from './devOptions';
   import type { Code } from './vocab';
   import {
-    activities,
-    allActivities,
-    allLifeStages,
-    allMethods,
-    allSpecies,
+    BIRDS,
+    codesFor,
+    convertCodes,
     countingMethods,
     getSpecies,
-    lifeStages,
-    methods,
+    groupLabel,
+    groupOf,
+    selectableSpecies,
   } from './vocab';
 
   // Formulier om één waarneming met de hand te corrigeren, in de review.
@@ -63,8 +64,29 @@
   /** Niet meer op de GPS-positie: met de hand gezet of volgens de uitspraak */
   let moved = $derived(place.recordedPosition !== undefined);
 
-  const speciesByName = new Map(allSpecies.map((s) => [s.name.toLowerCase(), s]));
+  // Andere dieren dan vogels met de ontwikkeloptie, of als deze waarneming er al een is
+  const choices = selectableSpecies(
+    devOptionOn('soortgroepen') || groupOf(original.speciesId) !== BIRDS,
+  );
+  const speciesByName = new Map(choices.map((s) => [s.name.toLowerCase(), s]));
   let selectedSpecies = $derived(speciesByName.get(speciesName.trim().toLowerCase()));
+
+  // Gedrag, methode en kleed horen bij de groep van de soort ("ter plaatse" is
+  // 1 bij vogels, 15 bij zoogdieren). Een andere groep gekozen: omzetten.
+  let codesSpeciesId = $state(original.speciesId);
+  let codes = $derived(codesFor(codesSpeciesId));
+  $effect(() => {
+    const id = selectedSpecies?.id;
+    if (id === undefined) return;
+    untrack(() => {
+      if (id === codesSpeciesId) return;
+      const converted = convertCodes({ activityId, methodId, lifeStageId }, codesSpeciesId, id);
+      activityId = converted.activityId;
+      methodId = converted.methodId;
+      lifeStageId = converted.lifeStageId;
+      codesSpeciesId = id;
+    });
+  });
   let valid = $derived(selectedSpecies !== undefined && Number.isInteger(count) && count >= 1);
 
   async function save(event: SubmitEvent) {
@@ -168,14 +190,14 @@
       Gedrag
       <select bind:value={activityId}>
         <option value={undefined}>—</option>
-        {@render options(activities, allActivities)}
+        {@render options(codes.activities, codes.allActivities)}
       </select>
     </label>
     <label>
       Methode
       <select bind:value={methodId}>
         <option value={undefined}>—</option>
-        {@render options(methods, allMethods)}
+        {@render options(codes.methods, codes.allMethods)}
       </select>
     </label>
   </div>
@@ -185,7 +207,7 @@
       Kleed/leeftijd
       <select bind:value={lifeStageId}>
         <option value={undefined}>—</option>
-        {@render options(lifeStages, allLifeStages)}
+        {@render options(codes.lifeStages, codes.allLifeStages)}
       </select>
     </label>
     <label>
@@ -280,8 +302,8 @@
 </form>
 
 <datalist id="soorten">
-  {#each allSpecies as s (s.id)}
-    <option value={s.name}></option>
+  {#each choices as s (s.id)}
+    <option value={s.name}>{groupLabel(s.id)}</option>
   {/each}
 </datalist>
 

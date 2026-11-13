@@ -78,5 +78,18 @@
  { "soort": 10, "naam": "Krooneend", "bijnamen": ["kroon"] },
  { "soort": 772, "naam": "Witoogeend", "bijnamen": ["witoog"] },
  { "soort": 357, "naam": "Zwarte Zee-eend", "bijnamen": ["zwarte zee"] },
- { "soort": 258, "naam": "Grote Zee-eend", "bijnamen": ["grote zee"] }
+ { "soort": 258, "naam": "Grote Zee-eend", "bijnamen": ["grote zee"] },
+ { "soort": 389, "naam": "Europese Rode Eekhoorn", "bijnamen": ["eekhoorn", "rode eekhoorn"] },
+ { "soort": 390, "naam": "West-Europese Egel", "bijnamen": ["egel"] },
+ { "soort": 401, "naam": "Europese Haas", "bijnamen": ["haas"] },
+ { "soort": 412, "naam": "Europese Mol", "bijnamen": ["mol"] },
+ { "soort": 417, "naam": "Europese Otter", "bijnamen": ["otter"] },
+ { "soort": 375, "naam": "Europese Bever", "bijnamen": ["bever"] },
+ { "soort": 432, "naam": "Wild Zwijn", "bijnamen": ["zwijn", "everzwijn"] },
+ { "soort": 18811, "naam": "Zeehond onbekend", "bijnamen": ["zeehond"] },
+ { "soort": 387, "naam": "Gewone Dwergvleermuis", "bijnamen": ["dwergvleermuis"] },
+ { "soort": 380, "naam": "Gewone Bruinvis", "bijnamen": ["bruinvis"] },
+ { "soort": 442, "naam": "Gewone pad", "bijnamen": ["pad", "padje"] },
+ { "soort": 444, "naam": "Groene Kikker onbekend", "bijnamen": ["groene kikker"] },
+ { "soort": 1430, "naam": "Koolwitje onbekend", "bijnamen": ["koolwitje"] }
 ]

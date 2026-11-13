@@ -9,6 +9,10 @@ export const KEEP = 127;
 export const HOUTDUIF = 120;
 export const BOOMKLEVER = 70;
 export const BOOMKRUIPER = 71;
+// Andere soortgroepen (ontwikkeloptie 'soortgroepen')
+export const REE = 418;
+export const VOS = 428;
+export const ATALANTA = 723;
 
 /** Een waarneming met redelijke standaardwaarden; geef mee wat ertoe doet. */
 export function observation(fields: Partial<Observation> = {}): Observation {

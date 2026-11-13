@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { HOUTDUIF, VINK, observation } from '../test-helpers';
+import { HOUTDUIF, REE, VINK, observation } from '../test-helpers';
 import { db, type Session, type Utterance } from './db';
 import {
   COLUMNS,
@@ -140,6 +140,16 @@ describe('buildEbirdExport', () => {
     expect(result.rows).toBe(1);
     expect(result.excluded).toHaveLength(1);
     expect(result.warnings.join(' ')).toContain('1 waarneming is nog onzeker');
+  });
+
+  it('neemt alleen vogels mee en telt de andere dieren', async () => {
+    await db.observations.bulkAdd([
+      observation({ position }),
+      observation({ speciesId: REE, position, activityId: 15 }),
+    ]);
+    const result = await buildEbirdExport([session]);
+    expect(result.rows).toBe(1);
+    expect(result.notBirds).toHaveLength(1);
   });
 
   it('plek van de eerste uitspraak als geen waarneming een positie heeft', async () => {

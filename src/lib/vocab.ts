@@ -79,25 +79,31 @@ export function speciesName(id: number): string {
 
 // Ook op wetenschappelijke naam: zet het model die in species_name, dan klopt
 // de soort nog steeds. Geen soort heeft als wetenschappelijke naam een
-// Nederlandse naam van een andere soort.
-const promptSpeciesByName = new Map(
-  species.flatMap((s) => [
-    [s.scientific.toLowerCase(), s],
-    [s.name.toLowerCase(), s],
-  ]),
-);
+// Nederlandse naam van een andere soort, ook niet tussen de groepen.
+const byName = (list: Species[]) =>
+  new Map(
+    list.flatMap((s) => [
+      [s.scientific.toLowerCase(), s],
+      [s.name.toLowerCase(), s],
+    ]),
+  );
+const promptSpeciesByName = byName(species);
+const promptSpeciesAllGroupsByName = byName(promptSpeciesAllGroups);
+const promptSpeciesAllGroupsIds = new Set(promptSpeciesAllGroups.map((s) => s.id));
 
 /**
  * Soort uit de lijst in de prompt, op Nederlandse of wetenschappelijke naam
- * (hoofdletters maken niet uit)
+ * (hoofdletters maken niet uit). `withGroups`: ook de andere soortgroepen
+ * (ontwikkeloptie 'soortgroepen').
  */
-export function findPromptSpecies(name: string): Species | undefined {
-  return promptSpeciesByName.get(name.trim().toLowerCase());
+export function findPromptSpecies(name: string, withGroups = false): Species | undefined {
+  const key = name.trim().toLowerCase();
+  return (withGroups ? promptSpeciesAllGroupsByName : promptSpeciesByName).get(key);
 }
 
 /** Mag het model deze soort kiezen? */
-export function isPromptSpecies(id: number): boolean {
-  return promptSpeciesIds.has(id);
+export function isPromptSpecies(id: number, withGroups = false): boolean {
+  return (withGroups ? promptSpeciesAllGroupsIds : promptSpeciesIds).has(id);
 }
 
 // ---------------------------------------------------------------------------
@@ -192,11 +198,19 @@ export interface Alias {
   bijnamen: string[];
 }
 
-export const aliases = (aliasList as Alias[]).filter((a) => {
-  if (isPromptSpecies(a.soort)) return true;
+const allAliases = (aliasList as Alias[]).filter((a) => {
+  if (isPromptSpecies(a.soort, true)) return true;
   console.warn(`bijnamen.json: onbekende soort-ID ${a.soort} (${a.naam})`);
   return false;
 });
+
+/** Bijnamen van vogels */
+export const aliases = allAliases.filter((a) => groupOf(a.soort) === BIRDS);
+
+/** Bijnamen van een andere soortgroep ("egel", "eekhoorn") */
+export function aliasesOf(group: GroupId): Alias[] {
+  return allAliases.filter((a) => groupOf(a.soort) === group);
+}
 
 // Uit de volledige lijsten van waarneming.nl alleen de codes die je tijdens
 // een sessie uitspreekt. Het model mag alleen hieruit kiezen: meer opties
@@ -400,6 +414,36 @@ export function codesFor(speciesId: number): GroupCodes {
   return GROUPS[groupOf(speciesId)].codes;
 }
 
+/** Naam van het gedrag, in de codes van de groep van de soort */
+export function activityName(speciesId: number, id: number | undefined): string | undefined {
+  return codeName(codesFor(speciesId).allActivities, id);
+}
+
+/** Naam van de methode, in de codes van de groep van de soort */
+export function methodName(speciesId: number, id: number | undefined): string | undefined {
+  return codeName(codesFor(speciesId).allMethods, id);
+}
+
+/** Naam van kleed of leeftijd, in de codes van de groep van de soort */
+export function lifeStageName(speciesId: number, id: number | undefined): string | undefined {
+  return codeName(codesFor(speciesId).allLifeStages, id);
+}
+
+/** Groep van een soort, voor een label: "Ree (zoogdieren)"; leeg bij vogels */
+export function groupLabel(speciesId: number): string | undefined {
+  const group = groupOf(speciesId);
+  return group === BIRDS ? undefined : GROUPS[group].name.toLowerCase();
+}
+
+/**
+ * Soorten voor de soortkeuze in het formulier: vogels, en met de andere
+ * groepen (ontwikkeloptie) ook zoogdieren, reptielen en amfibieën,
+ * dagvlinders en libellen
+ */
+export function selectableSpecies(withGroups: boolean): Species[] {
+  return withGroups ? allSpeciesAllGroups : allSpecies;
+}
+
 /**
  * Namen die per groep anders heten maar hetzelfde betekenen. Bij een wissel
  * van groep zoekt de app eerst dezelfde naam, dan een naam uit dezelfde rij.
@@ -448,9 +492,18 @@ export function convertCodes<T extends GroupFields>(
   fromSpeciesId: number,
   toSpeciesId: number,
 ): T {
-  const from = codesFor(fromSpeciesId);
-  const to = codesFor(toSpeciesId);
-  if (from === to) return fields;
+  return convertCodesBetween(fields, groupOf(fromSpeciesId), groupOf(toSpeciesId));
+}
+
+/** Als `convertCodes`, maar tussen twee groepen */
+export function convertCodesBetween<T extends GroupFields>(
+  fields: T,
+  fromGroup: GroupId,
+  toGroup: GroupId,
+): T {
+  if (fromGroup === toGroup) return fields;
+  const from = GROUPS[fromGroup].codes;
+  const to = GROUPS[toGroup].codes;
   const result = { ...fields };
   if (fields.activityId !== undefined)
     result.activityId = convertCode(
@@ -474,4 +527,18 @@ export function convertCodes<T extends GroupFields>(
       undefined,
     );
   return result;
+}
+
+const FIELD_LISTS = {
+  activityId: 'activities',
+  methodId: 'methods',
+  lifeStageId: 'lifeStages',
+} as const;
+
+/**
+ * Groep waarvan de korte lijst (de codes in de prompt) deze code heeft. De
+ * korte lijsten van de groepen hebben geen ID's gemeen (een test bewaakt dat).
+ */
+export function groupOfCode(field: keyof GroupFields, id: number): GroupId | undefined {
+  return groups.find((g) => g.codes[FIELD_LISTS[field]].some((c) => c.id === id))?.id;
 }

@@ -3,11 +3,12 @@
   // aantallen, ook te kopiëren (bv. voor een appgroep).
   import { liveQuery } from 'dexie';
   import type { Session } from './db';
-  import { sessionSummary } from './summary';
+  import { byGroup, sessionSummary } from './summary';
 
   let { session }: { session: Session } = $props();
 
   const lines = $derived(liveQuery(() => sessionSummary(session)));
+  let groups = $derived(byGroup($lines ?? []));
   let copied = $state(false);
 
   async function copy() {
@@ -19,7 +20,10 @@
     });
     const text = [
       `${title}, ${date}: ${$lines.length} soorten`,
-      ...$lines.map((line) => `${line.name} ${line.count}`),
+      ...groups.flatMap((group) => [
+        ...(group.title ? ['', `${group.title}:`] : []),
+        ...group.lines.map((line) => `${line.name} ${line.count}`),
+      ]),
     ].join('\n');
     try {
       await navigator.clipboard.writeText(text);
@@ -38,19 +42,29 @@
       <button class="link" onclick={copy}>{copied ? 'Gekopieerd' : 'Kopiëren'}</button>
     </div>
     <div class="card-body">
-      <ul>
-        {#each $lines as line (line.speciesId)}
-          <li>
-            <span>{line.name}</span>
-            <span class="count">{line.count}</span>
-          </li>
-        {/each}
-      </ul>
+      {#each groups as group (group.title ?? '')}
+        {#if group.title}
+          <h3>{group.title}</h3>
+        {/if}
+        <ul>
+          {#each group.lines as line (line.speciesId)}
+            <li>
+              <span>{line.name}</span>
+              <span class="count">{line.count}</span>
+            </li>
+          {/each}
+        </ul>
+      {/each}
     </div>
   </section>
 {/if}
 
 <style>
+  h3 {
+    margin: 0.75rem 0 0.25rem;
+    font-size: 0.95rem;
+  }
+
   ul {
     list-style: none;
     margin: 0;
