@@ -1,6 +1,6 @@
-# Plan: andere soortgroepen (zoogdieren, dagvlinders, libellen)
+# Plan: andere soortgroepen (zoogdieren, reptielen en amfibieën, dagvlinders, libellen)
 
-Voorstel van 13 nov 2026, nog niet goedgekeurd. Aanleiding: het idee van 12 nov in `docs/ideeen.md`. Een vogelaar die een ree, een vos of een atalanta ziet, wil die ook kwijt, en waarneming.nl neemt ze in dezelfde import.
+Voorstel van 13 nov 2026, dezelfde dag goedgekeurd, met reptielen en amfibieën als vierde groep. Aanleiding: het idee van 12 nov in `docs/ideeen.md`. Een vogelaar die een ree, een vos of een atalanta ziet, wil die ook kwijt, en waarneming.nl neemt ze in dezelfde import.
 
 ## Doel
 
@@ -75,6 +75,6 @@ Elke fase is een eigen PR.
 
 ## Open vragen
 
-- **Reptielen en amfibieën meteen mee?** Het zijn er maar 27 (pad, bruine kikker, ringslang, zandhagedis) en ze komen vaak voor tijdens een wandeling. Het kost bijna niets extra. Voorstel: ja, als vierde groep.
+- ~~Reptielen en amfibieën meteen mee?~~ Ja (13 nov): 27 soorten (pad, bruine kikker, ringslang, zandhagedis), groep 3. Overal waar hierboven drie groepen staan, horen ze erbij.
 - **Voor iedereen standaard aan, of een keuze bij Instellingen** ("Ook andere dieren inspreken")? Een keuze houdt de prompt kleiner voor wie alleen vogelt. Standaard aan maakt de app breder en is eenvoudiger. Voorstel: standaard aan, met een keuze om het uit te zetten, maar pas beslissen na fase 3.
 - **Exoten bij zoogdieren:** welke gevestigde soorten horen erbij? Voorstel hierboven; de huiskat niet.
