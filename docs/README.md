@@ -19,6 +19,7 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 | `plan-trektelmodus.md` | trektelmodus; gebouwd, proef met tester Maarten |
 | `roadmap-android.md` | vogelen zonder naar de telefoon te kijken, vijf stappen; stap 1–2 gebouwd |
 | `plan-ebird.md` | inspanning en export naar eBird; fase 1 en 2 (deel 1) gebouwd als ontwikkeloptie; fase 3 (voor iedereen) goedgekeurd op 12 nov, nog te bouwen |
+| `plan-soortgroepen.md` | zoogdieren, dagvlinders en libellen inspreken; voorstel (13 nov) |
 | `plan-ios.md` | iPhone-app; voorstel, na de lancering |
 
 ## Naslag
