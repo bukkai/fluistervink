@@ -1,0 +1,148 @@
+{
+ "activity": [
+  {
+   "id": 45,
+   "name": "ter plaatse"
+  },
+  {
+   "id": 3183,
+   "name": "foeragerend"
+  },
+  {
+   "id": 47,
+   "name": "in copula"
+  },
+  {
+   "id": 48,
+   "name": "eileggend"
+  },
+  {
+   "id": 50,
+   "name": "vervellend"
+  },
+  {
+   "id": 3127,
+   "name": "overvliegend"
+  },
+  {
+   "id": 3103,
+   "name": "vangst door kat"
+  },
+  {
+   "id": 3233,
+   "name": "onbekend"
+  },
+  {
+   "id": 3089,
+   "name": "mengtandem (2 soorten)"
+  },
+  {
+   "id": 3134,
+   "name": "op licht"
+  },
+  {
+   "id": 3113,
+   "name": "sporen"
+  },
+  {
+   "id": 3234,
+   "name": "geparasiteerd"
+  },
+  {
+   "id": 3235,
+   "name": "territoriaal"
+  },
+  {
+   "id": 3272,
+   "name": "tandem"
+  },
+  {
+   "id": 46,
+   "name": "dood"
+  }
+ ],
+ "method": [
+  {
+   "id": 197,
+   "name": "onbekend"
+  },
+  {
+   "id": 198,
+   "name": "gezien"
+  },
+  {
+   "id": 177,
+   "name": "gevangen"
+  },
+  {
+   "id": 618,
+   "name": "in val"
+  },
+  {
+   "id": 619,
+   "name": "uitgekweekt en losgelaten"
+  },
+  {
+   "id": 620,
+   "name": "sporen"
+  },
+  {
+   "id": 192,
+   "name": "(e)dna barcoding"
+  },
+  {
+   "id": 182,
+   "name": "dood exemplaar in collectie"
+  },
+  {
+   "id": 621,
+   "name": "binnenshuis"
+  },
+  {
+   "id": 783,
+   "name": "verzameld (in collectie)"
+  },
+  {
+   "id": 819,
+   "name": "translocatie"
+  },
+  {
+   "id": 785,
+   "name": "schepnet"
+  }
+ ],
+ "life_stage": [
+  {
+   "id": 36,
+   "name": "onbekend"
+  },
+  {
+   "id": 37,
+   "name": "imago"
+  },
+  {
+   "id": 41,
+   "name": "larve/nimf"
+  },
+  {
+   "id": 75,
+   "name": "imago, niet uitgekleurd"
+  },
+  {
+   "id": 131,
+   "name": "larvenhuidje"
+  },
+  {
+   "id": 1087,
+   "name": "afwijkend"
+  },
+  {
+   "id": 1104,
+   "name": "ei"
+  },
+  {
+   "id": 1116,
+   "name": "prolarve"
+  }
+ ]
+}

@@ -47,6 +47,8 @@ Bron: de openbare API van waarneming.nl, zonder sleutel.
 - De wetenschappelijke namen volgen waarneming.nl (AviList-taxonomie), dus ze matchen bij de CSV-import. Waarneming.nl past de taxonomie soms aan (nov 2026: Winterkoning *Nannus troglodytes*, Rietgors *Schoeniclus schoeniclus*, Bonte Kraai een ondersoort *Corvus corone cornix*); daarom haalt `.github/workflows/soortenlijst.yml` de lijst elke maandag opnieuw op en opent een PR met wat er veranderd is.
 - Alternatieve namen ("soepgans" voor Parkgans, "bonte specht" voor Grote Bonte Specht) zitten niet in de bron. Die vullen we zelf aan als we ze in de testset tegenkomen.
 
+Andere soortgroepen (13 nov, `docs/plan-soortgroepen.md`): het script haalt ook zoogdieren (regiolijst 5002), reptielen en amfibieën (5003), dagvlinders (5004) en libellen (5005) op, met hetzelfde filter en een eigen lijst gevestigde exoten. Elke soort heeft een veld `group`; soort-ID's overlappen niet tussen groepen. Gedrag, methode en kleed hebben per groep eigen ID's: `data/attributen-<groep>.json`, met de korte lijsten en standaarden per groep in `src/lib/vocab.ts`.
+
 Opnieuw ophalen:
 
 ```bash

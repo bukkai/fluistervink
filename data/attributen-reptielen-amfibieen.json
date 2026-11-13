@@ -1,0 +1,188 @@
+{
+ "activity": [
+  {
+   "id": 19,
+   "name": "ter plaatse"
+  },
+  {
+   "id": 3198,
+   "name": "parend"
+  },
+  {
+   "id": 21,
+   "name": "dood"
+  },
+  {
+   "id": 3271,
+   "name": "eileggend"
+  },
+  {
+   "id": 64,
+   "name": "roepend"
+  },
+  {
+   "id": 2012,
+   "name": "overwinterend"
+  },
+  {
+   "id": 2005,
+   "name": "slachtoffer verkeer"
+  },
+  {
+   "id": 3101,
+   "name": "vangst door kat"
+  },
+  {
+   "id": 3087,
+   "name": "vervellend"
+  },
+  {
+   "id": 3146,
+   "name": "ziek/gewond"
+  },
+  {
+   "id": 3155,
+   "name": "zonnend"
+  },
+  {
+   "id": 3199,
+   "name": "geparasiteerd"
+  },
+  {
+   "id": 3180,
+   "name": "foeragerend"
+  }
+ ],
+ "method": [
+  {
+   "id": 147,
+   "name": "onbekend"
+  },
+  {
+   "id": 148,
+   "name": "gezien"
+  },
+  {
+   "id": 149,
+   "name": "gehoord"
+  },
+  {
+   "id": 151,
+   "name": "gezien en gehoord"
+  },
+  {
+   "id": 127,
+   "name": "gevangen"
+  },
+  {
+   "id": 602,
+   "name": "fuik"
+  },
+  {
+   "id": 603,
+   "name": "schepnet"
+  },
+  {
+   "id": 604,
+   "name": "bodemval"
+  },
+  {
+   "id": 605,
+   "name": "andere val"
+  },
+  {
+   "id": 606,
+   "name": "met fotoval"
+  },
+  {
+   "id": 607,
+   "name": "zichtwaarneming tijdens duiken"
+  },
+  {
+   "id": 608,
+   "name": "sporen"
+  },
+  {
+   "id": 801,
+   "name": "zichtwaarneming zaklamp"
+  },
+  {
+   "id": 132,
+   "name": "verzameld (in collectie)"
+  },
+  {
+   "id": 142,
+   "name": "(e)dna barcoding"
+  },
+  {
+   "id": 609,
+   "name": "gehoord met hydrofoon"
+  },
+  {
+   "id": 610,
+   "name": "binnenshuis"
+  },
+  {
+   "id": 611,
+   "name": "fossiel"
+  },
+  {
+   "id": 772,
+   "name": "reptielenplaat"
+  },
+  {
+   "id": 777,
+   "name": "in braakbal"
+  },
+  {
+   "id": 817,
+   "name": "translocatie"
+  }
+ ],
+ "life_stage": [
+  {
+   "id": 18,
+   "name": "onbekend"
+  },
+  {
+   "id": 21,
+   "name": "adult"
+  },
+  {
+   "id": 24,
+   "name": "ei"
+  },
+  {
+   "id": 71,
+   "name": "juveniel"
+  },
+  {
+   "id": 73,
+   "name": "subadult"
+  },
+  {
+   "id": 74,
+   "name": "larve"
+  },
+  {
+   "id": 88,
+   "name": "afwijkend"
+  },
+  {
+   "id": 1094,
+   "name": "vervellingshuidje"
+  },
+  {
+   "id": 1136,
+   "name": "neoteen"
+  },
+  {
+   "id": 1137,
+   "name": "metamorfoserend"
+  },
+  {
+   "id": 1138,
+   "name": "adult in voortplantingskleed"
+  }
+ ]
+}
