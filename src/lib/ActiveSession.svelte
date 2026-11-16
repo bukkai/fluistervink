@@ -26,19 +26,43 @@
   let input = $state<HTMLInputElement>();
 
   // Toetsenbord dicht (terugknop of -veeg op Android) zonder dat het veld zijn
-  // focus verliest: dan zou de knop weg blijven. Het zichtbare deel van het
-  // scherm wordt dan flink hoger; laat het veld dan los.
+  // focus verliest: dan zou de knop weg blijven. Laat het veld dan los, maar
+  // alleen als het toetsenbord eerst echt open was: het zichtbare deel van het
+  // scherm kromp na het aantikken flink en is nu weer terug op de hoogte van
+  // toen. Eerder telde elke groei, en in de Android-app verloor het veld dan
+  // meteen na het aantikken zijn focus (feedback 13 nov).
   $effect(() => {
     const viewport = window.visualViewport;
-    if (!viewport) return;
-    let height = viewport.height;
-    function onResize() {
-      const grew = viewport!.height - height > 100;
-      height = viewport!.height;
-      if (grew && document.activeElement === input) input?.blur();
+    if (!viewport || !input) return;
+    const field = input;
+    /** Hoogte bij het aantikken, en de kleinste daarna */
+    let before: number | undefined;
+    let smallest = Infinity;
+    function onFocus() {
+      before = viewport!.height;
+      smallest = before;
     }
+    function onBlur() {
+      before = undefined;
+    }
+    function onResize() {
+      if (before === undefined || document.activeElement !== field) return;
+      const height = viewport!.height;
+      smallest = Math.min(smallest, height);
+      const keyboardWasOpen = before - smallest > 100;
+      if (keyboardWasOpen && height >= before - 50) {
+        logEvent('keyboard_closed', { before, smallest, height }, { sessionId: session.id });
+        field.blur();
+      }
+    }
+    field.addEventListener('focus', onFocus);
+    field.addEventListener('blur', onBlur);
     viewport.addEventListener('resize', onResize);
-    return () => viewport.removeEventListener('resize', onResize);
+    return () => {
+      field.removeEventListener('focus', onFocus);
+      field.removeEventListener('blur', onBlur);
+      viewport.removeEventListener('resize', onResize);
+    };
   });
 
   // GPS aan zolang dit scherm (de lopende sessie) zichtbaar is
