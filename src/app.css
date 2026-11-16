@@ -129,6 +129,9 @@ h2 {
 .card {
   margin-top: 1rem;
   overflow: hidden;
+  /* Wel afknippen bij de ronde hoeken, maar geen eigen scrollvlak: dan blijft
+     de knop Opslaan in een geopende waarneming onderaan het scherm plakken */
+  overflow: clip;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);

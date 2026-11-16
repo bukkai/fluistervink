@@ -24,6 +24,11 @@
    * toetsenbord waar de knop zit
    */
   let typing = $state(false);
+  /**
+   * De waarneming die open staat om aan te passen: dan een kleine knop rechts,
+   * zodat hij het formulier en de knop Opslaan niet bedekt (feedback 16 nov)
+   */
+  let editing = $state<string>();
   /** Ruimte onder de lijst, zodat de knop de laatste waarneming niet bedekt */
   let barHeight = $state(0);
   let input = $state<HTMLInputElement>();
@@ -149,6 +154,13 @@
   let lookup: Promise<PositionLookup> | undefined;
   let maxTimer: ReturnType<typeof setTimeout> | undefined;
   let elapsed = $state(0);
+  let talkLabel = $derived(
+    recorder.status === 'recording'
+      ? `Stop · ${Math.floor(elapsed / 1000)} s`
+      : recorder.status === 'starting'
+        ? 'Microfoon aanzetten…'
+        : 'Inspreken',
+  );
 
   // Tikken of vasthouden, bestand tegen haperend contact (handschoenen)
   const talk = createTalkButton({
@@ -352,7 +364,7 @@
   </button>
 </form>
 
-<SessionLog {session} />
+<SessionLog {session} bind:editing />
 
 <!-- Onderaan, in de duimzone: bereikbaar met één hand, ook als je door de
      lijst scrolt. Weg tijdens het typen, anders staat hij op het toetsenbord. -->
@@ -360,6 +372,7 @@
 <div
   class="talk-bar"
   class:hidden={typing && recorder.status !== 'recording'}
+  class:compact={editing !== undefined && trektel.startedAt === undefined}
   bind:clientHeight={barHeight}
 >
   <!-- Ook tijdens een pauze en het weer aanzetten van de microfoon (startedAt staat dan) -->
@@ -399,6 +412,7 @@
       onpointerup={release}
       onpointercancel={cancel}
       oncontextmenu={(event) => event.preventDefault()}
+      aria-label={editing === undefined ? undefined : talkLabel}
     >
       <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true">
         {#if recorder.status === 'recording'}
@@ -414,13 +428,7 @@
           />
         {/if}
       </svg>
-      <span>
-        {recorder.status === 'recording'
-          ? `Stop · ${Math.floor(elapsed / 1000)} s`
-          : recorder.status === 'starting'
-            ? 'Microfoon aanzetten…'
-            : 'Inspreken'}
-      </span>
+      <span>{talkLabel}</span>
     </button>
     {#if micMessage}
       <p class="mic denied">{micMessage}</p>
@@ -494,6 +502,28 @@
   }
 
   .talk-bar.hidden {
+    display: none;
+  }
+
+  /* Een waarneming staat open: een ronde knop rechts naast Opslaan, alleen
+     het pictogram (ObservationEditor houdt daar ruimte voor vrij) */
+  .talk-bar.compact {
+    justify-items: end;
+    padding: 0 1rem calc(0.25rem + env(safe-area-inset-bottom));
+    background: none;
+  }
+
+  .talk-bar.compact > * {
+    width: auto;
+  }
+
+  .talk-bar.compact .talk {
+    width: 4rem;
+    min-height: 4rem;
+    border-radius: 50%;
+  }
+
+  .talk-bar.compact .talk span {
     display: none;
   }
 
