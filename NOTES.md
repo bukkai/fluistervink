@@ -17,7 +17,7 @@ Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/ro
 
 Uit de PR's van 6–13 nov; elk punt na het proberen hier weghalen.
 
-- **Andere soortgroepen voor iedereen** (#234, standaard aan): na het mergen in de app nagaan dat "Ook andere dieren inspreken" bij Instellingen aan staat en een ree goed binnenkomt. Nog steeds nuttig: één echte import bij waarneming.nl met een zoogdier, een vlinder en een libel, en de testset met en zonder (`--no-soortgroepen`). Play-tekst in de Play Console bijwerken (`docs/play-store/README.md`).
+- **Andere soortgroepen voor iedereen** (#234, standaard aan): na het mergen in de app nagaan dat "Ook andere dieren inspreken" bij Instellingen aan staat en een ree goed binnenkomt. Import met een zoogdier werkte; vlinders en libellen pas in het voorjaar, dan zien we het vanzelf. Play-tekst in de Play Console bijwerken (`docs/play-store/README.md`).
 - **Soortveld** (#233): in de app een waarneming openen, "noordse" typen: de suggesties moeten onder het veld staan (niet over de lijst), één tik kiest de soort, en de knop Inspreken is weg zolang je typt.
 - **Opname afspelen** (#222): op de telefoon bij het nalopen en in het bewerkformulier een opname afspelen; nog eens tikken moet pauzeren (⏸), en een tweede opname stopt de eerste.
 - **Twijfel tussen soorten** (ontwikkeloptie, #214/#216): "tjiftjaf of fitis" inspreken (moet zonder 400-fout), een paar wandelingen, dan `npm run testset -- <export> --kandidaten` naast een gewone run. Daarna beslissen of hij voor iedereen aangaat.
