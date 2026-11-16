@@ -4,11 +4,13 @@ Werklog om tussen computers te schakelen: alleen wat nu speelt en wat nog moet. 
 
 Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/roadmap.md`, ideeën in `docs/ideeen.md`, sleutels en Android-weetjes in `docs/beheer.md`, een overzicht van alle documenten in `docs/README.md`.
 
-## Nu (12 nov)
+## Nu (16 nov)
 
 - **Lancering in Play** (`docs/lancering.md`): gesloten test loopt sinds 9 nov. Nog: 15–20 testers werven en de deelnamelink sturen; plafond en daglimiet bij OpenAI en Anthropic nalopen.
 - **Code opruimen:** drie PR's gemerged (#222 gedeelde stijlen, datumopmaak en één audiospeler; #223 "walk" uit de code; #224 `geo.ts`, `worker/feedback.ts`, `StillBirding.svelte`). Nog één stap, pas na de lancering: `src/lib/observations.ts` (ruim 1.000 regels) splitsen in wachtrij, acties toepassen en bewerken, als pure verplaatsing.
-- **Laatst gemerged:** opruimen (#222–#224), eBird-export deel 1 (#220), samenvatting zonder "nieuw dit jaar" (#219), inspreekknop hoger en "Wat zei ik?" weg (#218), trektelling zonder lege tril bij Stop (#217), kandidaten-fix (#216).
+- **Typveld tijdens een sessie** (#231): verloor in de app meteen de focus; gefixt en op de telefoon bevestigd (16 nov). In het log staat nu `keyboard_closed` als het veld loslaat.
+- **Testset weekend Terschelling** (13–15 nov, 205 uitspraken, gedeeld op 16 nov): de originele antwoorden 92% helemaal goed; opnieuw met het huidige model 89% met `--soortgroepen`, 85% zonder. Soortgroepen stonden aan, dus vergelijk alleen met `--soortgroepen`. De fouten zitten vooral in de spraakherkenning ("Eén kei" voor zwarte kraai, "koudjes" voor kauwen, "sjokduizers" voor brilduikers). Ree en zeehond werden in beide runs gemist: nagaan bij fase 3 van de soortgroepen.
+- **Laatst gemerged:** typveld (#231), opruimen (#222–#224), eBird-export deel 1 (#220), samenvatting zonder "nieuw dit jaar" (#219), inspreekknop hoger en "Wat zei ik?" weg (#218), trektelling zonder lege tril bij Stop (#217), kandidaten-fix (#216).
 
 ## Na het mergen nog proberen
 
