@@ -139,9 +139,8 @@
   <div class="card-body">
     <h3>Feedback geven</h3>
     <p>
-      Zeg tijdens het vogelen gewoon wat je opvalt aan de app, bijvoorbeeld <em>"hij trilt niet"</em
-      >: dan wordt het een opmerking voor de ontwikkelaar in plaats van een waarneming. Terug te
-      lezen bij <a href="#feedback">Feedback</a>.
+      Iets opgevallen aan de app? Typ het bij <a href="#feedback">Feedback</a>: dan leest de
+      ontwikkelaar het.
     </p>
   </div>
 </section>
