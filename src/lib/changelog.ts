@@ -40,6 +40,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         'Tijdens een sessie verdwijnt de knop Inspreken ook als je in een geopende waarneming typt, zodat hij niet op het toetsenbord staat.',
       ],
       Nalopen: [
+        'De samenvatting van een sessie (soortenlijst met aantallen) staat er nu altijd bij; de instelling ervoor is weg.',
         'Bij het aanpassen van een waarneming blijft de knop Opslaan onderaan in beeld, dus geen eind meer scrollen. Tijdens een sessie is de knop Inspreken dan een klein rondje rechts ernaast.',
         'Bij een afgelopen sessie staat "Waarnemingen" weer helemaal in het tegeltje bovenaan, ook op een smalle telefoon.',
         'Bij het aanpassen van een soort staan de suggesties nu gewoon onder het veld, met de algemene soorten bovenaan. In de Android-app kwam het lijstje soms half over de rest van het scherm te staan.',
