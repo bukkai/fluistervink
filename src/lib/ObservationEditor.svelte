@@ -361,15 +361,17 @@
     Onzeker{original.uncertainReason ? ` (${original.uncertainReason})` : ''}
   </label>
 
+  <div class="more">
+    {#if oncopy}
+      <button type="button" class="link" onclick={copy}>Kopiëren</button>
+    {/if}
+    <button type="button" class="link danger" onclick={remove}>Verwijderen</button>
+  </div>
+
+  <!-- Altijd in beeld, ook bij een lang formulier (feedback 16 nov) -->
   <div class="buttons">
     <button type="submit" class="btn" disabled={!valid}>Opslaan</button>
     <button type="button" class="btn secondary" onclick={onclose}>Annuleren</button>
-    <span class="more">
-      {#if oncopy}
-        <button type="button" class="link" onclick={copy}>Kopiëren</button>
-      {/if}
-      <button type="button" class="link danger" onclick={remove}>Verwijderen</button>
-    </span>
   </div>
 </form>
 
@@ -528,19 +530,23 @@
     color: var(--red);
   }
 
+  /* Plakt onderaan het scherm. Rechts ruimte voor de kleine inspreekknop van
+     een lopende sessie (ActiveSession, .talk-bar.compact). */
   .buttons {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem 0.5rem;
-    margin-top: 0.25rem;
+    gap: 0.5rem;
+    padding: 0.6rem 4.5rem calc(0.6rem + env(safe-area-inset-bottom)) 0;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
   }
 
-  /* Samen naar rechts, of samen naar de volgende regel als het niet past */
   .more {
     display: flex;
+    justify-content: flex-end;
     gap: 1.25rem;
-    margin-left: auto;
   }
 
   button.play {

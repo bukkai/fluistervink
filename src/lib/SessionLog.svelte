@@ -37,15 +37,19 @@
    * Bij de review staat er een kaart boven de lijst:
    * `focus`: waarnemingen die op de kaart zijn aangetikt, om op te laten lichten.
    * `onshowonmap`: een waarneming op de kaart laten zien (in plaats van de kaarten-app).
+   * `editing`: de waarneming die nu bewerkt wordt (één tegelijk), te volgen
+   * met `bind:`, zodat de lopende sessie de inspreekknop dan klein maakt.
    */
   let {
     session,
     focus,
     onshowonmap,
+    editing = $bindable(),
   }: {
     session: Session;
     focus?: { ids: string[] };
     onshowonmap?: (id: string) => void;
+    editing?: string;
   } = $props();
 
   // Opnieuw opvragen als de sessie wisselt; liveQuery volgt daarna zelf de database
@@ -65,9 +69,6 @@
   let failed = $derived($utterances?.filter((u) => u.status === 'failed').length ?? 0);
 
   let utteranceById = $derived(new Map(($utterances ?? []).map((u) => [u.id, u])));
-
-  /** De waarneming die nu bewerkt wordt (één tegelijk) */
-  let editing = $state<string>();
 
   // Het formulier krijgt een eigen stap in de geschiedenis (zelfde URL), zodat
   // de terugknop van Android het formulier sluit in plaats van de app.
