@@ -23,6 +23,7 @@
     getSpecies,
     groupLabel,
     groupOf,
+    searchSpecies,
     selectableSpecies,
   } from './vocab';
 
@@ -70,6 +71,46 @@
   );
   const speciesByName = new Map(choices.map((s) => [s.name.toLowerCase(), s]));
   let selectedSpecies = $derived(speciesByName.get(speciesName.trim().toLowerCase()));
+
+  // Eigen suggestielijst onder het soortveld, in de pagina zelf. Een
+  // <datalist> tekent de Android-WebView als los venstertje, dat bij het
+  // openen van het toetsenbord op de oude plek bleef staan en half over de
+  // lijst heen werd getekend (16 nov).
+  const listId = `soorten-${original.id}`;
+  /** Met de pijltjestoetsen gekozen suggestie */
+  let active = $state(-1);
+  /** Getypt in het soortveld sinds het openen of de laatste keuze */
+  let typed = $state(false);
+  // Na het typen, ook bij een naam die al klopt ("Kievit": misschien bedoel je
+  // Indische Kievit), en zolang de naam geen soort is. Ook na het loslaten van
+  // het veld: tikken op een suggestie laat het veld eerst los.
+  let suggestions = $derived(typed || !selectedSpecies ? searchSpecies(choices, speciesName) : []);
+  $effect(() => {
+    void suggestions;
+    active = -1;
+  });
+
+  let speciesInput = $state<HTMLInputElement>();
+
+  function choose(name: string) {
+    speciesName = name;
+    typed = false;
+    // Toetsenbord dicht: meestal is het aantal of gedrag het volgende
+    speciesInput?.blur();
+  }
+
+  function onSpeciesKey(event: KeyboardEvent) {
+    if (!suggestions.length) return;
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      const step = event.key === 'ArrowDown' ? 1 : -1;
+      active = (active + step + suggestions.length + 1) % (suggestions.length + 1);
+      if (active === suggestions.length) active = -1;
+    } else if (event.key === 'Enter' && active >= 0) {
+      event.preventDefault();
+      choose(suggestions[active].name);
+    }
+  }
 
   // Gedrag, methode en kleed horen bij de groep van de soort ("ter plaatse" is
   // 1 bij vogels, 15 bij zoogdieren). Een andere groep gekozen: omzetten.
@@ -169,11 +210,19 @@
     <label class="species">
       Soort
       <input
-        list="soorten"
+        bind:this={speciesInput}
         bind:value={speciesName}
         autocomplete="off"
+        autocapitalize="words"
+        role="combobox"
+        aria-autocomplete="list"
+        aria-expanded={suggestions.length > 0}
+        aria-controls={listId}
+        aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined}
         aria-invalid={!selectedSpecies}
         onfocus={(event) => event.currentTarget.select()}
+        oninput={() => (typed = true)}
+        onkeydown={onSpeciesKey}
       />
     </label>
     <label class="count">
@@ -181,7 +230,30 @@
       <input type="number" min="1" inputmode="numeric" bind:value={count} />
     </label>
   </div>
-  {#if !selectedSpecies}
+  <!-- In de pagina, onder het veld: schuift mee met het toetsenbord -->
+  <ul
+    id={listId}
+    class="suggestions"
+    role="listbox"
+    aria-label="Soorten"
+    hidden={!suggestions.length}
+  >
+    {#each suggestions as s, i (s.id)}
+      <!-- Toetsen gaan via het veld (pijltjes en Enter), zoals bij een combobox -->
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <li
+        id="{listId}-{i}"
+        role="option"
+        aria-selected={i === active}
+        class:active={i === active}
+        onclick={() => choose(s.name)}
+      >
+        {s.name}
+        {#if groupLabel(s.id)}<span class="group">{groupLabel(s.id)}</span>{/if}
+      </li>
+    {/each}
+  </ul>
+  {#if !selectedSpecies && !suggestions.length}
     <p class="error">Kies een soort uit de lijst.</p>
   {/if}
 
@@ -301,12 +373,6 @@
   </div>
 </form>
 
-<datalist id="soorten">
-  {#each choices as s (s.id)}
-    <option value={s.name}>{groupLabel(s.id)}</option>
-  {/each}
-</datalist>
-
 <!-- Wat je in het veld zegt bovenaan, de rest van waarneming.nl eronder -->
 {#snippet options(field: Code[], all: Code[])}
   {#each field as code (code.id)}
@@ -335,6 +401,40 @@
   .row > label {
     flex: 1;
     min-width: 0;
+  }
+
+  .suggestions {
+    margin: -0.3rem 0 0;
+    padding: 0;
+    list-style: none;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  .suggestions li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-height: 48px;
+    padding: 0 0.9rem;
+    cursor: pointer;
+  }
+
+  .suggestions li + li {
+    border-top: 1px solid var(--border);
+  }
+
+  .suggestions li.active,
+  .suggestions li:hover {
+    background: var(--bg);
+  }
+
+  .group {
+    font-size: 0.85rem;
+    color: var(--muted);
   }
 
   .row > .count {

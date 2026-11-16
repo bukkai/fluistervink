@@ -31,6 +31,10 @@ export const CHANGELOG: ChangelogEntry[] = [
     topics: {
       Inspreken: [
         'In de Android-app kun je tijdens een sessie weer een waarneming typen: het veld bleef niet aangetikt staan.',
+        'Tijdens een sessie verdwijnt de knop Inspreken ook als je in een geopende waarneming typt, zodat hij niet op het toetsenbord staat.',
+      ],
+      Nalopen: [
+        'Bij het aanpassen van een soort staan de suggesties nu gewoon onder het veld, met de algemene soorten bovenaan. In de Android-app kwam het lijstje soms half over de rest van het scherm te staan.',
       ],
       Export: [
         'Voor wie eBird gebruikt: in een sessie staat het eBird-kaartje nu onderaan, direct onder de export voor waarneming.nl, en "Alles klopt" zet de sessie klaar voor beide.',
