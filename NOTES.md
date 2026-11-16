@@ -16,7 +16,6 @@ Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/ro
 
 Uit de PR's van 6–16 nov; elk punt na het proberen hier weghalen.
 
-- **Toetsenbord in eigen module** (#247): tijdens een sessie het typveld aantikken, het toetsenbord met de terugveeg sluiten: de inspreekknop moet terugkomen.
 - **Developer en Statistieken** (#244, #245): op Developer "Verwerkte wissen" proberen (verwerkte feedback moet weg blijven, ook na opnieuw delen); kijken of de nieuwe indeling bevalt (kosten bovenaan, de rest ingeklapt). Op Statistieken een week in de grafiek aantikken: die rij in de tabel licht op.
 - **Andere soortgroepen voor iedereen** (#234, standaard aan): na het mergen in de app nagaan dat "Ook andere dieren inspreken" bij Instellingen aan staat en een ree goed binnenkomt. Import met een zoogdier werkte; vlinders en libellen pas in het voorjaar, dan zien we het vanzelf. Play-tekst in de Play Console bijwerken (`docs/play-store/README.md`).
 - **Soortveld** (#233): in de app een waarneming openen, "noordse" typen: de suggesties moeten onder het veld staan (niet over de lijst), één tik kiest de soort, en de knop Inspreken is weg zolang je typt.
