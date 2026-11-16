@@ -35,6 +35,9 @@
   /** Actief bovenaan; wie al een tijd niets deed of afgesloten is achter "Toon meer" */
   const split = $derived(splitActive(testers ?? []));
   let showInactive = $state(false);
+  /** Kosten: de duurste testers, de rest achter "Alle testers" */
+  const TOP_TESTERS = 3;
+  let showAllTesters = $state(false);
 
   async function loadTesters() {
     try {
@@ -262,7 +265,122 @@
 <h2 class="page-title">Developer</h2>
 
 <section class="card">
-  <div class="card-head"><h2>Feedback van testers</h2></div>
+  <div class="card-head"><h2>Kosten</h2></div>
+  <div class="card-body stack">
+    {#if costsError}
+      <p class="message error">{costsError}</p>
+    {/if}
+    {#if costs}
+      <dl class="totals">
+        <div>
+          <dt>Vandaag</dt>
+          <dd>{money(costs.today)}</dd>
+        </div>
+        <div>
+          <dt>Deze maand</dt>
+          <dd>{money(costs.thisMonth)}</dd>
+        </div>
+        <div>
+          <dt>Vorige maand</dt>
+          <dd>{money(costs.lastMonth)}</dd>
+        </div>
+      </dl>
+      {#if costs.perTester.length}
+        <h3>Duurste testers, deze maand</h3>
+        <ul class="bars">
+          {#each showAllTesters ? costs.perTester : costs.perTester.slice(0, TOP_TESTERS) as tester (tester.tester)}
+            <li>
+              <div class="bar-label">
+                <span>{who(tester.tester)}</span>
+                <span class="muted">
+                  {money(tester.cost)}{tester.utterances
+                    ? ` · ${count(tester.utterances, 'uitspraak', 'uitspraken')}`
+                    : ''}
+                </span>
+              </div>
+              <div class="bar">
+                <span style:width={`${maxTesterCost ? (tester.cost / maxTesterCost) * 100 : 0}%`}
+                ></span>
+              </div>
+            </li>
+          {/each}
+        </ul>
+        {#if costs.perTester.length > TOP_TESTERS}
+          <button class="link more" onclick={() => (showAllTesters = !showAllTesters)}>
+            {showAllTesters ? 'Toon minder' : `Alle testers (${costs.perTester.length})`}
+          </button>
+        {/if}
+      {/if}
+      {#if costs.unknownModels.length}
+        <p class="message error">
+          Geen prijs voor {costs.unknownModels.join(', ')}; die tellen niet mee. Vul de prijstabel
+          aan in src/lib/costs.ts.
+        </p>
+      {/if}
+      <details class="more-details">
+        <summary>Meer: per aanbieder, duurste sessies, rekening</summary>
+        <div class="stack">
+          <p class="hint">
+            Deze maand: OpenAI {money(costs.openai)} · Anthropic {money(
+              costs.anthropic,
+            )}{costs.perUtterance !== undefined
+              ? ` · ${money(costs.perUtterance)} per uitspraak`
+              : ''}{costs.perSession !== undefined
+              ? ` · ${money(costs.perSession)} per sessie`
+              : ''}
+          </p>
+          {#if costs.topSessions.length}
+            <h3>Duurste sessies</h3>
+            <ul class="amounts">
+              {#each costs.topSessions as entry (`${entry.tester}/${entry.session}`)}
+                <li>
+                  <span>
+                    {sessionNames[entry.session] ?? who(entry.tester)}
+                    <span class="muted">· {sessionMeta(entry)}</span>
+                  </span>
+                  <span>{money(entry.cost)}</span>
+                </li>
+              {/each}
+            </ul>
+          {/if}
+          <h3>Rekening, deze maand</h3>
+          {#if billingError}
+            <p class="message error">{billingError}</p>
+          {:else if billing}
+            <ul class="amounts">
+              {#each providers as provider (provider.id)}
+                <li>
+                  <span>{provider.name}</span>
+                  <span class="muted">{billText(provider.id)}</span>
+                </li>
+              {/each}
+            </ul>
+          {:else}
+            <p class="hint">Bezig met ophalen…</p>
+          {/if}
+          <p class="hint">
+            Geteld door de proxy sinds 24 oktober 2026, voor alle testers en beide omgevingen; de
+            testset telt mee bij de eigenaar, zonder sessie. In dollars, met de prijzen van 24
+            oktober 2026. De rekening is wat OpenAI en Anthropic in rekening brengen voor het
+            project of de workspace van Fluistervink (zonder die instelling de hele organisatie),
+            per dag in UTC en hooguit een uur oud; vergeleken vanaf de eerste getelde dag van de
+            maand. Wijkt die flink af, kijk dan de prijstabel in src/lib/costs.ts na.
+          </p>
+        </div>
+      </details>
+    {:else if !costsError}
+      <p class="hint">Bezig met ophalen…</p>
+    {/if}
+  </div>
+</section>
+
+<details class="card fold" open={newNotes.length > 0}>
+  <summary class="card-head">
+    <h2>Feedback van testers</h2>
+    <span class="muted"
+      >{notes ? (newNotes.length ? `${newNotes.length} nieuw` : 'niets nieuws') : ''}</span
+    >
+  </summary>
   <div class="card-body stack">
     {#if notesError}
       <p class="message error">{notesError}</p>
@@ -316,10 +434,15 @@
       zelf blijven bewaard, voor de testset.
     </p>
   </div>
-</section>
+</details>
 
-<section class="card">
-  <div class="card-head"><h2>Installaties</h2></div>
+<details class="card fold">
+  <summary class="card-head">
+    <h2>Installaties</h2>
+    <span class="muted"
+      >{testers ? `${testers.length}, waarvan ${split.active.length} actief` : ''}</span
+    >
+  </summary>
   <div class="card-body stack">
     {#if testersError}
       <p class="message error">{testersError}</p>
@@ -360,108 +483,13 @@
       {/if}
     {/if}
   </div>
-</section>
+</details>
 
-<section class="card">
-  <div class="card-head"><h2>Kosten</h2></div>
-  <div class="card-body stack">
-    {#if costsError}
-      <p class="message error">{costsError}</p>
-    {/if}
-    {#if costs}
-      <dl class="totals">
-        <div>
-          <dt>Vandaag</dt>
-          <dd>{money(costs.today)}</dd>
-        </div>
-        <div>
-          <dt>Deze maand</dt>
-          <dd>{money(costs.thisMonth)}</dd>
-        </div>
-        <div>
-          <dt>Vorige maand</dt>
-          <dd>{money(costs.lastMonth)}</dd>
-        </div>
-      </dl>
-      <p class="hint">
-        Deze maand: OpenAI {money(costs.openai)} · Anthropic {money(
-          costs.anthropic,
-        )}{costs.perUtterance !== undefined
-          ? ` · ${money(costs.perUtterance)} per uitspraak`
-          : ''}{costs.perSession !== undefined ? ` · ${money(costs.perSession)} per sessie` : ''}
-      </p>
-      {#if costs.perTester.length}
-        <h3>Per tester, deze maand</h3>
-        <ul class="bars">
-          {#each costs.perTester as tester (tester.tester)}
-            <li>
-              <div class="bar-label">
-                <span>{who(tester.tester)}</span>
-                <span class="muted">
-                  {money(tester.cost)}{tester.utterances
-                    ? ` · ${count(tester.utterances, 'uitspraak', 'uitspraken')}`
-                    : ''}
-                </span>
-              </div>
-              <div class="bar">
-                <span style:width={`${maxTesterCost ? (tester.cost / maxTesterCost) * 100 : 0}%`}
-                ></span>
-              </div>
-            </li>
-          {/each}
-        </ul>
-      {/if}
-      {#if costs.topSessions.length}
-        <h3>Duurste sessies</h3>
-        <ul class="amounts">
-          {#each costs.topSessions as entry (`${entry.tester}/${entry.session}`)}
-            <li>
-              <span>
-                {sessionNames[entry.session] ?? who(entry.tester)}
-                <span class="muted">· {sessionMeta(entry)}</span>
-              </span>
-              <span>{money(entry.cost)}</span>
-            </li>
-          {/each}
-        </ul>
-      {/if}
-      <h3>Rekening, deze maand</h3>
-      {#if billingError}
-        <p class="message error">{billingError}</p>
-      {:else if billing}
-        <ul class="amounts">
-          {#each providers as provider (provider.id)}
-            <li>
-              <span>{provider.name}</span>
-              <span class="muted">{billText(provider.id)}</span>
-            </li>
-          {/each}
-        </ul>
-      {:else}
-        <p class="hint">Bezig met ophalen…</p>
-      {/if}
-      {#if costs.unknownModels.length}
-        <p class="message error">
-          Geen prijs voor {costs.unknownModels.join(', ')}; die tellen niet mee. Vul de prijstabel
-          aan in src/lib/costs.ts.
-        </p>
-      {/if}
-    {:else if !costsError}
-      <p class="hint">Bezig met ophalen…</p>
-    {/if}
-    <p class="hint">
-      Geteld door de proxy sinds 24 oktober 2026, voor alle testers en beide omgevingen; de testset
-      telt mee bij de eigenaar, zonder sessie. In dollars, met de prijzen van 24 oktober 2026. De
-      rekening is wat OpenAI en Anthropic in rekening brengen voor het project of de workspace van
-      Fluistervink (zonder die instelling de hele organisatie), per dag in UTC en hooguit een uur
-      oud; vergeleken vanaf de eerste getelde dag van de maand. Wijkt die flink af, kijk dan de
-      prijstabel in src/lib/costs.ts na.
-    </p>
-  </div>
-</section>
-
-<section class="card">
-  <div class="card-head"><h2>Gegevens</h2></div>
+<details class="card fold">
+  <summary class="card-head"
+    ><h2>Gegevens</h2>
+    <span class="muted">export en import</span></summary
+  >
   <div class="card-body stack">
     <label class="check">
       <input type="checkbox" bind:checked={withAudio} />
@@ -484,7 +512,7 @@
       alleen als ze in de export zitten.
     </p>
   </div>
-</section>
+</details>
 
 <style>
   label:not(.check, .file) {
@@ -585,6 +613,39 @@
     display: block;
     height: 100%;
     background: var(--brand);
+  }
+
+  .fold > summary {
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .fold > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .fold > summary h2::before {
+    content: '▸ ';
+    color: var(--muted);
+  }
+
+  .fold[open] > summary h2::before {
+    content: '▾ ';
+  }
+
+  .fold:not([open]) > summary {
+    border-bottom: none;
+  }
+
+  .more-details > summary {
+    font-size: 0.9rem;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 0.25rem 0;
+  }
+
+  .more-details > .stack {
+    margin-top: 0.5rem;
   }
 
   .notes {
