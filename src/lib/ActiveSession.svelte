@@ -33,6 +33,21 @@
   let barHeight = $state(0);
   let input = $state<HTMLInputElement>();
 
+  // Voor de knop Opslaan van een geopende waarneming (ObservationEditor, .buttons):
+  // rechts ruimte voor het kleine rondje, of tijdens een trektelling (grote knop
+  // blijft staan) erboven plakken in plaats van eronder.
+  $effect(() => {
+    const root = document.documentElement.style;
+    const open = editing !== undefined;
+    const compact = open && trektel.startedAt === undefined;
+    root.setProperty('--talk-bar-room', compact ? '4.5rem' : '0px');
+    root.setProperty('--talk-bar-offset', open && !compact ? `${barHeight}px` : '0px');
+    return () => {
+      root.removeProperty('--talk-bar-room');
+      root.removeProperty('--talk-bar-offset');
+    };
+  });
+
   /** Een veld waarvoor het toetsenbord opengaat (geen keuzelijst of vinkje) */
   function isTextField(element: Element | null): element is HTMLElement {
     if (element instanceof HTMLTextAreaElement) return true;

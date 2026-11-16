@@ -75,9 +75,9 @@
 
 <p class="intro">
   Wat viel je op aan de app? Typ het hieronder. {#if sharing}Feedback gaat meteen naar de
-    ontwikkelaar.{:else}Feedback gaat naar de ontwikkelaar als je delen aanzet (<a
-      href="#instellingen">Instellingen</a
-    >).{/if} Verstuurde feedback blijft hier staan; weghalen kan altijd.
+    ontwikkelaar, of tijdens een sessie na het stoppen.{:else}Feedback gaat naar de ontwikkelaar als
+    je delen aanzet (<a href="#instellingen">Instellingen</a>).{/if} Verstuurde feedback blijft hier staan;
+  weghalen kan altijd.
 </p>
 
 <form class="card add" onsubmit={add}>
