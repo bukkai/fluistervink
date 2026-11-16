@@ -190,10 +190,6 @@
   </dl>
 {/if}
 
-{#if ebird}
-  <EbirdEffort {session} />
-{/if}
-
 {#if preferenceOn('samenvatting')}
   <SessionSummary {session} />
 {/if}
@@ -242,15 +238,17 @@
           lijst.
         </p>
       {/if}
-      <button class="btn block large" onclick={ready}>Alles klopt, klaar voor waarneming.nl</button>
+      <button class="btn block large" onclick={ready}
+        >Alles klopt, klaar voor {ebird ? 'export' : 'waarneming.nl'}</button
+      >
       <p class="muted">
         De waarnemingen gelden dan als nagelopen. Klaargezette sessies exporteer je later in één
-        bestand, bij Sessies.
+        bestand{ebird ? ' voor waarneming.nl en een voor eBird' : ''}, bij Sessies.
       </p>
     {/if}
     <div class="actions only-this">
       <button class="btn secondary block" onclick={exportOnlyThis}
-        >Alleen deze sessie exporteren</button
+        >Alleen deze sessie exporteren{ebird ? ' voor waarneming.nl' : ''}</button
       >
     </div>
     <p class="muted">
@@ -263,6 +261,11 @@
 
 {#if asking && askedAtReady}
   {@render checklistQuestion()}
+{/if}
+
+<!-- eBird bij de export, net onder waarneming.nl: zelfde "klaar", eigen export -->
+{#if ebird}
+  <EbirdEffort {session} />
 {/if}
 
 <!-- Knoppen in plaats van linkjes: ook met dikke vingers of handschoenen te raken -->
