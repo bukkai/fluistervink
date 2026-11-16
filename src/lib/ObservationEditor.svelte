@@ -530,15 +530,16 @@
     color: var(--red);
   }
 
-  /* Plakt onderaan het scherm. Rechts ruimte voor de kleine inspreekknop van
-     een lopende sessie (ActiveSession, .talk-bar.compact). */
+  /* Plakt onderaan het scherm. Tijdens een sessie zet ActiveSession rechts
+     ruimte voor de kleine inspreekknop, of tijdens een trektelling de hoogte
+     van de grote knop, zodat Opslaan erboven blijft. */
   .buttons {
     position: sticky;
-    bottom: 0;
+    bottom: var(--talk-bar-offset, 0px);
     z-index: 5;
     display: flex;
     gap: 0.5rem;
-    padding: 0.6rem 4.5rem calc(0.6rem + env(safe-area-inset-bottom)) 0;
+    padding: 0.6rem var(--talk-bar-room, 0px) calc(0.6rem + env(safe-area-inset-bottom)) 0;
     border-top: 1px solid var(--border);
     background: var(--surface);
   }

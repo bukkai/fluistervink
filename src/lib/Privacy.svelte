@@ -123,9 +123,10 @@
       Zeg je ja tegen delen, dan gaan na elke sessie je uitspraken als tekst, wat de app ervan
       maakte, je correcties, je feedback, het logboek en de locaties van je waarnemingen naar de
       ontwikkelaar; opnames alleen als je dat bij <a href="{app}#instellingen">Instellingen</a>
-      aanzet. Het staat bij Cloudflare onder de naam van je installatie. Alleen de ontwikkelaar leest
-      het, om de app te verbeteren, en geeft het niet door. Het blijft tot je vraagt het te wissen (via
-      feedback of <a href="mailto:{CONTACT}">{CONTACT}</a>).
+      aanzet. Feedback die je buiten een sessie typt, gaat meteen, met het logboek van het half uur ervoor.
+      Het staat bij Cloudflare onder de naam van je installatie. Alleen de ontwikkelaar leest het, om
+      de app te verbeteren, en geeft het niet door. Het blijft tot je vraagt het te wissen (via feedback
+      of <a href="mailto:{CONTACT}">{CONTACT}</a>).
     </p>
   </div>
 </section>
