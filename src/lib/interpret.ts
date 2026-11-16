@@ -290,7 +290,7 @@ const buildTools = (withGroups: boolean): Anthropic.Tool[] => {
     {
       name: 'add_dev_note',
       description:
-        'Bewaart een opmerking over de app zelf (in plaats van over vogels) als feedback.',
+        'Bewaart een opmerking over de app zelf als feedback. Alleen als de gebruiker er "feedback" (of "dev note") bij zegt.',
       strict: true,
       input_schema: {
         type: 'object',
@@ -363,9 +363,9 @@ const buildPrompt = (
 - "Ongedaan maken", "terug", "dat was fout" → undo. Nog een keer undo gaat een stap verder terug.
 - Een undo zelf terugdraaien ("toch niet ongedaan maken", "zet terug wat je net ongedaan maakte", "dat ongedaan maken was fout") → redo.
 - Bevestiging ("ja, klopt", "dat was goed", "vorige is correct") → update_observation op #1 met alleen uncertain: false, als #1 onzeker is. Is #1 niet onzeker, roep dan geen tool aan.
-- Een opmerking over de app zelf (wat beter kan, wat niet werkt, een idee voor een functie), ook zonder "feedback" ervoor → add_dev_note. Bijvoorbeeld "bij grote groepen wil ik een schatting kunnen opgeven" of "hij trilt niet".
+- Feedback over de app herken je alleen aan het woord "feedback" (of "dev note", ook verhaspeld door de spraakherkenning) → add_dev_note. Zonder dat woord is het geen feedback, ook niet als het over de app gaat ("hij trilt niet"): dan geen add_dev_note.
 - Feedback midden tussen waarnemingen (vooral in een trektelling, waar de app zelf stukken van een minuut knipt): voer de waarnemingen gewoon uit én roep add_dev_note aan, met in text alleen de opmerking over de app. "Zes holenduiven. Feedback, de knop is te klein. Buizerd." = add_observation (Holenduif) + add_dev_note (text "de knop is te klein") + add_observation (Buizerd).
-- Geen waarneming, correctie of opmerking over de app (gepraat, "hallo", "test", vragen) → roep geen enkele tool aan.
+- Geen waarneming, correctie of feedback (gepraat, "hallo", "test", vragen, opmerkingen over de app zonder "feedback") → roep geen enkele tool aan.
 - Het woord "Fluistervink" (of het oude "Thijsse") aan het begin is de aanspreekvorm van de app; negeer het. Het is géén waarneming van een vink: "Fluistervink, zes houtduiven" gaat alleen over houtduiven.
 
 ## Opmerkingen
