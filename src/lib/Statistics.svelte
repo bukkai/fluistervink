@@ -6,13 +6,13 @@
   import { perDay, perWeek, type ActivityRow } from './stats';
 
   const DAYS = 30;
-  const WEEKS = 8;
-  const CHART_WEEKS = 12;
+  /** Grafiek en tabel even lang, zodat elke week in de grafiek een rij heeft */
+  const WEEKS = 12;
   // Grafiek per week: vaste maat, schaalt mee met de breedte van de kaart
   const W = 320;
   const H = 120;
   const PAD = 6;
-  const STEP = (W - 2 * PAD) / (CHART_WEEKS - 1);
+  const STEP = (W - 2 * PAD) / (WEEKS - 1);
 
   let rows = $state<ActivityRow[]>();
   let error = $state('');
@@ -27,7 +27,17 @@
   let weeks = $derived(perWeek(counted, WEEKS));
   let maxUsers = $derived(Math.max(1, ...days.map((d) => d.users)));
   // Oudste week eerst, voor de grafiek
-  let chartWeeks = $derived(perWeek(counted, CHART_WEEKS).reverse());
+  let chartWeeks = $derived([...weeks].reverse());
+  /** Aangetikte week in de grafiek, gemarkeerd in de tabel */
+  let selected = $state<string>();
+  function select(week: string) {
+    selected = selected === week ? undefined : week;
+    if (selected) {
+      document
+        .getElementById(`week-${selected}`)
+        ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }
   let maxWeek = $derived(Math.max(1, ...chartWeeks.map((w) => Math.max(w.sessions, w.utterances))));
   const x = (i: number) => PAD + i * STEP;
   const y = (value: number, max: number) => H - PAD - (value / max) * (H - 2 * PAD);
@@ -121,7 +131,7 @@
   <section class="card">
     <div class="card-head">
       <h2>Sessies en uitspraken per week</h2>
-      <span class="muted">laatste {CHART_WEEKS} weken</span>
+      <span class="muted">laatste {WEEKS} weken</span>
     </div>
     <div class="card-body">
       <ul class="legend">
@@ -143,7 +153,25 @@
           aria-label="Sessies en uitspraken per week; de cijfers staan in de tabel hieronder"
         >
           {#each chartWeeks as w, i (w.week)}
-            <rect class="week" x={x(i) - STEP / 2} y="0" width={STEP} height={H}>
+            <rect
+              class="week"
+              class:selected={selected === w.week}
+              x={x(i) - STEP / 2}
+              y="0"
+              width={STEP}
+              height={H}
+              role="button"
+              tabindex="0"
+              aria-label={weekLabel(w)}
+              aria-pressed={selected === w.week}
+              onclick={() => select(w.week)}
+              onkeydown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  select(w.week);
+                }
+              }}
+            >
               <title>{weekLabel(w)}</title>
             </rect>
           {/each}
@@ -179,7 +207,7 @@
         </thead>
         <tbody>
           {#each weeks as w (w.week)}
-            <tr>
+            <tr id={`week-${w.week}`} class:selected={selected === w.week}>
               <th scope="row">{shortFormat.format(date(w.week))}</th>
               <td>{w.active}</td>
               <td>{w.new}</td>
@@ -309,6 +337,7 @@
   }
 
   .lines polyline {
+    pointer-events: none;
     fill: none;
     stroke-width: 2;
     stroke-linejoin: round;
@@ -323,10 +352,25 @@
 
   .lines .week {
     fill: transparent;
+    cursor: pointer;
   }
 
-  .lines .week:hover {
+  .lines .week:hover,
+  .lines .week:focus-visible {
     fill: var(--bg);
+  }
+
+  .lines .week:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  .lines .week.selected {
+    fill: color-mix(in srgb, var(--brand) 18%, transparent);
+  }
+
+  tr.selected {
+    background: color-mix(in srgb, var(--brand) 18%, transparent);
+    font-weight: 600;
   }
 
   .swatch.sessions,

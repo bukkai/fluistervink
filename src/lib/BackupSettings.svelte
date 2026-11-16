@@ -64,7 +64,7 @@
   <div class="card-head"><h2>Back-up</h2></div>
   <div class="card-body stack">
     <p class="hint">
-      Je sessies staan alleen op deze telefoon. Een back-up bewaart ze als bestand{isNativeApp
+      Je sessies staan alleen op dit apparaat. Een back-up bewaart ze als bestand{isNativeApp
         ? ' in Downloads'
         : ''}, zodat je ze kunt terugzetten op een nieuwe telefoon of als de app verwijderd was. Zet
       het bestand ergens anders neer (Drive, je computer) om echt veilig te zijn. Opnames gaan

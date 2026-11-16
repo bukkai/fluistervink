@@ -10,7 +10,13 @@ const MAX_SESSION_BYTES = 5 * 1024 * 1024;
 
 /** KV-sleutel (in TESTERS) met de id's van feedback die de eigenaar verwerkt heeft. */
 const PROCESSED_KEY = 'processed-notes';
-/** Zoveel id's tegelijk als verwerkt markeren; ruim genoeg voor "alles". */
+/**
+ * KV-sleutel (in TESTERS) met de id's van feedback die de eigenaar gewist heeft:
+ * die staat niet meer in de lijst. De gedeelde sessies zelf blijven (testset),
+ * en een tester kan een sessie opnieuw delen, dus wissen is een lijst van id's.
+ */
+const DELETED_KEY = 'deleted-notes';
+/** Zoveel id's tegelijk als verwerkt markeren of wissen; ruim genoeg voor "alles". */
 const MAX_PROCESSED_IDS = 1000;
 
 /**
@@ -25,6 +31,7 @@ const MAX_PROCESSED_IDS = 1000;
  * - GET /api/feedback/file?key=…     één bestand (eigenaar)
  * - GET /api/feedback/notes          alle feedback, met of hij verwerkt is (eigenaar)
  * - POST /api/feedback/processed { ids, processed }  feedback (niet) verwerkt (eigenaar)
+ * - POST /api/feedback/delete { ids }  feedback van de lijst wissen (eigenaar)
  * - DELETE /api/feedback/tester?name=…  alles van één tester wissen (eigenaar)
  */
 export async function feedback(request: Request, env: Env, tester: string): Promise<Response> {
@@ -60,7 +67,7 @@ export async function feedback(request: Request, env: Env, tester: string): Prom
   if (request.method === 'GET' && kind === 'notes') {
     return json({ notes: await sharedNotes(env) });
   }
-  if (request.method === 'POST' && kind === 'processed') {
+  if (request.method === 'POST' && (kind === 'processed' || kind === 'delete')) {
     const { ids, processed } = (await request.json().catch(() => ({}))) as {
       ids?: unknown;
       processed?: unknown;
@@ -69,11 +76,23 @@ export async function feedback(request: Request, env: Env, tester: string): Prom
       Array.isArray(ids) &&
       ids.length <= MAX_PROCESSED_IDS &&
       ids.every((id) => typeof id === 'string' && /^[\w-]{1,64}$/.test(id));
-    if (!valid || typeof processed !== 'boolean') return json({ error: 'Ongeldig verzoek' }, 400);
+    if (!valid || (kind === 'processed' && typeof processed !== 'boolean')) {
+      return json({ error: 'Ongeldig verzoek' }, 400);
+    }
     const done = await processedNotes(env);
-    for (const id of ids) {
-      if (processed) done.add(id);
-      else done.delete(id);
+    if (kind === 'delete') {
+      // Gewist hoeft niet meer als verwerkt te boeken: houdt die lijst klein
+      const deleted = await noteIds(env, DELETED_KEY);
+      for (const id of ids) {
+        deleted.add(id);
+        done.delete(id);
+      }
+      await env.TESTERS.put(DELETED_KEY, JSON.stringify([...deleted]));
+    } else {
+      for (const id of ids) {
+        if (processed) done.add(id);
+        else done.delete(id);
+      }
     }
     await env.TESTERS.put(PROCESSED_KEY, JSON.stringify([...done]));
     return json({ ok: true });
@@ -127,12 +146,13 @@ async function sharedNotes(env: Env): Promise<SharedNote[]> {
   const keys = await sharedSessionKeys(env);
 
   const done = await processedNotes(env);
+  const deleted = await noteIds(env, DELETED_KEY);
   const notes = await Promise.all(
     keys.map(async (key) => {
       const data = await readShared(env, key);
       const tester = key.split('/')[0];
       return data.utterances
-        .filter((u) => u.kind === 'dev_note')
+        .filter((u) => u.kind === 'dev_note' && !deleted.has(u.id))
         .map((u) => ({
           id: u.id,
           tester,
@@ -270,6 +290,10 @@ async function sharedSessionKeys(env: Env): Promise<string[]> {
   return keys;
 }
 
-async function processedNotes(env: Env): Promise<Set<string>> {
-  return new Set((await env.TESTERS.get<string[]>(PROCESSED_KEY, 'json')) ?? []);
+function processedNotes(env: Env): Promise<Set<string>> {
+  return noteIds(env, PROCESSED_KEY);
+}
+
+async function noteIds(env: Env, key: string): Promise<Set<string>> {
+  return new Set((await env.TESTERS.get<string[]>(key, 'json')) ?? []);
 }

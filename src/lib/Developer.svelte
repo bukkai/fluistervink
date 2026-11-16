@@ -5,6 +5,7 @@
   // de testset en importeren. Afgeschermd in de interface; de proxy staat het
   // beheer ook alleen de eigenaar toe.
   import {
+    deleteNotes,
     fetchBilling,
     hideTester,
     listSharedNotes,
@@ -81,6 +82,20 @@
       notes = notes?.map((n) => (changed.has(n.id) ? { ...n, processed } : n));
     } catch (error) {
       notesError = `Opslaan mislukt: ${error instanceof Error ? error.message : error}`;
+    }
+  }
+
+  /** Verwerkte feedback voorgoed van de lijst; de gedeelde sessies blijven (testset) */
+  async function deleteProcessed() {
+    const ids = (notes ?? []).filter((n) => n.processed).map((n) => n.id);
+    if (!confirm(`${ids.length}× verwerkte feedback wissen?`)) return;
+    try {
+      await deleteNotes(ids);
+      const gone = new Set(ids);
+      notes = notes?.filter((n) => !gone.has(n.id));
+      showProcessed = false;
+    } catch (error) {
+      notesError = `Wissen mislukt: ${error instanceof Error ? error.message : error}`;
     }
   }
 
@@ -289,6 +304,7 @@
           <button class="link" onclick={() => (showProcessed = !showProcessed)}>
             {showProcessed ? 'Verwerkte verbergen' : `Verwerkte tonen (${processedCount})`}
           </button>
+          <button class="link danger" onclick={deleteProcessed}>Verwerkte wissen</button>
         {/if}
       </div>
     {:else if !notesError}
@@ -296,7 +312,8 @@
     {/if}
     <p class="hint">
       Feedback komt binnen zodra de app van een tester deelt, na het stoppen van een sessie.
-      Verwerkt verbergt hem alleen; de gedeelde sessies blijven bewaard.
+      Verwerkt verbergt hem; Verwerkte wissen haalt hem voorgoed van de lijst. De gedeelde sessies
+      zelf blijven bewaard, voor de testset.
     </p>
   </div>
 </section>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Alle opnames op deze telefoon in één keer wissen. Per sessie kan het
+  // Alle opnames op dit apparaat in één keer wissen. Per sessie kan het
   // ook, onderaan de review. Zie recordings.ts.
   import { liveQuery } from 'dexie';
   import {
@@ -29,10 +29,10 @@
       sessie kan het ook, onderaan bij die sessie.
     </p>
     {#if $recordings?.count}
-      <p class="hint">Op deze telefoon: {describeRecordings($recordings)}.</p>
+      <p class="hint">Op dit apparaat: {describeRecordings($recordings)}.</p>
       <button class="btn danger block" onclick={removeAll}>Alle opnames wissen</button>
     {:else if $recordings}
-      <p class="hint">{message || 'Er staan geen opnames op deze telefoon.'}</p>
+      <p class="hint">{message || 'Er staan geen opnames op dit apparaat.'}</p>
     {/if}
   </div>
 </section>

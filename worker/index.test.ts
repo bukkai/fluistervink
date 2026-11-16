@@ -1010,9 +1010,31 @@ describe('/api/feedback/notes (feedback inzien)', () => {
     expect((await notes()).map((n) => n.processed)).toEqual([false, true]);
   });
 
+  function remove(ids: unknown[], code = OWNER_CODE) {
+    return call('/api/feedback/delete', {
+      code,
+      method: 'POST',
+      body: JSON.stringify({ ids }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  it('wist feedback van de lijst, ook als de sessie opnieuw gedeeld wordt', async () => {
+    await markProcessed(['n1'], true);
+    expect((await remove(['n1'])).status).toBe(200);
+    expect((await notes()).map((n) => n.id)).toEqual(['n2']);
+    await share('w1', {
+      sessions: [{ name: 'Waterleidingduinen' }],
+      utterances: [{ id: 'n1', recordedAt: 2000, kind: 'dev_note', transcript: 'Feedback: x' }],
+    });
+    expect((await notes()).map((n) => n.id)).toEqual(['n2']);
+  });
+
   it('is alleen voor de eigenaar', async () => {
     expect((await call('/api/feedback/notes')).status).toBe(403);
     expect((await markProcessed(['n1'], true, ANNA_CODE)).status).toBe(403);
+    expect((await remove(['n1'], ANNA_CODE)).status).toBe(403);
+    expect((await remove(['../x'])).status).toBe(400);
   });
 
   it("weigert ongeldige id's", async () => {
