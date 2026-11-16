@@ -23,16 +23,16 @@
     <ul>
       <li>Alles wat je inspreekt, staat eerst op je eigen telefoon.</li>
       <li>
-        Voor het verwerken gaat je opname naar OpenAI (spraak naar tekst) en de tekst naar Anthropic
-        (tekst naar waarneming). Die gebruiken het niet om hun modellen te trainen.
+        Om het te verwerken gaat je opname naar OpenAI (spraak naar tekst) en de tekst naar
+        Anthropic (tekst naar waarneming). Die trainen er hun modellen niet mee.
       </li>
       <li>
-        Delen met de ontwikkelaar doe je alleen als je daar ja op zegt, en opnames alleen als je dat
+        Met de ontwikkelaar deel je alleen als je daar ja op zegt, en opnames alleen als je dat
         apart aanzet.
       </li>
       <li>
-        Geen account, geen advertenties, geen route van waar je geweest bent. De ontwikkelaar ziet
-        alleen hoeveel de app gebruikt wordt, niet wat je zegt of waar je bent (tenzij je deelt).
+        Geen account, geen advertenties, geen route van waar je geweest bent. Zonder delen ziet de
+        ontwikkelaar alleen hoeveel de app gebruikt wordt, niet wat je zegt of waar je bent.
       </li>
     </ul>
   </div>
@@ -42,7 +42,7 @@
   <div class="card-body">
     <h3>Wie maakt Fluistervink</h3>
     <p>
-      Fluistervink is een persoonlijk project van Stephan Muller. Hij is verantwoordelijk voor wat
+      Fluistervink is een persoonlijk project van Stephan Muller, die verantwoordelijk is voor wat
       er met je gegevens gebeurt. Vragen, inzage of iets laten wissen: mail naar
       <a href="mailto:{CONTACT}">{CONTACT}</a>, of stuur feedback in de app.
     </p>
@@ -53,29 +53,18 @@
   <div class="card-body">
     <h3>Op je telefoon</h3>
     <p>
-      De opname van elke uitspraak, de tekst, het tijdstip, de locatie (alleen op het moment dat je
-      begint met inspreken), je waarnemingen, de duur en afgelegde afstand van een sessie en een
-      logboek van wat de app deed (fouten, wachttijden) staan in de opslag van de app (of van de
-      browser) op je telefoon. Daar blijven ze tot je ze verwijdert. De opnames kun je ook los
-      wissen (zie hieronder).
+      Opnames, tekst, tijdstip en locatie van elke uitspraak, je waarnemingen, de duur en afstand
+      van een sessie en een logboek van wat de app deed staan in de opslag van de app (of de
+      browser) op je telefoon, tot je ze verwijdert. Een back-up bij
+      <a href="{app}#instellingen">Instellingen</a> is een bestand op je telefoon (in de Android-app in
+      Downloads) dat nergens heen gaat, tenzij je het zelf ergens neerzet.
     </p>
     <p>
-      Maak je bij <a href="{app}#instellingen">Instellingen</a> een back-up, dan komt alles (opnames alleen
-      van sessies die je nog niet hebt nagelopen) in één bestand op je telefoon (in de Android-app in
-      Downloads). Dat bestand gaat nergens heen, tenzij je het zelf ergens neerzet, bijvoorbeeld in Google
-      Drive.
-    </p>
-    <p>
-      In de Android-app staat tijdens een sessie een melding van Fluistervink. Daardoor mag de app
-      doorwerken met het scherm uit, en blijft hij je locatie volgen om bij een uitspraak meteen te
-      weten waar je bent. Bewaard wordt nog steeds alleen de locatie bij het begin van een
-      uitspraak, geen route. Wel telt de app tijdens een sessie de afgelegde afstand op, zoals een
-      kilometerteller: alleen het getal blijft bewaard. Na "Stop" houdt het volgen op.
-    </p>
-    <p>
-      Zet je in de Android-app de gesproken bevestiging aan, dan leest de voorleesfunctie van je
-      telefoon de waarneming voor in je oortjes. Fluistervink stuurt die tekst zelf nergens heen;
-      welke voorleesfunctie dat doet, stel je in bij de instellingen van Android.
+      In de Android-app staat tijdens een sessie een melding van Fluistervink, zodat de app met het
+      scherm uit doorwerkt en je locatie blijft volgen. Bewaard wordt alleen de locatie bij het
+      begin van een uitspraak, geen route, plus de afgelegde afstand als één getal. Na "Stop" houdt
+      het volgen op. De gesproken bevestiging (als je die aanzet) gebruikt de voorleesfunctie van je
+      telefoon; Fluistervink stuurt die tekst nergens heen.
     </p>
   </div>
 </section>
@@ -84,53 +73,44 @@
   <div class="card-body">
     <h3>Wat de app verstuurt</h3>
     <p>
-      Alles gaat eerst langs de eigen server van Fluistervink. Die bewaart niets, behalve wat je
-      deelt (hieronder) en hoeveel je liet verwerken: per dag en per sessie het aantal uitspraken en
-      hoe lang die waren, zonder wat je zei, om de kosten bij te houden en te zien hoeveel mensen de
-      app gebruiken en of ze terugkomen. Wel houdt hij een paar dagen bij wanneer je de app
-      gebruikte en of er iets misging.
+      Alles gaat eerst langs de eigen server van Fluistervink. Die bewaart alleen wat je deelt
+      (hieronder) en hoeveel je liet verwerken (aantal uitspraken en hun duur per dag en sessie,
+      zonder wat je zei; dat blijft bewaard), voor de kosten en om te zien hoeveel mensen de app
+      gebruiken. Het logboek van de server (wanneer, en of er iets misging) blijft een paar dagen.
     </p>
     <dl>
       <dt>OpenAI</dt>
       <dd>
         De opname van een uitspraak, met een lijst vogelnamen, om er tekst van te maken. Volgens
-        OpenAI wordt dit niet bewaard en niet gebruikt voor training.
+        OpenAI niet bewaard en niet gebruikt voor training.
       </dd>
       <dt>Anthropic</dt>
       <dd>
         De tekst van je uitspraak plus de laatste waarnemingen van de sessie (zodat "nog drie erbij"
-        werkt), met hoe ver die van je af zijn ("300 m hiervandaan"). Geen opname en geen
-        coördinaten. Anthropic wist dit binnen 30 dagen en gebruikt het niet voor training.
+        werkt), met hoe ver die van je af zijn. Geen opname en geen coördinaten. Anthropic wist het
+        binnen 30 dagen en traint er niet mee.
       </dd>
       <dt>Waarneming.nl</dt>
       <dd>
-        De coördinaten van een waarneming, om de naam van het gebied op te zoeken. Gaat via de
-        server van Fluistervink, dus zonder je IP-adres of naam.
+        De coördinaten van een waarneming, om de naam van het gebied op te zoeken, via de server van
+        Fluistervink (dus zonder je IP-adres of naam).
       </dd>
       <dt>OpenStreetMap</dt>
-      <dd>
-        Bij het bekijken van de kaart haalt je telefoon kaartstukjes op bij OpenStreetMap. Hun
-        server ziet daardoor welk gebied je bekijkt.
-      </dd>
+      <dd>Kaartstukjes, als je een kaart bekijkt: hun server ziet welk gebied dat is.</dd>
       <dt>Google</dt>
       <dd>
-        Installeer je de Android-app via Google Play, dan weet Google dat je hem hebt, zoals bij
-        elke app. Bij de eerste keer openen vraagt de app Google Play te bevestigen dat het de echte
-        app is, op een echt toestel (Play Integrity). Daarvoor gaat er een willekeurig nummer van
-        deze installatie naar Google, geen waarnemingen. Verder stuurt de app niets naar Google. Tik
-        je op een link naar een plek (zoals "±8 m" of "kaarten-app"), dan opent Google Maps met die
-        plek. Sla je een export op in Google Drive, dan staat dat bestand bij Google.
+        Bij de eerste keer openen bevestigt Google Play dat het de echte app is op een echt toestel
+        (Play Integrity), met een willekeurig nummer van deze installatie, zonder waarnemingen.
+        Verder niets, behalve wat je zelf doet: de app uit Google Play installeren, een link naar
+        een plek openen in Google Maps, of een export in Google Drive zetten.
       </dd>
       <dt>Cloudflare</dt>
       <dd>
-        De app heeft geen account of code nodig. Om te voorkomen dat iemand met een programma de
-        server misbruikt, controleert Cloudflare Turnstile bij de eerste keer openen of er een echte
-        browser achter zit (in de Android-app alleen als Google Play het niet bevestigt). Turnstile
-        kijkt daarvoor onder andere naar je IP-adres en browser, volgens Cloudflare alleen om robots
-        tegen te houden en niet om je te volgen. Daarna krijgt de app een willekeurige naam (zoals
-        "app-3f9a2b1c"), zonder iets wat naar jou verwijst. Vul je bij
-        <a href="{app}#instellingen">Instellingen</a> je naam in (niet verplicht), dan staat die erbij,
-        zodat de ontwikkelaar weet van wie gebruik en feedback komen.
+        In de browser, of als Google Play het niet bevestigt, controleert Cloudflare Turnstile bij
+        de eerste keer openen of er een echte browser achter zit, onder andere aan je IP-adres,
+        volgens Cloudflare alleen om robots tegen te houden. Daarna heet je installatie bijvoorbeeld
+        "app-3f9a2b1c", zonder iets wat naar jou verwijst, tenzij je bij
+        <a href="{app}#instellingen">Instellingen</a> je naam invult (niet verplicht).
       </dd>
     </dl>
   </div>
@@ -140,17 +120,12 @@
   <div class="card-body">
     <h3>Delen met de ontwikkelaar</h3>
     <p>
-      Fluistervink is nog in ontwikkeling. Zeg je ja tegen delen, dan gaan na elke sessie je
-      uitspraken als tekst, wat de app ervan maakte, je correcties bij het nalopen, je feedback, het
-      logboek van die sessie en de locaties van je waarnemingen naar de ontwikkelaar. Opnames alleen
-      als je dat bij <a href="{app}#instellingen">Instellingen</a> aanzet.
-    </p>
-    <p>
-      Het staat bij Cloudflare onder de willekeurige naam van je installatie (met je naam erbij als
-      je die bij Instellingen invulde). Alleen de ontwikkelaar kan het lezen, en gebruikt het alleen
-      om de herkenning en de app te verbeteren. Niet doorgeven, niet publiceren. Wil je dat het weg
-      is, stuur dat als feedback in de app of mail naar <a href="mailto:{CONTACT}">{CONTACT}</a>:
-      dan wordt alles van jou gewist.
+      Zeg je ja tegen delen, dan gaan na elke sessie je uitspraken als tekst, wat de app ervan
+      maakte, je correcties, je feedback, het logboek en de locaties van je waarnemingen naar de
+      ontwikkelaar; opnames alleen als je dat bij <a href="{app}#instellingen">Instellingen</a>
+      aanzet. Het staat bij Cloudflare onder de naam van je installatie. Alleen de ontwikkelaar leest
+      het, om de app te verbeteren, en geeft het niet door. Het blijft tot je vraagt het te wissen (via
+      feedback of <a href="mailto:{CONTACT}">{CONTACT}</a>).
     </p>
   </div>
 </section>
@@ -164,40 +139,20 @@
         >.
       </li>
       <li>
-        Alleen de opnames wissen: onderaan bij een sessie, of alles in één keer bij
-        <a href="{app}#instellingen">Instellingen</a>. De sessie, wat je zei als tekst en de
-        waarnemingen blijven staan; terugluisteren kan dan niet meer. Opnames die je al met de
-        ontwikkelaar gedeeld had, blijven daar staan.
+        Alleen de opnames wissen: onderaan bij een sessie, of alles bij
+        <a href="{app}#instellingen">Instellingen</a>. Tekst en waarnemingen blijven; al gedeelde
+        opnames blijven bij de ontwikkelaar.
       </li>
       <li>
-        Een sessie verwijderen, met alle opnames: bij <a href="{app}#sessies">Vorige sessies</a>.
-        Dat is echt weg.
+        Een sessie helemaal verwijderen: bij <a href="{app}#sessies">Vorige sessies</a>.
       </li>
-      <li>Een kopie van wat je gedeeld hebt: vraag het als feedback in de app of per mail.</li>
       <li>
         Alles wissen: de app verwijderen, of in Chrome de sitegegevens van Fluistervink wissen.
       </li>
       <li>
-        Naar waarneming.nl gaat alleen wat je zelf exporteert en daar importeert (zonder opnames).
-        Voor eBird geldt hetzelfde: de app maakt een bestand, en dat gaat alleen naar eBird als je
-        het daar zelf uploadt.
+        Naar waarneming.nl en eBird gaat alleen het bestand dat je zelf exporteert en daar uploadt
+        (zonder opnames).
       </li>
-    </ul>
-  </div>
-</section>
-
-<section class="card">
-  <div class="card-body">
-    <h3>Hoe lang het blijft</h3>
-    <ul>
-      <li>Op je telefoon: tot je het zelf verwijdert.</li>
-      <li>Wat je met de ontwikkelaar deelt: tot je vraagt het te wissen.</li>
-      <li>
-        Het verbruik (aantallen en duur, zonder wat je zei): blijft bewaard, om kosten en gebruik
-        over langere tijd te kunnen zien.
-      </li>
-      <li>Het logboek van de server (wanneer, en of er iets misging): een paar dagen.</li>
-      <li>Bij OpenAI en Anthropic: zie hierboven.</li>
     </ul>
   </div>
 </section>
@@ -206,9 +161,9 @@
   <div class="card-body">
     <h3>Je rechten</h3>
     <p>
-      Volgens de privacywet (AVG) mag je vragen wat er van jou bewaard is, het laten verbeteren of
-      wissen, en bezwaar maken. Mail daarvoor naar <a href="mailto:{CONTACT}">{CONTACT}</a>. Ben je
-      het niet eens met hoe dat gaat, dan kun je een klacht indienen bij de
+      Volgens de AVG mag je vragen wat er van jou bewaard is (ook een kopie van wat je deelde), en
+      het laten verbeteren of wissen, of bezwaar maken: mail naar
+      <a href="mailto:{CONTACT}">{CONTACT}</a>. Een klacht kan bij de
       <a href="https://autoriteitpersoonsgegevens.nl/" target="_blank" rel="noopener"
         >Autoriteit Persoonsgegevens</a
       >.
