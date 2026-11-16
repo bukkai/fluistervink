@@ -7,9 +7,11 @@ afterEach(() => {
 });
 
 describe('preferences', () => {
-  it('staat standaard aan, behalve eBird', () => {
+  it('staat standaard aan, behalve eBird en de gesproken bevestiging', () => {
     expect(preferenceOn('samenvatting')).toBe(true);
+    expect(preferenceOn('volumeknop')).toBe(true);
     expect(preferenceOn('ebird')).toBe(false);
+    expect(preferenceOn('gesproken')).toBe(false);
   });
 
   it('onthoudt een keuze die afwijkt van de standaard', () => {

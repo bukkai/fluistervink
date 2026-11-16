@@ -1,13 +1,21 @@
 // Gewone keuzes bij Instellingen (eerst ontwikkelopties, voor iedereen sinds
-// 11 nov; andere soortgroepen sinds 16 nov, docs/plan-soortgroepen.md fase 4). De meeste staan standaard aan; `OFF_BY_DEFAULT` niet, want wie geen
-// eBird gebruikt, mag er niets van merken (docs/plan-ebird.md, punt 8). Per
-// telefoon in localStorage; alleen wat afwijkt van de standaard wordt bewaard,
-// zodat een nieuwe installatie de standaard meteen heeft.
+// 11 nov; andere soortgroepen, de volumeknop en de gesproken bevestiging sinds
+// 16 nov). De meeste staan standaard aan; `OFF_BY_DEFAULT` niet: wie geen eBird
+// gebruikt, mag er niets van merken (docs/plan-ebird.md, punt 8), en de
+// gesproken bevestiging is nog een proef. Per telefoon in localStorage; alleen
+// wat afwijkt van de standaard wordt bewaard, zodat een nieuwe installatie de
+// standaard meteen heeft.
 
 export type Preference =
-  'soortgroepen' | 'zeldzaamOnzeker' | 'exportHerinnering' | 'samenvatting' | 'ebird';
+  | 'soortgroepen'
+  | 'zeldzaamOnzeker'
+  | 'exportHerinnering'
+  | 'samenvatting'
+  | 'ebird'
+  | 'volumeknop'
+  | 'gesproken';
 
-const OFF_BY_DEFAULT: readonly Preference[] = ['ebird'];
+const OFF_BY_DEFAULT: readonly Preference[] = ['ebird', 'gesproken'];
 
 const PREFIX = 'fluistervink.pref.';
 const SINCE = '.sinds';

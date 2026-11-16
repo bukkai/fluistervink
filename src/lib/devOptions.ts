@@ -2,7 +2,8 @@
 // bevallen (docs/roadmap-android.md, besloten 11 nov). Per telefoon in
 // localStorage; het kaartje bij Instellingen staat alleen bij de eigenaar.
 
-export type DevOption = 'gesproken' | 'voorbeeldzinOnzeker' | 'kandidaten';
+/** Nu geen: voeg hier de naam van een nieuwe optie toe */
+export type DevOption = never;
 
 const PREFIX = 'fluistervink.dev.';
 

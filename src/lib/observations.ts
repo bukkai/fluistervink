@@ -20,15 +20,9 @@ import { placeFromSpeech, placeReason, type Place } from './spokenPlace';
 import { INSTANCE_ID } from './instance.svelte';
 import { APP_VERSION, logEvent, wasHiddenSince } from './log';
 import type { Recording } from './recorder.svelte';
-import { devOptionOn } from './devOptions';
 import { preferenceOn } from './preferences';
 import { rarityOf } from './rarity';
-import {
-  TRANSCRIBE_MODEL,
-  isPromptExample,
-  transcribe,
-  transcribePromptVersionFor,
-} from './transcribe';
+import { TRANSCRIBE_MODEL, transcribe, transcribePromptVersionFor } from './transcribe';
 import { checkZeemeeuw } from './zeemeeuw.svelte';
 import { devNoteText } from './devNotePrefix';
 
@@ -550,8 +544,6 @@ async function processUtterance(utterance: Utterance): Promise<void> {
   const attempts = (utterance.attempts ?? 0) + 1;
   const ids = { sessionId: utterance.sessionId, utteranceId: utterance.id };
   await db.utterances.update(utterance.id, { status: 'processing', attempts });
-  // Twijfel tussen soorten (ontwikkeloptie): een andere prompt, dus een eigen versie
-  const candidates = devOptionOn('kandidaten');
   // Ook andere dieren (keuze bij Instellingen, standaard aan): een andere prompt
   const groups = preferenceOn('soortgroepen');
 
@@ -592,7 +584,6 @@ async function processUtterance(utterance: Utterance): Promise<void> {
     interpretation = await interpret(transcript, recent, {
       here,
       sessionId: utterance.sessionId,
-      candidates,
       groups,
     });
     if (interpretation.warnings.length) {
@@ -632,7 +623,7 @@ async function processUtterance(utterance: Utterance): Promise<void> {
     appVersion: APP_VERSION,
     platform: PLATFORM,
     model: MODEL,
-    promptVersion: await promptVersionFor(candidates, groups),
+    promptVersion: await promptVersionFor(groups),
     context: interpretation.context,
     contextIds: interpretation.contextIds,
     instance: INSTANCE_ID,
@@ -822,7 +813,7 @@ const RARE = 3;
 
 /**
  * Twijfel erbij zetten, met de reden achter een eventuele eerdere reden.
- * Ontwikkelopties (devOptions.ts): zeldzame soort, voorbeeldzin.
+ * Instelling (preferences.ts): zeldzame soort.
  */
 function withReason(
   fields: Pick<Observation, 'uncertain' | 'uncertainReason'>,
@@ -844,12 +835,6 @@ export function rareReason(speciesId: number): string | undefined {
   // Een dwaalgast is al onzeker, met zijn eigen reden (interpret.ts)
   if (isVagrant(speciesId)) return undefined;
   return `Zeldzame soort (${speciesName(speciesId)}): klopt het?`;
-}
-
-/** Transcript is letterlijk een voorbeeldzin uit de prompt (ontwikkeloptie) */
-export function exampleReason(transcript: string | undefined): string | undefined {
-  if (!devOptionOn('voorbeeldzinOnzeker') || !isPromptExample(transcript)) return undefined;
-  return `Verstaan: "${transcript!.trim()}", een voorbeeldzin uit de spraakherkenning. Misschien niets verstaan`;
 }
 
 /** Voert de acties uit en geeft terug wat er veranderde. */
@@ -889,13 +874,7 @@ async function applyActions(utterance: Utterance, actions: Action[]): Promise<Ch
           area: utterance.area,
           status: 'draft',
         };
-        Object.assign(
-          observation,
-          withReason(
-            withReason(observation, rareReason(observation.speciesId)),
-            exampleReason(utterance.transcript),
-          ),
-        );
+        Object.assign(observation, withReason(observation, rareReason(observation.speciesId)));
         await db.observations.add(observation);
         changes.push({ type: 'add', observationId: observation.id });
         break;
@@ -969,12 +948,6 @@ async function applyActions(utterance: Utterance, actions: Action[]): Promise<Ch
         ) {
           const merged = { ...current, ...patch };
           Object.assign(patch, withReason(merged, rareReason(action.fields.speciesId)));
-        }
-        if (exampleReason(utterance.transcript)) {
-          Object.assign(
-            patch,
-            withReason({ ...current, ...patch }, exampleReason(utterance.transcript)),
-          );
         }
 
         const before = Object.fromEntries(

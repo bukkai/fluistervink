@@ -1,12 +1,12 @@
 // Gesproken bevestiging na het verwerken van een uitspraak, in de oortjes
-// (SprekenPlugin.java, docs/roadmap-android.md stap 2). Nog een
-// ontwikkeloptie: alleen de eigenaar (devOptions.ts). De tril blijft gewoon;
+// (SprekenPlugin.java, docs/roadmap-android.md stap 2). Een proef bij
+// Instellingen, standaard uit (preferences.ts). De tril blijft gewoon;
 // dit zegt erbij *wat* er is vastgelegd, zodat je in het veld kunt verbeteren
 // zonder te kijken.
 
 import { db, type Observation, type Utterance } from './db';
-import { devOptionOn } from './devOptions';
 import { logEvent } from './log';
+import { preferenceOn } from './preferences';
 import { speakNative, speechSupported } from './native';
 import { isComputable, type Direction } from './spokenPlace';
 import { activityName, codesFor, speciesName } from './vocab';
@@ -99,9 +99,9 @@ export function confirmationText(
   return flagged && uncertainCount === 0 ? `${sentence}. Onzeker` : sentence;
 }
 
-/** Na het trillen: zeggen wat er is vastgelegd, als de ontwikkeloptie aan staat */
+/** Na het trillen: zeggen wat er is vastgelegd, als de instelling aan staat */
 export async function confirmAloud(utterance: Utterance): Promise<void> {
-  if (!speechSupported || !devOptionOn('gesproken')) return;
+  if (!speechSupported || !preferenceOn('gesproken')) return;
   const ids = (utterance.changes ?? []).flatMap((c) =>
     c.type === 'delete' ? [] : [c.observationId],
   );

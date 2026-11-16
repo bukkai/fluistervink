@@ -345,14 +345,9 @@ describe('describeContext', () => {
 // Anthropic weigert anders elke uitspraak met een 400 (feedback 12 nov: met
 // de kandidaten aan waren het er 26). Een nagebootst model merkt dat niet.
 describe('tools', () => {
-  it.each([
-    [false, false],
-    [true, false],
-    [false, true],
-    [true, true],
-  ])('blijven onder de grens van optionele velden (kandidaten: %s, soortgroepen: %s)', (k, g) => {
+  it.each([false, true])('blijven onder de grens van optionele velden (soortgroepen: %s)', (g) => {
     let optional = 0;
-    for (const tool of toolsFor(k, g)) {
+    for (const tool of toolsFor(g)) {
       const schema = tool.input_schema as { properties?: object; required?: string[] };
       optional += Object.keys(schema.properties ?? {}).length - (schema.required?.length ?? 0);
     }
@@ -410,9 +405,9 @@ describe('andere soortgroepen', () => {
   });
 
   it('laat de prompt zonder de optie ongemoeid: alleen vogelcodes in de tools', async () => {
-    expect(await promptVersionFor(false, true)).not.toBe(await promptVersionFor(false));
+    expect(await promptVersionFor(true)).not.toBe(await promptVersionFor(false));
     const activityEnum = (withGroups: boolean) => {
-      const add = toolsFor(false, withGroups).find((t) => t.name === 'add_observation')!;
+      const add = toolsFor(withGroups).find((t) => t.name === 'add_observation')!;
       const props = add.input_schema.properties as Record<string, { enum?: number[] }>;
       return props.activity_id.enum!;
     };

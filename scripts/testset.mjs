@@ -15,8 +15,6 @@
 //   --max <n>         alleen de eerste n uitspraken
 //   --parallel <n>    zoveel tegelijk (standaard 4)
 //   --stil            alleen de samenvatting, niet elke fout
-//   --kandidaten      met twijfel tussen soorten (ontwikkeloptie 'kandidaten');
-//                     een verzamelsoort ("Tjiftjaf of Fitis") telt dan als fout
 //   --no-soortgroepen alleen vogels, zonder zoogdieren, reptielen en
 //                     amfibieën, dagvlinders en libellen (in de app standaard
 //                     aan, uit te zetten bij Instellingen): andere prompt
@@ -68,7 +66,6 @@ const { values: opts, positionals } = parseArgs({
     parallel: { type: 'string', default: '4' },
     stil: { type: 'boolean', default: false },
     laadtest: { type: 'boolean', default: false },
-    kandidaten: { type: 'boolean', default: false },
     soortgroepen: { type: 'boolean', default: true },
   },
   allowNegative: true,
@@ -162,7 +159,7 @@ const DEFAULTS = {
 if (opts.laadtest) {
   await loader.close();
   console.log(
-    `Code van de app geladen (model ${MODEL}, prompt ${await promptVersionFor(opts.kandidaten, opts.soortgroepen)}).`,
+    `Code van de app geladen (model ${MODEL}, prompt ${await promptVersionFor(opts.soortgroepen)}).`,
   );
   process.exit(0);
 }
@@ -368,7 +365,6 @@ async function run(item) {
   const r = await interpret(result.transcript, context, {
     model,
     contextText,
-    candidates: opts.kandidaten,
     groups: opts.soortgroepen,
   });
   return {
@@ -579,7 +575,7 @@ const median = (xs) => {
   return s.length ? `${(s[Math.floor(s.length / 2)] / 1000).toFixed(1)} s` : '–';
 };
 
-const version = await promptVersionFor(opts.kandidaten, opts.soortgroepen);
+const version = await promptVersionFor(opts.soortgroepen);
 console.log(`\nTestset: ${positionals[0]}`);
 console.log(`Spraak: ${opts.stt} · model: ${model} · prompt ${version}`);
 console.log(

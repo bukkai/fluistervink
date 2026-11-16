@@ -20,7 +20,7 @@ De vier sporen van 13 okt, met de stand op 12 nov:
 | Plan | Stand (16 nov) |
 | --- | --- |
 | `docs/lancering.md` | gesloten test loopt; testers werven |
-| `docs/roadmap-android.md` | stap 1 (volumeknop) en 2 (gesproken bevestiging, ontwikkeloptie) gebouwd; stap 3 en 5 na de productierelease |
+| `docs/roadmap-android.md` | stap 1 (volumeknop, standaard aan) en 2 (gesproken bevestiging, proef voor iedereen, standaard uit) gebouwd; stap 3 en 5 na de productierelease |
 | `docs/plan-trektelmodus.md` | gebouwd, proef met tester Maarten; vervolg na de proef |
 | `docs/plan-ios.md` | voorstel, nog niet goedgekeurd; pas na de lancering in Play |
 

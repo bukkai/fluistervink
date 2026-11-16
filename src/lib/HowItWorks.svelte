@@ -36,6 +36,7 @@
       <li>"roepje vink"</li>
       <li>"schatting vijfhonderd spreeuwen"</li>
       <li>"mogelijk een woudaap" (wordt onzeker)</li>
+      <li>"fitis of tjiftjaf" (thuis kies je met één tik)</li>
       <li>"buizerd overvliegend, vijfhonderd meter zuid van hier"</li>
       <li>"twee reeën in het weiland" of "een atalanta"</li>
     </ul>
@@ -51,8 +52,10 @@
     </p>
     {#if isNativeApp}
       <p>
-        In de Android-app kan ook de volumeknop de opname starten en stoppen (bij Instellingen).
-        Snel beginnen: houd het pictogram van Fluistervink ingedrukt en kies "Begin met vogelen".
+        In de Android-app kan ook de volumeknop de opname starten en stoppen (uit te zetten bij
+        Instellingen). Met oortjes in kan de app na het trillen ook zeggen wat hij heeft vastgelegd
+        (een proef, aan te zetten bij Instellingen). Snel beginnen: houd het pictogram van
+        Fluistervink ingedrukt en kies "Begin met vogelen".
       </p>
     {/if}
   </div>
