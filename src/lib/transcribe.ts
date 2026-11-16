@@ -41,7 +41,7 @@ Bijnamen: ${aliasNames.join(', ')}.
 Leeftijd en kleed: 1kj, 2kj, 3kj, 1w, 2w, 1z, juv, ad, subad, imm, pullus, eclips, zomerkleed, winterkleed. Nocmig.`;
 
 /**
- * Met de andere soortgroepen (ontwikkeloptie 'soortgroepen'): ook hun namen,
+ * Met de andere soortgroepen (keuze 'soortgroepen' bij Instellingen): ook hun namen,
  * met dezelfde keuze (gewoon en vrij gewoon, geen verzamelsoorten). Of dat de
  * vogelnamen slechter maakt, meet de testset (`--soortgroepen`).
  */

@@ -37,11 +37,13 @@
       <li>"schatting vijfhonderd spreeuwen"</li>
       <li>"mogelijk een woudaap" (wordt onzeker)</li>
       <li>"buizerd overvliegend, vijfhonderd meter zuid van hier"</li>
+      <li>"twee reeën in het weiland" of "een atalanta"</li>
     </ul>
     <p>
       Jargon ("tova", "grobo") en wetenschappelijke namen werken ook. Meerdere soorten in één keer
       mag: "zes houtduiven en een vink" wordt twee waarnemingen. Na drie minuten stopt een opname
-      vanzelf.
+      vanzelf. Behalve vogels kun je ook zoogdieren, reptielen en amfibieën, dagvlinders en libellen
+      inspreken; wie alleen vogels wil, zet dat uit bij Instellingen.
     </p>
     <p>
       Met een afstand én windrichting zet de app de vogel zelf op de kaart. Zeg je alleen "aan de
@@ -146,8 +148,9 @@
     <p>
       Een programma van OpenAI (de makers van ChatGPT) maakt tekst van je opname. Daarna leest
       Claude, de AI van Anthropic, wat je bedoelt. Het kiest alleen uit een vaste lijst Nederlandse
-      vogels en kan dus geen soorten verzinnen. Bij twijfel, een heel zeldzame soort of een opname
-      met bijna geen tekst wordt de waarneming onzeker.
+      soorten (vogels, en als je dat aan hebt ook andere dieren) en kan dus geen soorten verzinnen.
+      Bij twijfel, een heel zeldzame soort of een opname met bijna geen tekst wordt de waarneming
+      onzeker.
     </p>
     <p>
       AI maakt fouten. Loop je waarnemingen daarom altijd na voordat je ze inzendt. En Fluistervink

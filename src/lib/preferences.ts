@@ -1,10 +1,11 @@
 // Gewone keuzes bij Instellingen (eerst ontwikkelopties, voor iedereen sinds
-// 11 nov). De meeste staan standaard aan; `OFF_BY_DEFAULT` niet, want wie geen
+// 11 nov; andere soortgroepen sinds 16 nov, docs/plan-soortgroepen.md fase 4). De meeste staan standaard aan; `OFF_BY_DEFAULT` niet, want wie geen
 // eBird gebruikt, mag er niets van merken (docs/plan-ebird.md, punt 8). Per
 // telefoon in localStorage; alleen wat afwijkt van de standaard wordt bewaard,
 // zodat een nieuwe installatie de standaard meteen heeft.
 
-export type Preference = 'zeldzaamOnzeker' | 'exportHerinnering' | 'samenvatting' | 'ebird';
+export type Preference =
+  'soortgroepen' | 'zeldzaamOnzeker' | 'exportHerinnering' | 'samenvatting' | 'ebird';
 
 const OFF_BY_DEFAULT: readonly Preference[] = ['ebird'];
 

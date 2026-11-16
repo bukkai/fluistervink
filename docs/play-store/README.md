@@ -89,7 +89,7 @@ Begin met vogelen, op een wandeling, op de fiets, in een vogelhut of in je tuin.
 • "Buizerd, vijfhonderd meter zuid van hier"
 • "Fringilla coelebs" (wetenschappelijke namen werken ook)
 
-Fluistervink herkent de soort, het aantal en wat de vogel doet (overvliegend, zingend, roepend, ter plaatse) en legt de tijd en je GPS-positie vast.
+Fluistervink herkent de soort, het aantal en wat de vogel doet (overvliegend, zingend, roepend, ter plaatse) en legt de tijd en je GPS-positie vast. Zie je onderweg een ree, een pad, een vlinder of een libel, dan spreek je die ook in.
 
 VERBETEREN MET JE STEM
 Verkeerd verstaan of nog een paar gezien? Zeg het gewoon: "nee, keep in plaats van vink", "nog drie erbij" of "die laatste weg".

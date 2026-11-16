@@ -23,7 +23,7 @@ import {
   setSkipExport,
   submitText,
 } from './observations';
-import { setDevOption } from './devOptions';
+import { setPreference } from './preferences';
 import { UNKNOWN_PLACE_ACCURACY } from './spokenPlace';
 import { distanceMeters } from './geo';
 
@@ -999,8 +999,15 @@ describe('twijfel tussen soorten', () => {
 });
 
 describe('andere soortgroepen', () => {
-  beforeEach(() => setDevOption('soortgroepen', true));
-  afterEach(() => setDevOption('soortgroepen', false));
+  afterEach(() => localStorage.removeItem('fluistervink.pref.soortgroepen'));
+
+  it('staan standaard aan, en uit bij Instellingen alleen vogels', async () => {
+    await say('een ree', ['add_observation', { species_id: REE, count: 1 }]);
+    expect(vi.mocked(interpret).mock.lastCall?.[2]).toMatchObject({ groups: true });
+    setPreference('soortgroepen', false);
+    await say('een vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    expect(vi.mocked(interpret).mock.lastCall?.[2]).toMatchObject({ groups: false });
+  });
 
   it('vult ter plaatse en gezien in met de codes van de groep', async () => {
     await say('een ree', ['add_observation', { species_id: REE, count: 1 }]);

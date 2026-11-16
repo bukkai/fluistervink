@@ -552,8 +552,8 @@ async function processUtterance(utterance: Utterance): Promise<void> {
   await db.utterances.update(utterance.id, { status: 'processing', attempts });
   // Twijfel tussen soorten (ontwikkeloptie): een andere prompt, dus een eigen versie
   const candidates = devOptionOn('kandidaten');
-  // Ook andere dieren (ontwikkeloptie): ook een andere prompt
-  const groups = devOptionOn('soortgroepen');
+  // Ook andere dieren (keuze bij Instellingen, standaard aan): een andere prompt
+  const groups = preferenceOn('soortgroepen');
 
   let step: 'transcribe' | 'interpret' = 'transcribe';
   let interpretation: Interpretation;
@@ -711,7 +711,7 @@ async function finishWithout(
 
 /** Zet de opname om in tekst en slaat het transcript op. */
 async function transcribeUtterance(utterance: Utterance): Promise<Utterance> {
-  const groups = devOptionOn('soortgroepen');
+  const groups = preferenceOn('soortgroepen');
   const { text, confidence, timing } = await transcribe(audioBlob(utterance.audio!), {
     sessionId: utterance.sessionId,
     groups,
