@@ -7,6 +7,12 @@
 
   const DAYS = 30;
   const WEEKS = 8;
+  const CHART_WEEKS = 12;
+  // Grafiek per week: vaste maat, schaalt mee met de breedte van de kaart
+  const W = 320;
+  const H = 120;
+  const PAD = 6;
+  const STEP = (W - 2 * PAD) / (CHART_WEEKS - 1);
 
   let rows = $state<ActivityRow[]>();
   let error = $state('');
@@ -20,6 +26,17 @@
   let days = $derived(perDay(counted, DAYS));
   let weeks = $derived(perWeek(counted, WEEKS));
   let maxUsers = $derived(Math.max(1, ...days.map((d) => d.users)));
+  // Oudste week eerst, voor de grafiek
+  let chartWeeks = $derived(perWeek(counted, CHART_WEEKS).reverse());
+  let maxWeek = $derived(Math.max(1, ...chartWeeks.map((w) => Math.max(w.sessions, w.utterances))));
+  const x = (i: number) => PAD + i * STEP;
+  const y = (value: number, max: number) => H - PAD - (value / max) * (H - 2 * PAD);
+  function line(key: 'sessions' | 'utterances'): string {
+    return chartWeeks.map((w, i) => `${x(i)},${y(w[key], maxWeek)}`).join(' ');
+  }
+  function weekLabel(w: (typeof chartWeeks)[number]): string {
+    return `Week van ${shortFormat.format(date(w.week))}: ${w.sessions} sessies, ${w.utterances} uitspraken`;
+  }
 
   const dayFormat = new Intl.DateTimeFormat('nl-NL', {
     weekday: 'short',
@@ -97,6 +114,50 @@
       <div class="axis muted">
         <span>{shortFormat.format(date(days[0].day))}</span>
         <span>vandaag</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>Sessies en uitspraken per week</h2>
+      <span class="muted">laatste {CHART_WEEKS} weken</span>
+    </div>
+    <div class="card-body">
+      <ul class="legend">
+        <li>
+          <span class="swatch sessions"></span>Sessies
+          <strong>{chartWeeks[chartWeeks.length - 1].sessions}</strong>
+        </li>
+        <li>
+          <span class="swatch utterances"></span>Uitspraken
+          <strong>{chartWeeks[chartWeeks.length - 1].utterances}</strong>
+        </li>
+      </ul>
+      <div class="chart">
+        <span class="max muted">{maxWeek}</span>
+        <svg
+          class="lines"
+          viewBox={`0 0 ${W} ${H}`}
+          role="img"
+          aria-label="Sessies en uitspraken per week; de cijfers staan in de tabel hieronder"
+        >
+          {#each chartWeeks as w, i (w.week)}
+            <rect class="week" x={x(i) - STEP / 2} y="0" width={STEP} height={H}>
+              <title>{weekLabel(w)}</title>
+            </rect>
+          {/each}
+          <polyline class="utterances" points={line('utterances')} />
+          <polyline class="sessions" points={line('sessions')} />
+          {#each chartWeeks as w, i (w.week)}
+            <circle class="utterances" cx={x(i)} cy={y(w.utterances, maxWeek)} r="3" />
+            <circle class="sessions" cx={x(i)} cy={y(w.sessions, maxWeek)} r="3" />
+          {/each}
+        </svg>
+      </div>
+      <div class="axis muted">
+        <span>{shortFormat.format(date(chartWeeks[0].week))}</span>
+        <span>deze week</span>
       </div>
     </div>
   </section>
@@ -212,6 +273,80 @@
     width: 100%;
     border-radius: 4px 4px 0 0;
     background: var(--brand);
+  }
+
+  .legend {
+    margin: 0 0 0.5rem;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+    font-size: 0.85rem;
+  }
+
+  .legend li {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .legend strong {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .swatch {
+    width: 1rem;
+    height: 3px;
+    border-radius: 2px;
+  }
+
+  .lines {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .lines polyline {
+    fill: none;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  .lines circle {
+    pointer-events: none;
+    stroke: var(--surface);
+    stroke-width: 2;
+  }
+
+  .lines .week {
+    fill: transparent;
+  }
+
+  .lines .week:hover {
+    fill: var(--bg);
+  }
+
+  .swatch.sessions,
+  .lines circle.sessions {
+    background: var(--brand-strong);
+    fill: var(--brand-strong);
+  }
+
+  .lines polyline.sessions {
+    stroke: var(--brand-strong);
+  }
+
+  .swatch.utterances,
+  .lines circle.utterances {
+    background: var(--breast);
+    fill: var(--breast);
+  }
+
+  .lines polyline.utterances {
+    stroke: var(--breast);
   }
 
   .axis {

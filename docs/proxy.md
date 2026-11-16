@@ -12,7 +12,7 @@ de proxy telt bij elk verzoek aan OpenAI en Anthropic het verbruik (tokens uit h
 
 ## Statistieken
 
-pagina `#statistieken` (`src/lib/Statistics.svelte`, alleen de eigenaar, in het menu naast Developer): gebruikers per dag, en per week actief, nieuw, terug en weggevallen, plus sessies en uitspraken. Geen nieuw gegeven: de proxy vat de usage-tabel samen per dag en tester (`/api/stats`, `activitySince` in `worker/usage.ts`, zonder de testset), de app rekent (`src/lib/stats.ts`). "Gebruiken" = minstens één uitspraak in een sessie. Alleen totalen op het scherm, geen namen; eigen gebruik standaard niet meegeteld. Meer (duur, regio, functies, openen zonder inspreken) pas met een anonieme samenvatting per sessie, met `#privacy` erbij.
+pagina `#statistieken` (`src/lib/Statistics.svelte`, alleen de eigenaar, in het menu naast Developer): gebruikers per dag, en per week actief, nieuw, terug en weggevallen, plus sessies en uitspraken (ook als grafiek met twee lijnen, laatste 12 weken). Geen nieuw gegeven: de proxy vat de usage-tabel samen per dag en tester (`/api/stats`, `activitySince` in `worker/usage.ts`, zonder de testset), de app rekent (`src/lib/stats.ts`). "Gebruiken" = minstens één uitspraak in een sessie. Alleen totalen op het scherm, geen namen; eigen gebruik standaard niet meegeteld. Meer (duur, regio, functies, openen zonder inspreken) pas met een anonieme samenvatting per sessie, met `#privacy` erbij.
 
 ## Delen met de ontwikkelaar
 
