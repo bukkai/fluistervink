@@ -8,7 +8,7 @@
   import { listenVolumeKey, volumeKeySupported } from './native';
   import { recordFix } from './effort';
   import { currentPosition, gps, startTracking, stopTracking } from './location.svelte';
-  import { onAudioLimit, submitRecording, submitText } from './observations';
+  import { onAudioLimit, submitRecording, submitText } from './queue';
   import { recorder, startRecording, stopRecording } from './recorder.svelte';
   import SessionLog from './SessionLog.svelte';
   import { syncSessionService } from './sessionService';

@@ -1,6 +1,6 @@
 import { getDisplayName, getTester } from './api';
 import { db, type Utterance } from './db';
-import { devNoteText } from './observations';
+import { devNoteText } from './devNotePrefix';
 
 // Feedback (vroeger "dev notes"): bevindingen over de app, ingesproken tijdens
 // het testen. Ze worden als uitspraak opgeslagen (kind `dev_note`, de oude
