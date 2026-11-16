@@ -37,6 +37,10 @@ export const CHANGELOG: ChangelogEntry[] = [
       'Android-app': [
         'De volumeknop als inspreekknop is geen proef meer en staat voortaan aan. Liever het volume regelen tijdens een sessie? Zet het uit bij Instellingen.',
         'Nieuw, als proef: met oortjes in zegt de app na het trillen wat hij heeft vastgelegd ("houtduif, 6, overvliegend"). Aan te zetten bij Instellingen.',
+        'Tijdens een sessie verdwijnt de knop Inspreken ook als je in een geopende waarneming typt, zodat hij niet op het toetsenbord staat.',
+      ],
+      Nalopen: [
+        'Bij het aanpassen van een soort staan de suggesties nu gewoon onder het veld, met de algemene soorten bovenaan. In de Android-app kwam het lijstje soms half over de rest van het scherm te staan.',
       ],
       Export: [
         'Voor wie eBird gebruikt: in een sessie staat het eBird-kaartje nu onderaan, direct onder de export voor waarneming.nl, en "Alles klopt" zet de sessie klaar voor beide.',
