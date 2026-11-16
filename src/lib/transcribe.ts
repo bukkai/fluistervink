@@ -69,8 +69,6 @@ export function transcribePromptVersionFor(withGroups = false): Promise<string> 
     );
 }
 
-export const transcribePromptVersion: Promise<string> = transcribePromptVersionFor(false);
-
 /**
  * `model`: alleen anders voor de testset (scripts/testset.mjs). `sessionId`:
  * voor het verbruik per sessie. `groups`: ook namen van andere dieren.

@@ -11,7 +11,7 @@
 // eigenaar ze op Developer ziet en er één kan afsluiten.
 
 /** App-ID in Google Play; de verklaring van Play Integrity moet hierover gaan. */
-export const APP_ID = 'nl.hegmus.fluistervink';
+const APP_ID = 'nl.hegmus.fluistervink';
 
 /** Id van een installatie: `crypto.randomUUID()` in de app. */
 export const INSTALL_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;

@@ -475,7 +475,8 @@ async function processUtterance(utterance: Utterance): Promise<void> {
       llmOutput: interpretation.response,
       metrics: { ...metrics, saveMs: Date.now() - saveStart },
       changes,
-      // Het model herkende een dev note zonder "dev note" ervoor
+      // Alleen feedback (een trektelstuk dat met "feedback" begint, of het woord
+      // verhaspeld door de spraakherkenning): de uitspraak wordt feedback
       ...(devNote
         ? { kind: 'dev_note' as const, result: 'note' as const }
         : {
@@ -487,7 +488,7 @@ async function processUtterance(utterance: Utterance): Promise<void> {
   });
 }
 
-/** Afronden zonder model (dev note, niets verstaan), als de poging nog geldt. */
+/** Afronden zonder model (feedback, niets verstaan), als de poging nog geldt. */
 async function finishWithout(
   utteranceId: string,
   attempts: number,

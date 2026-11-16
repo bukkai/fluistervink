@@ -120,7 +120,7 @@ function withReason(
  * de app een zeldzame soort, dan onzeker, zodat hij bij het nalopen bovenaan
  * staat (instelling, standaard aan).
  */
-export function rareReason(speciesId: number): string | undefined {
+function rareReason(speciesId: number): string | undefined {
   if (!preferenceOn('zeldzaamOnzeker') || rarityOf(speciesId) < RARE) return undefined;
   // Een dwaalgast is al onzeker, met zijn eigen reden (interpret.ts)
   if (isVagrant(speciesId)) return undefined;

@@ -192,7 +192,7 @@ interface SnelkoppelingPlugin {
 const Snelkoppeling = registerPlugin<SnelkoppelingPlugin>('Snelkoppeling');
 
 /** Kan deze app een snelkoppeling op het pictogram zetten (SnelkoppelingPlugin.java)? */
-export const shortcutSupported = isNativeApp && Capacitor.isPluginAvailable('Snelkoppeling');
+const shortcutSupported = isNativeApp && Capacitor.isPluginAvailable('Snelkoppeling');
 
 /** Snelkoppeling "Begin met vogelen" op het app-pictogram aan of uit */
 export async function setShortcut(on: boolean): Promise<void> {

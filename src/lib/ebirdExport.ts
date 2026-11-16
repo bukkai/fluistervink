@@ -42,7 +42,7 @@ type Row = Record<(typeof COLUMNS)[number], string>;
 
 const METERS_PER_MILE = 1609.344;
 /** eBird raadt aan een lopende checklist korter te houden (anders minder bruikbaar) */
-export const LONG_TRAVELING_M = 8000;
+const LONG_TRAVELING_M = 8000;
 /** eBird neemt een duur tot 24 uur, exclusief */
 const MAX_DURATION_MIN = 1439;
 const MAX_COUNT = 999_999;

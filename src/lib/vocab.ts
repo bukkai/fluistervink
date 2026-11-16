@@ -252,8 +252,8 @@ export const countingMethods: Code[] = [
   { id: 3, name: 'gezien niet geteld' },
 ];
 
-export const DEFAULT_ACTIVITY = 1; // ter plaatse
-export const DEFAULT_METHOD = 48; // gezien
+const DEFAULT_ACTIVITY = 1; // ter plaatse
+const DEFAULT_METHOD = 48; // gezien
 export const DEFAULT_COUNTING_METHOD = 2; // exact aantal
 
 export function codeName(codes: Code[], id: number | undefined): string | undefined {

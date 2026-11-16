@@ -41,7 +41,7 @@ interface Price {
  * Haiku 5.5 is duurder bij een prompt boven de 100.000 tokens; de proxy laat
  * hooguit 256 kB door en een uitspraak is ~30 kB, dus dat komt niet voor.
  */
-export const PRICES: Record<string, Price> = {
+const PRICES: Record<string, Price> = {
   'claude-haiku-5-5': { input: 0.1, output: 0.5, cacheWrite: 0.125, cacheRead: 0.01 },
   'claude-sonnet-5-5': { input: 2, output: 10, cacheWrite: 2.5, cacheRead: 0.1 },
   'claude-opus-5-5': { input: 4, output: 20, cacheWrite: 5, cacheRead: 0.2 },
@@ -64,7 +64,7 @@ export function rowCost(row: UsageRow): number | undefined {
 }
 
 /** Spraakherkenning: één verzoek per opgenomen uitspraak. */
-export const isTranscription = (row: UsageRow) => !row.model.startsWith('claude-');
+const isTranscription = (row: UsageRow) => !row.model.startsWith('claude-');
 
 export interface SessionCost {
   session: string;
