@@ -118,6 +118,15 @@ describe('buildEbirdExport', () => {
     [line] = await lines([(await db.sessions.get(session.id))!]);
     expect(column(line, 'Protocol')).toBe('Incidental');
     expect(column(line, 'Duration')).toBe('');
+    // Incidental is bij eBird nooit volledig, ook niet na "alles genoteerd"
+    expect(column(line, 'All observations reported?')).toBe('N');
+  });
+
+  it('Incidental hoeft "alles genoteerd" niet', async () => {
+    await db.observations.add(observation({ position }));
+    await db.sessions.update(session.id, { effort: undefined, checklist: {} });
+    const result = await buildEbirdExport([(await db.sessions.get(session.id))!]);
+    expect(result.problems).toEqual([]);
   });
 
   it('haalt komma’s, aanhalingstekens en regeleindes uit de tekst', async () => {
@@ -238,6 +247,21 @@ describe('exportForEbird', () => {
     expect(message).toBe('1 soort geëxporteerd voor eBird.');
     expect(saveFile).toHaveBeenCalledWith(expect.any(Blob), 'ebird-2026-11-12-0805.csv');
     expect((await db.sessions.get(session.id))?.ebirdExportedAt).toBeTypeOf('number');
+  });
+
+  it('telt dezelfde soort in twee sessies één keer', async () => {
+    const day = 86_400_000;
+    const second = {
+      ...session,
+      id: 'tweede',
+      startedAt: session.startedAt + day,
+      endedAt: session.endedAt! + day,
+    };
+    await db.sessions.put(second);
+    await db.observations.add(observation({ position }));
+    await db.observations.add(observation({ sessionId: 'tweede', position }));
+    saveFile.mockResolvedValue({});
+    expect(await exportForEbird([session, second])).toBe('1 soort geëxporteerd voor eBird.');
   });
 
   it('exporteert niet zolang er iets ontbreekt', async () => {

@@ -72,6 +72,11 @@
       uitspraak, geen route. Wel telt de app tijdens een sessie de afgelegde afstand op, zoals een
       kilometerteller: alleen het getal blijft bewaard. Na "Stop" houdt het volgen op.
     </p>
+    <p>
+      Zet je in de Android-app de gesproken bevestiging aan, dan leest de voorleesfunctie van je
+      telefoon de waarneming voor in je oortjes. Fluistervink stuurt die tekst zelf nergens heen;
+      welke voorleesfunctie dat doet, stel je in bij de instellingen van Android.
+    </p>
   </div>
 </section>
 
@@ -212,7 +217,7 @@
 </section>
 
 <p class="sources">
-  Bijgewerkt op 11 november 2026. Bronnen, nagekeken op 11 november 2026:
+  Bijgewerkt op 16 november 2026. Bronnen, nagekeken op 11 november 2026:
   <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noopener"
     >OpenAI</a
   >,

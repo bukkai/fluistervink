@@ -173,7 +173,8 @@ export async function buildEbirdExport(sessions: Session[]): Promise<EbirdExport
     if (included.length === 0) continue;
 
     const checklist = resolveChecklist(session);
-    if (checklist.complete === undefined) {
+    // Een losse waarneming (Incidental) is nooit een volledige lijst
+    if (checklist.complete === undefined && checklist.protocol !== 'Incidental') {
       problems.push(`${name}vul eerst in of je alles hebt genoteerd.`);
     }
     if (checklist.protocol === 'Traveling' && checklist.distanceM === undefined) {
@@ -247,7 +248,8 @@ export async function exportForEbird(sessions: Session[]): Promise<string | unde
   await db.sessions.bulkUpdate(
     result.sessions.map((s) => ({ key: s.id, changes: { ebirdExportedAt } })),
   );
-  const n = result.rows;
+  // Regels zijn per soort per sessie; dezelfde soort in twee sessies is één soort
+  const n = new Set(result.exported.map((obs) => getSpecies(obs.speciesId)!.scientific)).size;
   return [
     `${n === 1 ? '1 soort' : `${n} soorten`} geëxporteerd voor eBird.`,
     saved.folder && `Het bestand staat in ${saved.folder}.`,
@@ -320,7 +322,8 @@ function toRow(
     Protocol: checklist.protocol,
     'Number of Observers': String(checklist.observers),
     Duration: incidental ? '' : String(checklist.durationMin),
-    'All observations reported?': checklist.complete ? 'Y' : 'N',
+    // Incidental kan bij eBird niet volledig zijn, ook als de vraag "ja" was
+    'All observations reported?': checklist.complete && !incidental ? 'Y' : 'N',
     'Effort Distance Miles': traveling
       ? Math.max(0.01, (checklist.distanceM ?? 0) / METERS_PER_MILE).toFixed(2)
       : '',
