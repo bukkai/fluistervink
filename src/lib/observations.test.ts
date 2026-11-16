@@ -4,25 +4,26 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FakeLockManager, HOUTDUIF, KEEP, REE, VINK, VOS, toolResponse } from '../test-helpers';
 import { db, storeAudio, type Observation, type PositionLookup, type Utterance } from './db';
 import { interpret } from './interpret';
+import { isAccidental, isBareNo } from './applyActions';
 import {
   HAND_ACCURACY,
-  STEAL_AFTER_MS,
   chooseCandidate,
   confirmObservation,
   copyObservation,
   editObservation,
-  isAccidental,
-  isBareNo,
   listObservations,
+  placeByHand,
+  recordedPlace,
+  setSkipExport,
+} from './observations';
+import {
+  STEAL_AFTER_MS,
   migrateAudio,
   onAudioLimit,
-  placeByHand,
   processQueue,
-  recordedPlace,
   retry,
-  setSkipExport,
   submitText,
-} from './observations';
+} from './queue';
 import { setPreference } from './preferences';
 import { UNKNOWN_PLACE_ACCURACY } from './spokenPlace';
 import { distanceMeters } from './geo';

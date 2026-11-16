@@ -20,7 +20,7 @@
   import { CHANNEL } from './lib/log';
   import { vibrate } from './lib/feedback';
   import { instance } from './lib/instance.svelte';
-  import { processQueue } from './lib/observations';
+  import { processQueue } from './lib/queue';
   import { syncSessionService } from './lib/sessionService';
   import { preferenceOn } from './lib/preferences';
   import { exportReminder, reminderText, snooze, snoozedAt } from './lib/exportReminder';

@@ -16,10 +16,10 @@
     listObservations,
     listUtterances,
     restoreObservation,
-    retry,
     setSkipExport,
     spokenAt,
   } from './observations';
+  import { retry } from './queue';
   import {
     DEFAULT_COUNTING_METHOD,
     activityName,
