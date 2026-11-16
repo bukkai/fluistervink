@@ -7,6 +7,7 @@ Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/ro
 ## Nu (16 nov)
 
 - **Lancering in Play** (`docs/lancering.md`): gesloten test loopt sinds 9 nov. Nog: 15–20 testers werven en de deelnamelink sturen; plafond en daglimiet bij OpenAI en Anthropic nalopen.
+- **Kwaliteitsronde 16 nov** (#236): geen kwetsbaarheden; eBird bij Incidental, tegeltje "Waarnemingen" en `#privacy` (gesproken bevestiging) gerepareerd. Na het mergen: release naar stable (`npm run release`), dan staat de gesloten test op een nagelopen versie.
 - **Code opruimen:** drie PR's gemerged (#222 gedeelde stijlen, datumopmaak en één audiospeler; #223 "walk" uit de code; #224 `geo.ts`, `worker/feedback.ts`, `StillBirding.svelte`). Nog één stap, pas na de lancering: `src/lib/observations.ts` (ruim 1.000 regels) splitsen in wachtrij, acties toepassen en bewerken, als pure verplaatsing.
 - **Typveld tijdens een sessie** (#231): verloor in de app meteen de focus; gefixt en op de telefoon bevestigd (16 nov). In het log staat nu `keyboard_closed` als het veld loslaat.
 - **Soortveld in de bewerker** (#233, open): de `<datalist>` kwam in de app half over de lijst te staan (schermafbeelding 16 nov). Vervangen door een eigen suggestielijst onder het veld (`searchSpecies` in `vocab.ts`); de knop Inspreken gaat nu ook weg bij typen in een geopende waarneming.
