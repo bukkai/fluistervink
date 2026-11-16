@@ -7,17 +7,15 @@ Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/ro
 ## Nu (16 nov)
 
 - **Lancering in Play** (`docs/lancering.md`): gesloten test loopt sinds 9 nov. Nog: 15–20 testers werven en de deelnamelink sturen; plafond en daglimiet bij OpenAI en Anthropic nalopen.
-- **Kwaliteitsronde 16 nov** (#236): geen kwetsbaarheden; eBird bij Incidental, tegeltje "Waarnemingen" en `#privacy` (gesproken bevestiging) gerepareerd. Na het mergen: release naar stable (`npm run release`), dan staat de gesloten test op een nagelopen versie.
+- **Kwaliteitsronde 16 nov** (#236): geen kwetsbaarheden; eBird bij Incidental, tegeltje "Waarnemingen" en `#privacy` (gesproken bevestiging) gerepareerd. Nog: release naar stable (`npm run release`), dan staat de gesloten test op een nagelopen versie.
 - **Code opruimen:** drie PR's gemerged (#222 gedeelde stijlen, datumopmaak en één audiospeler; #223 "walk" uit de code; #224 `geo.ts`, `worker/feedback.ts`, `StillBirding.svelte`). Nog één stap, pas na de lancering: `src/lib/observations.ts` (ruim 1.000 regels) splitsen in wachtrij, acties toepassen en bewerken, als pure verplaatsing.
 - **Typveld tijdens een sessie** (#231): verloor in de app meteen de focus; gefixt en op de telefoon bevestigd (16 nov). In het log staat nu `keyboard_closed` als het veld loslaat.
-- **Soortveld in de bewerker** (#233, open): de `<datalist>` kwam in de app half over de lijst te staan (schermafbeelding 16 nov). Vervangen door een eigen suggestielijst onder het veld (`searchSpecies` in `vocab.ts`); de knop Inspreken gaat nu ook weg bij typen in een geopende waarneming.
 - **Testset weekend Terschelling** (13–15 nov, 205 uitspraken, gedeeld op 16 nov): de originele antwoorden 92% helemaal goed; opnieuw met het huidige model 89% met `--soortgroepen`, 85% zonder. Soortgroepen stonden aan, dus vergelijk alleen met `--soortgroepen`. De fouten zitten vooral in de spraakherkenning ("Eén kei" voor zwarte kraai, "koudjes" voor kauwen, "sjokduizers" voor brilduikers). Ree, egel en zeehond gingen met `--soortgroepen` goed, zonder werden ze gemist.
-- **Proefopties opgeruimd** (#235, open, bouwt op #234: die eerst mergen): "voorbeeldzin wordt onzeker" weg, twijfel tussen soorten voor iedereen zonder keuze (ook de testset, `--kandidaten` is weg), volumeknop bij de gewone instellingen standaard aan, gesproken bevestiging als proef voor iedereen standaard uit. Ontwikkelopties: nu geen.
-- **Laatst gemerged:** feedback alleen met het woord "feedback" (#242), privacy korter (#239), ingesproken feedback uit de teksten (#238), Opslaan in beeld (#237), kwaliteitsronde (#236), eBird afgerond (#232), typveld (#231), opruimen (#222–#224), eBird-export deel 1 (#220), samenvatting zonder "nieuw dit jaar" (#219), inspreekknop hoger en "Wat zei ik?" weg (#218), trektelling zonder lege tril bij Stop (#217), kandidaten-fix (#216).
+- **Laatst gemerged:** feedback alleen met het woord "feedback" (#242), statistieken per week (#241), instellingen gesplitst en samenvatting altijd aan (#240), privacy korter (#239), ingesproken feedback uit de teksten (#238), Opslaan in beeld (#237), kwaliteitsronde (#236), proefopties opgeruimd (#235), andere soortgroepen voor iedereen (#234), soortveld (#233), eBird afgerond (#232), typveld (#231).
 
 ## Na het mergen nog proberen
 
-Uit de PR's van 6–13 nov; elk punt na het proberen hier weghalen.
+Uit de PR's van 6–16 nov; elk punt na het proberen hier weghalen.
 
 - **Andere soortgroepen voor iedereen** (#234, standaard aan): na het mergen in de app nagaan dat "Ook andere dieren inspreken" bij Instellingen aan staat en een ree goed binnenkomt. Import met een zoogdier werkte; vlinders en libellen pas in het voorjaar, dan zien we het vanzelf. Play-tekst in de Play Console bijwerken (`docs/play-store/README.md`).
 - **Soortveld** (#233): in de app een waarneming openen, "noordse" typen: de suggesties moeten onder het veld staan (niet over de lijst), één tik kiest de soort, en de knop Inspreken is weg zolang je typt.
