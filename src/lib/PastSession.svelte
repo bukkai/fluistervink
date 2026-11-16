@@ -181,7 +181,8 @@
       <dd>{countSpecies($observations)}</dd>
     </div>
     <div>
-      <dt>Waarnemingen</dt>
+      <!-- Afbreekpunt voor een heel smalle telefoon -->
+      <dt>Waarne&shy;mingen</dt>
       <dd>
         {$observations.length}
         {#if uncertainCount > 0}<small>{uncertainCount} onzeker</small>{/if}
@@ -352,7 +353,8 @@
 
   .stats {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    /* Elk tegeltje minstens zo breed als zijn inhoud: niets afkappen */
+    grid-template-columns: repeat(3, auto);
     gap: 0.5rem;
     margin: 1rem 0;
   }
@@ -365,9 +367,7 @@
   }
 
   .stats dt {
-    overflow: hidden;
     font-size: 0.75rem;
-    text-overflow: ellipsis;
     font-weight: 600;
     color: var(--muted);
   }
