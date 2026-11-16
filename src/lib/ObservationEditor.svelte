@@ -13,7 +13,7 @@
     type Place,
   } from './observations';
   import { untrack } from 'svelte';
-  import { devOptionOn } from './devOptions';
+  import { preferenceOn } from './preferences';
   import type { Code } from './vocab';
   import {
     BIRDS,
@@ -65,9 +65,9 @@
   /** Niet meer op de GPS-positie: met de hand gezet of volgens de uitspraak */
   let moved = $derived(place.recordedPosition !== undefined);
 
-  // Andere dieren dan vogels met de ontwikkeloptie, of als deze waarneming er al een is
+  // Andere dieren dan vogels als dat aan staat, of als deze waarneming er al een is
   const choices = selectableSpecies(
-    devOptionOn('soortgroepen') || groupOf(original.speciesId) !== BIRDS,
+    preferenceOn('soortgroepen') || groupOf(original.speciesId) !== BIRDS,
   );
   const speciesByName = new Map(choices.map((s) => [s.name.toLowerCase(), s]));
   let selectedSpecies = $derived(speciesByName.get(speciesName.trim().toLowerCase()));

@@ -9,7 +9,7 @@ export const KEEP = 127;
 export const HOUTDUIF = 120;
 export const BOOMKLEVER = 70;
 export const BOOMKRUIPER = 71;
-// Andere soortgroepen (ontwikkeloptie 'soortgroepen')
+// Andere soortgroepen (keuze 'soortgroepen', standaard aan)
 export const REE = 418;
 export const VOS = 428;
 export const ATALANTA = 723;

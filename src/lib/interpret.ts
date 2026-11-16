@@ -184,7 +184,7 @@ export const MAX_OPTIONAL_PARAMETERS = 24;
 /** Hooguit zoveel kandidaten; meer is geen twijfel tussen soorten maar een groep */
 const MAX_CANDIDATES = 3;
 
-/** Groepen naast vogels (ontwikkeloptie 'soortgroepen') */
+/** Groepen naast vogels (keuze 'soortgroepen' bij Instellingen) */
 const otherGroups = groups.filter((g) => g.id !== BIRDS);
 
 /** Codes van alle groepen samen, voor het schema; de app controleert per groep */

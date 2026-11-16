@@ -4,6 +4,11 @@
 
   const items: { preference: Preference; label: string; hint: string }[] = [
     {
+      preference: 'soortgroepen',
+      label: 'Ook andere dieren inspreken',
+      hint: 'Naast vogels ook zoogdieren, reptielen en amfibieën, dagvlinders en libellen ("twee reeën", "een pad", "een atalanta"). Ze gaan mee naar waarneming.nl; eBird neemt alleen vogels. Uit: de app kiest alleen vogels, wat bij korte namen als "das" of "vos" een vergissing scheelt.',
+    },
+    {
       preference: 'zeldzaamOnzeker',
       label: 'Zeldzame soort wordt onzeker',
       hint: 'Kiest de app een soort die bij waarneming.nl zeldzaam of zeer zeldzaam is, dan wordt de waarneming onzeker, zodat je hem thuis bovenaan ziet. Meestal is het een verwisseling met een gewone soort.',
@@ -11,7 +16,7 @@
     {
       preference: 'samenvatting',
       label: 'Samenvatting van een sessie',
-      hint: 'Bij een afgelopen sessie een soortenlijst met aantallen, met wat je dit jaar voor het eerst zag (op deze telefoon). Te kopiëren, bijvoorbeeld voor een appgroep.',
+      hint: 'Bij een afgelopen sessie een soortenlijst met aantallen. Te kopiëren, bijvoorbeeld voor een appgroep.',
     },
     {
       preference: 'exportHerinnering',
@@ -31,7 +36,7 @@
 </script>
 
 <section class="card">
-  <div class="card-head"><h2>Nalopen en export</h2></div>
+  <div class="card-head"><h2>Inspreken, nalopen en export</h2></div>
   <div class="card-body stack">
     {#each items as item (item.preference)}
       <label class="check">

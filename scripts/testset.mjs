@@ -17,8 +17,9 @@
 //   --stil            alleen de samenvatting, niet elke fout
 //   --kandidaten      met twijfel tussen soorten (ontwikkeloptie 'kandidaten');
 //                     een verzamelsoort ("Tjiftjaf of Fitis") telt dan als fout
-//   --soortgroepen    ook zoogdieren, reptielen en amfibieën, dagvlinders en
-//                     libellen (ontwikkeloptie 'soortgroepen'): andere prompt
+//   --no-soortgroepen alleen vogels, zonder zoogdieren, reptielen en
+//                     amfibieën, dagvlinders en libellen (in de app standaard
+//                     aan, uit te zetten bij Instellingen): andere prompt
 //                     voor model en spraakherkenning
 //   --laadtest        alleen de code van de app laden en stoppen (zonder
 //                     export of sleutels; draait in CI, zie check.yml)
@@ -68,8 +69,9 @@ const { values: opts, positionals } = parseArgs({
     stil: { type: 'boolean', default: false },
     laadtest: { type: 'boolean', default: false },
     kandidaten: { type: 'boolean', default: false },
-    soortgroepen: { type: 'boolean', default: false },
+    soortgroepen: { type: 'boolean', default: true },
   },
+  allowNegative: true,
 });
 
 if (!opts.laadtest && positionals.length !== 1) {

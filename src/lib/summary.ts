@@ -19,7 +19,7 @@ export interface SummaryGroup {
   lines: SummaryLine[];
 }
 
-/** Vogels eerst, daarna de andere dieren per groep (ontwikkeloptie 'soortgroepen') */
+/** Vogels eerst, daarna de andere dieren per groep (keuze 'soortgroepen' bij Instellingen) */
 export function byGroup(lines: SummaryLine[]): SummaryGroup[] {
   const groups = new Map<GroupId, SummaryLine[]>();
   for (const line of lines) {

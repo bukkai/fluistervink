@@ -30,6 +30,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-11-16',
     topics: {
       Inspreken: [
+        'Behalve vogels kun je nu ook zoogdieren, reptielen en amfibieën, dagvlinders en libellen inspreken ("twee reeën", "een pad", "een atalanta"). Ze krijgen het gedrag en kleed van hun eigen groep en gaan mee naar waarneming.nl. Alleen vogels? Zet het uit bij Instellingen.',
         'In de Android-app kun je tijdens een sessie weer een waarneming typen: het veld bleef niet aangetikt staan.',
         'Tijdens een sessie verdwijnt de knop Inspreken ook als je in een geopende waarneming typt, zodat hij niet op het toetsenbord staat.',
       ],

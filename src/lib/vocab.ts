@@ -94,7 +94,7 @@ const promptSpeciesAllGroupsIds = new Set(promptSpeciesAllGroups.map((s) => s.id
 /**
  * Soort uit de lijst in de prompt, op Nederlandse of wetenschappelijke naam
  * (hoofdletters maken niet uit). `withGroups`: ook de andere soortgroepen
- * (ontwikkeloptie 'soortgroepen').
+ * (keuze 'soortgroepen' bij Instellingen).
  */
 export function findPromptSpecies(name: string, withGroups = false): Species | undefined {
   const key = name.trim().toLowerCase();
