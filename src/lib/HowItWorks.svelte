@@ -139,8 +139,8 @@
   <div class="card-body">
     <h3>Feedback geven</h3>
     <p>
-      Begin een uitspraak met <em>"feedback"</em>: dan wordt het een opmerking voor de ontwikkelaar
-      in plaats van een waarneming. Terug te lezen bij <a href="#feedback">Feedback</a>.
+      Iets opgevallen aan de app? Typ het bij <a href="#feedback">Feedback</a>: dan leest de
+      ontwikkelaar het.
     </p>
   </div>
 </section>

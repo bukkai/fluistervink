@@ -74,10 +74,8 @@
 </div>
 
 <p class="intro">
-  Spreek het in tijdens het vogelen: begin een uitspraak met <em>"feedback"</em>, bijvoorbeeld
-  <em>"feedback, hij herkende blako niet, terwijl dat toch echt bladkoning betekent"</em>. Of typ
-  het hieronder. {#if sharing}Feedback gaat vanzelf naar de ontwikkelaar: getypte meteen,
-    ingesproken na de sessie.{:else}Feedback gaat naar de ontwikkelaar als je delen aanzet (<a
+  Wat viel je op aan de app? Typ het hieronder. {#if sharing}Feedback gaat meteen naar de
+    ontwikkelaar.{:else}Feedback gaat naar de ontwikkelaar als je delen aanzet (<a
       href="#instellingen">Instellingen</a
     >).{/if} Verstuurde feedback blijft hier staan; weghalen kan altijd.
 </p>
