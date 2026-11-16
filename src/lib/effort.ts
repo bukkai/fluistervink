@@ -9,13 +9,13 @@ import { distanceMeters } from './geo';
 // de afstand niet kwijtraakt; bij het stoppen gaat die weg.
 
 /** Metingen die onnauwkeuriger zijn dan dit, tellen niet mee */
-export const MAX_ACCURACY_M = 50;
+const MAX_ACCURACY_M = 50;
 /** Kleinere stappen tellen niet mee: GPS-ruis bij stilstaan */
 const MIN_STEP_M = 20;
 /** Sneller dan dit (180 km/u) is een sprong van de GPS, geen verplaatsing */
 const MAX_SPEED_MS = 50;
 /** Tot deze afstand telt een sessie als op één plek (eBird: Stationary) */
-export const STATIONARY_MAX_M = 50;
+const STATIONARY_MAX_M = 50;
 
 export type DistanceStep =
   | { kind: 'anchor' | 'better' | 'counted'; anchor: Position; addM: number }

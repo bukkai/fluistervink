@@ -30,11 +30,11 @@ export interface BillingKeys {
 }
 
 /** Zo lang geldt een opgehaalde rekening. */
-export const BILL_MAX_AGE = 60 * 60 * 1000;
+const BILL_MAX_AGE = 60 * 60 * 1000;
 /** Zo lang blijft een rekening bewaard als terugval (ruim een maand). */
 const BILL_KEEP = 40 * 24 * 60 * 60;
 /** Na een fout zo lang niet opnieuw proberen (seconden; minimum van KV). */
-export const BILL_RETRY_AFTER = 60;
+const BILL_RETRY_AFTER = 60;
 /** Een maand heeft hooguit 31 dagen; meer pagina's is een fout. */
 const MAX_PAGES = 3;
 
