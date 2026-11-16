@@ -22,7 +22,7 @@ const speciesNames = species.filter((s) => s.type === 'S' && s.rarity <= 2).map(
 const aliasNames = aliases.flatMap((a) => a.bijnamen);
 
 /** Voorbeeldzinnen in de prompt, voor de stijl */
-export const PROMPT_EXAMPLES = [
+const PROMPT_EXAMPLES = [
   'Fluistervink, zes overvliegende houtduiven.',
   'Roepje vink.',
   'Twee zingende tjiftjaffen.',
@@ -89,24 +89,4 @@ export async function transcribe(
     sessionId,
   });
   return { text: data.text.trim(), confidence: data.confidence, timing };
-}
-
-function words(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N} ]+/gu, ' ')
-    .split(/\s+/)
-    .filter(Boolean)
-    .join(' ');
-}
-
-const EXAMPLE_WORDS = new Set(PROMPT_EXAMPLES.map(words));
-
-/**
- * Het transcript is letterlijk een voorbeeldzin uit de prompt. Bij een
- * onverstaanbare opname zet de spraakherkenning soms een voorbeeld neer
- * ("Roepje vink." bij Jurians koperwiek, 6 nov): geloofwaardig en verzonnen.
- */
-export function isPromptExample(transcript: string | undefined): boolean {
-  return !!transcript && EXAMPLE_WORDS.has(words(transcript));
 }

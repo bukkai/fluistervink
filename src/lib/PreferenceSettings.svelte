@@ -1,12 +1,34 @@
 <script lang="ts">
-  // Keuzes voor iedereen (preferences.ts); alleen eBird staat standaard uit
+  // Keuzes voor iedereen (preferences.ts); eBird en de gesproken bevestiging
+  // staan standaard uit
+  import { speechSupported, volumeKeySupported } from './native';
   import { preferenceOn, setPreference, type Preference } from './preferences';
 
-  const items: { preference: Preference; label: string; hint: string }[] = [
+  interface Item {
+    preference: Preference;
+    label: string;
+    hint: string;
+    /** Alleen tonen als de app het kan (Android-app) */
+    available?: boolean;
+  }
+
+  const items: Item[] = [
     {
       preference: 'soortgroepen',
       label: 'Ook andere dieren inspreken',
       hint: 'Naast vogels ook zoogdieren, reptielen en amfibieën, dagvlinders en libellen ("twee reeën", "een pad", "een atalanta"). Ze gaan mee naar waarneming.nl; eBird neemt alleen vogels. Uit: de app kiest alleen vogels, wat bij korte namen als "das" of "vos" een vergissing scheelt.',
+    },
+    {
+      preference: 'volumeknop',
+      label: 'Volumeknop als inspreekknop',
+      hint: 'Tijdens een sessie start een druk op de volumeknop (omhoog of omlaag) een opname, en de volgende druk stopt hem. Handig met handschoenen of met de verrekijker in je andere hand; een Bluetooth-knopje voor selfies werkt ook zo. Het volume regel je tijdens een sessie dan niet met die knop. Werkt alleen met de app op het scherm, niet met het scherm uit.',
+      available: volumeKeySupported,
+    },
+    {
+      preference: 'gesproken',
+      label: 'Gesproken bevestiging in de oortjes (proef)',
+      hint: 'Na het trillen zegt de app wat hij heeft vastgelegd ("houtduif, 6, overvliegend"). Alleen als er oortjes of een headset aan zitten, nooit via de luidspreker. Een podcast gaat even zachter.',
+      available: speechSupported,
     },
     {
       preference: 'zeldzaamOnzeker',
@@ -30,6 +52,7 @@
     },
   ];
 
+  const shown = items.filter((item) => item.available !== false);
   let checked = $state(
     Object.fromEntries(items.map((item) => [item.preference, preferenceOn(item.preference)])),
   );
@@ -38,7 +61,7 @@
 <section class="card">
   <div class="card-head"><h2>Inspreken, nalopen en export</h2></div>
   <div class="card-body stack">
-    {#each items as item (item.preference)}
+    {#each shown as item (item.preference)}
       <label class="check">
         <input
           type="checkbox"

@@ -92,7 +92,7 @@ export function createTalkButton({
   }
 
   /**
-   * Eén druk zonder vasthouden, zoals de volumeknop (volumeKey.ts): starten,
+   * Eén druk zonder vasthouden, zoals de volumeknop (instelling, ActiveSession.svelte): starten,
    * of stoppen als hij al loopt. Vlak na elkaar telt als één druk.
    */
   function tap() {

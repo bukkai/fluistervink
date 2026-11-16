@@ -32,6 +32,11 @@ export const CHANGELOG: ChangelogEntry[] = [
       Inspreken: [
         'Behalve vogels kun je nu ook zoogdieren, reptielen en amfibieën, dagvlinders en libellen inspreken ("twee reeën", "een pad", "een atalanta"). Ze krijgen het gedrag en kleed van hun eigen groep en gaan mee naar waarneming.nl. Alleen vogels? Zet het uit bij Instellingen.',
         'In de Android-app kun je tijdens een sessie weer een waarneming typen: het veld bleef niet aangetikt staan.',
+        'Twijfel je tussen twee of drie soorten, zeg dat dan gewoon ("fitis of tjiftjaf"). De waarneming wordt onzeker, en bij het nalopen kies je de soort met één tik.',
+      ],
+      'Android-app': [
+        'De volumeknop als inspreekknop is geen proef meer en staat voortaan aan. Liever het volume regelen tijdens een sessie? Zet het uit bij Instellingen.',
+        'Nieuw, als proef: met oortjes in zegt de app na het trillen wat hij heeft vastgelegd ("houtduif, 6, overvliegend"). Aan te zetten bij Instellingen.',
         'Tijdens een sessie verdwijnt de knop Inspreken ook als je in een geopende waarneming typt, zodat hij niet op het toetsenbord staat.',
       ],
       Nalopen: [

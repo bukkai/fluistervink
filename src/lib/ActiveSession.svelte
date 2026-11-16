@@ -4,6 +4,7 @@
   import type { PositionLookup, Session } from './db';
   import { vibrate } from './feedback';
   import { logEvent } from './log';
+  import { preferenceOn } from './preferences';
   import { listenVolumeKey, volumeKeySupported } from './native';
   import { recordFix } from './effort';
   import { currentPosition, gps, startTracking, stopTracking } from './location.svelte';
@@ -14,7 +15,6 @@
   import { createTalkButton } from './talkButton';
   import { trektelEnabled } from './trektel';
   import { startTrektel, stopTrektel, trektel, trektelSupported } from './trektelRecorder.svelte';
-  import { volumeKeyEnabled } from './volumeKey';
 
   let { session }: { session: Session } = $props();
 
@@ -173,7 +173,7 @@
 
   // Volumeknop als inspreekknop (Android-app, instelling): elke druk is een
   // tik op de knop. Niet tijdens een trektelling: die heeft een eigen knop.
-  const volumeKeyOn = volumeKeySupported && volumeKeyEnabled();
+  const volumeKeyOn = volumeKeySupported && preferenceOn('volumeknop');
   $effect(() => {
     if (!volumeKeyOn || trektel.status !== 'idle') return;
     return listenVolumeKey((key) => {

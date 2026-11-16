@@ -161,10 +161,7 @@ const fieldProperties = {
   },
 } as const;
 
-/**
- * Twijfel tussen bepaalde soorten (ontwikkeloptie 'kandidaten'). Alleen in
- * de tools als die aan staat, zodat de prompt van de testers niet verandert.
- */
+/** Twijfel tussen bepaalde soorten ("fitis of tjiftjaf"), voor iedereen sinds 16 nov */
 const candidateProperty = {
   candidate_species: {
     anyOf: [{ type: 'array', items: { type: 'string' } }, { type: 'null' }],
@@ -175,7 +172,7 @@ const candidateProperty = {
 
 /**
  * Anthropic weigert strikte tools met samen meer optionele velden dan dit
- * (400 "too many optional parameters"). Zonder kandidaten zitten we er precies
+ * (400 "too many optional parameters"). Zonder kandidaten zaten we er precies
  * op; daarom is candidate_species verplicht (null als er geen twijfel is) en
  * alleen in add_observation. Een test bewaakt de grens.
  */
@@ -216,10 +213,9 @@ const refProperty = {
   description: 'Nummer van de waarneming in de lijst met recente waarnemingen (#1 = meest recent).',
 } as const;
 
-const buildTools = (withCandidates: boolean, withGroups: boolean): Anthropic.Tool[] => {
+const buildTools = (withGroups: boolean): Anthropic.Tool[] => {
   const fields = withGroups ? fieldPropertiesWithGroups : fieldProperties;
-  const properties = withCandidates ? { ...fields, ...candidateProperty } : fields;
-  const candidateRequired = withCandidates ? ['candidate_species'] : [];
+  const properties = { ...fields, ...candidateProperty };
   return [
     {
       name: 'add_observation',
@@ -240,7 +236,7 @@ const buildTools = (withCandidates: boolean, withGroups: boolean): Anthropic.Too
           'life_stage_id',
           'sex',
           'uncertain',
-          ...candidateRequired,
+          'candidate_species',
         ],
         additionalProperties: false,
       },
@@ -353,7 +349,6 @@ const aliasLines = (list: typeof aliases) =>
   list.map((a) => `${a.bijnamen.join(', ')} → ${a.soort}|${a.naam}`).join('\n');
 
 const buildPrompt = (
-  withCandidates: boolean,
   withGroups: boolean,
 ) => `Je bent de interpretatielaag van Fluistervink, een app waarmee een vogelaar tijdens het vogelen waarnemingen inspreekt. Je krijgt de tekst van één uitspraak, meestal uit spraakherkenning (dus met mogelijke verhaspelingen), plus de recente waarnemingen van deze sessie. Je antwoordt uitsluitend met tool calls; de app voert ze uit. Je kunt niets terugvragen.
 
@@ -463,7 +458,7 @@ Vogelaars korten leeftijd en kleed af. Spraakherkenning schrijft ze soms als cij
 
 Twijfel je over soort, aantal of welke waarneming bedoeld wordt, voer dan de meest waarschijnlijke actie uit met uncertain: true en een korte uncertain_reason. Liever een onzekere waarneming dan geen.
 
-Twijfelt de gebruiker zelf ("klinkt als een winterkoning", "lijkt op een fitis", "volgens mij een sperwer", "ik check het even in Merlin"), dan is het tóch een waarneming: add_observation met uncertain: true en de twijfel in uncertain_reason. Niet negeren; komt er later een bevestiging ("ja, het was een winterkoning"), dan gaat de twijfel eraf. Een opdracht voor later ("thuis nog terugluisteren", "even in Merlin checken") gaat in private_note.${withCandidates ? CANDIDATE_RULES : ''}${withGroups ? GROUP_RULES : ''}
+Twijfelt de gebruiker zelf ("klinkt als een winterkoning", "lijkt op een fitis", "volgens mij een sperwer", "ik check het even in Merlin"), dan is het tóch een waarneming: add_observation met uncertain: true en de twijfel in uncertain_reason. Niet negeren; komt er later een bevestiging ("ja, het was een winterkoning"), dan gaat de twijfel eraf. Een opdracht voor later ("thuis nog terugluisteren", "even in Merlin checken") gaat in private_note.${CANDIDATE_RULES}${withGroups ? GROUP_RULES : ''}
 
 ## Bijnamen (bijnaam → ID|naam)
 
@@ -486,25 +481,24 @@ interface Variant {
   version: Promise<string>;
 }
 
-const variants = new Map<string, Variant>();
+const variants = new Map<boolean, Variant>();
 
 /**
- * Systeemprompt en tools, met of zonder kandidaten en de andere soortgroepen;
- * vast per variant, dus te cachen
+ * Systeemprompt en tools, met of zonder de andere soortgroepen; vast per
+ * variant, dus te cachen
  */
-function variant(withCandidates: boolean, withGroups: boolean): Variant {
-  const key = `${withCandidates}-${withGroups}`;
-  let found = variants.get(key);
+function variant(withGroups: boolean): Variant {
+  let found = variants.get(withGroups);
   if (!found) {
-    const system = buildPrompt(withCandidates, withGroups);
-    const tools = buildTools(withCandidates, withGroups);
+    const system = buildPrompt(withGroups);
+    const tools = buildTools(withGroups);
     const version = crypto.subtle
       .digest('SHA-256', new TextEncoder().encode(system + JSON.stringify(tools)))
       .then((hash) =>
         [...new Uint8Array(hash).slice(0, 4)].map((b) => b.toString(16).padStart(2, '0')).join(''),
       );
     found = { system, tools, version };
-    variants.set(key, found);
+    variants.set(withGroups, found);
   }
   return found;
 }
@@ -513,15 +507,10 @@ function variant(withCandidates: boolean, withGroups: boolean): Variant {
  * Korte hash van systeemprompt en tools. Bij elke uitspraak bewaard, zodat
  * resultaten van verschillende promptversies uit elkaar te houden zijn.
  */
-export const promptVersionFor = (withCandidates = false, withGroups = false) =>
-  variant(withCandidates, withGroups).version;
+export const promptVersionFor = (withGroups = false) => variant(withGroups).version;
 
 /** De tools van een variant (voor de tests) */
-export const toolsFor = (withCandidates = false, withGroups = false) =>
-  variant(withCandidates, withGroups).tools;
-
-/** De gewone promptversie (zonder ontwikkelopties), voor de testset */
-export const promptVersion: Promise<string> = promptVersionFor(false);
+export const toolsFor = (withGroups = false) => variant(withGroups).tools;
 
 // ---------------------------------------------------------------------------
 // Aanroep
@@ -596,8 +585,8 @@ export function parseResponse(
  * @param options `here`: positie van de uitspraak, voor de afstand tot eerdere
  *   waarnemingen. `model` en `contextText` alleen voor de testset
  *   (scripts/testset.mjs): een ander model, of de context precies zoals hij
- *   destijds was. `sessionId`: voor het verbruik per sessie. `candidates`:
- *   twijfel tussen soorten (ontwikkeloptie)
+ *   destijds was. `sessionId`: voor het verbruik per sessie. `groups`: ook
+ *   andere dieren dan vogels
  */
 export async function interpret(
   transcript: string,
@@ -607,12 +596,11 @@ export async function interpret(
     model?: string;
     contextText?: string;
     sessionId?: string;
-    candidates?: boolean;
     groups?: boolean;
   } = {},
 ): Promise<Interpretation> {
   const withGroups = options.groups ?? false;
-  const { system, tools } = variant(options.candidates ?? false, withGroups);
+  const { system, tools } = variant(withGroups);
   const context = recent.slice(0, CONTEXT_SIZE);
   const contextText = options.contextText ?? describeContext(context, options.here);
 

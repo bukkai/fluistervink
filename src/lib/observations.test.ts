@@ -893,7 +893,7 @@ describe('slot van de wachtrij', () => {
   });
 });
 
-describe('onzeker door instellingen en ontwikkelopties', () => {
+describe('onzeker door instellingen', () => {
   const ROODHALSFUUT = 367; // zeldzaam bij waarneming.nl
   afterEach(() => localStorage.clear());
 
@@ -926,16 +926,6 @@ describe('onzeker door instellingen en ontwikkelopties', () => {
     ]);
     const [obs] = await listObservations(SESSION);
     expect(obs).toMatchObject({ speciesId: ROODHALSFUUT, uncertain: true });
-  });
-
-  it('een letterlijke voorbeeldzin uit de prompt wordt onzeker', async () => {
-    localStorage.setItem('fluistervink.dev.voorbeeldzinOnzeker', '1');
-    await say('Roepje vink.', ['add_observation', { species_id: VINK, count: 1, activity_id: 3 }]);
-    await say('Roepende vink', ['add_observation', { species_id: VINK, count: 1, activity_id: 3 }]);
-    const [real, example] = await listObservations(SESSION);
-    expect(example.uncertain).toBe(true);
-    expect(example.uncertainReason).toMatch(/voorbeeldzin/);
-    expect(real.uncertain).toBe(false);
   });
 });
 
