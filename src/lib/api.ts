@@ -316,6 +316,15 @@ export async function listSharedNotes(): Promise<SharedNote[]> {
   return [...new Map(notes.map((n) => [n.id, n])).values()];
 }
 
+/** Feedback voorgoed van de lijst halen (alleen voor de eigenaar). */
+export async function deleteNotes(ids: string[]): Promise<void> {
+  await request('/api/feedback/delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids }),
+  });
+}
+
 /** Feedback als (niet) verwerkt markeren (alleen voor de eigenaar). */
 export async function markNotesProcessed(ids: string[], processed: boolean): Promise<void> {
   await request('/api/feedback/processed', {
