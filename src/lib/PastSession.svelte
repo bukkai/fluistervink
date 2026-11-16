@@ -191,9 +191,7 @@
   </dl>
 {/if}
 
-{#if preferenceOn('samenvatting')}
-  <SessionSummary {session} />
-{/if}
+<SessionSummary {session} />
 
 {#if !session.exportedAt}
   <UncertainReview {session} />

@@ -8,22 +8,22 @@ afterEach(() => {
 
 describe('preferences', () => {
   it('staat standaard aan, behalve eBird en de gesproken bevestiging', () => {
-    expect(preferenceOn('samenvatting')).toBe(true);
+    expect(preferenceOn('zeldzaamOnzeker')).toBe(true);
     expect(preferenceOn('volumeknop')).toBe(true);
     expect(preferenceOn('ebird')).toBe(false);
     expect(preferenceOn('gesproken')).toBe(false);
   });
 
   it('onthoudt een keuze die afwijkt van de standaard', () => {
-    setPreference('samenvatting', false);
+    setPreference('zeldzaamOnzeker', false);
     setPreference('ebird', true);
-    expect(preferenceOn('samenvatting')).toBe(false);
+    expect(preferenceOn('zeldzaamOnzeker')).toBe(false);
     expect(preferenceOn('ebird')).toBe(true);
   });
 
   it('bewaart niets als de keuze weer de standaard is', () => {
-    setPreference('samenvatting', false);
-    setPreference('samenvatting', true);
+    setPreference('zeldzaamOnzeker', false);
+    setPreference('zeldzaamOnzeker', true);
     setPreference('ebird', true);
     setPreference('ebird', false);
     expect(localStorage.length).toBe(0);
