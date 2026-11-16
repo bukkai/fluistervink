@@ -8,12 +8,7 @@
 // standaard meteen heeft.
 
 export type Preference =
-  | 'soortgroepen'
-  | 'zeldzaamOnzeker'
-  | 'exportHerinnering'
-  | 'ebird'
-  | 'volumeknop'
-  | 'gesproken';
+  'soortgroepen' | 'zeldzaamOnzeker' | 'exportHerinnering' | 'ebird' | 'volumeknop' | 'gesproken';
 
 const OFF_BY_DEFAULT: readonly Preference[] = ['ebird', 'gesproken'];
 
