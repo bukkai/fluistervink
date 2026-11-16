@@ -27,6 +27,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026-11-16',
+    topics: {
+      Inspreken: [
+        'In de Android-app kun je tijdens een sessie weer een waarneming typen: het veld bleef niet aangetikt staan.',
+      ],
+    },
+  },
+  {
     date: '2026-11-13',
     topics: {
       Export: [
