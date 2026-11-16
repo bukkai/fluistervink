@@ -12,6 +12,7 @@ import {
   isPromptSpecies,
   isVagrant,
   promptSpeciesOf,
+  searchSpecies,
   species,
 } from './vocab';
 
@@ -173,5 +174,34 @@ describe('groupOfCode', () => {
     expect(groupOfCode('activityId', 15)).toBe(2);
     expect(groupOfCode('lifeStageId', 23)).toBe(4);
     expect(groupOfCode('methodId', 999999)).toBeUndefined();
+  });
+});
+
+describe('searchSpecies', () => {
+  const names = (query: string) => searchSpecies(allSpecies, query).map((s) => s.name);
+
+  it('zet namen die met de tekst beginnen voorop, algemene soorten eerst', () => {
+    const found = names('noordse');
+    expect(found.every((n) => n.startsWith('Noordse'))).toBe(true);
+    expect(found.indexOf('Noordse Stern')).toBeLessThan(found.indexOf('Noordse Boszanger'));
+  });
+
+  it('vindt een woord in de naam vóór een stukje van een woord', () => {
+    const found = names('kievit');
+    expect(found[0]).toBe('Kievit');
+    expect(found.indexOf('Indische Kievit')).toBeLessThan(found.indexOf('Steppekievit'));
+  });
+
+  it('negeert hoofdletters en spaties eromheen', () => {
+    expect(names('  GRUTTO ')[0]).toBe('Grutto');
+  });
+
+  it('vindt de wetenschappelijke naam', () => {
+    expect(names('fringilla coelebs')).toEqual(['Vink']);
+  });
+
+  it('geeft niets bij een leeg veld en hooguit het maximum', () => {
+    expect(names('  ')).toEqual([]);
+    expect(searchSpecies(allSpecies, 'e', 5)).toHaveLength(5);
   });
 });

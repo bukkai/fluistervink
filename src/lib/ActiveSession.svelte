@@ -19,11 +19,23 @@
   let { session }: { session: Session } = $props();
 
   let text = $state('');
-  /** Typen: dan staat het toetsenbord waar de knop zit */
+  /**
+   * Typen, in het veld bovenaan of in een geopende waarneming: dan staat het
+   * toetsenbord waar de knop zit
+   */
   let typing = $state(false);
   /** Ruimte onder de lijst, zodat de knop de laatste waarneming niet bedekt */
   let barHeight = $state(0);
   let input = $state<HTMLInputElement>();
+
+  /** Een veld waarvoor het toetsenbord opengaat (geen keuzelijst of vinkje) */
+  function isTextField(element: Element | null): element is HTMLElement {
+    if (element instanceof HTMLTextAreaElement) return true;
+    if (!(element instanceof HTMLInputElement)) return false;
+    return !['checkbox', 'radio', 'range', 'file', 'button', 'submit', 'color'].includes(
+      element.type,
+    );
+  }
 
   // Toetsenbord dicht (terugknop of -veeg op Android) zonder dat het veld zijn
   // focus verliest: dan zou de knop weg blijven. Laat het veld dan los, maar
@@ -33,21 +45,26 @@
   // meteen na het aantikken zijn focus (feedback 13 nov).
   $effect(() => {
     const viewport = window.visualViewport;
-    if (!viewport || !input) return;
-    const field = input;
     /** Hoogte bij het aantikken, en de kleinste daarna */
     let before: number | undefined;
     let smallest = Infinity;
-    function onFocus() {
-      before = viewport!.height;
+    function onFocusIn(event: FocusEvent) {
+      typing = isTextField(event.target as Element);
+      if (!typing || !viewport) return;
+      before = viewport.height;
       smallest = before;
     }
-    function onBlur() {
+    function onFocusOut() {
       before = undefined;
+      // Even later, naar wat dan de focus heeft: naar een ander veld is nog
+      // steeds typen, en sluit een waarneming terwijl een veld de focus had,
+      // dan komt dit midden in het opruimen, waar Svelte geen state toestaat
+      queueMicrotask(() => (typing = isTextField(document.activeElement)));
     }
     function onResize() {
-      if (before === undefined || document.activeElement !== field) return;
-      const height = viewport!.height;
+      const field = document.activeElement;
+      if (before === undefined || !viewport || !isTextField(field)) return;
+      const height = viewport.height;
       smallest = Math.min(smallest, height);
       const keyboardWasOpen = before - smallest > 100;
       if (keyboardWasOpen && height >= before - 50) {
@@ -55,13 +72,13 @@
         field.blur();
       }
     }
-    field.addEventListener('focus', onFocus);
-    field.addEventListener('blur', onBlur);
-    viewport.addEventListener('resize', onResize);
+    document.addEventListener('focusin', onFocusIn);
+    document.addEventListener('focusout', onFocusOut);
+    viewport?.addEventListener('resize', onResize);
     return () => {
-      field.removeEventListener('focus', onFocus);
-      field.removeEventListener('blur', onBlur);
-      viewport.removeEventListener('resize', onResize);
+      document.removeEventListener('focusin', onFocusIn);
+      document.removeEventListener('focusout', onFocusOut);
+      viewport?.removeEventListener('resize', onResize);
     };
   });
 
@@ -312,7 +329,7 @@
   {/if}
 </div>
 
-<form onsubmit={submit} onfocusin={() => (typing = true)} onfocusout={() => (typing = false)}>
+<form onsubmit={submit}>
   <input
     bind:this={input}
     bind:value={text}

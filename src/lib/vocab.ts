@@ -444,6 +444,52 @@ export function selectableSpecies(withGroups: boolean): Species[] {
   return withGroups ? allSpeciesAllGroups : allSpecies;
 }
 
+/** Kleine letters en zonder accenten, voor het zoeken: "gele kwikstaart" */
+function searchable(text: string): string {
+  return text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
+}
+
+/** Zeldzaamheid om op te sorteren: onbekend (0) achter zeer zeldzaam (4) */
+function commonness(s: Species): number {
+  return s.rarity || 5;
+}
+
+/**
+ * Suggesties voor het soortveld: eerst namen die met de tekst beginnen, dan
+ * namen met een woord dat ermee begint ("kievit" → Indische Kievit), dan de
+ * wetenschappelijke naam, dan ergens in de naam ("zwaluw" → Boerenzwaluw). Binnen elke stap de
+ * algemene soorten eerst (zeldzaamheid 0, onbekend, achteraan). Vervangt de
+ * datalist, die de Android-WebView als los venstertje tekende dat bij het
+ * openen van het toetsenbord op de verkeerde plek bleef staan (16 nov).
+ */
+export function searchSpecies(choices: Species[], query: string, limit = 8): Species[] {
+  const q = searchable(query);
+  if (!q) return [];
+  const ranked: { s: Species; rank: number }[] = [];
+  for (const s of choices) {
+    const name = searchable(s.name);
+    const rank = name.startsWith(q)
+      ? 0
+      : name.split(/[\s-]+/).some((word) => word.startsWith(q))
+        ? 1
+        : searchable(s.scientific).startsWith(q)
+          ? 2
+          : name.includes(q)
+            ? 3
+            : -1;
+    if (rank >= 0) ranked.push({ s, rank });
+  }
+  return ranked
+    .sort(
+      (a, b) =>
+        a.rank - b.rank ||
+        commonness(a.s) - commonness(b.s) ||
+        a.s.name.localeCompare(b.s.name, 'nl'),
+    )
+    .slice(0, limit)
+    .map(({ s }) => s);
+}
+
 /**
  * Namen die per groep anders heten maar hetzelfde betekenen. Bij een wissel
  * van groep zoekt de app eerst dezelfde naam, dan een naam uit dezelfde rij.
