@@ -174,6 +174,12 @@ export interface Utterance {
    * veranderde, zodat `redo` het weer kan terugzetten
    */
   undid?: { utteranceId: string; changes: Change[] };
+  /**
+   * Sinds wanneer deze uitspraak op bereik wacht (geen netwerk, proxy even
+   * weg; ontwikkeloptie `offlineWachtrij`). Status blijft `pending`; weg
+   * zodra hij verwerkt is.
+   */
+  waitingSince?: number;
   /** Aantal verwerkingspogingen (meer dan 1 na "Opnieuw" of een herstart) */
   attempts?: number;
   /** Meetgegevens van de laatste verwerkingspoging, voor analyse */

@@ -11,6 +11,7 @@ import { ApiError } from './api';
 import { applyActions } from './applyActions';
 import { attachArea } from './area';
 import { devNoteText } from './devNotePrefix';
+import { devOptionOn } from './devOptions';
 import { isEmptyTrektelChunk, utteranceFeedback, vibrate } from './feedback';
 import { INSTANCE_ID } from './instance.svelte';
 import { MODEL, interpret, promptVersionFor, type Interpretation } from './interpret';
@@ -28,7 +29,8 @@ import { checkZeemeeuw } from './zeemeeuw.svelte';
 // Local-first verwerking: elke uitspraak wordt eerst opgeslagen (status
 // `pending`) en daarna één voor één, op volgorde, door het model gehaald.
 // Normaal is de wachtrij direct leeg; bij een fout blijft de uitspraak bewaard
-// en kan hij opnieuw.
+// en kan hij opnieuw. Met de ontwikkeloptie `offlineWachtrij` wacht een
+// uitspraak zonder bereik tot er weer verbinding is (docs/plan-offline.md).
 
 /** Slaat een getypte uitspraak op en zet hem in de wachtrij. */
 export async function submitText(sessionId: string, text: string): Promise<void> {
@@ -229,24 +231,92 @@ async function runQueue(): Promise<void> {
   // Uitspraken waarbij de database zelf faalde: niet steeds opnieuw, zodat
   // de uitspraken erna toch verwerkt worden
   const skipped = new Set<string>();
+  let waiting = false;
   while (true) {
     const pending = await db.utterances.where('status').equals('pending').sortBy('recordedAt');
     const next = pending.find((u) => !skipped.has(u.id));
     if (!next) break;
     try {
-      await processUtterance(next);
+      // Geen bereik: stoppen, zodat latere uitspraken niet eerder verwerkt
+      // worden ("nee, keep" moet de waarneming ervoor al kunnen vinden)
+      if ((await processUtterance(next)) === 'wait') {
+        waiting = true;
+        break;
+      }
     } catch (error) {
       queueError(error, next, 'process');
       skipped.add(next.id);
       continue;
     }
     const processed = await db.utterances.get(next.id);
+    if (next.waitingSince && processed?.status !== 'pending') {
+      logEvent(
+        'queue_resumed',
+        { waitedMs: Date.now() - next.waitingSince, count: pending.length },
+        { sessionId: next.sessionId, utteranceId: next.id },
+      );
+      retryStep = 0;
+    }
     if (processed && !isEmptyTrektelChunk(processed)) {
       vibrate(utteranceFeedback(processed));
       // Niet wachten: de volgende uitspraak hoeft niet op de stem te wachten
       confirmAloud(processed).catch(() => {});
     }
   }
+  if (waiting) waitForNetwork();
+  else stopWaiting();
+}
+
+/**
+ * Fouten waarbij wachten helpt: geen verbinding of een time-out (status 0),
+ * en de proxy of een aanbieder die even weg is. Een plafond (429), geweigerde
+ * toegang (401, 403) of een ongeldig verzoek (400) blijft mislukt.
+ */
+const TEMPORARY_STATUS = new Set([0, 502, 503, 504, 529]);
+
+function isTemporary(error: unknown): boolean {
+  return error instanceof ApiError && TEMPORARY_STATUS.has(error.status);
+}
+
+/**
+ * Wanneer de wachtrij het opnieuw probeert terwijl er een uitspraak op bereik
+ * wacht; daarna elke 2 minuten. Los van het `online`-event, want
+ * `navigator.onLine` liegt soms (wifi zonder internet, één streepje 4G).
+ */
+export const RETRY_DELAYS_MS = [15_000, 30_000, 60_000, 120_000];
+
+let retryStep = 0;
+let retryTimer: ReturnType<typeof setTimeout> | undefined;
+let listening = false;
+
+const resume = () => {
+  processQueue();
+};
+const resumeWhenVisible = () => {
+  if (!document.hidden) processQueue();
+};
+
+/** Opnieuw proberen op de timer, bij weer online en als de app weer op het scherm komt. */
+function waitForNetwork(): void {
+  clearTimeout(retryTimer);
+  const delay = RETRY_DELAYS_MS[Math.min(retryStep, RETRY_DELAYS_MS.length - 1)];
+  retryStep++;
+  retryTimer = setTimeout(resume, delay);
+  if (listening) return;
+  listening = true;
+  window.addEventListener('online', resume);
+  document.addEventListener('visibilitychange', resumeWhenVisible);
+}
+
+/** Er wacht niets meer: timer en luisteraars weg. Ook voor de tests. */
+export function stopWaiting(): void {
+  clearTimeout(retryTimer);
+  retryTimer = undefined;
+  retryStep = 0;
+  if (!listening) return;
+  listening = false;
+  window.removeEventListener('online', resume);
+  document.removeEventListener('visibilitychange', resumeWhenVisible);
 }
 
 function queueError(error: unknown, u: Utterance, step: 'requeue' | 'process' | 'migrate'): void {
@@ -339,7 +409,8 @@ function isCurrentAttempt(latest: Utterance | undefined, attempts: number): late
   return latest?.status === 'processing' && latest.attempts === attempts;
 }
 
-async function processUtterance(utterance: Utterance): Promise<void> {
+/** Verwerkt één uitspraak; `wait` als hij op bereik moet wachten. */
+async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
   const startedAt = Date.now();
   const attempts = (utterance.attempts ?? 0) + 1;
   const ids = { sessionId: utterance.sessionId, utteranceId: utterance.id };
@@ -391,6 +462,24 @@ async function processUtterance(utterance: Utterance): Promise<void> {
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    const status = error instanceof ApiError ? error.status : undefined;
+    if (isTemporary(error) && devOptionOn('offlineWachtrij')) {
+      // Eén keer in de log bij het begin van het wachten, niet per poging
+      if (!utterance.waitingSince) {
+        logEvent(
+          'queue_waiting',
+          { attempt: attempts, step, error: message, status, online: navigator.onLine },
+          ids,
+        );
+      }
+      const waitingSince = utterance.waitingSince ?? Date.now();
+      await db.transaction('rw', db.utterances, async () => {
+        const latest = await db.utterances.get(utterance.id);
+        if (isCurrentAttempt(latest, attempts))
+          await db.utterances.update(utterance.id, { status: 'pending', waitingSince });
+      });
+      return 'wait';
+    }
     // In de log, want een volgende poging overschrijft de fout bij de uitspraak
     logEvent(
       'attempt_failed',
@@ -398,7 +487,7 @@ async function processUtterance(utterance: Utterance): Promise<void> {
         attempt: attempts,
         step,
         error: message,
-        status: error instanceof ApiError ? error.status : undefined,
+        status,
         waitedMs: startedAt - spokenAt(utterance),
         durationMs: Date.now() - startedAt,
         wasHidden: wasHiddenSince(utterance.recordedAt),
@@ -410,7 +499,11 @@ async function processUtterance(utterance: Utterance): Promise<void> {
     await db.transaction('rw', db.utterances, async () => {
       const latest = await db.utterances.get(utterance.id);
       if (isCurrentAttempt(latest, attempts))
-        await db.utterances.update(utterance.id, { status: 'failed', error: prefix + message });
+        await db.utterances.update(utterance.id, {
+          status: 'failed',
+          error: prefix + message,
+          waitingSince: undefined,
+        });
     });
     // De opname blijft bewaard: morgen met "Opnieuw" alsnog verwerken
     if (error instanceof ApiError && error.code === 'audio_limit') {
@@ -472,6 +565,7 @@ async function processUtterance(utterance: Utterance): Promise<void> {
 
     await db.utterances.update(utterance.id, {
       status: 'done',
+      waitingSince: undefined,
       llmOutput: interpretation.response,
       metrics: { ...metrics, saveMs: Date.now() - saveStart },
       changes,
@@ -497,7 +591,11 @@ async function finishWithout(
   await db.transaction('rw', db.utterances, async () => {
     const latest = await db.utterances.get(utteranceId);
     if (isCurrentAttempt(latest, attempts))
-      await db.utterances.update(utteranceId, { status: 'done', ...fields });
+      await db.utterances.update(utteranceId, {
+        status: 'done',
+        waitingSince: undefined,
+        ...fields,
+      });
   });
 }
 

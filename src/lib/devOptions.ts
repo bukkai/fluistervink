@@ -3,10 +3,12 @@
 // localStorage; het kaartje bij Instellingen staat alleen bij de eigenaar.
 
 /**
- * Voeg hier de naam van een nieuwe optie toe.
- * - `schermUit`: opnemen met het scherm uit, met de volumeknop (proef, docs/roadmap-android.md stap 3)
+ * - `offlineWachtrij`: zonder bereik wacht een uitspraak in plaats van te
+ *   mislukken (docs/plan-offline.md, queue.ts)
+ * - `schermUit`: opnemen met het scherm uit, met de volumeknop (proef,
+ *   docs/roadmap-android.md stap 3)
  */
-export type DevOption = 'schermUit';
+export type DevOption = 'offlineWachtrij' | 'schermUit';
 
 const PREFIX = 'fluistervink.dev.';
 

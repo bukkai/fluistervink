@@ -14,6 +14,11 @@
   // Een nieuwe optie komt hier, met haar naam in devOptions.ts
   const items: Item[] = [
     {
+      option: 'offlineWachtrij',
+      label: 'Wachten op bereik',
+      hint: 'Zonder bereik mislukt een uitspraak niet meer: hij blijft bewaard en wordt vanzelf verwerkt zodra er weer verbinding is, op volgorde. Nog zonder eigen trilpatroon of melding op het scherm.',
+    },
+    {
       option: 'schermUit',
       label: 'Opnemen met het scherm uit',
       hint: 'Proef: tijdens een sessie start en stopt de volumeknop een opname, ook met het scherm uit. Werkt vanaf de volgende sessie (of open de sessie opnieuw).',

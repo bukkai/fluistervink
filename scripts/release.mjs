@@ -52,10 +52,14 @@ if (!nieuw) {
   console.log('stable is al bij met main; niets te doen.');
   process.exit(0);
 }
-if (git('rev-list', '--count', 'origin/main..origin/stable') !== '0') {
+const alleenOpStable = git('log', '--oneline', 'origin/main..origin/stable');
+if (alleenOpStable) {
+  console.error('stable heeft commits die niet op main staan (een hotfix?):\n');
+  console.error(alleenOpStable.replace(/^/gm, '  '));
   console.error(
-    'stable heeft commits die niet op main staan. Eerst uitzoeken (docs/omgevingen.md).',
+    '\nMerge eerst stable in main, met een merge commit (PR stable → main, "Create a merge commit").',
   );
+  console.error('Zie "Hotfix" in docs/omgevingen.md.');
   process.exit(1);
 }
 
