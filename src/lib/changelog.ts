@@ -27,6 +27,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026-11-18',
+    topics: {
+      Inspreken: [
+        'Wacht de app op bereik, dan kun je het met het knopje met de twee pijlen meteen opnieuw proberen.',
+      ],
+      Nalopen: [
+        'Bij het nalopen van de onzekere: pas je er een aan en sla je hem op, dan telt hij als nagelopen. Eerst werd hij overgeslagen.',
+        'Locatie aanpassen: de knop heet nu "Huidige locatie", met een vizier ervoor.',
+      ],
+    },
+  },
+  {
     date: '2026-11-17',
     topics: {
       Inspreken: [

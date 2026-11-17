@@ -329,6 +329,16 @@ const resumeWhenVisible = () => {
   if (!document.hidden) processQueue();
 };
 
+/**
+ * Knop "Probeer opnieuw" bij de melding "Geen bereik": meteen proberen, en
+ * lukt het niet, dan begint de timer weer bij de kortste wachttijd.
+ */
+export async function retryNow(): Promise<void> {
+  retryStep = 0;
+  logEvent('queue_retry_now');
+  await processQueue();
+}
+
 /** Opnieuw proberen op de timer, bij weer online en als de app weer op het scherm komt. */
 function waitForNetwork(): void {
   clearTimeout(retryTimer);
