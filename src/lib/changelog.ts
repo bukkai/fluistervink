@@ -31,6 +31,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     topics: {
       Inspreken: [
         'Wacht de app op bereik, dan kun je het met het knopje met de twee pijlen meteen opnieuw proberen.',
+        'Maakt de spraakherkenning "goudborstje" van "roodborstje", dan wordt het nu gewoon een roodborst.',
+        'De Chileense Flamingo staat in de soortenlijst: een exoot die in Nederland geregeld te zien is.',
       ],
       Nalopen: [
         'Bij het nalopen van de onzekere: pas je er een aan en sla je hem op, dan telt hij als nagelopen. Eerst werd hij overgeslagen.',

@@ -54,6 +54,7 @@ const GROUPS = [
       'Zwarte Zwaan',
       'Halsbandparkiet',
       'Grote Alexanderparkiet',
+      'Chileense Flamingo',
     ],
     // Bonte Kraai (sinds nov 2026 een ondersoort van de Zwarte Kraai, type I;
     // vroeger soort 67, zie REPLACED in src/lib/vocab.ts), verzamelsoorten voor
