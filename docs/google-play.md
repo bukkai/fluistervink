@@ -68,6 +68,11 @@ Op GitHub: repository → **Settings → Secrets and variables → Actions → N
 3. Per tester: eerst het Google-account op de lijst van stap 1 zetten, daarna de link voor deelname sturen (vanaf je eigen mail). Een iPhone-gebruiker krijgt het adres van de site (Safari, "Zet op beginscherm").
 4. De tester opent de link voor deelname op de telefoon, wordt tester en installeert de app uit Play. Een code is niet nodig: de app meldt zich vanzelf aan (Play Integrity). Wie wil, vult bij **Instellingen** een naam in, die jij op Developer ziet.
 
+**Van beta naar stabiel** (17 nov): de beta-app toont iedereen behalve de eigenaar een kaart op het hoofdscherm met de vraag om over te stappen (`src/lib/MoveToStable.svelte`): back-up maken, via de link van de gesloten test tester worden, de beta verwijderen, Fluistervink uit Play installeren en de back-up terugzetten. Play zet niemand vanzelf over, want de beta heeft het hogere `versionCode`. Wel eerst in de Play Console:
+
+1. Alle adressen uit de lijst van de interne test ook in de lijst van de gesloten test zetten (anders werkt de link van stap 2 niet).
+2. Daarna uit de lijst van de interne test iedereen weghalen behalve jezelf. Wie op beide lijsten staat, krijgt bij opnieuw installeren weer de beta. De beta blijft bij wie hem nog heeft gewoon werken (de webcode komt van de site), alleen zonder nieuwe AAB's.
+
 Jijzelf: de debug-APK die je nu hebt, is met een andere sleutel ondertekend. Verwijder die eerst; daarna installeer je de app uit Play, net als de testers. **Let op:** verwijderen wist de sessies in de app. Maak eerst een JSON-export (met opnames) en importeer die daarna in de app uit Play.
 
 ## Een nieuwe versie
