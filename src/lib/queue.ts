@@ -525,6 +525,7 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
       here,
       sessionId: utterance.sessionId,
       groups,
+      trektel: utterance.trektel,
     });
     if (interpretation.warnings.length) {
       logEvent('species_id_fixed', { warnings: interpretation.warnings }, ids);

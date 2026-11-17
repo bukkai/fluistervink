@@ -12,6 +12,7 @@ import {
 } from '../test-helpers';
 import {
   describeContext,
+  userMessage,
   MAX_OPTIONAL_PARAMETERS,
   parseResponse,
   promptVersionFor,
@@ -311,6 +312,16 @@ describe('plek uit de uitspraak', () => {
   it('staat in de context voor het model', () => {
     const text = describeContext([observation({ spokenPlace: { text: 'overkant rivier' } })]);
     expect(text).toMatch(/plek: "overkant rivier"/);
+  });
+});
+
+describe('userMessage', () => {
+  it('zegt het model alleen bij een trektelstuk dat het een trektelling is', () => {
+    const plain = userMessage('(geen)', 'Twee vinken.', false);
+    const trektel = userMessage('(geen)', 'Twee vinken.', true);
+    expect(plain).not.toContain('trektelling');
+    expect(trektel.startsWith('Dit is een stuk uit een trektelling.')).toBe(true);
+    expect(trektel).toContain('Uitspraak: "Twee vinken."');
   });
 });
 

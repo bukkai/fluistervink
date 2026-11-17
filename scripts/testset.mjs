@@ -366,6 +366,7 @@ async function run(item) {
     model,
     contextText,
     groups: opts.soortgroepen,
+    trektel: u.trektel,
   });
   return {
     ...result,
