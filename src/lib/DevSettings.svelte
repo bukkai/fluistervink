@@ -16,7 +16,7 @@
     {
       option: 'offlineWachtrij',
       label: 'Wachten op bereik',
-      hint: 'Zonder bereik mislukt een uitspraak niet meer: hij blijft bewaard en wordt vanzelf verwerkt zodra er weer verbinding is, op volgorde. Nog zonder eigen trilpatroon of melding op het scherm.',
+      hint: 'Zonder bereik mislukt een uitspraak niet meer: hij blijft bewaard en wordt vanzelf verwerkt zodra er weer verbinding is, op volgorde. Trilt dan lang, kort (bewaard, wacht op bereik), met een regel op het sessiescherm. Na meer dan een minuut wachten één tril als alles binnen is.',
     },
     {
       option: 'schermUit',

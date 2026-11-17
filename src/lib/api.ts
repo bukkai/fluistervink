@@ -97,6 +97,7 @@ async function timedRequest<T>(
   path: string,
   init: RequestInit = {},
   timeoutMs = TIMEOUT_MS,
+  renewed = false,
 ): Promise<{ data: T; timing: Timing }> {
   const headers = new Headers(init.headers);
   const credential = await getCredential();
@@ -118,8 +119,15 @@ async function timedRequest<T>(
     upstreamMs: upstreamDuration(response),
   };
   if (!response.ok) {
-    // Afgesloten of het geheim van de proxy veranderd: opnieuw aanmelden
-    if (response.status === 401 && credential === getInstallToken()) forgetInstallToken();
+    // Het token werkt niet meer (geheim van de proxy veranderd, of afgesloten):
+    // meteen opnieuw aanmelden en het verzoek één keer herhalen, zodat de
+    // uitspraak niet mislukt. Is de installatie afgesloten, dan weigert de
+    // proxy het aanmelden (403). Lukt het aanmelden niet door het netwerk,
+    // dan is dat een status 0 en wacht de wachtrij op bereik.
+    if (response.status === 401 && credential === getInstallToken()) {
+      forgetInstallToken();
+      if (!renewed) return timedRequest<T>(path, init, timeoutMs, true);
+    }
     // Een oude testercode (die bestaan niet meer): weg ermee, en meteen
     // opnieuw als installatie, zodat de uitspraak niet mislukt. Niet bij een
     // net ingevulde code (Instellingen), die meldt zelf dat hij niet klopt.

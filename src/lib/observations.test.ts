@@ -20,6 +20,8 @@ import {
   STEAL_AFTER_MS,
   migrateAudio,
   onAudioLimit,
+  LONG_WAIT_MS,
+  onLongWait,
   processQueue,
   retry,
   stopWaiting,
@@ -69,6 +71,18 @@ vi.mock('./location.svelte', async (importOriginal) => ({
   currentPosition: () => new Promise<PositionLookup>((resolve) => (gpsLookup.resolve = resolve)),
 }));
 vi.mock('./area', () => ({ attachArea: async () => false }));
+
+// Aanmelden als installatie: standaard het echte, per test na te bootsen
+const installer = vi.hoisted(() => ({
+  register: undefined as (() => Promise<{ token: string; tester: string }>) | undefined,
+}));
+vi.mock('./install', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./install')>();
+  return {
+    ...actual,
+    register: () => (installer.register ?? actual.register)(),
+  };
+});
 
 const SESSION = 'sessie';
 const POSITION = { lat: 52.0, lon: 5.9, accuracy: 8, fixedAt: 0 };
@@ -820,6 +834,52 @@ describe('netwerk weg', () => {
     expect(reached).not.toHaveBeenCalled();
   });
 
+  it('token werkt niet meer (401): opnieuw aanmelden en het verzoek herhalen', async () => {
+    const tokens: string[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (_path: string, init: RequestInit) => {
+        const token = new Headers(init.headers).get('Authorization') ?? '';
+        tokens.push(token);
+        if (token.endsWith('token-van-anna')) return Response.json({}, { status: 401 });
+        return Response.json({ text: 'Roepje vink.' });
+      }),
+    );
+    installer.register = async () => {
+      localStorage.setItem('fluistervink.installToken', 'i1.nieuw');
+      return { token: 'i1.nieuw', tester: 'app-12345678' };
+    };
+    model.respond = () => toolResponse(['add_observation', { species_id: VINK, count: 1 }]);
+    try {
+      const id = await record();
+      await processQueue();
+      expect((await db.utterances.get(id))?.status).toBe('done');
+      expect(tokens).toEqual(['Bearer i1.token-van-anna', 'Bearer i1.nieuw']);
+    } finally {
+      installer.register = undefined;
+    }
+  });
+
+  it('afgesloten installatie: na één keer opnieuw aanmelden mislukt het', async () => {
+    let calls = 0;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => (calls++, Response.json({}, { status: 401 }))),
+    );
+    installer.register = async () => {
+      localStorage.setItem('fluistervink.installToken', 'i1.nieuw');
+      return { token: 'i1.nieuw', tester: 'app-12345678' };
+    };
+    try {
+      const id = await record();
+      await processQueue();
+      expect((await db.utterances.get(id))?.status).toBe('failed');
+      expect(calls).toBe(2);
+    } finally {
+      installer.register = undefined;
+    }
+  });
+
   it('een mislukte uitspraak houdt de rest van de wachtrij niet op', async () => {
     network(false);
     const first = await record();
@@ -847,7 +907,10 @@ describe('netwerk weg', () => {
       vi.mocked(interpret).mockClear();
     });
 
-    it('zonder bereik: niets mislukt, de wachtrij stopt bij de eerste en trilt niet', async () => {
+    const WAITING = [450, 150, 120];
+    const SAVED = [120];
+
+    it('zonder bereik: niets mislukt, de wachtrij stopt bij de eerste', async () => {
       network(false);
       const first = await record();
       const second = await record();
@@ -859,7 +922,42 @@ describe('netwerk weg', () => {
       expect(b?.waitingSince).toBeUndefined();
       // De tweede is niet geprobeerd: de volgorde blijft die van het inspreken
       expect(transcribeCalls).toBe(1);
-      expect(vibrations).toEqual([]);
+      // "Bewaard, wacht op bereik" in plaats van drie korte trillen
+      expect(vibrations).toEqual([WAITING]);
+    });
+
+    it('een nieuwe uitspraak terwijl er gewacht wordt: meteen het wachtpatroon', async () => {
+      network(false);
+      await record();
+      await processQueue();
+      await processQueue();
+      expect(vibrations).toEqual([WAITING]);
+      await submitText(SESSION, 'roepje vink');
+      await vi.waitFor(() => expect(transcribeCalls).toBe(3));
+      expect(vibrations).toEqual([WAITING, WAITING]);
+    });
+
+    it('kort gewacht: daarna gewoon per uitspraak een tril', async () => {
+      network(false);
+      await record();
+      await record();
+      await processQueue();
+      network(true);
+      await processQueue();
+      expect(vibrations).toEqual([WAITING, SAVED, SAVED]);
+    });
+
+    it('langer dan een minuut gewacht: één tril als alles binnen is', async () => {
+      network(false);
+      const first = await record();
+      await record();
+      await record();
+      await processQueue();
+      await db.utterances.update(first, { waitingSince: Date.now() - 2 * 60_000 });
+      network(true);
+      await processQueue();
+      expect(await db.observations.count()).toBe(3);
+      expect(vibrations).toEqual([WAITING, SAVED]);
     });
 
     it('logt één keer queue_waiting, geen attempt_failed per poging', async () => {
@@ -953,6 +1051,32 @@ describe('netwerk weg', () => {
       expect((await db.utterances.get(first))?.status).toBe('failed');
       expect((await db.utterances.get(second))?.status).toBe('failed');
       expect(await events('queue_waiting')).toEqual([]);
+    });
+
+    it('na 2 uur wachten één keer een melding, met het aantal', async () => {
+      network(false);
+      const first = await record();
+      await record();
+      const heard = vi.fn();
+      const off = onLongWait(heard);
+      await processQueue();
+      expect(heard).not.toHaveBeenCalled();
+      await db.utterances.update(first, { waitingSince: Date.now() - LONG_WAIT_MS });
+      await processQueue();
+      await processQueue();
+      off();
+      expect(heard).toHaveBeenCalledTimes(1);
+      expect(heard).toHaveBeenCalledWith(2);
+      expect(await events('queue_long_wait')).toHaveLength(1);
+    });
+
+    it('zonder token en zonder bereik: aanmelden wacht ook', async () => {
+      localStorage.removeItem('fluistervink.installToken');
+      network(false);
+      const id = await record();
+      await processQueue();
+      expect((await db.utterances.get(id))?.status).toBe('pending');
+      expect((await db.utterances.get(id))?.waitingSince).toBeDefined();
     });
 
     it('een fout van het model terwijl de uitspraak al wachtte: mislukt, niet meer wachtend', async () => {

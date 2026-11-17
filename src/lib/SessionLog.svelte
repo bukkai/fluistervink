@@ -19,7 +19,7 @@
     setSkipExport,
     spokenAt,
   } from './observations';
-  import { retry } from './queue';
+  import { LONG_WAIT_MS, retry } from './queue';
   import {
     DEFAULT_COUNTING_METHOD,
     activityName,
@@ -65,6 +65,20 @@
   let queued = $derived(
     $utterances?.filter((u) => u.status === 'pending' || u.status === 'processing').length ?? 0,
   );
+
+  // Wacht er een uitspraak op bereik (ontwikkeloptie offlineWachtrij)? Dan
+  // geen foutmelding, maar een rustige regel: het is geen fout.
+  let waitingSince = $derived(
+    Math.min(
+      ...($utterances ?? []).flatMap((u) =>
+        u.status === 'pending' && u.waitingSince ? [u.waitingSince] : [],
+      ),
+    ),
+  );
+  let waiting = $derived(Number.isFinite(waitingSince));
+  // Al lang (trektelling: de stukken stapelen zich op). Opnieuw bekeken bij
+  // elke nieuwe uitspraak, dus bij een trektelling elke minuut.
+  let longWait = $derived(waiting && Date.now() - waitingSince >= LONG_WAIT_MS);
 
   let failed = $derived($utterances?.filter((u) => u.status === 'failed').length ?? 0);
 
@@ -177,7 +191,7 @@
     if (u.undone) return 'teruggedraaid';
     switch (u.status) {
       case 'pending':
-        return 'in wachtrij';
+        return u.waitingSince ? 'wacht op bereik' : 'in wachtrij';
       case 'processing':
         return u.transcript === undefined && u.audio ? 'verstaan…' : 'bezig…';
       case 'failed':
@@ -189,7 +203,13 @@
   }
 </script>
 
-{#if queued}
+{#if waiting}
+  <p class="queue waiting" role="status">
+    Geen bereik{longWait ? ', al meer dan 2 uur' : ''}: {queued === 1
+      ? '1 uitspraak wacht'
+      : `${queued} uitspraken wachten`}. Ze worden verwerkt zodra er verbinding is.
+  </p>
+{:else if queued}
   <p class="queue">
     {queued === 1 ? '1 uitspraak' : `${queued} uitspraken`} in de wachtrij (zie Uitspraken)
   </p>
@@ -424,6 +444,12 @@
     font-size: 1rem;
     color: var(--amber);
     background: var(--amber-soft);
+  }
+
+  .queue.waiting {
+    color: var(--fg);
+    background: var(--surface);
+    border: 1px solid var(--border);
   }
 
   ul {
