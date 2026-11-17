@@ -27,6 +27,8 @@
   let skipped = $state<string[]>([]);
   /** Het formulier staat open voor de huidige waarneming */
   let editing = $state(false);
+  /** De waarneming die in het formulier openstaat */
+  let editingId: string | undefined;
 
   // Oudste eerst, in de volgorde waarin je ze zag (de lijst is nieuwste eerst)
   let uncertain = $derived(($observations ?? []).filter((obs) => obs.uncertain).reverse());
@@ -43,14 +45,21 @@
   // van Android het sluit (zoals in de lijst)
   function openEditor() {
     if (!history.state?.editor) history.pushState({ editor: true }, '');
+    editingId = current?.id;
     editing = true;
   }
 
-  function closeEditor() {
-    // Opgeslagen maar nog onzeker: door naar de volgende
-    if (current?.uncertain) skip();
+  /**
+   * Opslaan maakt de waarneming zeker (het formulier zet Onzeker uit), dan
+   * valt hij vanzelf uit de lijst. Heb je Onzeker weer aangevinkt, dan door
+   * naar de volgende. Op het id van bij het openen, niet `current`: die kan
+   * na het opslaan al de volgende zijn. Annuleren: terug naar dezelfde.
+   */
+  function closeEditor(saved = false) {
+    if (saved && editingId && !skipped.includes(editingId)) skipped = [...skipped, editingId];
+    editingId = undefined;
+    editing = false;
     if (history.state?.editor) history.back();
-    else editing = false;
   }
 
   $effect(() => {
@@ -75,7 +84,12 @@
     </div>
     <div class="card-body">
       {#if current && editing}
-        <ObservationEditor observation={current} utterance={source} onclose={closeEditor} />
+        <ObservationEditor
+          observation={current}
+          utterance={source}
+          onclose={closeEditor}
+          reviewing
+        />
       {:else if current}
         <div class="obs">
           <RarityMark rarity={species?.rarity ?? 0} />
