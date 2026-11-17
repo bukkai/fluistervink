@@ -23,7 +23,22 @@ Alles gaat eerst via `main` en de beta. Is de beta een tijdje goed bevallen:
 npm run release
 ```
 
-Dat laat zien welke commits meegaan en wanneer de laatste kwaliteitsronde was, vraagt of je door wilt, en zet dan `stable` gelijk aan `origin/main` (alleen vooruit; is `stable` ooit apart veranderd, dan weigert het). Workers Builds deployt daarna `fluistervink.nl`. Een fix voor de stabiele versie gaat dus ook via een PR naar `main`, en daarna `npm run release`. Na de release is het tijd voor een kwaliteitsronde op de beta (`docs/kwaliteitsronde.md`).
+Dat laat zien welke commits meegaan en wanneer de laatste kwaliteitsronde was, vraagt of je door wilt, en zet dan `stable` gelijk aan `origin/main` (alleen vooruit; heeft `stable` een hotfix die nog niet op `main` staat, dan weigert het, zie hieronder). Workers Builds deployt daarna `fluistervink.nl`. Na de release is het tijd voor een kwaliteitsronde op de beta (`docs/kwaliteitsronde.md`).
+
+## Nieuwe functies en fixes terwijl testers op stabiel zitten
+
+Besloten 17 nov, bij de proef van twee weken met 12 testers op de gesloten test.
+
+**Nieuwe functies** gaan gewoon naar `main`, het liefst achter een ontwikkeloptie (`src/lib/devOptions.ts`). Dan kan `main` op elk moment naar `stable` zonder dat testers iets nieuws zien, en gaat een fix de gewone weg: PR naar `main`, daarna `npm run release`. Een wijziging in de prompt of de tools geldt meteen voor iedereen; zet die ook achter een optie, of laat de PR liggen tot je hem naar stabiel wilt.
+
+**Hotfix**, alleen als `main` al iets heeft dat nog niet naar de testers mag:
+
+1. Branch vanaf `origin/stable` (`git switch -c fix-iets origin/stable`), de fix erop, PR naar **`stable`** (de checks draaien bij elke PR). Na de merge deployt Workers Builds `fluistervink.nl`.
+2. Daarna meteen een PR van `stable` naar `main`, gemerged met **"Create a merge commit"** (niet squash of rebase: dan staan de commits van `stable` niet op `main` en weigert `npm run release` de volgende keer).
+
+Is stap 2 vergeten, dan zegt `npm run release` dat en welke commits het zijn.
+
+**Android:** een tag `v0.*` bouwt de beta- én de stabiele AAB van dezelfde commit. Staat er native code op `main` die nog niet naar de testers mag, upload dan alleen de beta-AAB naar de interne test en laat de gesloten test staan. Webwijzigingen hebben hier geen last van: de stabiele app laadt live van `fluistervink.nl`.
 
 De Android-app laadt de webcode van zijn adres, dus een nieuwe stabiele webversie staat meteen ook in de stabiele app. Alleen bij wijzigingen in `android/` een nieuwe app-versie, zie hieronder.
 
