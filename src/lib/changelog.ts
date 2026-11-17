@@ -27,6 +27,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026-11-17',
+    topics: {
+      Inspreken: [
+        'Zeg je bij een nieuwe waarneming waar de vogel zit ("200 meter ten noorden van hier"), dan komt die plek weer mee. Sinds gisteren viel hij weg.',
+      ],
+      Trektelling: [
+        'Noemde je in een trektelling een plek, dan raakte de app de soorten daarna in hetzelfde stuk kwijt. Dat is opgelost.',
+      ],
+    },
+  },
+  {
     date: '2026-11-16',
     topics: {
       Inspreken: [
