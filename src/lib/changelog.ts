@@ -31,6 +31,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     topics: {
       Inspreken: [
         'Geen bereik? Vogel gewoon door. De app bewaart wat je zegt en verwerkt het vanzelf zodra er weer verbinding is, in de goede volgorde. Je voelt dan lang, kort ("bewaard, wacht op bereik") in plaats van drie korte trillen, en je hoeft thuis niet meer per uitspraak op Opnieuw te tikken.',
+        'Verstaat de spraakherkenning "groepje merel" waar je "roepje merel" zei, dan wordt het nu gewoon een roepende merel. Bedoel je echt een groepje, noem dan het aantal ("groepje van twintig vinken").',
         'Zeg je bij een nieuwe waarneming waar de vogel zit ("200 meter ten noorden van hier"), dan komt die plek weer mee. Sinds gisteren viel hij weg.',
       ],
       Trektelling: [
