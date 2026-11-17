@@ -21,8 +21,10 @@ Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/ro
 
 ## Na het mergen nog proberen
 
-Uit de PR's van 6–17 nov; elk punt na het proberen hier weghalen.
+Uit de PR's van 6–18 nov; elk punt na het proberen hier weghalen.
 
+- **Goudborst en Chileense Flamingo** (#264): "goudborstje" inspreken moet een roodborst worden (zeker), "drie Chileense flamingo's, overvliegende kraanvogel" twee waarnemingen. Nieuw veld `verhaspelingen` in `data/bijnamen.json` voor vaste verstaanfouten (alleen naar het model, niet naar de spraakherkenning).
+- **Testset stopt zelf** (#265): `npm run testset` hing sinds 11 nov na het verslag (de Cloudflare-plugin ruimt de verbinding naar de online D1 niet op). Na het mergen moet een run vanzelf eindigen.
 - **Plek in een trektelstuk** (#248): een trektelling met een gezegde plek erin ("buizerd, 500 m zuid"): alle soorten van het stuk moeten binnenkomen, met de plek.
 - **Developer en Statistieken** (#244, #245): op Developer "Verwerkte wissen" proberen (verwerkte feedback moet weg blijven, ook na opnieuw delen); kijken of de nieuwe indeling bevalt (kosten bovenaan, de rest ingeklapt). Op Statistieken een week in de grafiek aantikken: die rij in de tabel licht op.
 - **Andere soortgroepen voor iedereen** (#234, standaard aan): na het mergen in de app nagaan dat "Ook andere dieren inspreken" bij Instellingen aan staat en een ree goed binnenkomt. Import met een zoogdier werkte; vlinders en libellen pas in het voorjaar, dan zien we het vanzelf. Play-tekst in de Play Console bijwerken (`docs/play-store/README.md`).
