@@ -109,8 +109,7 @@
       Bij de trektelling: één lange tril als hij pauzeert (andere app, scherm op slot), twee lange
       als hij gestopt is. Dat gebeurt ook als je die dag al 5 uur hebt ingesproken, het maximum per
       dag. Zonder bereik telt hij gewoon door; na 2 uur zonder bereik komen er ook twee lange
-      trillen, maar dan loopt de telling door. De telling loopt alleen op het hoofdscherm: ga je
-      naar een ander scherm, zoals Instellingen, dan vraagt de app eerst of hij mag stoppen.
+      trillen, maar dan loopt de telling door.
     </p>
     {#if isNativeApp}
       <p>
