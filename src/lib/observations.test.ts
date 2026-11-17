@@ -982,6 +982,34 @@ describe('netwerk weg', () => {
       expect(vibrations).toEqual([WAITING, SAVED, SAVED]);
     });
 
+    it('wifi met een inlogpagina (HTML met status 200 of 511): wachten, niet verwerken', async () => {
+      const portal = '<!doctype html><title>Log in op de wifi</title>';
+      for (const status of [200, 511]) {
+        vi.stubGlobal(
+          'fetch',
+          vi.fn(async () => {
+            transcribeCalls++;
+            return new Response(portal, { status, headers: { 'Content-Type': 'text/html' } });
+          }),
+        );
+        const id = await record();
+        await processQueue();
+        const u = await db.utterances.get(id);
+        expect(u).toMatchObject({ status: 'pending', waitingSince: expect.any(Number) });
+        expect(u?.transcript).toBeUndefined();
+        expect(u?.error).toBeUndefined();
+        expect(interpret).not.toHaveBeenCalled();
+        stopWaiting();
+        await db.utterances.delete(id);
+      }
+      expect(vibrations).toEqual([WAITING, WAITING]);
+      // Ingelogd op de wifi: gewoon verwerken
+      const id = await record();
+      network(true);
+      await processQueue();
+      expect((await db.utterances.get(id))?.status).toBe('done');
+    });
+
     it('langer dan een minuut gewacht: één tril als alles binnen is', async () => {
       network(false);
       const first = await record();

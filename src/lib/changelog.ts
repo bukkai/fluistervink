@@ -36,6 +36,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         'Wacht de app op bereik, dan kun je het met het knopje met de twee pijlen meteen opnieuw proberen.',
         'Maakt de spraakherkenning "goudborstje" van "roodborstje", dan wordt het nu gewoon een roodborst.',
         'De Chileense Flamingo staat in de soortenlijst: een exoot die in Nederland geregeld te zien is.',
+        'Op een wifi waar je eerst moet inloggen (trein, camping) wachten je uitspraken nu tot er echt internet is. Eerst gingen ze verloren.',
       ],
       Nalopen: [
         'Bij het nalopen van de onzekere: pas je er een aan en sla je hem op, dan telt hij als nagelopen. Eerst werd hij overgeslagen.',
