@@ -83,6 +83,8 @@ public class WandelingService extends Service {
         void gestart(long startedAt, String via);
         void opname(File file, JSObject info);
         void log(String type, JSObject data);
+        /** Volumeknop met het scherm uit terwijl de webcode zelf opneemt: die stopt hem */
+        void druk(String via);
     }
 
     /** Gezet zolang de webcode het wil (ontwikkeloptie, sessie loopt, geen trektelling) */
@@ -91,6 +93,12 @@ public class WandelingService extends Service {
     static WandelingService instance;
     /** Waarom het type microfoon de laatste keer niet lukte */
     static String microphoneError;
+    /**
+     * De webcode neemt zelf op (de knop in de app, scherm daarna op slot):
+     * dan geeft de volumeknop met het scherm uit de druk aan de webcode, in
+     * plaats van een tweede opname te starten
+     */
+    static volatile boolean webRecording = false;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable stopAfterMax = this::stopSelf;
@@ -326,6 +334,10 @@ public class WandelingService extends Service {
         boolean bounce = now - lastKeyAt < KEY_DEBOUNCE_MS;
         lastKeyAt = now;
         if (bounce || config == null) return;
+        if (opname == null && webRecording) {
+            if (listener != null) listener.druk(via);
+            return;
+        }
         if (opname != null) finish(via);
         else startRecording(via);
     }

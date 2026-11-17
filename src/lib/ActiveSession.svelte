@@ -5,13 +5,13 @@
   import { vibrate } from './feedback';
   import { logEvent } from './log';
   import { preferenceOn } from './preferences';
-  import { listenVolumeKey, volumeKeySupported } from './native';
+  import { listenVolumeKey, setWebRecording, volumeKeySupported } from './native';
   import { recordFix } from './effort';
   import { watchKeyboard } from './keyboard';
   import { currentPosition, gps, startTracking, stopTracking } from './location.svelte';
   import { onAudioLimit, onLongWait, submitRecording, submitText } from './queue';
   import { recorder, startRecording, stopRecording } from './recorder.svelte';
-  import { screenOff, startScreenOff, stopScreenOff } from './screenOff.svelte';
+  import { screenOff, screenOffEnabled, startScreenOff, stopScreenOff } from './screenOff.svelte';
   import SessionLog from './SessionLog.svelte';
   import { syncSessionService } from './sessionService';
   import { createTalkButton } from './talkButton';
@@ -105,9 +105,16 @@
   // Naar een andere app (Merlin) of scherm uit tijdens een opname: stoppen en
   // bewaren wat er is. Anders houdt de app de microfoon vast zonder iets op te
   // nemen, en blijft de knop op "Stop" staan.
+  // Behalve met de proef opnemen met het scherm uit: dan mag de app op de
+  // achtergrond de microfoon houden (service met type microfoon), en stopt de
+  // volumeknop de opname.
   $effect(() => {
     function onHidden() {
       if (!document.hidden || recorder.status !== 'recording') return;
+      if (screenOff.ready) {
+        logEvent('recording_continues_hidden', undefined, { sessionId: session.id });
+        return;
+      }
       logEvent('recording_stopped_hidden', undefined, { sessionId: session.id });
       finishRecording();
     }
@@ -145,7 +152,7 @@
       lookup = currentPosition();
       // Lukte de service bij de start nog niet (geen locatietoestemming), dan nu
       syncSessionService(session.id);
-      if (!(await startRecording())) {
+      if (!(await startRecording({ measureHidden: screenOff.ready }))) {
         // Niet stil mislukken: wie niet naar het scherm kijkt, denkt anders dat hij opneemt
         if (recorder.failed) vibrate('failed');
         return false;
@@ -190,8 +197,17 @@
     clearTimeout(maxTimer);
     const recording = await stopRecording();
     if (!recording || !lookup) return;
-    // Niet als de opname stopte omdat de app naar de achtergrond ging
+    // Niet als de opname stopte omdat de app naar de achtergrond ging; wel
+    // als hij met het scherm uit doorliep en de volumeknop hem stopte
     if (!document.hidden) vibrate('recorded');
+    else if (screenOff.ready) vibrate('screenOffStop');
+    if (recording.chunkStats) {
+      logEvent(
+        'recording_chunks',
+        { durationMs: recording.durationMs, ...recording.chunkStats },
+        { sessionId: session.id },
+      );
+    }
     await submitRecording(session.id, recording, lookup);
   }
 
@@ -203,7 +219,18 @@
     return startScreenOff(
       untrack(() => session.id),
       MAX_RECORDING_MS,
+      // Scherm op slot tijdens een opname met de knop: de volumeknop stopt hem
+      () => {
+        if (recorder.status === 'recording') finishRecording();
+      },
     );
+  });
+
+  // De service moet weten of de app zelf opneemt: dan stopt de volumeknop met
+  // het scherm uit die opname, in plaats van er een tweede te starten
+  $effect(() => {
+    const busy = recorder.status === 'recording';
+    if (screenOffEnabled()) setWebRecording(busy);
   });
 
   // Lopende tijd tijdens de opname

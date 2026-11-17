@@ -25,8 +25,17 @@ import { MIN_DURATION_MS } from './recorder.svelte';
 // Gemeten (gebeurtenissen `screen_off_…` in het log): hoe lang het duurt van
 // stoppen tot bewaren, en welk deel daarvan de overdracht naar de WebView is.
 
-/** Toestand voor de knop in de app: een opname van de service loopt sinds `startedAt` */
-export const screenOff = $state<{ startedAt?: number }>({});
+/** Toestand voor het sessiescherm */
+export const screenOff = $state<{
+  /** Een opname van de service loopt sinds dit moment */
+  startedAt?: number;
+  /**
+   * De service heeft het type microfoon: een opname met de knop in de app
+   * mag dan doorlopen als het scherm op slot gaat (Android geeft de app op de
+   * achtergrond anders alleen stilte)
+   */
+  ready?: boolean;
+}>({});
 
 /** Kan het, en staat de ontwikkeloptie aan? */
 export function screenOffEnabled(): boolean {
@@ -109,7 +118,11 @@ export async function receiveScreenOffRecording(
  * Zet opnemen met het scherm uit aan voor deze sessie. Geeft een functie
  * terug die het weer uitzet (sessie gestopt, trektelling, scherm verlaten).
  */
-export function startScreenOff(sessionId: string, maxMs: number): () => void {
+export function startScreenOff(
+  sessionId: string,
+  maxMs: number,
+  onPress: (via: string) => void,
+): () => void {
   if (!screenOffEnabled()) return () => {};
   const context = { sessionId };
   let lookup: Promise<PositionLookup> | undefined;
@@ -119,8 +132,8 @@ export function startScreenOff(sessionId: string, maxMs: number): () => void {
       sessieId: sessionId,
       maxMs,
       minMs: MIN_DURATION_MS,
-      trilStart: vibrationPattern('recording'),
-      trilStop: vibrationPattern('recorded'),
+      trilStart: vibrationPattern('screenOffStart'),
+      trilStop: vibrationPattern('screenOffStop'),
     },
     {
       onStart: (startedAt, via) => {
@@ -139,14 +152,23 @@ export function startScreenOff(sessionId: string, maxMs: number): () => void {
         lookup = undefined;
         receiveScreenOffRecording(recording, current);
       },
+      onPress: (via) => {
+        logEvent('screen_off_press_web', { via, hidden: document.hidden }, context);
+        onPress(via);
+      },
       onLog: (type, data) => {
         if (type === 'weggegooid' || type === 'niet_gestart') screenOff.startedAt = undefined;
+        // De service kreeg het type microfoon later (startte pas na het aanzetten)
+        if (type === 'knop_aan' && data.microfoon === true) screenOff.ready = true;
         logEvent(`screen_off_${type}`, data, context);
       },
     },
   );
 
-  done.then((result) => logEvent('screen_off_on', result, context));
+  done.then((result) => {
+    if (result.ok) screenOff.ready = true;
+    logEvent('screen_off_on', result, context);
+  });
   // Wat de service maakte terwijl de app dicht was
   pendingScreenOffRecordings().then((recordings) =>
     recordings.forEach((recording) => receiveScreenOffRecording(recording, undefined)),
@@ -155,6 +177,7 @@ export function startScreenOff(sessionId: string, maxMs: number): () => void {
   return () => {
     stop();
     screenOff.startedAt = undefined;
+    screenOff.ready = undefined;
   };
 }
 

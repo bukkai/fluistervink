@@ -268,6 +268,11 @@ interface SchermUitPlugin {
   stop(): Promise<void>;
   wachtend(): Promise<{ opnames: ScreenOffRecording[] }>;
   klaar(options: { id: string }): Promise<void>;
+  webOpname(options: { bezig: boolean }): Promise<void>;
+  addListener(
+    event: 'druk',
+    listener: (data: { via: string }) => void,
+  ): Promise<PluginListenerHandle>;
   addListener(
     event: 'gestart',
     listener: (data: { startedAt: number; via: string }) => void,
@@ -292,6 +297,8 @@ export interface ScreenOffHandlers {
   onStart: (startedAt: number, via: string) => void;
   onRecording: (recording: ScreenOffRecording) => void;
   onLog: (type: string, data: Record<string, unknown>) => void;
+  /** Volumeknop met het scherm uit terwijl de webcode zelf opneemt (zie `setWebRecording`) */
+  onPress: (via: string) => void;
 }
 
 /**
@@ -310,6 +317,7 @@ export function listenScreenOff(
     SchermUit.addListener('gestart', ({ startedAt, via }) => handlers.onStart(startedAt, via)),
     SchermUit.addListener('opname', (recording) => handlers.onRecording(recording)),
     SchermUit.addListener('log', ({ type, data }) => handlers.onLog(type, data)),
+    SchermUit.addListener('druk', ({ via }) => handlers.onPress(via)),
   ];
   const done = SchermUit.aan(options).catch((error) => ({ ok: false, reden: String(error) }));
   return {
@@ -335,4 +343,13 @@ export async function pendingScreenOffRecordings(): Promise<ScreenOffRecording[]
 /** De opname is bewaard in IndexedDB: het bestand op de telefoon mag weg */
 export async function doneScreenOffRecording(id: string): Promise<void> {
   if (screenOffSupported) await SchermUit.klaar({ id }).catch(() => {});
+}
+
+/**
+ * De webcode neemt zelf op (knop in de app): zolang dat zo is, start de
+ * volumeknop met het scherm uit geen opname in de service maar komt hij als
+ * `onPress` hier, om die opname te stoppen.
+ */
+export async function setWebRecording(busy: boolean): Promise<void> {
+  if (screenOffSupported) await SchermUit.webOpname({ bezig: busy }).catch(() => {});
 }

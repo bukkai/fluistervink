@@ -66,6 +66,8 @@ Eerst een korte proef-PR (opnemen in de service, één opname doorgeven, meten),
 
 Eerste meting (17 nov, eigenaar, twee opnames met het scherm uit, beide goed verwerkt): de webcode hoort binnen 10–20 ms dat een opname begint; van de volumeknop (stop) tot de opname in de webcode ±0,36 s, waarvan ±0,35 s het afmaken van het bestand en maar ±10 ms de overdracht naar de WebView; bewaren 30–50 ms. **De overdracht werkt dus goed**, ook met de app op de achtergrond. Het afmaken kan korter met kleinere stukken uit `AudioRecord` (nu een halve seconde).
 
+Tweede stap (17 nov, na de eerste proef): **een opname met de knop in de app loopt door als je het scherm op slot zet**, zolang de service het type microfoon heeft; de volumeknop met het scherm uit stopt hem dan (`SchermUit.webOpname`, gebeurtenis `druk`). Of de WebView op de achtergrond echt geluid blijft opnemen, laat `recording_chunks` zien (bytes per seconde met het scherm aan en op slot). Ook duidelijker trillen met het scherm uit: start twee snelle tikjes, stop één stevige tril (het tikje van 30 ms voelde de eigenaar in de zak niet).
+
 Nog uit te zoeken in het veld (en daarna de nette uitwerking):
 
 - Of de volumeknop met het scherm uit echt bij de mediasessie aankomt, ook met een podcast aan (Android geeft de volumeknop aan de sessie die "speelt"; een podcast speelt dan ook) en op een Samsung (die vangt de volumeknop soms zelf).

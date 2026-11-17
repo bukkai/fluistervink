@@ -13,7 +13,9 @@ vi.hoisted(() => {
     ondataavailable?: (event: { data: Blob }) => void;
     onstop?: () => void;
     state = 'recording';
-    constructor(public stream: unknown) {}
+    constructor(public stream: unknown) {
+      (globalThis as Record<string, unknown>).lastRecorder = this;
+    }
     start() {}
     stop() {
       this.onstop?.();
@@ -76,5 +78,27 @@ describe('microfoon aanzetten', () => {
     expect(getUserMedia).toHaveBeenCalledOnce();
     expect(recorder.status).toBe('denied');
     expect(recorder.failed).toBeUndefined();
+  });
+
+  it('telt met measureHidden de stukjes met het scherm aan en op slot', async () => {
+    getUserMedia.mockResolvedValue(stream);
+    expect(await startRecording({ measureHidden: true })).toBe(true);
+    const fake = (globalThis as Record<string, unknown>).lastRecorder as {
+      ondataavailable: (event: { data: Blob }) => void;
+    };
+    fake.ondataavailable({ data: new Blob(['x'.repeat(4000)]) });
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+    try {
+      fake.ondataavailable({ data: new Blob(['x'.repeat(300)]) });
+      fake.ondataavailable({ data: new Blob(['x'.repeat(200)]) });
+    } finally {
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });
+    }
+    await vi.advanceTimersByTimeAsync(3000);
+    const recording = await stopRecording();
+    expect(recording?.chunkStats).toEqual({
+      visible: { count: 1, bytes: 4000 },
+      hidden: { count: 2, bytes: 500 },
+    });
   });
 });

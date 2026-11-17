@@ -14,6 +14,14 @@ const PATTERNS = {
    * niet als de app intussen op de achtergrond staat.
    */
   recorded: [30],
+  /**
+   * Opname gestart met het scherm uit (proef, screenOff.svelte.ts): het tikje
+   * hierboven voel je in een broekzak niet (17 nov). Twee snelle tikjes, sneller
+   * dan "niet begrepen".
+   */
+  screenOffStart: [40, 60, 40],
+  /** Opname gestopt met het scherm uit: één stevige tril, korter dan "gepauzeerd" */
+  screenOffStop: [200],
   /** Opgeslagen (ook een dev note of een correctie): één korte tril */
   saved: [120],
   /** Opgeslagen maar onzeker: kort, lang */

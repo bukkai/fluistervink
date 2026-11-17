@@ -49,9 +49,12 @@ const lookup = { source: 'recent' as const, waitMs: 0 };
 describe('opnemen met het scherm uit', () => {
   let handlers: ScreenOffHandlers;
   const stop = vi.fn();
+  const onPress = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
+    screenOff.startedAt = undefined;
+    screenOff.ready = undefined;
     devOptionOn.mockReturnValue(true);
     native.pendingScreenOffRecordings.mockResolvedValue([]);
     native.doneScreenOffRecording.mockResolvedValue(undefined);
@@ -65,23 +68,23 @@ describe('opnemen met het scherm uit', () => {
 
   it('doet niets zonder de ontwikkeloptie', () => {
     devOptionOn.mockReturnValue(false);
-    startScreenOff('s1', 180_000)();
+    startScreenOff('s1', 180_000, onPress)();
     expect(native.listenScreenOff).not.toHaveBeenCalled();
   });
 
   it('geeft de regels van de webknop en de trilpatronen mee', () => {
-    startScreenOff('s1', 180_000);
+    startScreenOff('s1', 180_000, onPress);
     expect(native.listenScreenOff.mock.calls[0][0]).toEqual({
       sessieId: 's1',
       maxMs: 180_000,
       minMs: 500,
-      trilStart: [30],
-      trilStop: [30],
+      trilStart: [40, 60, 40],
+      trilStop: [200],
     });
   });
 
   it('bewaart de opname met de positie van het begin, en ruimt dan het bestand op', async () => {
-    startScreenOff('s1', 180_000);
+    startScreenOff('s1', 180_000, onPress);
     handlers.onStart(1000, 'volume_up');
     expect(screenOff.startedAt).toBe(1000);
     expect(currentPosition).toHaveBeenCalledTimes(1);
@@ -111,7 +114,7 @@ describe('opnemen met het scherm uit', () => {
   it('haalt opnames op die binnenkwamen terwijl de app dicht was, zonder positie', async () => {
     const rec = recording();
     native.pendingScreenOffRecordings.mockResolvedValue([rec]);
-    startScreenOff('s1', 180_000);
+    startScreenOff('s1', 180_000, onPress);
     await settle();
     expect(submitRecording).toHaveBeenCalledTimes(1);
     expect((await submitRecording.mock.calls[0][2]).source).toBe('none');
@@ -143,7 +146,7 @@ describe('opnemen met het scherm uit', () => {
   });
 
   it('zet meldingen van de service in het log en zet de knop terug bij een weggegooide opname', () => {
-    startScreenOff('s1', 180_000);
+    startScreenOff('s1', 180_000, onPress);
     handlers.onStart(1000, 'volume_down');
     handlers.onLog('weggegooid', { durationMs: 200 });
     expect(screenOff.startedAt).toBeUndefined();
@@ -154,11 +157,30 @@ describe('opnemen met het scherm uit', () => {
     );
   });
 
+  it('is klaar voor doorlopende opnames zodra de service het type microfoon heeft', async () => {
+    native.listenScreenOff.mockImplementation((_options, h: ScreenOffHandlers) => {
+      handlers = h;
+      return { done: Promise.resolve({ ok: false, reden: 'service draait niet' }), stop };
+    });
+    startScreenOff('s1', 180_000, onPress);
+    await settle();
+    expect(screenOff.ready).toBeUndefined();
+    handlers.onLog('knop_aan', { schermUit: true, microfoon: true });
+    expect(screenOff.ready).toBe(true);
+  });
+
+  it('geeft de volumeknop door als de webcode zelf opneemt', () => {
+    startScreenOff('s1', 180_000, onPress);
+    handlers.onPress('volume_up');
+    expect(onPress).toHaveBeenCalledWith('volume_up');
+  });
+
   it('uitzetten stopt de service-kant', () => {
-    const off = startScreenOff('s1', 180_000);
+    const off = startScreenOff('s1', 180_000, onPress);
     handlers.onStart(1000, 'volume_up');
     off();
     expect(stop).toHaveBeenCalled();
     expect(screenOff.startedAt).toBeUndefined();
+    expect(screenOff.ready).toBeUndefined();
   });
 });

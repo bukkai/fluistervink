@@ -76,6 +76,7 @@ public class SchermUitPlugin extends Plugin implements WandelingService.Listener
         WandelingService service = WandelingService.instance;
         if (service != null) service.disarm();
         else WandelingService.config = null;
+        WandelingService.webRecording = false;
         call.resolve();
     }
 
@@ -84,6 +85,13 @@ public class SchermUitPlugin extends Plugin implements WandelingService.Listener
     public void stop(PluginCall call) {
         WandelingService service = WandelingService.instance;
         if (service != null) service.finish("app");
+        call.resolve();
+    }
+
+    /** De webcode neemt zelf op, of niet meer: { bezig } */
+    @PluginMethod
+    public void webOpname(PluginCall call) {
+        WandelingService.webRecording = Boolean.TRUE.equals(call.getBoolean("bezig", false));
         call.resolve();
     }
 
@@ -143,6 +151,14 @@ public class SchermUitPlugin extends Plugin implements WandelingService.Listener
             data.put("verstuurdAt", System.currentTimeMillis());
             notifyListeners("opname", data, true);
         }, "OpnameNaarWeb").start();
+    }
+
+    @Override
+    public void druk(String via) {
+        JSObject data = new JSObject();
+        data.put("via", via);
+        // Niet bewaren voor later: een oude druk zou een nieuwe opname stoppen
+        notifyListeners("druk", data);
     }
 
     @Override
