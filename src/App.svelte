@@ -24,7 +24,8 @@
   import { syncSessionService } from './lib/sessionService';
   import { preferenceOn } from './lib/preferences';
   import { exportReminder, reminderText, snooze, snoozedAt } from './lib/exportReminder';
-  import { listenShortcut, setShortcut } from './lib/native';
+  import { isNativeApp, listenShortcut, setShortcut } from './lib/native';
+  import MoveToStable from './lib/MoveToStable.svelte';
   import {
     SHARE_CHANGED,
     scheduleShare,
@@ -139,6 +140,11 @@
     void installProblem;
     return getTester() === OWNER;
   });
+
+  // Wie de beta-app uit Play heeft (interne test), vragen over te stappen naar
+  // de gewone app (MoveToStable.svelte). De eigenaar blijft op de beta.
+  let moveLater = $state(false);
+  let askMove = $derived(CHANNEL === 'beta' && isNativeApp && !isOwner && !moveLater);
 
   // Delen met de ontwikkelaar pas na toestemming (share.ts). Zolang er niet
   // gekozen is, vraagt het hoofdscherm het; ook aan wie de app al had.
@@ -345,6 +351,9 @@
         <p class="notice">
           De app kon zich niet aanmelden ({installProblem}). Probeer het later opnieuw.
         </p>
+      {/if}
+      {#if askMove}
+        <MoveToStable onlater={() => (moveLater = true)} />
       {/if}
       {#if stale?.kind === 'stopped'}
         <p class="welcome">
