@@ -22,6 +22,7 @@ import {
   onAudioLimit,
   processQueue,
   retry,
+  stopWaiting,
   submitText,
 } from './queue';
 import { setPreference } from './preferences';
@@ -827,6 +828,146 @@ describe('netwerk weg', () => {
     expect((await db.utterances.get(first))?.status).toBe('failed');
     expect((await db.utterances.get(second))?.status).toBe('failed');
     expect(vibrations).toEqual([FAILED, FAILED]);
+  });
+  describe('wachten op bereik (ontwikkeloptie offlineWachtrij)', () => {
+    const OPTION = 'fluistervink.dev.offlineWachtrij';
+    const events = async (type: string) =>
+      (await db.events.toArray()).filter((e) => e.type === type);
+
+    beforeEach(() => {
+      localStorage.setItem(OPTION, '1');
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      model.respond = () => toolResponse(['add_observation', { species_id: VINK, count: 1 }]);
+    });
+
+    afterEach(() => {
+      stopWaiting();
+      vi.useRealTimers();
+      localStorage.removeItem(OPTION);
+      vi.mocked(interpret).mockClear();
+    });
+
+    it('zonder bereik: niets mislukt, de wachtrij stopt bij de eerste en trilt niet', async () => {
+      network(false);
+      const first = await record();
+      const second = await record();
+      await processQueue();
+      const [a, b] = await db.utterances.bulkGet([first, second]);
+      expect(a).toMatchObject({ status: 'pending', waitingSince: expect.any(Number) });
+      expect(a?.error).toBeUndefined();
+      expect(b?.status).toBe('pending');
+      expect(b?.waitingSince).toBeUndefined();
+      // De tweede is niet geprobeerd: de volgorde blijft die van het inspreken
+      expect(transcribeCalls).toBe(1);
+      expect(vibrations).toEqual([]);
+    });
+
+    it('logt één keer queue_waiting, geen attempt_failed per poging', async () => {
+      network(false);
+      const id = await record();
+      await processQueue();
+      const since = (await db.utterances.get(id))?.waitingSince;
+      await processQueue();
+      await processQueue();
+      expect(transcribeCalls).toBe(3);
+      expect((await db.utterances.get(id))?.waitingSince).toBe(since);
+      expect(await events('queue_waiting')).toHaveLength(1);
+      expect(await events('attempt_failed')).toEqual([]);
+    });
+
+    it('weer online: verwerkt alles op volgorde en logt queue_resumed', async () => {
+      const seen: string[] = [];
+      model.respond = (recent) => {
+        seen.push(`na ${recent.length}`);
+        return toolResponse(['add_observation', { species_id: VINK, count: 1 }]);
+      };
+      network(false);
+      const first = await record();
+      const second = await record();
+      await processQueue();
+
+      network(true);
+      window.dispatchEvent(new Event('online'));
+      await vi.waitFor(async () => expect((await db.utterances.get(second))?.status).toBe('done'));
+      // De eerste eerst: de tweede zag de waarneming van de eerste al
+      expect(seen).toEqual(['na 0', 'na 1']);
+      expect((await db.utterances.get(first))?.waitingSince).toBeUndefined();
+      expect(await db.observations.count()).toBe(2);
+      const [resumed] = await events('queue_resumed');
+      expect(resumed?.data).toMatchObject({ count: 2, waitedMs: expect.any(Number) });
+      expect(resumed?.utteranceId).toBe(first);
+    });
+
+    it('probeert het vanzelf opnieuw na 15 s, 30 s, 1 min en daarna elke 2 min', async () => {
+      network(false);
+      const id = await record();
+      await processQueue();
+      expect(transcribeCalls).toBe(1);
+
+      for (const [i, delay] of [15_000, 30_000, 60_000, 120_000, 120_000].entries()) {
+        await vi.advanceTimersByTimeAsync(delay - 1);
+        expect(transcribeCalls).toBe(i + 1);
+        await vi.advanceTimersByTimeAsync(1);
+        await vi.waitFor(() => expect(transcribeCalls).toBe(i + 2));
+        // Wachten tot de poging klaar is en de volgende timer staat
+        await vi.waitFor(async () => expect((await db.utterances.get(id))?.status).toBe('pending'));
+      }
+
+      network(true);
+      await vi.advanceTimersByTimeAsync(120_000);
+      await vi.waitFor(async () => expect((await db.utterances.get(id))?.status).toBe('done'));
+    });
+
+    it('verder als de app weer op het scherm komt', async () => {
+      network(false);
+      const id = await record();
+      await processQueue();
+      network(true);
+      document.dispatchEvent(new Event('visibilitychange'));
+      await vi.waitFor(async () => expect((await db.utterances.get(id))?.status).toBe('done'));
+    });
+
+    it.each([502, 503, 504, 529])('wacht ook bij een tijdelijke fout (%i)', async (status) => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => Response.json({ error: 'Even weg' }, { status })),
+      );
+      const id = await record();
+      await processQueue();
+      expect((await db.utterances.get(id))?.status).toBe('pending');
+    });
+
+    it.each([
+      [400, undefined],
+      [401, undefined],
+      [403, undefined],
+      [429, 'audio_limit'],
+    ])('mislukt nog steeds bij %i', async (status, code) => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => Response.json({ error: 'Nee', code }, { status })),
+      );
+      const first = await record();
+      const second = await record();
+      await processQueue();
+      expect((await db.utterances.get(first))?.status).toBe('failed');
+      expect((await db.utterances.get(second))?.status).toBe('failed');
+      expect(await events('queue_waiting')).toEqual([]);
+    });
+
+    it('een fout van het model terwijl de uitspraak al wachtte: mislukt, niet meer wachtend', async () => {
+      network(false);
+      const id = await record();
+      await processQueue();
+      network(true);
+      model.respond = () => {
+        throw new Error('Het model weigerde de uitspraak te verwerken');
+      };
+      await processQueue();
+      const u = await db.utterances.get(id);
+      expect(u).toMatchObject({ status: 'failed', transcript: 'Roepje vink.' });
+      expect(u?.waitingSince).toBeUndefined();
+    });
   });
 });
 

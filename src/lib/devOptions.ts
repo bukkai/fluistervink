@@ -2,8 +2,11 @@
 // bevallen (docs/roadmap-android.md, besloten 11 nov). Per telefoon in
 // localStorage; het kaartje bij Instellingen staat alleen bij de eigenaar.
 
-/** Nu geen: voeg hier de naam van een nieuwe optie toe */
-export type DevOption = never;
+/**
+ * - `offlineWachtrij`: zonder bereik wacht een uitspraak in plaats van te
+ *   mislukken (docs/plan-offline.md, queue.ts)
+ */
+export type DevOption = 'offlineWachtrij';
 
 const PREFIX = 'fluistervink.dev.';
 
