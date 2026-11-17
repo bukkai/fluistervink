@@ -46,7 +46,7 @@ Wat er native bij komt:
 - **Servicetype `microphone`** naast `location`. Android 14+ staat dat alleen toe als de service start terwijl de app op het scherm staat; dat is bij "Begin met vogelen" zo. Wel een nieuwe verklaring in de Play Console (met video), net als voor `location`.
 - **Opname in de service** (`AudioRecord`, zelfde formaat als nu), met dezelfde regels als de webknop: maximale duur, korte spookopnames.
 - **De knop op de oortjes of een Bluetooth-afstandsbediening** via een mediasessie. Let op: Android stuurt de mediaknop naar de app die het laatst geluid afspeelde. Met een podcast aan krijgt die de knop, niet Fluistervink. Uitzoeken in een proef; de volumeknop (stap 1) werkt ook met het scherm uit zodra de service hem opvangt.
-- **Welke microfoon:** nu bewust die van de telefoon (fase 0, tegen haperende audio). Voor fietsen met oortjes (Maarten) is de microfoon van de oortjes juist nodig, maar Bluetooth-microfoons klinken veel slechter (smalbandig). Een instelling "Microfoon: telefoon / oortjes", en de testset laten zien wat het kost aan herkenning.
+- **Welke microfoon:** nu bewust die van de telefoon (fase 0, tegen haperende audio). Voor fietsen met oortjes (Maarten) is de microfoon van de oortjes juist nodig, maar Bluetooth-microfoons klinken veel slechter (smalbandig). Een instelling "Microfoon: telefoon / oortjes", en de testset laten zien wat het kost aan herkenning. Sinds 18 nov een proef als ontwikkeloptie "Microfoon van de oortjes" (`src/lib/microphone.ts`, `MicrofoonPlugin.java` voor de toestemming "Apparaten in de buurt"); het sessiescherm zegt voor iedereen met welke microfoon de app luistert als er oortjes zijn.
 
 Wat het oplevert:
 

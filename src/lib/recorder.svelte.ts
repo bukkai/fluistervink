@@ -1,5 +1,6 @@
 import { logEvent } from './log';
 import { microphoneConstraints } from './microphone';
+import { noteMicrophone } from './microphoneStatus.svelte';
 
 // Opname via de microfoon (MediaRecorder). De microfoon gaat alleen aan
 // tijdens een opname en daarna meteen weer uit, zodat andere apps (Merlin) er
@@ -70,10 +71,8 @@ export async function startRecording(): Promise<boolean> {
     }
   }
 
-  // Welke microfoon het werd, om het haperen van Bluetooth-audio na te gaan
-  const [track] = stream.getAudioTracks();
-  const { deviceId: _, groupId: __, ...settings } = track?.getSettings() ?? {};
-  logEvent('mic_opened', { label: track?.label, ...settings });
+  // Welke microfoon het werd: voor het log (haperen van Bluetooth-audio) en het sessiescherm
+  noteMicrophone(stream, 'opname');
 
   const mimeType = MIME_TYPES.find((type) => MediaRecorder.isTypeSupported(type));
   mediaRecorder = new MediaRecorder(stream, {

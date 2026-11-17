@@ -30,6 +30,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-11-18',
     topics: {
       Inspreken: [
+        'Zijn er oortjes of een headset verbonden, dan zegt het sessiescherm met welke microfoon de app luistert. Dat is die van de telefoon: praat dus naar de telefoon, ook als die in je zak zit.',
         'Wacht de app op bereik, dan kun je het met het knopje met de twee pijlen meteen opnieuw proberen.',
       ],
       Nalopen: [

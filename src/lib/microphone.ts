@@ -6,30 +6,69 @@
 // headset-microfoon (HFP) en pauzeert de muziek, en het terugschakelen hapert.
 // Echo-onderdrukking is bij inspreken niet nodig (er speelt niets af), en de
 // microfoon van de telefoon voorkomt dat de Bluetooth-microfoon gekozen wordt.
+//
+// Proef (ontwikkeloptie 'oortjesMicrofoon', feedback 17 nov): juist de
+// microfoon van de oortjes, voor wie de telefoon in de zak heeft. In de
+// Android-app ziet de WebView die pas met de toestemming "Apparaten in de
+// buurt" (MicrofoonPlugin.java).
+
+import { devOptionOn } from './devOptions';
 
 /** Namen van microfoons die via Bluetooth of een headset lopen. */
 const EXTERNAL = /bluetooth|headset|hands-?free|\bbt\b|car|auto/i;
 
 /**
- * De microfoon van de telefoon zelf, of undefined als de browser het niet
- * weet (geen namen zonder toestemming) of er geen andere is dan de standaard.
+ * Microfoons van oortjes of een headset. Niet "Headset earpiece": zo noemt
+ * Android het oorstukje van de telefoon zelf.
  */
-export function pickMicrophone(devices: MediaDeviceInfo[]): string | undefined {
-  const inputs = devices.filter(
+const HEADSET = /bluetooth|wired headset|usb|hands-?free|\bbt\b|airpods|buds/i;
+
+export type MicKind = 'telefoon' | 'oortjes';
+
+/** Telefoon of oortjes, aan de naam van de microfoon; undefined zonder naam. */
+export function micKind(label: string | undefined): MicKind | undefined {
+  if (!label) return undefined;
+  return HEADSET.test(label) && !/earpiece/i.test(label) ? 'oortjes' : 'telefoon';
+}
+
+const namedInputs = (devices: MediaDeviceInfo[]) =>
+  devices.filter(
     (d) =>
       d.kind === 'audioinput' &&
       d.label &&
       d.deviceId !== 'default' &&
       d.deviceId !== 'communications',
   );
-  return inputs.find((d) => !EXTERNAL.test(d.label))?.deviceId;
+
+/** Staat er een microfoon van oortjes of een headset in de lijst van de browser? */
+export function headsetInList(devices: MediaDeviceInfo[]): boolean {
+  return namedInputs(devices).some((d) => micKind(d.label) === 'oortjes');
 }
 
-/** Instellingen voor `getUserMedia`: liever (niet verplicht) de eigen microfoon. */
+/**
+ * De microfoon van de telefoon zelf (of met `preferHeadset` die van de
+ * oortjes, en anders toch de telefoon), of undefined als de browser het niet
+ * weet (geen namen zonder toestemming) of er geen andere is dan de standaard.
+ */
+export function pickMicrophone(
+  devices: MediaDeviceInfo[],
+  preferHeadset = false,
+): string | undefined {
+  const inputs = namedInputs(devices);
+  const headset = preferHeadset
+    ? inputs.find((d) => micKind(d.label) === 'oortjes')?.deviceId
+    : undefined;
+  return headset ?? inputs.find((d) => !EXTERNAL.test(d.label))?.deviceId;
+}
+
+/** Instellingen voor `getUserMedia`: liever (niet verplicht) de gekozen microfoon. */
 export async function microphoneConstraints(): Promise<MediaTrackConstraints> {
   let deviceId: string | undefined;
   try {
-    deviceId = pickMicrophone(await navigator.mediaDevices.enumerateDevices());
+    deviceId = pickMicrophone(
+      await navigator.mediaDevices.enumerateDevices(),
+      devOptionOn('oortjesMicrofoon'),
+    );
   } catch {
     // Zonder lijst gewoon de standaardmicrofoon
   }

@@ -7,6 +7,7 @@
 import type { PositionLookup } from './db';
 import { logEvent } from './log';
 import { microphoneConstraints } from './microphone';
+import { noteMicrophone } from './microphoneStatus.svelte';
 import { AUDIO_BITS_PER_SECOND, MIME_TYPES, type Recording } from './recorder.svelte';
 import {
   createChunker,
@@ -141,6 +142,7 @@ function onVisibility() {
 /** Microfoon aan, meter en eerste stuk starten. Gooit als de microfoon niet aangaat. */
 async function openMic(): Promise<void> {
   stream = await navigator.mediaDevices.getUserMedia({ audio: await microphoneConstraints() });
+  noteMicrophone(stream, 'trektel');
   audioContext = new AudioContext();
   const analyser = audioContext.createAnalyser();
   analyser.fftSize = 2048;
