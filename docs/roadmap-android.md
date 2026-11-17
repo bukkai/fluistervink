@@ -64,6 +64,8 @@ Eerst een korte proef-PR (opnemen in de service, één opname doorgeven, meten),
 - **Overdracht:** het bestand staat eerst op de telefoon (`files/scherm-uit/`, de naam bevat sessie, starttijd en duur), gaat als base64 in een gebeurtenis naar de webcode, die hem met `submitRecording` bewaart en dan pas het bestand laat weghalen. Mist de webcode hem (app gesloten), dan haalt `wachtend` hem bij de volgende keer (zonder positie).
 - **Meten:** `screen_off_recording` in het log met `finishMs` (bestand afmaken), `bridgeMs` (Java → WebView), `transferMs` (volumeknop → aangekomen), `saveMs` (IndexedDB), `hidden` en `peak` (0 = Android gaf alleen stilte). Verder `screen_off_on`, `screen_off_knop_aan/uit`, `screen_off_started`, `screen_off_weggegooid`, `screen_off_niet_gestart`, `screen_off_mediaknop`.
 
+Eerste meting (17 nov, eigenaar, twee opnames met het scherm uit, beide goed verwerkt): de webcode hoort binnen 10–20 ms dat een opname begint; van de volumeknop (stop) tot de opname in de webcode ±0,36 s, waarvan ±0,35 s het afmaken van het bestand en maar ±10 ms de overdracht naar de WebView; bewaren 30–50 ms. **De overdracht werkt dus goed**, ook met de app op de achtergrond. Het afmaken kan korter met kleinere stukken uit `AudioRecord` (nu een halve seconde).
+
 Nog uit te zoeken in het veld (en daarna de nette uitwerking):
 
 - Of de volumeknop met het scherm uit echt bij de mediasessie aankomt, ook met een podcast aan (Android geeft de volumeknop aan de sessie die "speelt"; een podcast speelt dan ook) en op een Samsung (die vangt de volumeknop soms zelf).
