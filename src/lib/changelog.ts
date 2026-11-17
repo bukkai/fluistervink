@@ -32,10 +32,15 @@ export const CHANGELOG: ChangelogEntry[] = [
       Inspreken: [
         'Geen bereik? Vogel gewoon door. De app bewaart wat je zegt en verwerkt het vanzelf zodra er weer verbinding is, in de goede volgorde. Je voelt dan lang, kort ("bewaard, wacht op bereik") in plaats van drie korte trillen, en je hoeft thuis niet meer per uitspraak op Opnieuw te tikken.',
         'Zeg je bij een nieuwe waarneming waar de vogel zit ("200 meter ten noorden van hier"), dan komt die plek weer mee. Sinds gisteren viel hij weg.',
+        'Wacht de app op bereik, dan kun je het met het knopje met de twee pijlen meteen opnieuw proberen.',
       ],
       Trektelling: [
         'Een trektelling zonder bereik telt gewoon door; de stukken worden verwerkt zodra er weer verbinding is.',
         'Noemde je in een trektelling een plek, dan raakte de app de soorten daarna in hetzelfde stuk kwijt. Dat is opgelost.',
+      ],
+      Nalopen: [
+        'Bij het nalopen van de onzekere: pas je er een aan en sla je hem op, dan telt hij als nagelopen. Eerst werd hij overgeslagen.',
+        'Locatie aanpassen: de knop heet nu "Huidige locatie", met een vizier ervoor.',
       ],
       'Over de app': [
         'Wie de app voor het eerst opent, krijgt een rustig welkom in drie stappen: hoe het werkt, toestemming voor microfoon en locatie, en de vraag of je wilt meehelpen. Geen losse meldingen meer boven en onder de startknop.',
