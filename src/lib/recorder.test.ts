@@ -3,7 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // Microfoon en opname nagebootst: het gaat om wat er gebeurt als de microfoon
 // niet meteen aangaat.
 vi.mock('./log', () => ({ logEvent: vi.fn() }));
-vi.mock('./microphone', () => ({ microphoneConstraints: async () => true }));
+vi.mock('./microphone', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./microphone')>()),
+  microphoneConstraints: async () => true,
+}));
 
 // Vóór het importeren: recorder.status kijkt bij het laden of MediaRecorder bestaat
 vi.hoisted(() => {

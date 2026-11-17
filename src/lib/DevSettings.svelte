@@ -1,6 +1,7 @@
 <script lang="ts">
   // Ontwikkelopties: alleen voor de eigenaar (devOptions.ts)
   import { devOptionOn, setDevOption, type DevOption } from './devOptions';
+  import { requestBluetoothMicrophone } from './native';
 
   interface Item {
     option: DevOption;
@@ -10,8 +11,14 @@
     available?: boolean;
   }
 
-  // Nu geen: een nieuwe optie komt hier, met haar naam in devOptions.ts
-  const items: Item[] = [];
+  // Een nieuwe optie komt hier, met haar naam in devOptions.ts
+  const items: Item[] = [
+    {
+      option: 'oortjesMicrofoon',
+      label: 'Microfoon van de oortjes (proef)',
+      hint: 'Met oortjes of een headset neemt de app op met hun microfoon in plaats van die van de telefoon, voor als de telefoon in je zak zit. In de Android-app vraagt hij daarvoor "Apparaten in de buurt". Bluetooth klinkt slechter en een podcast kan even pauzeren; de testset moet laten zien wat het kost.',
+    },
+  ];
 
   const shown = items.filter((item) => item.available !== false);
   let checked = $state(
@@ -20,6 +27,10 @@
 
   function toggle(item: Item) {
     setDevOption(item.option, checked[item.option]);
+    // Zonder deze toestemming ziet de WebView de microfoon van Bluetooth-oortjes niet
+    if (item.option === 'oortjesMicrofoon' && checked[item.option]) {
+      void requestBluetoothMicrophone();
+    }
   }
 </script>
 

@@ -3,7 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // Microfoon, geluidsmeter en opname nagebootst: het gaat hier om wanneer de
 // microfoon aan en uit gaat, niet om het knippen (dat test trektel.test.ts).
 vi.mock('./log', () => ({ logEvent: vi.fn() }));
-vi.mock('./microphone', () => ({ microphoneConstraints: async () => true }));
+vi.mock('./microphone', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./microphone')>()),
+  microphoneConstraints: async () => true,
+}));
 
 import { TREKTEL_PAUSE_MAX_MS } from './trektel';
 import { startTrektel, stopTrektel, trektel, type TrektelHandlers } from './trektelRecorder.svelte';

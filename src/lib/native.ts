@@ -232,3 +232,41 @@ export async function speakNative(text: string): Promise<{ gesproken: boolean; r
     return { gesproken: false, reden: String(error) };
   }
 }
+
+interface MicrofoonPlugin {
+  status(): Promise<MicrophoneStatus>;
+  vraagBluetooth(): Promise<MicrophoneStatus>;
+}
+
+/** `oortjes`: een headset met microfoon is verbonden. `bluetooth`: de WebView mag hem zien. */
+export interface MicrophoneStatus {
+  oortjes: boolean;
+  bluetooth: boolean;
+}
+
+const Microfoon = registerPlugin<MicrofoonPlugin>('Microfoon');
+
+const microphonePluginAvailable = isNativeApp && Capacitor.isPluginAvailable('Microfoon');
+
+/**
+ * Oortjes met microfoon verbonden (MicrofoonPlugin.java)? Undefined in de
+ * browser of een oudere app-versie: dan weet alleen de lijst van de browser het.
+ */
+export async function nativeMicrophoneStatus(): Promise<MicrophoneStatus | undefined> {
+  if (!microphonePluginAvailable) return undefined;
+  try {
+    return await Microfoon.status();
+  } catch {
+    return undefined;
+  }
+}
+
+/** Vraagt "Apparaten in de buurt", zodat de WebView de microfoon van Bluetooth-oortjes ziet. */
+export async function requestBluetoothMicrophone(): Promise<MicrophoneStatus | undefined> {
+  if (!microphonePluginAvailable) return undefined;
+  try {
+    return await Microfoon.vraagBluetooth();
+  } catch {
+    return undefined;
+  }
+}

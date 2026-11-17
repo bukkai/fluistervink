@@ -16,6 +16,7 @@
   import { createTalkButton } from './talkButton';
   import { trektelEnabled } from './trektel';
   import { startTrektel, stopTrektel, trektel, trektelSupported } from './trektelRecorder.svelte';
+  import { microphoneLine, refreshMicrophones } from './microphoneStatus.svelte';
 
   let { session }: { session: Session } = $props();
 
@@ -210,6 +211,22 @@
     };
   });
 
+  // Welke microfoon luistert: alleen een regel als er oortjes met microfoon
+  // zijn (feedback 17 nov). Opnieuw kijken als er iets verbonden wordt.
+  $effect(() => {
+    void refreshMicrophones();
+    const media = navigator.mediaDevices;
+    const onChange = () => void refreshMicrophones();
+    media?.addEventListener('devicechange', onChange);
+    // De Android-app hoort Bluetooth niet altijd via devicechange
+    const timer = setInterval(onChange, 30_000);
+    return () => {
+      media?.removeEventListener('devicechange', onChange);
+      clearInterval(timer);
+    };
+  });
+  let micLine = $derived(microphoneLine());
+
   // Trektelmodus (docs/plan-trektelmodus.md): alleen als hij bij Instellingen aanstaat
   const trektelOn = trektelEnabled() && trektelSupported();
 
@@ -389,6 +406,9 @@
         <span class="sent">{trektel.sent} {trektel.sent === 1 ? 'stuk' : 'stukken'} verstuurd</span>
       {/if}
     </p>
+    {#if micLine}
+      <p class="mic source">{micLine}</p>
+    {/if}
   {:else}
     {#if trektelOn && trektel.error}
       <p class="mic denied">{trektel.error}</p>
@@ -421,6 +441,8 @@
     </button>
     {#if micMessage}
       <p class="mic denied">{micMessage}</p>
+    {:else if micLine}
+      <p class="mic source">{micLine}</p>
     {/if}
   {/if}
 </div>

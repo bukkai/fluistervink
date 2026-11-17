@@ -2,8 +2,8 @@
 // bevallen (docs/roadmap-android.md, besloten 11 nov). Per telefoon in
 // localStorage; het kaartje bij Instellingen staat alleen bij de eigenaar.
 
-/** Nu geen: voeg hier de naam van een nieuwe optie toe */
-export type DevOption = never;
+/** Voeg hier de naam van een nieuwe optie toe */
+export type DevOption = 'oortjesMicrofoon';
 
 const PREFIX = 'fluistervink.dev.';
 
