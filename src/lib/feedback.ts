@@ -20,6 +20,12 @@ const PATTERNS = {
   uncertain: [120, 150, 450],
   /** Niet begrepen (geen waarneming gevonden): twee korte */
   ignored: [120, 150, 120],
+  /**
+   * Bewaard, wacht op bereik (ontwikkeloptie `offlineWachtrij`): lang, kort,
+   * het spiegelbeeld van onzeker. Bij het begin van het wachten en bij elke
+   * uitspraak zolang er gewacht wordt.
+   */
+  waiting: [450, 150, 120],
   /** Fout bij verwerken (geen verbinding, time-out): drie korte */
   failed: [120, 150, 120, 150, 120],
   /** Trektelling vanzelf gestopt (maximum bereikt, app naar de achtergrond): twee lange */

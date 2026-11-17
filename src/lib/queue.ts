@@ -21,7 +21,7 @@ import { PLATFORM } from './native';
 import { listObservations, spokenAt } from './observations';
 import { preferenceOn } from './preferences';
 import type { Recording } from './recorder.svelte';
-import { confirmAloud } from './spoken';
+import { confirmAloud, confirmCatchUp } from './spoken';
 import { placeFromSpeech } from './spokenPlace';
 import { TRANSCRIBE_MODEL, transcribe, transcribePromptVersionFor } from './transcribe';
 import { checkZeemeeuw } from './zeemeeuw.svelte';
@@ -71,6 +71,10 @@ async function submit(
 ): Promise<void> {
   const id = crypto.randomUUID();
   await db.utterances.add({ id, ...fields, savedAt: Date.now(), status: 'pending' });
+  // Wacht de wachtrij op bereik, dan komt er voorlopig geen antwoord: meteen
+  // "bewaard, wacht op bereik". Niet bij een trektelstuk (dat knipt de app
+  // zelf, elke minuut).
+  if (!fields.trektel && listening) vibrate('waiting');
   processQueue();
   attachPosition(id, lookup);
 }
@@ -232,6 +236,8 @@ async function runQueue(): Promise<void> {
   // de uitspraken erna toch verwerkt worden
   const skipped = new Set<string>();
   let waiting = false;
+  // Inhalen na lang wachten: geen tril per uitspraak, maar één aan het eind
+  let catchUp: { before: number; done: number; failed: number } | undefined;
   while (true) {
     const pending = await db.utterances.where('status').equals('pending').sortBy('recordedAt');
     const next = pending.find((u) => !skipped.has(u.id));
@@ -241,6 +247,8 @@ async function runQueue(): Promise<void> {
       // worden ("nee, keep" moet de waarneming ervoor al kunnen vinden)
       if ((await processUtterance(next)) === 'wait') {
         waiting = true;
+        // Net begonnen met wachten (niet bij elke nieuwe poging)
+        if (!next.waitingSince && !next.trektel) vibrate('waiting');
         break;
       }
     } catch (error) {
@@ -250,22 +258,39 @@ async function runQueue(): Promise<void> {
     }
     const processed = await db.utterances.get(next.id);
     if (next.waitingSince && processed?.status !== 'pending') {
+      const waitedMs = Date.now() - next.waitingSince;
       logEvent(
         'queue_resumed',
-        { waitedMs: Date.now() - next.waitingSince, count: pending.length },
+        { waitedMs, count: pending.length },
         { sessionId: next.sessionId, utteranceId: next.id },
       );
       retryStep = 0;
+      if (waitedMs >= CATCH_UP_AFTER_MS) catchUp = { before: Date.now(), done: 0, failed: 0 };
     }
-    if (processed && !isEmptyTrektelChunk(processed)) {
-      vibrate(utteranceFeedback(processed));
-      // Niet wachten: de volgende uitspraak hoeft niet op de stem te wachten
-      confirmAloud(processed).catch(() => {});
+    if (!processed || isEmptyTrektelChunk(processed)) continue;
+    // Ingesproken vóór het inhalen begon: tellen in plaats van trillen
+    if (catchUp && (processed.savedAt ?? processed.recordedAt) < catchUp.before) {
+      if (processed.status === 'failed') catchUp.failed++;
+      else catchUp.done++;
+      continue;
     }
+    vibrate(utteranceFeedback(processed));
+    // Niet wachten: de volgende uitspraak hoeft niet op de stem te wachten
+    confirmAloud(processed).catch(() => {});
   }
   if (waiting) waitForNetwork();
   else stopWaiting();
+  if (catchUp && !waiting && catchUp.done + catchUp.failed > 0) {
+    vibrate(catchUp.failed ? 'failed' : 'saved');
+    confirmCatchUp(catchUp.done, catchUp.failed).catch(() => {});
+  }
 }
+
+/**
+ * Wie langer dan zo lang op bereik wachtte, krijgt na het verwerken niet per
+ * uitspraak een tril (twintig trillen achter elkaar helpen niemand), maar één.
+ */
+export const CATCH_UP_AFTER_MS = 60_000;
 
 /**
  * Fouten waarbij wachten helpt: geen verbinding of een time-out (status 0),
@@ -287,6 +312,7 @@ export const RETRY_DELAYS_MS = [15_000, 30_000, 60_000, 120_000];
 
 let retryStep = 0;
 let retryTimer: ReturnType<typeof setTimeout> | undefined;
+/** Er wacht een uitspraak op bereik: timer en luisteraars staan aan */
 let listening = false;
 
 const resume = () => {

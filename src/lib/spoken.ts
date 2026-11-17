@@ -99,6 +99,23 @@ export function confirmationText(
   return flagged && uncertainCount === 0 ? `${sentence}. Onzeker` : sentence;
 }
 
+/** Na het inhalen (lang op bereik gewacht): alleen hoeveel er verwerkt is */
+export function catchUpText(done: number, failed: number): string {
+  const parts = [
+    done ? `${done === 1 ? 'een uitspraak' : `${done} uitspraken`} verwerkt` : '',
+    failed ? `${failed} niet gelukt` : '',
+  ];
+  const text = parts.filter(Boolean).join(', ');
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/** Na de ene tril van het inhalen, als de instelling aan staat */
+export async function confirmCatchUp(done: number, failed: number): Promise<void> {
+  if (!speechSupported || !preferenceOn('gesproken')) return;
+  const { gesproken, reden } = await speakNative(catchUpText(done, failed));
+  if (!gesproken && reden !== 'geen oortjes') logEvent('speak_failed', { reden });
+}
+
 /** Na het trillen: zeggen wat er is vastgelegd, als de instelling aan staat */
 export async function confirmAloud(utterance: Utterance): Promise<void> {
   if (!speechSupported || !preferenceOn('gesproken')) return;

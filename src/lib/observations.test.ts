@@ -847,7 +847,10 @@ describe('netwerk weg', () => {
       vi.mocked(interpret).mockClear();
     });
 
-    it('zonder bereik: niets mislukt, de wachtrij stopt bij de eerste en trilt niet', async () => {
+    const WAITING = [450, 150, 120];
+    const SAVED = [120];
+
+    it('zonder bereik: niets mislukt, de wachtrij stopt bij de eerste', async () => {
       network(false);
       const first = await record();
       const second = await record();
@@ -859,7 +862,42 @@ describe('netwerk weg', () => {
       expect(b?.waitingSince).toBeUndefined();
       // De tweede is niet geprobeerd: de volgorde blijft die van het inspreken
       expect(transcribeCalls).toBe(1);
-      expect(vibrations).toEqual([]);
+      // "Bewaard, wacht op bereik" in plaats van drie korte trillen
+      expect(vibrations).toEqual([WAITING]);
+    });
+
+    it('een nieuwe uitspraak terwijl er gewacht wordt: meteen het wachtpatroon', async () => {
+      network(false);
+      await record();
+      await processQueue();
+      await processQueue();
+      expect(vibrations).toEqual([WAITING]);
+      await submitText(SESSION, 'roepje vink');
+      await vi.waitFor(() => expect(transcribeCalls).toBe(3));
+      expect(vibrations).toEqual([WAITING, WAITING]);
+    });
+
+    it('kort gewacht: daarna gewoon per uitspraak een tril', async () => {
+      network(false);
+      await record();
+      await record();
+      await processQueue();
+      network(true);
+      await processQueue();
+      expect(vibrations).toEqual([WAITING, SAVED, SAVED]);
+    });
+
+    it('langer dan een minuut gewacht: één tril als alles binnen is', async () => {
+      network(false);
+      const first = await record();
+      await record();
+      await record();
+      await processQueue();
+      await db.utterances.update(first, { waitingSince: Date.now() - 2 * 60_000 });
+      network(true);
+      await processQueue();
+      expect(await db.observations.count()).toBe(3);
+      expect(vibrations).toEqual([WAITING, SAVED]);
     });
 
     it('logt één keer queue_waiting, geen attempt_failed per poging', async () => {
