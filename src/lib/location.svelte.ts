@@ -91,7 +91,7 @@ export async function currentPosition(): Promise<PositionLookup> {
 }
 
 /**
- * Eén losse meting, buiten een sessie: de knop "Mijn plek nu" op het kaartje
+ * Eén losse meting, buiten een sessie: de knop "Huidige locatie" op het kaartje
  * van Locatie aanpassen. Geeft bij een fout een zin voor op het scherm.
  */
 export function positionNow(): Promise<Position> {

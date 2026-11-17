@@ -25,6 +25,7 @@ import {
   onLongWait,
   processQueue,
   retry,
+  retryNow,
   stopWaiting,
   submitText,
 } from './queue';
@@ -305,7 +306,7 @@ describe('plek met de hand in de review', () => {
     expect(saved).not.toHaveProperty('recordedPosition');
   });
 
-  it('Mijn plek nu: nauwkeurigheid van de meting, afgerond en niet beter dan met de hand', () => {
+  it('Huidige locatie: nauwkeurigheid van de meting, afgerond en niet beter dan met de hand', () => {
     expect(placeByHand({}, 0, 52.1, 5.1, 23.6).position?.accuracy).toBe(24);
     expect(placeByHand({}, 0, 52.1, 5.1, 3).position?.accuracy).toBe(HAND_ACCURACY);
   });
@@ -977,6 +978,28 @@ describe('netwerk weg', () => {
       expect((await db.utterances.get(id))?.waitingSince).toBe(since);
       expect(await events('queue_waiting')).toHaveLength(1);
       expect(await events('attempt_failed')).toEqual([]);
+    });
+
+    it('Probeer opnieuw: verwerkt meteen als er weer bereik is', async () => {
+      network(false);
+      const id = await record();
+      await processQueue();
+      expect((await db.utterances.get(id))?.status).toBe('pending');
+      network(true);
+      await retryNow();
+      expect((await db.utterances.get(id))?.status).toBe('done');
+      expect(await events('queue_retry_now')).toHaveLength(1);
+    });
+
+    it('Probeer opnieuw zonder bereik: blijft wachten, niets mislukt', async () => {
+      network(false);
+      const id = await record();
+      await processQueue();
+      await retryNow();
+      const u = await db.utterances.get(id);
+      expect(u?.status).toBe('pending');
+      expect(u?.error).toBeUndefined();
+      expect(transcribeCalls).toBe(2);
     });
 
     it('weer online: verwerkt alles op volgorde en logt queue_resumed', async () => {

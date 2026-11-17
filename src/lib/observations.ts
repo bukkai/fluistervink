@@ -70,7 +70,7 @@ export type { Place };
  * Plek met de hand gezet (tikken of slepen op de kaart). De GPS-positie
  * blijft bewaard in `recordedPosition`, ook als de plek vaker verzet wordt.
  * Als meettijd de tijd van de waarneming, zodat er geen "positie oud" staat.
- * Met "Mijn plek nu" op het kaartje de nauwkeurigheid van die GPS-meting
+ * Met "Huidige locatie" op het kaartje de nauwkeurigheid van die GPS-meting
  * (afgerond, niet beter dan HAND_ACCURACY).
  */
 export function placeByHand(
