@@ -169,7 +169,10 @@
   function positionAge(obs: Observation): string | undefined {
     if (!obs.position) return undefined;
     const minutes = Math.floor((obs.observedAt - obs.position.fixedAt) / 60_000);
-    return minutes >= 1 ? `positie ${minutes} min oud` : undefined;
+    if (minutes >= 1) return `positie ${minutes} min oud`;
+    // De GPS had nog geen plek; deze kwam later (`positionLater`)
+    const later = Math.floor((obs.position.fixedAt - obs.observedAt) / 60_000);
+    return later >= 1 ? `positie ${later} min later` : undefined;
   }
 
   /**

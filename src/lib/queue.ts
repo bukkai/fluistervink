@@ -3,6 +3,7 @@ import {
   audioBlob,
   isStoredAudio,
   storeAudio,
+  type Position,
   type PositionLookup,
   type ProcessingMetrics,
   type Utterance,
@@ -14,7 +15,7 @@ import { devNoteText } from './devNotePrefix';
 import { isEmptyTrektelChunk, utteranceFeedback, vibrate } from './feedback';
 import { INSTANCE_ID } from './instance.svelte';
 import { MODEL, interpret, promptVersionFor, type Interpretation } from './interpret';
-import { currentPosition } from './location.svelte';
+import { currentPosition, gps } from './location.svelte';
 import { APP_VERSION, logEvent, wasHiddenSince } from './log';
 import { PLATFORM } from './native';
 import { listObservations, spokenAt } from './observations';
@@ -86,9 +87,57 @@ async function submit(
 async function attachPosition(utteranceId: string, pending: Promise<PositionLookup>) {
   const { position, ...positionLookup } = await pending;
   if (!position) {
+    // Intussen al een latere plek gekregen (`positionLater`): die laten staan
+    const saved = await db.utterances.get(utteranceId);
+    if (saved?.position) return;
     await db.utterances.update(utteranceId, { positionLookup });
+    // Kwam de eerste meting net binnen terwijl deze opvraag opgaf: meteen gebruiken
+    const latest = gps.latest && { ...gps.latest };
+    if (latest) await positionLater(latest);
     return;
   }
+  await setPosition(utteranceId, position, positionLookup);
+}
+
+/** Zo ver terug krijgen uitspraken zonder plek de eerste latere meting nog. */
+export const LATER_MAX_MS = 10 * 60_000;
+/** Wandeltempo in m/s: zo ver kun je verder zijn als de plek later komt. */
+const WALKING_SPEED = 1.4;
+
+/**
+ * De GPS heeft (weer) een plek, na uitspraken waarbij hij er geen had: de
+ * GPS zonder fix, bv. in vliegtuigmodus of binnen, waar de eerste meting
+ * minuten kan duren. Die uitspraken (tot `LATER_MAX_MS` terug) krijgen deze
+ * plek alsnog. In een trektelling sta je stil, dus dan klopt hij; anders
+ * groeit de nauwkeurigheid met hoe ver je in die tijd gelopen kunt hebben.
+ */
+export async function positionLater(fix: Position): Promise<void> {
+  const unplaced = await db.utterances
+    .where('recordedAt')
+    .between(fix.fixedAt - LATER_MAX_MS, fix.fixedAt, true, true)
+    .filter((u) => !u.position && u.positionLookup?.source === 'none')
+    .toArray();
+  for (const u of unplaced) {
+    const laterMs = fix.fixedAt - u.recordedAt;
+    const accuracy = u.trektel
+      ? fix.accuracy
+      : Math.round(fix.accuracy + (WALKING_SPEED * laterMs) / 1000);
+    await setPosition(
+      u.id,
+      { ...fix, accuracy },
+      { source: 'later', waitMs: laterMs, error: u.positionLookup?.error },
+    );
+  }
+  if (unplaced.length)
+    logEvent('position_later', { count: unplaced.length, accuracy: fix.accuracy });
+}
+
+/** Positie bij de uitspraak en de waarnemingen eruit, daarna het gebied. */
+async function setPosition(
+  utteranceId: string,
+  position: Position,
+  positionLookup: Omit<PositionLookup, 'position'>,
+) {
   await db.transaction('rw', db.utterances, db.observations, async () => {
     await db.utterances.update(utteranceId, { position, positionLookup });
     await db.observations
