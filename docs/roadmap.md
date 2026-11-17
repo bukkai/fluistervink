@@ -28,11 +28,23 @@ Afgerond en alleen nog naslag: `docs/plan-capacitor.md` (fase 0–2 en 4; fase 3
 
 ## Na v1.0
 
-- **Opnemen met het scherm uit** en starten met de knop op de oortjes (`docs/roadmap-android.md`, stap 3; gevraagd door Maarten voor op de fiets).
-- **Wake word "Fluistervink"**, open source (openWakeWord), na stap 3 (`docs/roadmap-android.md`, stap 5).
-- **De microfoon delen:** automatisch pauzeren en hervatten als een andere app (Merlin) de microfoon gebruikt (`AudioRecordingCallback`, stap 4). De trektelling pauzeert al als de app naar de achtergrond gaat.
-- **iPhone-app** (`docs/plan-ios.md`).
-- Later: offline wachtrij met sync-status; inzenden via de API van waarneming.nl (OAuth, client-ID aanvragen; uitgezocht in `docs/ideeen.md`); eventueel BirdNET op de telefoon voor soortsuggesties.
+Volgorde besloten op 17 nov. Alles komt eerst achter een ontwikkeloptie op `main` (werkwijze tijdens de proef: `docs/omgevingen.md`).
+
+**Eerst: vogelen zonder netwerk en zonder scherm.**
+
+1. **Offline wachtrij** (`docs/plan-offline.md`): een uitspraak zonder bereik blijft wachten en wordt vanzelf verwerkt zodra er weer verbinding is, met een zichtbare stand ("3 uitspraken wachten op bereik"). Alleen webcode, dus kan meteen.
+2. **Opnemen met het scherm uit** en starten met de knop op de oortjes (`docs/roadmap-android.md`, stap 3; gevraagd door Maarten voor op de fiets). Vraagt een nieuwe verklaring bij Google (microfoon in de service), dus: de proef nu op een eigen branch met een debug-APK, op `main` en in een tag pas na de productierelease.
+3. **De microfoon delen** met Merlin en bellen (`AudioRecordingCallback`, stap 4), nodig voor het wake word.
+4. **Wake word "Fluistervink"**, open source (openWakeWord, stap 5). Het model trainen en meten op de opnames uit de testset kan al eerder, los van de app; in de app pas na stap 2 en 3, eerst een proef die alleen logt.
+
+**Daarna: breder en betaalbaar.**
+
+5. **Export naar observation.org**: hetzelfde platform als waarneming.nl, met dezelfde soort-ID's; nagaan of de bulkimport hetzelfde is. Ook trektellen.nl (import nog uitzoeken). iNaturalist als laatste (zonder foto of geluid telt een waarneming daar nauwelijks). Inzenden via de API van waarneming.nl pas als er meer gebruikers zijn.
+6. **Betaalde laag**, vóór het aantal gebruikers flink groeit. Eerst de kosten per actieve gebruiker meten (de proef van 17 nov–1 dec, Developer en Statistieken). Dan Play Billing (verplicht voor digitale extra's in een Android-app): de aankoop hangt aan het Google-account, de proxy controleert hem en koppelt hem aan het installatietoken, dus geen eigen accounts. Denkrichting: gratis met een plafond per dag, betaald een ruimer plafond en de trektelmodus. Native, dus een nieuwe app-versie; voorwaarden en `#privacy` erbij.
+7. **Vogels van andere landen**, gewoon in het Nederlands (regiolijsten van observation.org, `docs/ideeen.md`).
+8. **De app in het Engels**: teksten, Engelse prompt en soortnamen, Engelse bijnamen. Het meeste werk is een Engelse testset met Engelstalige sprekers.
+
+**Ooit:** iPhone-app (`docs/plan-ios.md`); eventueel BirdNET op de telefoon voor soortsuggesties.
 
 ## Bewust niet
 

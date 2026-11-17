@@ -68,9 +68,9 @@ Doel: valideren dat herkenning en interpretatie in het veld goed genoeg werken.
 
 **Bewust níet in de MVP (niet toevoegen zonder overleg):**
 
-- Wake word (de native laag wel, zie `docs/plan-capacitor.md`)
+- Wake word (gepland na v1.0, `docs/roadmap.md`)
 - GPS-track (ook later niet gewenst)
-- Echte offline-ondersteuning (verwerken zodra er verbinding is, sync-status)
+- Echte offline-ondersteuning (verwerken zodra er verbinding is, sync-status): sinds 17 nov gepland, `docs/plan-offline.md`
 - Uploaden via de API van waarneming.nl
 - Automatisch pauzeren als een andere app (zoals Merlin) de microfoon gebruikt (behalve de trektelling, die pauzeert als de app naar de achtergrond gaat; zie Trektelmodus hierboven)
 - Accounts, delen of multi-user
