@@ -432,6 +432,14 @@
   "group": 1
  },
  {
+  "id": 238,
+  "name": "Chileense Flamingo",
+  "scientific": "Phoenicopterus chilensis",
+  "type": "S",
+  "rarity": 2,
+  "group": 1
+ },
+ {
   "id": 1401,
   "name": "Flamingo",
   "scientific": "Phoenicopterus roseus",

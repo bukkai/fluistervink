@@ -15,6 +15,7 @@ import {
   activityName,
   aliases,
   aliasesOf,
+  heardNames,
   BIRDS,
   codesFor,
   convertCodesBetween,
@@ -362,7 +363,7 @@ const speciesLines = (list: typeof species) =>
   list.map((s) => `${s.id}|${s.name}|${s.scientific}`).join('\n');
 
 const aliasLines = (list: typeof aliases) =>
-  list.map((a) => `${a.bijnamen.join(', ')} → ${a.soort}|${a.naam}`).join('\n');
+  list.map((a) => `${heardNames(a).join(', ')} → ${a.soort}|${a.naam}`).join('\n');
 
 const buildPrompt = (
   withGroups: boolean,
