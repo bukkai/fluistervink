@@ -39,6 +39,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       ],
       'Over de app': [
         'Wie de app voor het eerst opent, krijgt een rustig welkom in drie stappen: hoe het werkt, toestemming voor microfoon en locatie, en de vraag of je wilt meehelpen. Geen losse meldingen meer boven en onder de startknop.',
+        'In het welkom kun je het eerst thuis proberen: zeg één zin en zie meteen wat Fluistervink ervan maakt, met de tril die erbij hoort. Er wordt niets bewaard.',
       ],
     },
   },

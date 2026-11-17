@@ -1,19 +1,26 @@
 <script lang="ts">
   // Welkom voor nieuwelingen, in plaats van het hoofdscherm, tot de eerste
-  // sessie of tot het einde (of Overslaan). Drie stappen: wat is het,
-  // toestemming voor microfoon en locatie, en de vraag over delen (alleen als
-  // die nog open staat). Zie welcome.ts. Houd de trilpatronen gelijk met
-  // HowItWorks.
+  // sessie of tot het einde (of Overslaan). De stappen: wat is het,
+  // toestemming voor microfoon en locatie, één zin proberen (TryOut, als de
+  // browser kan opnemen), en de vraag over delen (alleen als die nog open
+  // staat). Zie welcome.ts. Houd de trilpatronen gelijk met HowItWorks.
   import { tick, untrack } from 'svelte';
   import { isNativeApp } from './native';
-  import { askPermissions, setWelcomeDone, type PermissionResult } from './welcome';
+  import { recorder } from './recorder.svelte';
+  import TryOut from './TryOut.svelte';
+  import {
+    askPermissions,
+    permissionSettingsPath,
+    setWelcomeDone,
+    type PermissionResult,
+  } from './welcome';
 
   let {
     askShare,
     onshare,
     onclose,
   }: {
-    /** De vraag over delen staat nog open: dan een derde stap */
+    /** De vraag over delen staat nog open: dan een laatste stap */
     askShare: boolean;
     onshare: (on: boolean) => void;
     onclose: () => void;
@@ -21,16 +28,24 @@
 
   // Bij het begin vastgelegd: de stappen veranderen niet als de keuze over
   // delen halverwege valt
-  const steps = untrack(() => askShare) ? 3 : 2;
-  let step = $state(1);
+  type Step = 'welkom' | 'toestemming' | 'proberen' | 'delen';
+  const steps: Step[] = [
+    'welkom',
+    'toestemming',
+    ...(recorder.status === 'unsupported' ? [] : ['proberen' as const]),
+    ...(untrack(() => askShare) ? ['delen' as const] : []),
+  ];
+  let index = $state(0);
+  let step = $derived(steps[index]);
+  let last = $derived(index === steps.length - 1);
   let heading = $state<HTMLHeadingElement>();
 
   let asking = $state(false);
   let permissions = $state<PermissionResult>();
 
   async function next() {
-    if (step === steps) return close();
-    step++;
+    if (last) return close();
+    index++;
     // Schermlezer en toetsenbord naar de nieuwe stap
     await tick();
     heading?.focus();
@@ -51,14 +66,10 @@
     setWelcomeDone();
     onclose();
   }
-
-  const settingsPath = isNativeApp
-    ? 'Instellingen van je telefoon → Apps → Fluistervink → Rechten'
-    : 'Chrome: tik op het icoontje links van het adres → Rechten';
 </script>
 
 <section class="welcome" aria-labelledby="welcome-title">
-  {#if step === 1}
+  {#if step === 'welkom'}
     <img class="hero" src="/icon.svg" alt="" width="112" height="112" />
     <h1 id="welcome-title" tabindex="-1" bind:this={heading}>Welkom bij Fluistervink</h1>
     <p class="lead">
@@ -93,7 +104,7 @@
         <span>Thuis loop je de lijst na en zet je hem door naar waarneming.nl.</span>
       </li>
     </ul>
-  {:else if step === 2}
+  {:else if step === 'toestemming'}
     <h1 id="welcome-title" tabindex="-1" bind:this={heading}>Microfoon en locatie</h1>
     <p class="lead">
       Je telefoon vraagt de eerste keer of de app je <strong>microfoon</strong> en
@@ -118,10 +129,17 @@
       {#if !permissions.microphone || !permissions.location}
         <p class="hint">
           Zonder microfoon kun je niets inspreken, zonder locatie komen je waarnemingen niet op de
-          kaart. Aanzetten kan alsnog bij {settingsPath}.
+          kaart. Aanzetten kan alsnog bij {permissionSettingsPath}.
         </p>
       {/if}
     {/if}
+  {:else if step === 'proberen'}
+    <h1 id="welcome-title" tabindex="-1" bind:this={heading}>Probeer het eens</h1>
+    <p class="lead">
+      Zeg iets alsof je buiten staat, bijvoorbeeld <em>"drie merels en een zingende roodborst"</em>.
+      Er wordt niets bewaard.
+    </p>
+    <TryOut />
   {:else}
     <h1 id="welcome-title" tabindex="-1" bind:this={heading}>Help je mee?</h1>
     <p class="lead">
@@ -137,25 +155,25 @@
   {/if}
 
   <div class="footer">
-    {#if step === 2 && !permissions}
+    {#if step === 'toestemming' && !permissions}
       <button class="btn block large" disabled={asking} onclick={ask}>
         {asking ? 'Even wachten…' : 'Toestemming geven'}
       </button>
       <button class="link" onclick={next}>Later</button>
-    {:else if step === 3}
+    {:else if step === 'delen'}
       <button class="btn block large" onclick={() => share(true)}>Ja, delen</button>
       <button class="link" onclick={() => share(false)}>Liever niet</button>
     {:else}
-      <button class="btn block large" onclick={next}>
-        {step === steps ? 'Aan de slag' : 'Verder'}
+      <button class="btn block large" class:secondary={step === 'proberen'} onclick={next}>
+        {last ? 'Aan de slag' : 'Verder'}
       </button>
-      {#if step === 1}
+      {#if step === 'welkom'}
         <button class="link" onclick={close}>Overslaan</button>
       {/if}
     {/if}
-    <p class="dots" aria-label="Stap {step} van {steps}">
-      {#each { length: steps }, i (i)}
-        <span class:on={i + 1 === step}></span>
+    <p class="dots" aria-label="Stap {index + 1} van {steps.length}">
+      {#each steps as name, i (name)}
+        <span class:on={i === index}></span>
       {/each}
     </p>
   </div>
