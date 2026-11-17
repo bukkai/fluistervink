@@ -654,3 +654,10 @@ writeFileSync(
   ),
 );
 console.log(`\nBewaard in ${file.replace(ROOT + '/', '')}`);
+
+// Zelf stoppen: met de online D1 start de Cloudflare-plugin een eigen
+// verbinding naar Cloudflare (een tweede workerd), die hij bewaart om te
+// hergebruiken en bij proxy.close() niet opruimt. Zonder exit blijft het
+// proces daarop wachten. Eerst stdout leeg laten lopen (bij een pipe).
+await new Promise((resolve) => process.stdout.write('', resolve));
+process.exit(0);
