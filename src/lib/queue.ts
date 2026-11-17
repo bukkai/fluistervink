@@ -249,6 +249,7 @@ async function runQueue(): Promise<void> {
         waiting = true;
         // Net begonnen met wachten (niet bij elke nieuwe poging)
         if (!next.waitingSince && !next.trektel) vibrate('waiting');
+        checkLongWait(next.waitingSince ?? Date.now(), pending.length);
         break;
       }
     } catch (error) {
@@ -334,11 +335,37 @@ function waitForNetwork(): void {
   document.addEventListener('visibilitychange', resumeWhenVisible);
 }
 
+/**
+ * Na zo lang wachten op bereik een melding (trektelling: de stukken stapelen
+ * zich op, ongeveer 120 in 2 uur). De telling stopt niet vanzelf.
+ */
+export const LONG_WAIT_MS = 2 * 60 * 60_000;
+
+const longWaitListeners = new Set<(count: number) => void>();
+let longWaitNotified = false;
+
+/**
+ * Er wordt al `LONG_WAIT_MS` op bereik gewacht: één keer per keer wachten,
+ * met het aantal wachtende uitspraken. Geeft een functie om af te melden.
+ */
+export function onLongWait(listener: (count: number) => void): () => void {
+  longWaitListeners.add(listener);
+  return () => longWaitListeners.delete(listener);
+}
+
+function checkLongWait(since: number, count: number): void {
+  if (longWaitNotified || Date.now() - since < LONG_WAIT_MS) return;
+  longWaitNotified = true;
+  logEvent('queue_long_wait', { waitedMs: Date.now() - since, count });
+  for (const listener of longWaitListeners) listener(count);
+}
+
 /** Er wacht niets meer: timer en luisteraars weg. Ook voor de tests. */
 export function stopWaiting(): void {
   clearTimeout(retryTimer);
   retryTimer = undefined;
   retryStep = 0;
+  longWaitNotified = false;
   if (!listening) return;
   listening = false;
   window.removeEventListener('online', resume);
