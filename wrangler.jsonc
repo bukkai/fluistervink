@@ -61,10 +61,35 @@
     { "name": "AI_LIMIT", "namespace_id": "1001", "simple": { "limit": 60, "period": 60 } },
   ],
   // Previews: een eigen versie per branch (Workers Builds draait daarvoor
-  // `wrangler preview`). Leeg, want app en assets gebruiken de instellingen
-  // hierboven. Previews erven géén geheimen van productie: die staan apart in
-  // het dashboard onder Variables and Secrets → Previews Base.
-  "previews": {},
+  // `wrangler preview`), op <branch>-fluistervink.stephanmullernl.workers.dev.
+  // Een preview erft de variabelen en koppelingen hierboven níet: zonder dit
+  // blok had hij geen KV, D1 en snelheidslimiet, en gaf elk verzoek van de
+  // eigenaar "Interne fout in de proxy" (17 nov). Zelfde KV en D1 als de beta,
+  // zodat verbruik en gedeelde feedback meetellen. Zonder TURNSTILE_SITE_KEY en
+  // PLAY_PROJECT_NUMBER: aanmelden als installatie staat in een preview uit
+  // (geen INSTALL_SECRET), alleen de eigenaar met de code kan erin. Geheimen
+  // staan apart in het dashboard onder Variables and Secrets → Previews Base.
+  "previews": {
+    "vars": {
+      "CHANNEL": "beta",
+      "OPENAI_PROJECT_ID": "proj_CvUygMTZvZOPx4zIo446b4EQ",
+      "ANTHROPIC_WORKSPACE_ID": "wrkspc_01LXLhkhjpBw2JuKbtJpVKAW",
+    },
+    "kv_namespaces": [
+      { "binding": "FEEDBACK", "id": "e7c6372ecd0f402fb1fe455a62d73f11" },
+      { "binding": "TESTERS", "id": "b04f6350b8c64b26865823a93c096352" },
+    ],
+    "d1_databases": [
+      {
+        "binding": "USAGE",
+        "database_name": "fluistervink-usage",
+        "database_id": "b0ef6e17-df02-4af5-ae26-b80e4e4f8e38",
+      },
+    ],
+    "ratelimits": [
+      { "name": "AI_LIMIT", "namespace_id": "1001", "simple": { "limit": 60, "period": 60 } },
+    ],
+  },
   // Geheimen (ACCESS_CODE, OPENAI_API_KEY, ANTHROPIC_API_KEY, en optioneel de
   // beheersleutels OPENAI_ADMIN_KEY en ANTHROPIC_ADMIN_KEY voor de echte
   // rekening op Developer; INSTALL_SECRET, TURNSTILE_SECRET en
