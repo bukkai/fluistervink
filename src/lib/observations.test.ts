@@ -24,12 +24,14 @@ import {
   onAudioLimit,
   LONG_WAIT_MS,
   onLongWait,
+  positionLater,
   processQueue,
   retry,
   retryNow,
   stopWaiting,
   submitText,
 } from './queue';
+import { gps } from './location.svelte';
 import { setPreference } from './preferences';
 import { UNKNOWN_PLACE_ACCURACY } from './spokenPlace';
 import { distanceMeters } from './geo';
@@ -467,6 +469,73 @@ describe('plek uit de uitspraak', () => {
       const [obs] = await listObservations(SESSION);
       expect(obs.position?.accuracy).toBe(150);
       expect(obs.recordedPosition).toEqual(POSITION);
+    });
+  });
+});
+
+describe('plek die later komt (GPS zonder fix)', () => {
+  const FIX = { lat: 52.0, lon: 5.9, accuracy: 7, fixedAt: Date.parse('2026-10-11T15:00:00') };
+  const none = { source: 'none' as const, waitMs: 10_000, error: 'Timeout expired' };
+
+  async function unplaced(minutesBefore: number, extra: Partial<Utterance> = {}) {
+    const id = crypto.randomUUID();
+    await db.utterances.add({
+      id,
+      sessionId: SESSION,
+      recordedAt: FIX.fixedAt - minutesBefore * 60_000,
+      transcript: 'vink',
+      status: 'done',
+      positionLookup: none,
+      ...extra,
+    });
+    await db.observations.add({
+      id: 'obs-' + id,
+      sessionId: SESSION,
+      utteranceId: id,
+      speciesId: VINK,
+      count: 1,
+      observedAt: FIX.fixedAt - minutesBefore * 60_000,
+      createdAt: 0,
+      uncertain: false,
+      status: 'draft',
+    });
+    return id;
+  }
+
+  afterEach(() => {
+    gps.latest = undefined;
+  });
+
+  it('eerdere uitspraken zonder plek krijgen de eerste meting alsnog', async () => {
+    const trektel = await unplaced(3, { trektel: true });
+    const walking = await unplaced(2);
+    const tooOld = await unplaced(20);
+    // Nog aan het zoeken: die krijgt zijn eigen meting
+    const searching = await unplaced(1, { positionLookup: undefined });
+
+    await positionLater(FIX);
+
+    const [t, w, old, busy] = await db.utterances.bulkGet([trektel, walking, tooOld, searching]);
+    // Trektelling: je stond stil, de plek klopt
+    expect(t?.position).toEqual(FIX);
+    expect(t?.positionLookup).toMatchObject({ source: 'later', waitMs: 3 * 60_000 });
+    // Lopend: zo ver kun je in 2 minuten zijn (1,4 m/s)
+    expect(w?.position?.accuracy).toBe(7 + 168);
+    expect(old?.position).toBeUndefined();
+    expect(busy?.position).toBeUndefined();
+    expect((await db.observations.get('obs-' + trektel))?.position).toEqual(FIX);
+  });
+
+  it('meting kwam net binnen terwijl het opvragen opgaf: meteen gebruikt', async () => {
+    model.respond = () => toolResponse(['add_observation', { species_id: VINK, count: 1 }]);
+    await submitText(SESSION, 'vink');
+    await vi.waitFor(async () => expect(await db.observations.count()).toBe(1));
+    gps.latest = { ...FIX, fixedAt: Date.now() + 1000 };
+    gpsLookup.resolve({ ...none });
+    await vi.waitFor(async () => {
+      const [u] = await db.utterances.toArray();
+      expect(u.positionLookup?.source).toBe('later');
+      expect((await listObservations(SESSION))[0].position).toMatchObject({ lat: FIX.lat });
     });
   });
 });

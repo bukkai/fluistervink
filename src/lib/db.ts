@@ -31,9 +31,11 @@ export interface PositionLookup {
   /**
    * `recent`: meting van de warme GPS, hooguit 15 s oud. `fresh`: nieuw
    * opgevraagd. `last_known`: verse meting lukte niet, laatst bekende positie
-   * (kan oud zijn). `none`: geen positie.
+   * (kan oud zijn). `none`: geen positie. `later`: eerst geen positie, daarna
+   * de eerste meting die binnenkwam (GPS zonder fix, bv. in vliegtuigmodus);
+   * `waitMs` is dan hoe veel later.
    */
-  source: 'recent' | 'fresh' | 'last_known' | 'none';
+  source: 'recent' | 'fresh' | 'last_known' | 'none' | 'later';
   position?: Position;
   /** Hoe lang het zoeken duurde */
   waitMs: number;

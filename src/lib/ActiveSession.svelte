@@ -9,7 +9,7 @@
   import { recordFix } from './effort';
   import { watchKeyboard } from './keyboard';
   import { currentPosition, gps, startTracking, stopTracking } from './location.svelte';
-  import { onAudioLimit, onLongWait, submitRecording, submitText } from './queue';
+  import { onAudioLimit, onLongWait, positionLater, submitRecording, submitText } from './queue';
   import { recorder, startRecording, stopRecording } from './recorder.svelte';
   import SessionLog from './SessionLog.svelte';
   import { syncSessionService } from './sessionService';
@@ -89,6 +89,16 @@
     return () => {
       if (Object.keys(fixCounts).length) logEvent('distance_fixes', fixCounts, { sessionId });
     };
+  });
+
+  // Eerste meting (of weer een na zoeken): uitspraken van daarvoor zonder
+  // plek krijgen hem alsnog (vliegtuigmodus, binnen: de eerste fix kan
+  // minuten duren)
+  let hadFix = false;
+  $effect(() => {
+    const fix = gps.status === 'ok' ? gps.latest : undefined;
+    if (fix && !hadFix) positionLater($state.snapshot(fix));
+    hadFix = fix !== undefined;
   });
 
   // Voorlopige naam van de sessie uit de startpositie. Niet bij voortzetten.
