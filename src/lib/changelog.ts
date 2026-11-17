@@ -34,6 +34,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         'Zeg je bij een nieuwe waarneming waar de vogel zit ("200 meter ten noorden van hier"), dan komt die plek weer mee. Sinds gisteren viel hij weg.',
       ],
       Trektelling: [
+        'In een trektelling is een vogel zonder gedrag nu overvliegend. Zeg je iets anders ("zit", "foeragerend", "roepje"), dan geldt dat.',
         'Een trektelling zonder bereik telt gewoon door; de stukken worden verwerkt zodra er weer verbinding is.',
         'Noemde je in een trektelling een plek, dan raakte de app de soorten daarna in hetzelfde stuk kwijt. Dat is opgelost.',
       ],

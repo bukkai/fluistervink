@@ -450,6 +450,7 @@ Latere correcties gaan per geslacht: "nog een paartje erbij" of "nog een man en 
 - "ziek", "gewond" → activiteit 3144. "Slaapplaats" → activiteit 78.
 - "nocmig", "op de recorder", "op de geluidsopname" → methode 588 (op geluidsrecorder), activiteit zoals gezegd (meestal 6, overvliegend).
 - Niets genoemd → activiteit 1 (ter plaatse), methode 48 (gezien).
+- In een trektelling (het bericht zegt "Dit is een stuk uit een trektelling") telt de gebruiker vogels die langskomen: een vogel zonder genoemd gedrag is dan overvliegend (activiteit 6, methode 48), met windrichting de bijbehorende overvliegend-code. Noemt de gebruiker wel gedrag ("ter plaatse", "zit", "foeragerend", "cirkelend", "roepje", "zingend"), dan geldt dat, zoals hierboven. Alleen voor vogels: andere dieren blijven ter plaatse.
 - Let ook op bijvoeglijke vormen: "zes overvliegende houtduiven" = activiteit 6, "een zingende merel" = activiteit 4.
 
 Codes:
@@ -596,13 +597,23 @@ export function parseResponse(
 }
 
 /**
+ * Het bericht bij elke aanroep: de context en de uitspraak. Een trektelstuk
+ * krijgt er een regel bij, zodat het model weet dat een vogel zonder gedrag
+ * overvliegend is (de regel zelf staat in de systeemprompt, die gecachet blijft).
+ */
+export function userMessage(contextText: string, transcript: string, trektel: boolean): string {
+  const kind = trektel ? 'Dit is een stuk uit een trektelling.\n\n' : '';
+  return `${kind}Recente waarnemingen in deze sessie (#1 = meest recent):\n${contextText}\n\nUitspraak: "${transcript}"`;
+}
+
+/**
  * @param transcript De uitspraak als tekst
  * @param recent Recente waarnemingen van de sessie, nieuwste eerst
  * @param options `here`: positie van de uitspraak, voor de afstand tot eerdere
  *   waarnemingen. `model` en `contextText` alleen voor de testset
  *   (scripts/testset.mjs): een ander model, of de context precies zoals hij
  *   destijds was. `sessionId`: voor het verbruik per sessie. `groups`: ook
- *   andere dieren dan vogels
+ *   andere dieren dan vogels. `trektel`: een stuk uit een trektelling
  */
 export async function interpret(
   transcript: string,
@@ -613,6 +624,7 @@ export async function interpret(
     contextText?: string;
     sessionId?: string;
     groups?: boolean;
+    trektel?: boolean;
   } = {},
 ): Promise<Interpretation> {
   const withGroups = options.groups ?? false;
@@ -633,7 +645,7 @@ export async function interpret(
       messages: [
         {
           role: 'user',
-          content: `Recente waarnemingen in deze sessie (#1 = meest recent):\n${contextText}\n\nUitspraak: "${transcript}"`,
+          content: userMessage(contextText, transcript, options.trektel ?? false),
         },
       ],
     } satisfies Anthropic.MessageCreateParamsNonStreaming,
