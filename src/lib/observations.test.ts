@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FakeLockManager, HOUTDUIF, KEEP, REE, VINK, VOS, toolResponse } from '../test-helpers';
 import { db, storeAudio, type Observation, type PositionLookup, type Utterance } from './db';
 import { interpret } from './interpret';
+import { fillMissingAreas } from './area';
 import { isAccidental, isBareNo } from './applyActions';
 import {
   HAND_ACCURACY,
@@ -70,7 +71,10 @@ vi.mock('./location.svelte', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./location.svelte')>()),
   currentPosition: () => new Promise<PositionLookup>((resolve) => (gpsLookup.resolve = resolve)),
 }));
-vi.mock('./area', () => ({ attachArea: async () => false }));
+vi.mock('./area', () => ({
+  attachArea: async () => false,
+  fillMissingAreas: vi.fn(async () => {}),
+}));
 
 // Aanmelden als installatie: standaard het echte, per test na te bootsen
 const installer = vi.hoisted(() => ({
@@ -734,6 +738,7 @@ describe('netwerk weg', () => {
   });
 
   afterEach(() => {
+    stopWaiting();
     vi.unstubAllGlobals();
   });
 
@@ -765,30 +770,32 @@ describe('netwerk weg', () => {
 
   const FAILED = [120, 150, 120, 150, 120];
 
-  it('weg tijdens het uploaden: opname blijft bewaard, drie korte trillen', async () => {
+  const WAITING = [450, 150, 120];
+
+  it('weg tijdens het uploaden: opname blijft bewaard en wacht op bereik', async () => {
     network(false);
     const id = await record();
     await processQueue();
     const u = await db.utterances.get(id);
-    expect(u?.status).toBe('failed');
+    expect(u).toMatchObject({ status: 'pending', waitingSince: expect.any(Number) });
     expect(u?.audio).toBeDefined();
     expect(u?.transcript).toBeUndefined();
-    expect(u?.error).toMatch(/^Spraakherkenning: /);
-    expect(vibrations).toEqual([FAILED]);
+    expect(u?.error).toBeUndefined();
+    expect(vibrations).toEqual([WAITING]);
     expect(interpret).not.toHaveBeenCalled();
   });
 
-  it('weg tussen verstaan en interpreteren: transcript blijft, opnieuw slaat het verstaan over', async () => {
+  it('fout van het model na het verstaan: transcript blijft, opnieuw slaat het verstaan over', async () => {
     network(true);
     model.respond = () => {
-      throw new Error('Geen internetverbinding');
+      throw new Error('Het model weigerde de uitspraak te verwerken');
     };
     const id = await record();
     await processQueue();
     expect(await db.utterances.get(id)).toMatchObject({
       status: 'failed',
       transcript: 'Roepje vink.',
-      error: 'Geen internetverbinding',
+      error: 'Het model weigerde de uitspraak te verwerken',
     });
     expect(vibrations).toEqual([FAILED]);
 
@@ -881,7 +888,10 @@ describe('netwerk weg', () => {
   });
 
   it('een mislukte uitspraak houdt de rest van de wachtrij niet op', async () => {
-    network(false);
+    network(true);
+    model.respond = () => {
+      throw new Error('Het model weigerde de uitspraak te verwerken');
+    };
     const first = await record();
     const second = await record();
     await processQueue();
@@ -889,13 +899,11 @@ describe('netwerk weg', () => {
     expect((await db.utterances.get(second))?.status).toBe('failed');
     expect(vibrations).toEqual([FAILED, FAILED]);
   });
-  describe('wachten op bereik (ontwikkeloptie offlineWachtrij)', () => {
-    const OPTION = 'fluistervink.dev.offlineWachtrij';
+  describe('wachten op bereik', () => {
     const events = async (type: string) =>
       (await db.events.toArray()).filter((e) => e.type === type);
 
     beforeEach(() => {
-      localStorage.setItem(OPTION, '1');
       vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       model.respond = () => toolResponse(['add_observation', { species_id: VINK, count: 1 }]);
     });
@@ -903,11 +911,9 @@ describe('netwerk weg', () => {
     afterEach(() => {
       stopWaiting();
       vi.useRealTimers();
-      localStorage.removeItem(OPTION);
       vi.mocked(interpret).mockClear();
     });
 
-    const WAITING = [450, 150, 120];
     const SAVED = [120];
 
     it('zonder bereik: niets mislukt, de wachtrij stopt bij de eerste', async () => {
@@ -994,6 +1000,8 @@ describe('netwerk weg', () => {
       const [resumed] = await events('queue_resumed');
       expect(resumed?.data).toMatchObject({ count: 2, waitedMs: expect.any(Number) });
       expect(resumed?.utteranceId).toBe(first);
+      // Gebieden en de naam van de sessie alsnog opzoeken
+      expect(fillMissingAreas).toHaveBeenCalledWith(SESSION);
     });
 
     it('probeert het vanzelf opnieuw na 15 s, 30 s, 1 min en daarna elke 2 min', async () => {

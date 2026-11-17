@@ -176,7 +176,7 @@ export interface Utterance {
   undid?: { utteranceId: string; changes: Change[] };
   /**
    * Sinds wanneer deze uitspraak op bereik wacht (geen netwerk, proxy even
-   * weg; ontwikkeloptie `offlineWachtrij`). Status blijft `pending`; weg
+   * weg). Status blijft `pending`; weg
    * zodra hij verwerkt is.
    */
   waitingSince?: number;

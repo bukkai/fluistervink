@@ -66,7 +66,7 @@
     $utterances?.filter((u) => u.status === 'pending' || u.status === 'processing').length ?? 0,
   );
 
-  // Wacht er een uitspraak op bereik (ontwikkeloptie offlineWachtrij)? Dan
+  // Wacht er een uitspraak op bereik? Dan
   // geen foutmelding, maar een rustige regel: het is geen fout.
   let waitingSince = $derived(
     Math.min(

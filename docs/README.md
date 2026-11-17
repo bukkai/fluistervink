@@ -20,7 +20,7 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 | `roadmap-android.md` | vogelen zonder naar de telefoon te kijken, vijf stappen; stap 1–2 gebouwd |
 | `plan-ebird.md` | inspanning en export naar eBird; afgerond 16 nov (keuze "Ik gebruik eBird" bij Instellingen) |
 | `plan-soortgroepen.md` | zoogdieren, reptielen en amfibieën, dagvlinders en libellen inspreken; afgerond 16 nov (voor iedereen, standaard aan) |
-| `plan-offline.md` | offline wachtrij: zonder bereik doorvogelen, vanzelf verwerken; voorstel 17 nov |
+| `plan-offline.md` | offline wachtrij: zonder bereik doorvogelen, vanzelf verwerken; gebouwd 17 nov, proeven in het veld nog te doen |
 | `plan-ios.md` | iPhone-app; voorstel, na de lancering |
 
 ## Naslag

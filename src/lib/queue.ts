@@ -9,9 +9,8 @@ import {
 } from './db';
 import { ApiError } from './api';
 import { applyActions } from './applyActions';
-import { attachArea } from './area';
+import { attachArea, fillMissingAreas } from './area';
 import { devNoteText } from './devNotePrefix';
-import { devOptionOn } from './devOptions';
 import { isEmptyTrektelChunk, utteranceFeedback, vibrate } from './feedback';
 import { INSTANCE_ID } from './instance.svelte';
 import { MODEL, interpret, promptVersionFor, type Interpretation } from './interpret';
@@ -29,8 +28,8 @@ import { checkZeemeeuw } from './zeemeeuw.svelte';
 // Local-first verwerking: elke uitspraak wordt eerst opgeslagen (status
 // `pending`) en daarna één voor één, op volgorde, door het model gehaald.
 // Normaal is de wachtrij direct leeg; bij een fout blijft de uitspraak bewaard
-// en kan hij opnieuw. Met de ontwikkeloptie `offlineWachtrij` wacht een
-// uitspraak zonder bereik tot er weer verbinding is (docs/plan-offline.md).
+// en kan hij opnieuw. Zonder bereik wacht een uitspraak tot er weer
+// verbinding is, en de rest van de wachtrij met hem (docs/plan-offline.md).
 
 /** Slaat een getypte uitspraak op en zet hem in de wachtrij. */
 export async function submitText(sessionId: string, text: string): Promise<void> {
@@ -238,6 +237,9 @@ async function runQueue(): Promise<void> {
   let waiting = false;
   // Inhalen na lang wachten: geen tril per uitspraak, maar één aan het eind
   let catchUp: { before: number; done: number; failed: number } | undefined;
+  // Sessies waarvan na het wachten uitspraken verwerkt zijn: gebieden en naam
+  // alsnog (ook van een sessie die intussen gestopt is)
+  const resumed = new Set<string>();
   while (true) {
     const pending = await db.utterances.where('status').equals('pending').sortBy('recordedAt');
     const next = pending.find((u) => !skipped.has(u.id));
@@ -267,6 +269,9 @@ async function runQueue(): Promise<void> {
       );
       retryStep = 0;
       if (waitedMs >= CATCH_UP_AFTER_MS) catchUp = { before: Date.now(), done: 0, failed: 0 };
+      resumed.add(next.sessionId);
+    } else if (resumed.size) {
+      resumed.add(next.sessionId);
     }
     if (!processed || isEmptyTrektelChunk(processed)) continue;
     // Ingesproken vóór het inhalen begon: tellen in plaats van trillen
@@ -285,6 +290,7 @@ async function runQueue(): Promise<void> {
     vibrate(catchUp.failed ? 'failed' : 'saved');
     confirmCatchUp(catchUp.done, catchUp.failed).catch(() => {});
   }
+  for (const sessionId of resumed) fillMissingAreas(sessionId).catch(() => {});
 }
 
 /**
@@ -516,7 +522,7 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     const status = error instanceof ApiError ? error.status : undefined;
-    if (isTemporary(error) && devOptionOn('offlineWachtrij')) {
+    if (isTemporary(error)) {
       // Eén keer in de log bij het begin van het wachten, niet per poging
       if (!utterance.waitingSince) {
         logEvent(

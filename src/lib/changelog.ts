@@ -30,9 +30,11 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-11-17',
     topics: {
       Inspreken: [
+        'Geen bereik? Vogel gewoon door. De app bewaart wat je zegt en verwerkt het vanzelf zodra er weer verbinding is, in de goede volgorde. Je voelt dan lang, kort ("bewaard, wacht op bereik") in plaats van drie korte trillen, en je hoeft thuis niet meer per uitspraak op Opnieuw te tikken.',
         'Zeg je bij een nieuwe waarneming waar de vogel zit ("200 meter ten noorden van hier"), dan komt die plek weer mee. Sinds gisteren viel hij weg.',
       ],
       Trektelling: [
+        'Een trektelling zonder bereik telt gewoon door; de stukken worden verwerkt zodra er weer verbinding is.',
         'Noemde je in een trektelling een plek, dan raakte de app de soorten daarna in hetzelfde stuk kwijt. Dat is opgelost.',
       ],
     },

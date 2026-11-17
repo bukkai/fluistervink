@@ -230,7 +230,7 @@
   );
 
   // Trektelling zonder bereik: al 2 uur wachten de stukken (offline wachtrij,
-  // ontwikkeloptie). Twee lange trillen; de regel boven de lijst zegt het
+  // docs/plan-offline.md). Twee lange trillen; de regel boven de lijst zegt het
   // ook. De telling gaat gewoon door.
   $effect(() =>
     onLongWait(() => {
