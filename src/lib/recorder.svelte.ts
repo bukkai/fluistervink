@@ -19,7 +19,7 @@ export interface Recording {
 export const AUDIO_BITS_PER_SECOND = 32_000;
 
 /** Kortere opnames zijn een per ongeluk aangetikte knop. */
-const MIN_DURATION_MS = 500;
+export const MIN_DURATION_MS = 500;
 
 /** Bestandsformaten in volgorde van voorkeur; Chrome op Android kan webm/opus. */
 export const MIME_TYPES = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/mp4'];

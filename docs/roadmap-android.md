@@ -56,6 +56,20 @@ Wat het oplevert:
 
 Eerst een korte proef-PR (opnemen in de service, één opname doorgeven, meten), net als in fase 2. Werkt de overdracht naar de WebView op de achtergrond niet goed, dan overleggen voor de nette uitwerking.
 
+**Stand (17 nov): proef gebouwd, draft-PR, niet mergen vóór de productierelease.** Ontwikkeloptie "Opnemen met het scherm uit" (`schermUit`). Hoe het werkt:
+
+- De service krijgt het type microfoon pas als de webcode het aanzet (`SchermUitPlugin.aan`, vanuit het sessiescherm, dus met de app op het scherm). Lukt dat niet (geen toestemming, Android weigert), dan blijft hij gewoon locatie.
+- **Volumeknop met het scherm uit:** een mediasessie met een eigen volumeregeling (`VolumeProvider`), alleen actief met het scherm uit of tijdens een opname. Android geeft de volumeknop dan aan die sessie in plaats van het volume te veranderen. Met de app op het scherm blijft het de bestaande KnopPlugin (stap 1).
+- **Opname:** `AudioRecord` → AAC in .m4a (`audio/mp4`, 32 kbit/s mono, 16 kHz). Opus zoals de webknop kan Android pas vanaf versie 10 maken; de app moet vanaf 8. Dezelfde regels als de webknop: hooguit 3 minuten, korter dan 0,5 s wordt weggegooid. Trillen bij start en stop doet de service zelf (patronen van de webcode), zodat het niet op de WebView wacht.
+- **Overdracht:** het bestand staat eerst op de telefoon (`files/scherm-uit/`, de naam bevat sessie, starttijd en duur), gaat als base64 in een gebeurtenis naar de webcode, die hem met `submitRecording` bewaart en dan pas het bestand laat weghalen. Mist de webcode hem (app gesloten), dan haalt `wachtend` hem bij de volgende keer (zonder positie).
+- **Meten:** `screen_off_recording` in het log met `finishMs` (bestand afmaken), `bridgeMs` (Java → WebView), `transferMs` (volumeknop → aangekomen), `saveMs` (IndexedDB), `hidden` en `peak` (0 = Android gaf alleen stilte). Verder `screen_off_on`, `screen_off_knop_aan/uit`, `screen_off_started`, `screen_off_weggegooid`, `screen_off_niet_gestart`, `screen_off_mediaknop`.
+
+Nog uit te zoeken in het veld (en daarna de nette uitwerking):
+
+- Of de volumeknop met het scherm uit echt bij de mediasessie aankomt, ook met een podcast aan (Android geeft de volumeknop aan de sessie die "speelt"; een podcast speelt dan ook) en op een Samsung (die vangt de volumeknop soms zelf).
+- **Knop op de oortjes:** de mediasessie logt alleen welke mediaknop binnenkomt (`screen_off_mediaknop`), en doet er niets mee. Android stuurt de mediaknop naar de app die het laatst echt geluid afspeelde; onze sessie speelt niets, dus waarschijnlijk komt hij niet aan zolang er een podcast of muziek-app is geweest. Uitzoeken in de volgende PR (eventueel een kort stil geluid afspelen om de knop te krijgen, maar dat neemt de knop van de podcast af).
+- **Microfoonkeuze:** nu altijd `MIC` (die van de telefoon, zonder echo-onderdrukking). Voor de oortjes: `AudioRecord.setPreferredDevice` met een Bluetooth-SCO-apparaat, en de SCO-verbinding aanzetten (`AudioManager.setCommunicationDevice`, Android 12+); dat zet de oortjes in belmodus (smalbandig, podcast pauzeert). Volgende PR, met de testset erbij.
+
 ## Stap 4: de microfoon delen
 
 Zodra de microfoon lang open staat (trektelmodus nu al, het wake word straks), botst dat met Merlin en met bellen. Met `AudioRecordingCallback` merkt de app dat een andere app de microfoon wil, laat hem los, en pakt hem daarna terug (twee korte trillen bij pauzeren en hervatten). Staat in de latere roadmap van `CLAUDE.md`; wordt pas nodig bij stap 5, of eerder als Maarten er bij het trektellen last van heeft.

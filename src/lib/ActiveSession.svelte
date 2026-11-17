@@ -11,6 +11,7 @@
   import { currentPosition, gps, startTracking, stopTracking } from './location.svelte';
   import { onAudioLimit, submitRecording, submitText } from './queue';
   import { recorder, startRecording, stopRecording } from './recorder.svelte';
+  import { screenOff, startScreenOff, stopScreenOff } from './screenOff.svelte';
   import SessionLog from './SessionLog.svelte';
   import { syncSessionService } from './sessionService';
   import { createTalkButton } from './talkButton';
@@ -124,8 +125,12 @@
   let lookup: Promise<PositionLookup> | undefined;
   let maxTimer: ReturnType<typeof setTimeout> | undefined;
   let elapsed = $state(0);
+  // Een opname van de service (scherm uit, ontwikkeloptie) telt als lopende
+  // opname: de knop zegt Stop en stopt hem, als het scherm weer aan is
+  let talkStatus = $derived(screenOff.startedAt !== undefined ? 'recording' : recorder.status);
+  let talkStartedAt = $derived(screenOff.startedAt ?? recorder.startedAt);
   let talkLabel = $derived(
-    recorder.status === 'recording'
+    talkStatus === 'recording'
       ? `Stop · ${Math.floor(elapsed / 1000)} s`
       : recorder.status === 'starting'
         ? 'Microfoon aanzetten…'
@@ -134,7 +139,7 @@
 
   // Tikken of vasthouden, bestand tegen haperend contact (handschoenen)
   const talk = createTalkButton({
-    status: () => recorder.status,
+    status: () => talkStatus,
     start: async () => {
       // Tijd en positie horen bij het begin van de opname, niet bij het eind
       lookup = currentPosition();
@@ -149,7 +154,7 @@
       maxTimer = setTimeout(finishRecording, MAX_RECORDING_MS);
       return true;
     },
-    finish: finishRecording,
+    finish: () => (screenOff.startedAt !== undefined ? stopScreenOff() : finishRecording()),
     log: (type, data) => logEvent(type, data, { sessionId: session.id }),
   });
 
@@ -190,10 +195,21 @@
     await submitRecording(session.id, recording, lookup);
   }
 
+  // Opnemen met het scherm uit (ontwikkeloptie, screenOff.svelte.ts): de
+  // volumeknop met het scherm uit neemt op in de service. Niet tijdens een
+  // trektelling: die heeft de microfoon al.
+  $effect(() => {
+    if (trektel.status !== 'idle') return;
+    return startScreenOff(
+      untrack(() => session.id),
+      MAX_RECORDING_MS,
+    );
+  });
+
   // Lopende tijd tijdens de opname
   $effect(() => {
-    if (recorder.status !== 'recording') return;
-    const timer = setInterval(() => (elapsed = Date.now() - (recorder.startedAt ?? 0)), 200);
+    if (talkStatus !== 'recording') return;
+    const timer = setInterval(() => (elapsed = Date.now() - (talkStartedAt ?? 0)), 200);
     return () => {
       clearInterval(timer);
       elapsed = 0;
@@ -341,7 +357,7 @@
 <div class="talk-space" style:height="{barHeight}px"></div>
 <div
   class="talk-bar"
-  class:hidden={typing && recorder.status !== 'recording'}
+  class:hidden={typing && talkStatus !== 'recording'}
   class:compact={editing !== undefined && trektel.startedAt === undefined}
   bind:clientHeight={barHeight}
 >
@@ -376,7 +392,7 @@
     {/if}
     <button
       class="talk"
-      class:recording={recorder.status === 'recording'}
+      class:recording={talkStatus === 'recording'}
       disabled={recorder.status === 'unsupported'}
       onpointerdown={press}
       onpointerup={release}
@@ -385,7 +401,7 @@
       aria-label={editing === undefined ? undefined : talkLabel}
     >
       <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true">
-        {#if recorder.status === 'recording'}
+        {#if talkStatus === 'recording'}
           <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
         {:else}
           <rect x="9" y="2.5" width="6" height="12" rx="3" fill="currentColor" />

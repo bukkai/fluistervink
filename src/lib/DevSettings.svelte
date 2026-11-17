@@ -1,6 +1,7 @@
 <script lang="ts">
   // Ontwikkelopties: alleen voor de eigenaar (devOptions.ts)
   import { devOptionOn, setDevOption, type DevOption } from './devOptions';
+  import { screenOffSupported } from './native';
 
   interface Item {
     option: DevOption;
@@ -10,8 +11,15 @@
     available?: boolean;
   }
 
-  // Nu geen: een nieuwe optie komt hier, met haar naam in devOptions.ts
-  const items: Item[] = [];
+  // Een nieuwe optie komt hier, met haar naam in devOptions.ts
+  const items: Item[] = [
+    {
+      option: 'schermUit',
+      label: 'Opnemen met het scherm uit',
+      hint: 'Proef: tijdens een sessie start en stopt de volumeknop een opname, ook met het scherm uit. Werkt vanaf de volgende sessie (of open de sessie opnieuw).',
+      available: screenOffSupported,
+    },
+  ];
 
   const shown = items.filter((item) => item.available !== false);
   let checked = $state(

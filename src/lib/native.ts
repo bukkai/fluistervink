@@ -232,3 +232,107 @@ export async function speakNative(text: string): Promise<{ gesproken: boolean; r
     return { gesproken: false, reden: String(error) };
   }
 }
+
+/** Een opname van de service, gemaakt met het scherm uit (SchermUitPlugin.java) */
+export interface ScreenOffRecording {
+  /** Bestandsnaam op de telefoon; met `doneScreenOffRecording` mag hij weg */
+  id: string;
+  sessieId: string;
+  startedAt: number;
+  durationMs: number;
+  /** "audio/mp4" (AAC) */
+  type: string;
+  /** De opname in base64 */
+  data: string;
+  /** Tijdstippen in de service, om de overdracht te meten (ontbreken bij `wachtend`) */
+  gestoptAt?: number;
+  klaarAt?: number;
+  verstuurdAt?: number;
+  /** Hardste sample (0–32767): 0 = Android gaf alleen stilte */
+  piek?: number;
+  start?: string;
+  stop?: string;
+}
+
+export interface ScreenOffOptions {
+  sessieId: string;
+  maxMs: number;
+  minMs: number;
+  trilStart: number[];
+  trilStop: number[];
+}
+
+interface SchermUitPlugin {
+  aan(options: ScreenOffOptions): Promise<{ ok: boolean; reden?: string }>;
+  uit(): Promise<void>;
+  stop(): Promise<void>;
+  wachtend(): Promise<{ opnames: ScreenOffRecording[] }>;
+  klaar(options: { id: string }): Promise<void>;
+  addListener(
+    event: 'gestart',
+    listener: (data: { startedAt: number; via: string }) => void,
+  ): Promise<PluginListenerHandle>;
+  addListener(
+    event: 'opname',
+    listener: (data: ScreenOffRecording) => void,
+  ): Promise<PluginListenerHandle>;
+  addListener(
+    event: 'log',
+    listener: (data: { type: string; data: Record<string, unknown> }) => void,
+  ): Promise<PluginListenerHandle>;
+}
+
+const SchermUit = registerPlugin<SchermUitPlugin>('SchermUit');
+
+/** Kan deze app opnemen met het scherm uit (SchermUitPlugin.java, proef)? */
+export const screenOffSupported = isNativeApp && Capacitor.isPluginAvailable('SchermUit');
+
+export interface ScreenOffHandlers {
+  /** De service begon een opname (volumeknop met het scherm uit) */
+  onStart: (startedAt: number, via: string) => void;
+  onRecording: (recording: ScreenOffRecording) => void;
+  onLog: (type: string, data: Record<string, unknown>) => void;
+}
+
+/**
+ * Opnemen met het scherm uit (proef, docs/roadmap-android.md stap 3): zolang
+ * dit loopt, start en stopt de volumeknop met het scherm uit een opname in de
+ * service. Geeft een functie terug die het weer uitzet. In de browser niets.
+ */
+export function listenScreenOff(
+  options: ScreenOffOptions,
+  handlers: ScreenOffHandlers,
+): { done: Promise<{ ok: boolean; reden?: string }>; stop: () => void } {
+  if (!screenOffSupported) {
+    return { done: Promise.resolve({ ok: false, reden: 'web' }), stop: () => {} };
+  }
+  const handles: Promise<PluginListenerHandle>[] = [
+    SchermUit.addListener('gestart', ({ startedAt, via }) => handlers.onStart(startedAt, via)),
+    SchermUit.addListener('opname', (recording) => handlers.onRecording(recording)),
+    SchermUit.addListener('log', ({ type, data }) => handlers.onLog(type, data)),
+  ];
+  const done = SchermUit.aan(options).catch((error) => ({ ok: false, reden: String(error) }));
+  return {
+    done,
+    stop: () => {
+      handles.forEach((handle) => handle.then((h) => h.remove()));
+      SchermUit.uit().catch(() => {});
+    },
+  };
+}
+
+/** Een lopende opname van de service stoppen (de knop in de app) */
+export async function stopScreenOffRecording(): Promise<void> {
+  if (screenOffSupported) await SchermUit.stop().catch(() => {});
+}
+
+/** Opnames die de service maakte terwijl de webcode ze niet aannam (app gesloten) */
+export async function pendingScreenOffRecordings(): Promise<ScreenOffRecording[]> {
+  if (!screenOffSupported) return [];
+  return (await SchermUit.wachtend().catch(() => ({ opnames: [] }))).opnames;
+}
+
+/** De opname is bewaard in IndexedDB: het bestand op de telefoon mag weg */
+export async function doneScreenOffRecording(id: string): Promise<void> {
+  if (screenOffSupported) await SchermUit.klaar({ id }).catch(() => {});
+}

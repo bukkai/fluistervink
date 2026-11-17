@@ -45,13 +45,18 @@ public class TrillenPlugin extends Plugin {
             return;
         }
 
-        Vibrator vibrator = vibrator();
         JSObject result = new JSObject();
-        if (vibrator == null || !vibrator.hasVibrator()) {
-            result.put("ok", false);
-            call.resolve(result);
-            return;
-        }
+        result.put("ok", tril(getContext(), timings));
+        call.resolve(result);
+    }
+
+    /**
+     * Trilt met [pauze, tril, pauze, …] in ms; ook gebruikt door de service
+     * (opnemen met het scherm uit). False als het toestel niet kan trillen.
+     */
+    static boolean tril(Context context, long[] timings) {
+        Vibrator vibrator = vibrator(context);
+        if (vibrator == null || !vibrator.hasVibrator()) return false;
 
         VibrationEffect effect = VibrationEffect.createWaveform(timings, -1);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -63,12 +68,10 @@ public class TrillenPlugin extends Plugin {
                 .build();
             vibrator.vibrate(effect, attributes);
         }
-        result.put("ok", true);
-        call.resolve(result);
+        return true;
     }
 
-    private Vibrator vibrator() {
-        Context context = getContext();
+    private static Vibrator vibrator(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             VibratorManager manager = (VibratorManager) context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
             return manager == null ? null : manager.getDefaultVibrator();

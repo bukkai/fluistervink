@@ -1,0 +1,164 @@
+import type { PositionLookup } from './db';
+import { devOptionOn } from './devOptions';
+import { vibrationPattern } from './feedback';
+import { currentPosition } from './location.svelte';
+import { logEvent } from './log';
+import {
+  doneScreenOffRecording,
+  listenScreenOff,
+  pendingScreenOffRecordings,
+  screenOffSupported,
+  stopScreenOffRecording,
+  type ScreenOffRecording,
+} from './native';
+import { submitRecording } from './queue';
+import { MIN_DURATION_MS } from './recorder.svelte';
+
+// Proef: opnemen met het scherm uit (docs/roadmap-android.md stap 3,
+// ontwikkeloptie `schermUit`). Met het scherm uit start en stopt de
+// volumeknop een opname in de service van de Android-app
+// (WandelingService.java); die geeft de opname hier af, en vanaf dan gaat
+// alles zoals bij de knop in de app: eerst bewaren in IndexedDB
+// (submitRecording), dan verwerken. Het bestand op de telefoon gaat pas weg
+// als het hier bewaard is.
+//
+// Gemeten (gebeurtenissen `screen_off_…` in het log): hoe lang het duurt van
+// stoppen tot bewaren, en welk deel daarvan de overdracht naar de WebView is.
+
+/** Toestand voor de knop in de app: een opname van de service loopt sinds `startedAt` */
+export const screenOff = $state<{ startedAt?: number }>({});
+
+/** Kan het, en staat de ontwikkeloptie aan? */
+export function screenOffEnabled(): boolean {
+  return screenOffSupported && devOptionOn('schermUit');
+}
+
+/** Al bewaard of bezig: niet nog eens (gebeurtenis én `wachtend` kunnen dezelfde geven) */
+const handled = new Set<string>();
+
+/** Opname waarvan de positie onbekend is: gemaakt toen de app dicht was */
+const NO_POSITION: PositionLookup = {
+  source: 'none',
+  waitMs: 0,
+  error: 'opname met het scherm uit, app was gesloten',
+};
+
+function toBlob(recording: ScreenOffRecording): Blob {
+  const binary = atob(recording.data);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type: recording.type });
+}
+
+/**
+ * Een opname van de service bewaren en in de wachtrij zetten.
+ * @param lookup Positie, opgevraagd toen de service meldde dat hij begon
+ */
+export async function receiveScreenOffRecording(
+  recording: ScreenOffRecording,
+  lookup: Promise<PositionLookup> | undefined,
+): Promise<void> {
+  if (handled.has(recording.id)) return;
+  handled.add(recording.id);
+  const receivedAt = Date.now();
+  const hidden = document.hidden;
+  const context = { sessionId: recording.sessieId };
+  try {
+    const audio = toBlob(recording);
+    await submitRecording(
+      recording.sessieId,
+      { audio, startedAt: recording.startedAt, durationMs: recording.durationMs },
+      lookup ?? Promise.resolve(NO_POSITION),
+    );
+    const savedAt = Date.now();
+    await doneScreenOffRecording(recording.id);
+    const since = (at?: number) => (at === undefined ? undefined : receivedAt - at);
+    logEvent(
+      'screen_off_recording',
+      {
+        durationMs: recording.durationMs,
+        bytes: audio.size,
+        peak: recording.piek,
+        start: recording.start,
+        stop: recording.stop,
+        // Bestand afmaken in de service (encoder leeglopen, mp4 sluiten)
+        finishMs:
+          recording.klaarAt !== undefined && recording.gestoptAt !== undefined
+            ? recording.klaarAt - recording.gestoptAt
+            : undefined,
+        // Van versturen in Java tot hier: de brug naar de WebView
+        bridgeMs: since(recording.verstuurdAt),
+        // Van stoppen (volumeknop) tot hier
+        transferMs: since(recording.gestoptAt),
+        // Bewaren in IndexedDB
+        saveMs: savedAt - receivedAt,
+        hidden,
+        // Opgehaald met `wachtend` (de gebeurtenis kwam niet aan)
+        pending: recording.verstuurdAt === undefined || undefined,
+      },
+      context,
+    );
+  } catch (error) {
+    // Het bestand blijft op de telefoon; `wachtend` geeft hem later opnieuw
+    handled.delete(recording.id);
+    logEvent('screen_off_failed', { id: recording.id, message: String(error) }, context);
+  }
+}
+
+/**
+ * Zet opnemen met het scherm uit aan voor deze sessie. Geeft een functie
+ * terug die het weer uitzet (sessie gestopt, trektelling, scherm verlaten).
+ */
+export function startScreenOff(sessionId: string, maxMs: number): () => void {
+  if (!screenOffEnabled()) return () => {};
+  const context = { sessionId };
+  let lookup: Promise<PositionLookup> | undefined;
+
+  const { done, stop } = listenScreenOff(
+    {
+      sessieId: sessionId,
+      maxMs,
+      minMs: MIN_DURATION_MS,
+      trilStart: vibrationPattern('recording'),
+      trilStop: vibrationPattern('recorded'),
+    },
+    {
+      onStart: (startedAt, via) => {
+        // Tijd en positie horen bij het begin van de opname
+        lookup = currentPosition();
+        screenOff.startedAt = startedAt;
+        logEvent(
+          'screen_off_started',
+          { via, delayMs: Date.now() - startedAt, hidden: document.hidden },
+          context,
+        );
+      },
+      onRecording: (recording) => {
+        screenOff.startedAt = undefined;
+        const current = lookup;
+        lookup = undefined;
+        receiveScreenOffRecording(recording, current);
+      },
+      onLog: (type, data) => {
+        if (type === 'weggegooid' || type === 'niet_gestart') screenOff.startedAt = undefined;
+        logEvent(`screen_off_${type}`, data, context);
+      },
+    },
+  );
+
+  done.then((result) => logEvent('screen_off_on', result, context));
+  // Wat de service maakte terwijl de app dicht was
+  pendingScreenOffRecordings().then((recordings) =>
+    recordings.forEach((recording) => receiveScreenOffRecording(recording, undefined)),
+  );
+
+  return () => {
+    stop();
+    screenOff.startedAt = undefined;
+  };
+}
+
+/** De knop in de app stopt een opname van de service (scherm weer aan) */
+export function stopScreenOff(): Promise<void> {
+  return stopScreenOffRecording();
+}

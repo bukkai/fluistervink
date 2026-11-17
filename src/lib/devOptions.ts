@@ -2,8 +2,11 @@
 // bevallen (docs/roadmap-android.md, besloten 11 nov). Per telefoon in
 // localStorage; het kaartje bij Instellingen staat alleen bij de eigenaar.
 
-/** Nu geen: voeg hier de naam van een nieuwe optie toe */
-export type DevOption = never;
+/**
+ * Voeg hier de naam van een nieuwe optie toe.
+ * - `schermUit`: opnemen met het scherm uit, met de volumeknop (proef, docs/roadmap-android.md stap 3)
+ */
+export type DevOption = 'schermUit';
 
 const PREFIX = 'fluistervink.dev.';
 

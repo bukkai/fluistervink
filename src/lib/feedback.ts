@@ -32,6 +32,11 @@ const PATTERNS = {
 
 export type Feedback = keyof typeof PATTERNS;
 
+/** Het patroon zelf, voor de service die zonder de webcode trilt (opnemen met het scherm uit) */
+export function vibrationPattern(feedback: Feedback): number[] {
+  return PATTERNS[feedback];
+}
+
 /**
  * Trilt, als het apparaat dat kan. In de Android-app via Android zelf; in de
  * browser weigert Chrome als de app op de achtergrond staat of als je de
