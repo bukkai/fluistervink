@@ -353,6 +353,17 @@ describe('tools', () => {
     }
     expect(optional).toBeLessThanOrEqual(MAX_OPTIONAL_PARAMETERS);
   });
+
+  // Een verplicht veld achter de optionele: dan liet het model de plek weg en
+  // stopte het in een trektelstuk na een gezegde plek (feedback 16 nov)
+  it.each([false, true])('zetten verplichte velden voor de optionele (soortgroepen: %s)', (g) => {
+    for (const tool of toolsFor(g)) {
+      const schema = tool.input_schema as { properties?: object; required?: string[] };
+      const keys = Object.keys(schema.properties ?? {});
+      const required = schema.required ?? [];
+      expect(keys.slice(0, required.length), tool.name).toEqual(required);
+    }
+  });
 });
 
 describe('andere soortgroepen', () => {

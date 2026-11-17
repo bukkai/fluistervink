@@ -213,9 +213,36 @@ const refProperty = {
   description: 'Nummer van de waarneming in de lijst met recente waarnemingen (#1 = meest recent).',
 } as const;
 
+/**
+ * Zet de verplichte velden vooraan, in de volgorde van `required`. Stond een
+ * verplicht veld (candidate_species) achter de optionele, dan liet het model
+ * die optionele velden weg: geen plek meer bij een nieuwe waarneming (sinds
+ * 12 nov), en in een trektelstuk stopte het na een gezegde plek helemaal, met
+ * de soorten daarna kwijt (feedback 16 nov). Een test bewaakt de volgorde.
+ */
+function requiredFirst<T extends Record<string, unknown>>(properties: T, required: string[]) {
+  const sorted: Record<string, unknown> = {};
+  for (const key of required) sorted[key] = properties[key];
+  return { ...sorted, ...properties } as T;
+}
+
+/** Verplicht bij add_observation, in deze volgorde */
+const addRequired = [
+  'species_name',
+  'species_id',
+  'count',
+  'counting_method_id',
+  'activity_id',
+  'method_id',
+  'life_stage_id',
+  'sex',
+  'uncertain',
+  'candidate_species',
+];
+
 const buildTools = (withGroups: boolean): Anthropic.Tool[] => {
   const fields = withGroups ? fieldPropertiesWithGroups : fieldProperties;
-  const properties = { ...fields, ...candidateProperty };
+  const properties = requiredFirst({ ...fields, ...candidateProperty }, addRequired);
   return [
     {
       name: 'add_observation',
@@ -226,18 +253,7 @@ const buildTools = (withGroups: boolean): Anthropic.Tool[] => {
         properties,
         // Gedrag, methode, kleed en geslacht verplicht: optionele velden laat het
         // model te snel weg. Kleed en geslacht zijn null als ze niet genoemd worden.
-        required: [
-          'species_name',
-          'species_id',
-          'count',
-          'counting_method_id',
-          'activity_id',
-          'method_id',
-          'life_stage_id',
-          'sex',
-          'uncertain',
-          'candidate_species',
-        ],
+        required: addRequired,
         additionalProperties: false,
       },
     },
