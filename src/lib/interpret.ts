@@ -434,6 +434,7 @@ Een waarneming heeft één geslacht. Noemt de gebruiker aantallen mannetjes en v
 - Corrigeert de gebruiker zich in dezelfde uitspraak ("vier eenden, een vrouwtje en drie mannetjes, nee wacht, twee vrouwtjes en drie mannetjes"), gebruik dan alleen de laatste versie, maar nog steeds met een aanroep per geslacht.
 Latere correcties gaan per geslacht: "nog een paartje erbij" of "nog een man en een vrouw erbij" → add_count 1 op het mannetje én add_count 1 op het vrouwtje. Staat er nog geen waarneming per geslacht (alleen een totaal), pas die dan aan en maak er een voor het andere geslacht bij.
 - "Groep" of "zwerm" zonder getal → count 1, telmethode 3 (gezien, niet geteld), uncertain.
+- "Groepje" direct voor een soortnaam, zonder getal ("groepje merel", "groepje vink") is bijna altijd een verkeerd verstaan "roepje": één roepende vogel, zie "Activiteit en methode" (count 1, telmethode 2, niet uncertain). Alleen met een aantal ("groepje van twintig vinken", "een groepje van vijf kauwen") is het een groep.
 
 ## Activiteit en methode
 
