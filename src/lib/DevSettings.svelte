@@ -10,14 +10,8 @@
     available?: boolean;
   }
 
-  // Een nieuwe optie komt hier, met haar naam in devOptions.ts
-  const items: Item[] = [
-    {
-      option: 'offlineWachtrij',
-      label: 'Wachten op bereik',
-      hint: 'Zonder bereik mislukt een uitspraak niet meer: hij blijft bewaard en wordt vanzelf verwerkt zodra er weer verbinding is, op volgorde. Trilt dan lang, kort (bewaard, wacht op bereik), met een regel op het sessiescherm. Na meer dan een minuut wachten één tril als alles binnen is.',
-    },
-  ];
+  // Nu geen: een nieuwe optie komt hier, met haar naam in devOptions.ts
+  const items: Item[] = [];
 
   const shown = items.filter((item) => item.available !== false);
   let checked = $state(

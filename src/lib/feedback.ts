@@ -21,12 +21,12 @@ const PATTERNS = {
   /** Niet begrepen (geen waarneming gevonden): twee korte */
   ignored: [120, 150, 120],
   /**
-   * Bewaard, wacht op bereik (ontwikkeloptie `offlineWachtrij`): lang, kort,
+   * Bewaard, wacht op bereik (geen verbinding, docs/plan-offline.md): lang, kort,
    * het spiegelbeeld van onzeker. Bij het begin van het wachten en bij elke
    * uitspraak zolang er gewacht wordt.
    */
   waiting: [450, 150, 120],
-  /** Fout bij verwerken (geen verbinding, time-out): drie korte */
+  /** Fout bij verwerken (wachten helpt niet, bv. het plafond per dag): drie korte */
   failed: [120, 150, 120, 150, 120],
   /** Trektelling vanzelf gestopt (maximum bereikt, app naar de achtergrond): twee lange */
   trektelStopped: [500, 200, 500],
