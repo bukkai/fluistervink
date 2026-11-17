@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Observation } from './db';
-import { confirmationText } from './spoken';
+import { catchUpText, confirmationText } from './spoken';
 
 const HOUTDUIF = 120;
 const VINK = 193;
@@ -139,5 +139,14 @@ describe('gesproken bevestiging', () => {
         current(),
       ),
     ).toBe('Ongedaan gemaakt');
+  });
+});
+
+describe('na het inhalen (lang op bereik gewacht)', () => {
+  it('zegt alleen hoeveel er verwerkt is', () => {
+    expect(catchUpText(6, 0)).toBe('6 uitspraken verwerkt');
+    expect(catchUpText(1, 0)).toBe('Een uitspraak verwerkt');
+    expect(catchUpText(5, 1)).toBe('5 uitspraken verwerkt, 1 niet gelukt');
+    expect(catchUpText(0, 2)).toBe('2 niet gelukt');
   });
 });

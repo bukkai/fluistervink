@@ -66,6 +66,10 @@
     $utterances?.filter((u) => u.status === 'pending' || u.status === 'processing').length ?? 0,
   );
 
+  // Wacht er een uitspraak op bereik (ontwikkeloptie offlineWachtrij)? Dan
+  // geen foutmelding, maar een rustige regel: het is geen fout.
+  let waiting = $derived($utterances?.some((u) => u.status === 'pending' && u.waitingSince));
+
   let failed = $derived($utterances?.filter((u) => u.status === 'failed').length ?? 0);
 
   let utteranceById = $derived(new Map(($utterances ?? []).map((u) => [u.id, u])));
@@ -177,7 +181,7 @@
     if (u.undone) return 'teruggedraaid';
     switch (u.status) {
       case 'pending':
-        return 'in wachtrij';
+        return u.waitingSince ? 'wacht op bereik' : 'in wachtrij';
       case 'processing':
         return u.transcript === undefined && u.audio ? 'verstaan…' : 'bezig…';
       case 'failed':
@@ -189,7 +193,12 @@
   }
 </script>
 
-{#if queued}
+{#if waiting}
+  <p class="queue waiting" role="status">
+    Geen bereik: {queued === 1 ? '1 uitspraak wacht' : `${queued} uitspraken wachten`}. Ze worden
+    verwerkt zodra er verbinding is.
+  </p>
+{:else if queued}
   <p class="queue">
     {queued === 1 ? '1 uitspraak' : `${queued} uitspraken`} in de wachtrij (zie Uitspraken)
   </p>
@@ -424,6 +433,12 @@
     font-size: 1rem;
     color: var(--amber);
     background: var(--amber-soft);
+  }
+
+  .queue.waiting {
+    color: var(--fg);
+    background: var(--surface);
+    border: 1px solid var(--border);
   }
 
   ul {
