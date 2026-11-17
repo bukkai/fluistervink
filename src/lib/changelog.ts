@@ -29,6 +29,9 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     date: '2026-11-18',
     topics: {
+      Trektelling: [
+        'Tik je tijdens een trektelling op Instellingen of een ander scherm, dan vraagt de app eerst of de telling mag stoppen. Hij stopte daar zonder iets te zeggen.',
+      ],
       Inspreken: [
         'Wacht de app op bereik, dan kun je het met het knopje met de twee pijlen meteen opnieuw proberen.',
       ],

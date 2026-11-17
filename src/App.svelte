@@ -22,6 +22,8 @@
   import { instance } from './lib/instance.svelte';
   import { processQueue } from './lib/queue';
   import { syncSessionService } from './lib/sessionService';
+  import { LEAVE_TREKTEL_TEXT, leavesSessionScreen } from './lib/trektel';
+  import { trektel } from './lib/trektelRecorder.svelte';
   import { preferenceOn } from './lib/preferences';
   import { exportReminder, reminderText, snooze, snoozedAt } from './lib/exportReminder';
   import { isNativeApp, listenShortcut, setShortcut } from './lib/native';
@@ -108,6 +110,20 @@
   };
   window.addEventListener('hashchange', onHashChange);
   onDestroy(() => window.removeEventListener('hashchange', onHashChange));
+
+  // Een trektelling loopt alleen op het hoofdscherm: elk ander scherm zet de
+  // microfoon uit (feedback 17 nov: naar Instellingen en de telling was weg).
+  // Daarom eerst vragen, bij elke link in de app (menu, kaartjes, tips).
+  const guardTrektel = (event: MouseEvent) => {
+    if (trektel.status === 'idle') return;
+    const link = event.target instanceof Element ? event.target.closest('a') : null;
+    if (!link || !leavesSessionScreen(link.getAttribute('href'))) return;
+    if (confirm(LEAVE_TREKTEL_TEXT)) return;
+    event.preventDefault();
+    menuOpen = false;
+  };
+  document.addEventListener('click', guardTrektel, true);
+  onDestroy(() => document.removeEventListener('click', guardTrektel, true));
 
   let opened = $derived(
     route.startsWith('sessie/')
