@@ -54,5 +54,5 @@ export function microphoneLine(): string | undefined {
   const expected = microphone.using ?? (devOptionOn('oortjesMicrofoon') ? 'oortjes' : 'telefoon');
   return expected === 'oortjes'
     ? 'Luistert met je oortjes'
-    : 'Oortjes verbonden · de app luistert met de telefoon';
+    : 'Luistert met de telefoon, niet je oortjes';
 }
