@@ -22,8 +22,9 @@
     </p>
     <ol>
       <li>
-        Maak bij <a class="link" href="#instellingen">Instellingen</a> een back-up (kaart Back-up). Het
-        bestand komt in Downloads.
+        Heb je sessies die nog niet naar waarneming.nl zijn geëxporteerd? Maak dan eerst bij
+        <a class="link" href="#instellingen">Instellingen</a> een back-up (kaart Back-up). Het bestand
+        komt in Downloads. Alles al geëxporteerd: deze stap kun je overslaan.
       </li>
       <li>
         Open <a class="link" href={CLOSED_TEST_URL} target="_blank" rel="noopener">deze link</a> en tik
@@ -33,11 +34,11 @@
         Verwijder Fluistervink Beta van je telefoon en installeer
         <a class="link" href={STORE_URL} target="_blank" rel="noopener">Fluistervink</a> uit Google Play.
       </li>
-      <li>Open de nieuwe app en zet bij Instellingen de back-up terug.</li>
+      <li>Had je een back-up gemaakt? Zet die in de nieuwe app bij Instellingen terug.</li>
     </ol>
     <p class="hint">
-      Zonder back-up ben je bij het verwijderen je sessies kwijt. Lukt stap 2 of 3 niet, laat het
-      dan weten via Feedback in het menu.
+      Bij het verwijderen gaan de sessies in de app weg; wat al bij waarneming.nl staat, blijft daar
+      gewoon. Lukt stap 2 of 3 niet, laat het dan weten via Feedback in het menu.
     </p>
     <button class="btn secondary block" onclick={onlater}>Later</button>
   </div>
