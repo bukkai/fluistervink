@@ -4,11 +4,12 @@ Werklog om tussen computers te schakelen: alleen wat nu speelt en wat nog moet. 
 
 Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/roadmap.md`, ideeën in `docs/ideeen.md`, sleutels en Android-weetjes in `docs/beheer.md`, een overzicht van alle documenten in `docs/README.md`.
 
-## Nu (16 nov)
+## Nu (17 nov)
 
 - **Lancering in Play** (`docs/lancering.md`): gesloten test loopt sinds 9 nov. Nog: 15–20 testers werven en de deelnamelink sturen; plafond en daglimiet bij OpenAI en Anthropic nalopen.
 - **Kwaliteitsronde 16 nov:** stable staat sinds 16 nov op d42fca4 (gesloten test dus op een nagelopen versie). Tweede ronde direct na de release: #243 (Opslaan boven de trektelknop, feedbacktekst, privacy). Geen nieuwe AAB nodig: sinds v0.3 niets native veranderd behalve Capacitor 8.6.2.
-- **Typveld tijdens een sessie** (#231): verloor in de app meteen de focus; gefixt en op de telefoon bevestigd (16 nov). In het log staat nu `keyboard_closed` als het veld loslaat.
+- **Plek en trektelstukken** (#248, open): sinds `candidate_species` verplicht is (12 nov) liet het model de plek bij een nieuwe waarneming weg, en stopte het in een trektelstuk na een gezegde plek (trektelling 16 nov: de helft van de soorten kwijt). De fix zet de verplichte velden vooraan; met de testset weer compleet. **Ook stable heeft de fout**: na het mergen `npm run release`. Daarna een trektelling met een plek erin proberen.
+- **Kokmeeuw 16 nov:** "Juveniele kokmeeuwen, ik denk derde kalenderjaar" werd juveniel (het eerste woord, volgens de regel in de prompt), onzeker met de reden. Promptregel "de preciezere leeftijd wint" alleen als het vaker voorkomt.
 - **Testset weekend Terschelling** (13–15 nov, 205 uitspraken, gedeeld op 16 nov): de originele antwoorden 92% helemaal goed; opnieuw met het huidige model 89% met `--soortgroepen`, 85% zonder. Soortgroepen stonden aan, dus vergelijk alleen met `--soortgroepen`. De fouten zitten vooral in de spraakherkenning ("Eén kei" voor zwarte kraai, "koudjes" voor kauwen, "sjokduizers" voor brilduikers). Ree, egel en zeehond gingen met `--soortgroepen` goed, zonder werden ze gemist.
 - **Laatst gemerged:** opruimen (#246 `observations.ts` gesplitst, #247 `keyboard.ts` en exports), Developer overzichtelijker, kosten bovenaan en de rest inklapbaar (#245), verwerkte feedback wissen, week aantikken in Statistieken en "op dit apparaat" (#244), kwaliteitsronde na de release (#243), feedback alleen met het woord "feedback" (#242), statistieken per week (#241), instellingen gesplitst en samenvatting altijd aan (#240), privacy korter (#239), ingesproken feedback uit de teksten (#238), Opslaan in beeld (#237), kwaliteitsronde (#236), proefopties opgeruimd (#235), andere soortgroepen voor iedereen (#234), soortveld (#233), eBird afgerond (#232), typveld (#231).
 
