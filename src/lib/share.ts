@@ -75,7 +75,7 @@ function write(key: string, value: unknown): void {
 }
 
 /**
- * Delen gebeurt pas na toestemming: het hoofdscherm vraagt het één keer (zie
+ * Delen gebeurt pas na toestemming: het welkom of het hoofdscherm vraagt het één keer (zie
  * shareChoiceMade), daarna aan of uit bij Instellingen.
  */
 export function shareEnabled(): boolean {

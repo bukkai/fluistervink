@@ -160,9 +160,12 @@
   onDestroy(() => clearInterval(timer));
 
   // Welkom voor nieuwelingen (welcome.ts): pas als duidelijk is dat er nog
-  // geen enkele sessie is, zodat het niet even opflitst bij wie al sessies heeft
+  // geen enkele sessie is, zodat het niet even opflitst bij wie al sessies heeft.
+  // Het welkom vervangt het hoofdscherm en stelt ook de vraag over delen.
   let welcomeClosed = $state(welcomeDone());
   let showWelcome = $derived($sessions?.length === 0 && !welcomeClosed);
+  // Na het welkom, tot de eerste sessie: een tip onder de startknop
+  let firstTime = $derived($sessions?.length === 0);
 
   async function start() {
     setWelcomeDone();
@@ -338,6 +341,12 @@
       />
     {/if}
     <ActiveSession session={active} />
+  {:else if showWelcome}
+    <Welcome
+      askShare={askShare && !installProblem}
+      onshare={chooseShare}
+      onclose={() => (welcomeClosed = true)}
+    />
   {:else}
     <section class="home">
       <img class="hero" src="/icon.svg" alt="" width="112" height="112" />
@@ -370,7 +379,7 @@
           <button class="link" onclick={remindLater}>Later</button>
         </p>
       {/if}
-      {#if askShare && !installProblem && !showWelcome}
+      {#if askShare && !installProblem}
         <div class="consent card">
           <strong>Delen met de ontwikkelaar?</strong>
           <p>
@@ -387,8 +396,11 @@
         </div>
       {/if}
       <button class="start" onclick={start}>Begin met vogelen</button>
-      {#if showWelcome}
-        <Welcome onclose={() => (welcomeClosed = true)} />
+      {#if firstTime}
+        <p class="tip">
+          Nog nooit gedaan? Probeer het in de tuin of bij het raam: één merel is genoeg.
+          <a href="#uitleg">Hoe werkt het?</a>
+        </p>
       {/if}
       {#if past[0]}
         <a class="last card" href="#sessie/{past[0].id}">
@@ -540,6 +552,16 @@
     border-radius: var(--radius);
     color: var(--amber);
     background: var(--amber-soft);
+  }
+
+  .tip {
+    margin: 0;
+    max-width: 24rem;
+    color: var(--muted);
+  }
+
+  .tip a {
+    color: var(--brand-strong);
   }
 
   .welcome {

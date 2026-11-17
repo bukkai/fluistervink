@@ -35,6 +35,9 @@ export const CHANGELOG: ChangelogEntry[] = [
       Trektelling: [
         'Noemde je in een trektelling een plek, dan raakte de app de soorten daarna in hetzelfde stuk kwijt. Dat is opgelost.',
       ],
+      'Over de app': [
+        'Wie de app voor het eerst opent, krijgt een rustig welkom in drie stappen: hoe het werkt, toestemming voor microfoon en locatie, en de vraag of je wilt meehelpen. Geen losse meldingen meer boven en onder de startknop.',
+      ],
     },
   },
   {
