@@ -16,12 +16,14 @@
   import { mapsUrl } from './devNotes';
   import { byTime, clusterAction, groupByPosition, summarize } from './mapGroups';
   import { listObservations } from './observations';
+  import PlaceUnplaced from './PlaceUnplaced.svelte';
   import { hasRarity, rarityLabels, rarityOf, raritySvg } from './rarity';
   import { speciesName } from './vocab';
 
   // Kaart met waar elke waarneming van een sessie is gedaan. Alleen
   // bekijken; de plek verzetten kan per waarneming in het bewerkformulier
-  // (LocationPicker). Stippen die op het scherm
+  // (LocationPicker), of voor alle waarnemingen zonder plek tegelijk
+  // (PlaceUnplaced). Stippen die op het scherm
   // overlappen (lang op één plek, bv. een vogelhut) worden één bolletje met
   // het aantal waarnemingen (leaflet.markercluster).
 
@@ -324,6 +326,9 @@
       {/if}
       <button type="button" class="link" onclick={reload}>Kaart opnieuw laden</button>
     </p>
+    {#if withoutPosition > 0 && !session.exportedAt}
+      <PlaceUnplaced sessionId={session.id} count={withoutPosition} />
+    {/if}
   </section>
 {/if}
 

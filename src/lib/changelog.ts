@@ -49,6 +49,9 @@ export const CHANGELOG: ChangelogEntry[] = [
         'Een trektelling zonder bereik telt gewoon door; de stukken worden verwerkt zodra er weer verbinding is.',
         'Noemde je in een trektelling een plek, dan raakte de app de soorten daarna in hetzelfde stuk kwijt. Dat is opgelost.',
       ],
+      Nalopen: [
+        'Waarnemingen zonder plek (bijvoorbeeld een trektelling waarbij de GPS geen plek vond)? Onder de kaart zet "Plek kiezen voor alle" ze in één keer op de plek waar je stond.',
+      ],
       'Over de app': [
         'Wie de app voor het eerst opent, krijgt een rustig welkom in drie stappen: hoe het werkt, toestemming voor microfoon en locatie, en de vraag of je wilt meehelpen. Geen losse meldingen meer boven en onder de startknop.',
         'In het welkom kun je het eerst thuis proberen: zeg één zin en zie meteen wat Fluistervink ervan maakt, met de tril die erbij hoort. Er wordt niets bewaard.',

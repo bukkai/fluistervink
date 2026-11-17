@@ -1,5 +1,5 @@
 import { db, type DeletedObservation, type Observation, type Utterance } from './db';
-import type { Place } from './spokenPlace';
+import { placeFromSpeech, type Place } from './spokenPlace';
 import { convertCodes, getSpecies } from './vocab';
 
 // Waarnemingen en uitspraken ophalen, en bewerken met de hand (review). De
@@ -93,6 +93,41 @@ export function placeByHand(
         ? current.recordedPosition
         : (current.position ?? null),
   };
+}
+
+/**
+ * Alle waarnemingen van een sessie zonder plek in één keer op dezelfde plek
+ * (bv. een trektelling zonder GPS-fix). De gekozen plek geldt als waar de
+ * gebruiker stond: een gezegde plek ("500 m zuid") wordt daarvandaan
+ * uitgerekend, zoals bij een GPS-positie die later binnenkomt; de rest krijgt
+ * de plek zoals met de hand gezet. Geeft de id's van de verzette waarnemingen.
+ */
+export async function placeUnplaced(
+  sessionId: string,
+  lat: number,
+  lon: number,
+  accuracy = HAND_ACCURACY,
+): Promise<string[]> {
+  const ids: string[] = [];
+  await db.observations
+    .where('sessionId')
+    .equals(sessionId)
+    .filter((obs) => !obs.position)
+    .modify((obs) => {
+      ids.push(obs.id);
+      if (obs.spokenPlace) {
+        const stood = {
+          lat,
+          lon,
+          accuracy: Math.max(HAND_ACCURACY, Math.round(accuracy)),
+          fixedAt: obs.observedAt,
+        };
+        Object.assign(obs, placeFromSpeech(stood, obs.spokenPlace));
+      } else {
+        Object.assign(obs, placeByHand(obs, obs.observedAt, lat, lon, accuracy));
+      }
+    });
+  return ids;
 }
 
 /** Terug naar de plek van de GPS ("Terug naar de opgenomen plek") */
