@@ -35,6 +35,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       Nalopen: [
         'Bij het nalopen van de onzekere: pas je er een aan en sla je hem op, dan telt hij als nagelopen. Eerst werd hij overgeslagen.',
         'Locatie aanpassen: de knop heet nu "Huidige locatie", met een vizier ervoor.',
+        'Waarnemingen zonder plek (bijvoorbeeld een trektelling waarbij de GPS geen plek vond)? Onder de kaart zet "Plek kiezen voor alle" ze in één keer op de plek waar je stond.',
       ],
     },
   },

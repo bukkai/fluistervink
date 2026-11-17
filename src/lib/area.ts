@@ -33,6 +33,36 @@ export async function attachArea(utteranceId: string, position: Position): Promi
   return true;
 }
 
+/**
+ * Gebied bij waarnemingen die met de hand een plek kregen ("Plek kiezen" voor
+ * alle waarnemingen zonder plek): één keer opzoeken, daarna de sessienaam
+ * opnieuw bepalen. Geeft false als het opzoeken mislukte (geen verbinding).
+ */
+export async function attachAreaToObservations(
+  sessionId: string,
+  ids: string[],
+  position: Pick<Position, 'lat' | 'lon'>,
+): Promise<boolean> {
+  if (!ids.length) return true;
+  let area;
+  try {
+    area = await fetchArea(position.lat, position.lon);
+  } catch (error) {
+    logEvent('area_error', { message: (error as Error).message }, { sessionId });
+    return false;
+  }
+  await db.observations
+    .where('id')
+    .anyOf(ids)
+    .filter((obs) => obs.area === undefined)
+    .modify({ area });
+  // Een met de hand gegeven naam blijft staan (setPlace)
+  const session = await db.sessions.get(sessionId);
+  if (session?.status === 'ended') await nameFromSession(sessionId);
+  else if (area) await setPlace(sessionId, area, 'start');
+  return true;
+}
+
 let filling = false;
 
 /**

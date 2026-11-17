@@ -14,6 +14,7 @@ import {
   editObservation,
   listObservations,
   placeByHand,
+  placeUnplaced,
   recordedPlace,
   setSkipExport,
 } from './observations';
@@ -309,6 +310,33 @@ describe('plek met de hand in de review', () => {
   it('Huidige locatie: nauwkeurigheid van de meting, afgerond en niet beter dan met de hand', () => {
     expect(placeByHand({}, 0, 52.1, 5.1, 23.6).position?.accuracy).toBe(24);
     expect(placeByHand({}, 0, 52.1, 5.1, 3).position?.accuracy).toBe(HAND_ACCURACY);
+  });
+
+  it('Plek kiezen voor alle waarnemingen zonder plek: alleen die, gezegde plek vanaf daar', async () => {
+    await say('roepje vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    await say('houtduif', ['add_observation', { species_id: HOUTDUIF, count: 2 }]);
+    await say('keep', ['add_observation', { species_id: KEEP, count: 1 }]);
+    const [keep, duif, vink] = await listObservations(SESSION);
+    // Vink en houtduif zonder GPS (trektelling zonder fix), de houtduif "500 m zuid"
+    await db.observations.update(vink.id, { position: undefined });
+    await db.observations.update(duif.id, {
+      position: undefined,
+      spokenPlace: { text: '500 m zuid', distanceM: 500, direction: 'Z' },
+    });
+
+    const ids = await placeUnplaced(SESSION, 52.1, 5.1, 30);
+    expect(ids.sort()).toEqual([vink.id, duif.id].sort());
+
+    const placed = await db.observations.bulkGet([vink.id, duif.id, keep.id]);
+    expect(placed[0]?.position).toMatchObject({ lat: 52.1, lon: 5.1, accuracy: 30 });
+    expect(placed[0]?.recordedPosition).toBeNull();
+    // 500 m zuid van de gekozen plek
+    expect(placed[1]?.position?.lat).toBeCloseTo(52.1 - 500 / 111_000, 3);
+    expect(placed[1]?.placedByVoice).toBe(true);
+    // Had al een plek: blijft staan
+    expect(placed[2]?.position).toEqual(POSITION);
+    // Nog een keer: niets meer zonder plek
+    expect(await placeUnplaced(SESSION, 52.2, 5.2)).toEqual([]);
   });
 
   it('zonder GPS: terug betekent weer geen locatie', () => {
