@@ -19,7 +19,7 @@
     setSkipExport,
     spokenAt,
   } from './observations';
-  import { retry } from './queue';
+  import { LONG_WAIT_MS, retry } from './queue';
   import {
     DEFAULT_COUNTING_METHOD,
     activityName,
@@ -68,7 +68,17 @@
 
   // Wacht er een uitspraak op bereik (ontwikkeloptie offlineWachtrij)? Dan
   // geen foutmelding, maar een rustige regel: het is geen fout.
-  let waiting = $derived($utterances?.some((u) => u.status === 'pending' && u.waitingSince));
+  let waitingSince = $derived(
+    Math.min(
+      ...($utterances ?? []).flatMap((u) =>
+        u.status === 'pending' && u.waitingSince ? [u.waitingSince] : [],
+      ),
+    ),
+  );
+  let waiting = $derived(Number.isFinite(waitingSince));
+  // Al lang (trektelling: de stukken stapelen zich op). Opnieuw bekeken bij
+  // elke nieuwe uitspraak, dus bij een trektelling elke minuut.
+  let longWait = $derived(waiting && Date.now() - waitingSince >= LONG_WAIT_MS);
 
   let failed = $derived($utterances?.filter((u) => u.status === 'failed').length ?? 0);
 
@@ -195,8 +205,9 @@
 
 {#if waiting}
   <p class="queue waiting" role="status">
-    Geen bereik: {queued === 1 ? '1 uitspraak wacht' : `${queued} uitspraken wachten`}. Ze worden
-    verwerkt zodra er verbinding is.
+    Geen bereik{longWait ? ', al meer dan 2 uur' : ''}: {queued === 1
+      ? '1 uitspraak wacht'
+      : `${queued} uitspraken wachten`}. Ze worden verwerkt zodra er verbinding is.
   </p>
 {:else if queued}
   <p class="queue">

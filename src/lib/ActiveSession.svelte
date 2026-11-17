@@ -9,7 +9,7 @@
   import { recordFix } from './effort';
   import { watchKeyboard } from './keyboard';
   import { currentPosition, gps, startTracking, stopTracking } from './location.svelte';
-  import { onAudioLimit, submitRecording, submitText } from './queue';
+  import { onAudioLimit, onLongWait, submitRecording, submitText } from './queue';
   import { recorder, startRecording, stopRecording } from './recorder.svelte';
   import SessionLog from './SessionLog.svelte';
   import { syncSessionService } from './sessionService';
@@ -226,6 +226,15 @@
       stopTrektel('limit');
       trektel.error =
         'Trektelling gestopt: vandaag is er al 5 uur ingesproken, het maximum per dag. De stukken blijven bewaard; tik morgen op Opnieuw om ze te laten verwerken.';
+    }),
+  );
+
+  // Trektelling zonder bereik: al 2 uur wachten de stukken (offline wachtrij,
+  // ontwikkeloptie). Twee lange trillen; de regel boven de lijst zegt het
+  // ook. De telling gaat gewoon door.
+  $effect(() =>
+    onLongWait(() => {
+      if (trektel.status !== 'idle') vibrate('trektelStopped');
     }),
   );
 

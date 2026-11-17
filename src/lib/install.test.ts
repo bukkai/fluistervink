@@ -125,10 +125,16 @@ describe('aanmelden zonder code', () => {
     expect(getAccessCode()).toBe('oude-testercode');
   });
 
-  it('vergeet een token dat niet (meer) werkt', async () => {
+  it('een token dat niet (meer) werkt: meteen opnieuw aanmelden en het verzoek herhalen', async () => {
     localStorage.setItem('fluistervink.installToken', 'i1.oud');
-    await expect(ping()).rejects.toMatchObject({ status: 401 });
-    expect(getInstallToken()).toBe('');
+    expect(await ping()).toBe('app-3f9a2b1c');
+    expect(requests.map((r) => `${r.method} ${r.url} ${r.auth ?? ''}`.trim())).toEqual([
+      'GET /api/ping Bearer i1.oud',
+      'GET /api/install',
+      'POST /api/install',
+      'GET /api/ping Bearer i1.token',
+    ]);
+    expect(getInstallToken()).toBe('i1.token');
   });
 
   it('rekent dezelfde nonce uit als de proxy (zelfde waarde in worker/index.test.ts)', () => {
