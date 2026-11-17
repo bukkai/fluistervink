@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
+  leavesSessionScreen,
   CHUNK_OPTIONS,
   createChunker,
   FRAME_MS,
@@ -129,5 +130,16 @@ describe('instelling', () => {
     expect(trektelEnabled()).toBe(true);
     setTrektelEnabled(false);
     expect(trektelEnabled()).toBe(false);
+  });
+});
+
+describe('leavesSessionScreen', () => {
+  it('ziet een ander scherm, niet het hoofdscherm of een andere site', () => {
+    expect(leavesSessionScreen('#instellingen')).toBe(true);
+    expect(leavesSessionScreen('#sessie/abc')).toBe(true);
+    expect(leavesSessionScreen('#/')).toBe(false);
+    expect(leavesSessionScreen('#')).toBe(false);
+    expect(leavesSessionScreen('https://waarneming.nl')).toBe(false);
+    expect(leavesSessionScreen(null)).toBe(false);
   });
 });
