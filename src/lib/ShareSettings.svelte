@@ -1,7 +1,7 @@
 <script lang="ts">
   import { dateYearTimeFormat } from './format';
   // Delen met de ontwikkelaar aan/uit, met of zonder opnames, en handmatig
-  // versturen. Zie share.ts; de eerste keuze vraagt het hoofdscherm.
+  // versturen. Zie share.ts; de eerste keuze vraagt het welkom (of anders het hoofdscherm).
   import {
     lastSharedAt,
     setShareAudio,
