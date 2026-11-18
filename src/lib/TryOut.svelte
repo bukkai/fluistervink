@@ -62,6 +62,12 @@
       );
     } catch (e) {
       error = tryErrorText(e);
+      // Zonder dit was niet na te gaan waarom het mislukte (feedback 18 nov)
+      logEvent('tryout_failed', {
+        message: e instanceof Error ? e.message : String(e),
+        code: (e as { code?: unknown })?.code,
+        online: navigator.onLine,
+      });
       vibrate('failed');
     } finally {
       busy = false;
