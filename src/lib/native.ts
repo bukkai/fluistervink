@@ -290,6 +290,45 @@ export interface ScreenOffRecording {
   piek?: number;
   start?: string;
   stop?: string;
+  /** Een stuk van een trektelling in de service (bestandsnaam eindigt op `_trektel`) */
+  trektel?: boolean;
+  /** Alleen bij een trektelstuk: spraak, niveaus en hoe lang het scherm uit was */
+  spraakMs?: number;
+  piekDb?: number;
+  achtergrondDb?: number;
+  schermUitMs?: number;
+}
+
+/** Knipregels voor de trektelling in de service (CHUNK_OPTIONS in trektel.ts) */
+export interface NativeTrektelOptions {
+  doelMs: number;
+  pauzeMs: number;
+  maxStukMs: number;
+  minSpraakMs: number;
+  margeDb: number;
+  vloerDb: number;
+  /** Hard maximum van de hele telling */
+  maxMs: number;
+}
+
+/** Nieuws van de trektelling in de service (WandelingService.TrektelUitvoer) */
+export type NativeTrektelEvent =
+  | { soort: 'stuk_begint'; data: { startedAt: number } }
+  | { soort: 'spreekt'; data: { ja: boolean } }
+  | { soort: 'stuk'; data: { stukken: number; stil: number } }
+  | { soort: 'gepauzeerd'; data: { waarom: string; schermUit: boolean } }
+  | { soort: 'hervat'; data: { pausedMs: number; schermUit: boolean } }
+  | { soort: 'gestopt'; data: NativeTrektelSummary };
+
+/** Wat de telling deed, bij het stoppen */
+export interface NativeTrektelSummary {
+  reden?: string;
+  durationMs?: number;
+  stukken?: number;
+  stil?: number;
+  /** Accu in procent bij begin en eind */
+  accuBegin?: number;
+  accuEind?: number;
 }
 
 export interface ScreenOffOptions {
@@ -307,6 +346,12 @@ interface SchermUitPlugin {
   wachtend(): Promise<{ opnames: ScreenOffRecording[] }>;
   klaar(options: { id: string }): Promise<void>;
   webOpname(options: { bezig: boolean }): Promise<void>;
+  trektelStart(options: NativeTrektelOptions): Promise<{ ok: boolean; reden?: string }>;
+  trektelStop(): Promise<NativeTrektelSummary>;
+  addListener(
+    event: 'trektel',
+    listener: (event: NativeTrektelEvent) => void,
+  ): Promise<PluginListenerHandle>;
   addListener(
     event: 'druk',
     listener: (data: { via: string }) => void,
@@ -347,9 +392,9 @@ export interface ScreenOffHandlers {
 export function listenScreenOff(
   options: ScreenOffOptions,
   handlers: ScreenOffHandlers,
-): { done: Promise<{ ok: boolean; reden?: string }>; stop: () => void } {
+): { done: Promise<{ ok: boolean; reden?: string }>; stop: () => Promise<void> } {
   if (!screenOffSupported) {
-    return { done: Promise.resolve({ ok: false, reden: 'web' }), stop: () => {} };
+    return { done: Promise.resolve({ ok: false, reden: 'web' }), stop: async () => {} };
   }
   const handles: Promise<PluginListenerHandle>[] = [
     SchermUit.addListener('gestart', ({ startedAt, via }) => handlers.onStart(startedAt, via)),
@@ -360,11 +405,37 @@ export function listenScreenOff(
   const done = SchermUit.aan(options).catch((error) => ({ ok: false, reden: String(error) }));
   return {
     done,
-    stop: () => {
+    // Eerst uitzetten (de service maakt een lopende opname of het laatste
+    // trektelstuk af), dan pas niet meer luisteren
+    stop: async () => {
+      await SchermUit.uit().catch(() => {});
       handles.forEach((handle) => handle.then((h) => h.remove()));
-      SchermUit.uit().catch(() => {});
     },
   };
+}
+
+/**
+ * Trektelling in de service (proef scherm uit): de service neemt op en knipt
+ * zelf, ook met het scherm uit. De stukken komen als gewone opname
+ * (`listenScreenOff`, met `trektel: true`); de stand via `listener`.
+ * Geeft een functie terug die niet meer luistert.
+ */
+export function listenNativeTrektel(listener: (event: NativeTrektelEvent) => void): () => void {
+  if (!screenOffSupported) return () => {};
+  const handle = SchermUit.addListener('trektel', listener);
+  return () => void handle.then((h) => h.remove());
+}
+
+export async function startNativeTrektel(
+  options: NativeTrektelOptions,
+): Promise<{ ok: boolean; reden?: string }> {
+  if (!screenOffSupported) return { ok: false, reden: 'web' };
+  return SchermUit.trektelStart(options).catch((error) => ({ ok: false, reden: String(error) }));
+}
+
+export async function stopNativeTrektel(): Promise<NativeTrektelSummary> {
+  if (!screenOffSupported) return {};
+  return SchermUit.trektelStop().catch(() => ({}));
 }
 
 /** Een lopende opname van de service stoppen (de knop in de app) */

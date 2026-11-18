@@ -13,6 +13,7 @@ import {
 } from './native';
 import { submitRecording } from './queue';
 import { MIN_DURATION_MS } from './recorder.svelte';
+import { takeChunkLookup } from './trektelRecorder.svelte';
 
 // Proef: opnemen met het scherm uit (docs/roadmap-android.md stap 3,
 // ontwikkeloptie `schermUit`). Met het scherm uit start en stopt de
@@ -27,6 +28,11 @@ import { MIN_DURATION_MS } from './recorder.svelte';
 //
 // Gemeten (gebeurtenissen `screen_off_…` in het log): hoe lang het duurt van
 // stoppen tot bewaren, en welk deel daarvan de overdracht naar de WebView is.
+//
+// Een trektelling in de service (trektelRecorder.svelte.ts) geeft haar
+// stukken op dezelfde manier af, met `trektel: true`; die komen in de
+// wachtrij als trektelstuk, met de positie van het begin van het stuk, en in
+// het log als `trektel_stuk`.
 
 /** Toestand voor het sessiescherm */
 export const screenOff = $state<{
@@ -55,6 +61,13 @@ const NO_POSITION: PositionLookup = {
   error: 'opname met het scherm uit, app was gesloten',
 };
 
+/** Trektelstuk waarvan de webcode het begin niet hoorde */
+const NO_CHUNK_POSITION: PositionLookup = {
+  source: 'none',
+  waitMs: 0,
+  error: 'trektelstuk van de service, begin niet gemeld',
+};
+
 function toBlob(recording: ScreenOffRecording): Blob {
   const binary = atob(recording.data);
   const bytes = new Uint8Array(binary.length);
@@ -75,24 +88,38 @@ export async function receiveScreenOffRecording(
   const receivedAt = Date.now();
   const hidden = document.hidden;
   const context = { sessionId: recording.sessieId };
+  const trektel = recording.trektel === true;
+  // Een trektelstuk: de positie die bij het begin van het stuk is opgevraagd
+  const position =
+    lookup ??
+    (trektel ? takeChunkLookup(recording.startedAt) : undefined) ??
+    Promise.resolve(trektel ? NO_CHUNK_POSITION : NO_POSITION);
   try {
     const audio = toBlob(recording);
     await submitRecording(
       recording.sessieId,
       { audio, startedAt: recording.startedAt, durationMs: recording.durationMs },
-      lookup ?? Promise.resolve(NO_POSITION),
+      position,
+      trektel ? { trektel: true } : {},
     );
     const savedAt = Date.now();
     await doneScreenOffRecording(recording.id);
     const since = (at?: number) => (at === undefined ? undefined : receivedAt - at);
     logEvent(
-      'screen_off_recording',
+      trektel ? 'trektel_stuk' : 'screen_off_recording',
       {
         durationMs: recording.durationMs,
         bytes: audio.size,
         peak: recording.piek,
         start: recording.start,
         stop: recording.stop,
+        // Trektelstuk: spraak en niveaus (zoals trektel_silence), en hoe lang het scherm uit was
+        ...(trektel && {
+          speechMs: recording.spraakMs,
+          peakDb: recording.piekDb,
+          floorDb: recording.achtergrondDb,
+          screenOffMs: recording.schermUitMs,
+        }),
         // Bestand afmaken in de service (encoder leeglopen, mp4 sluiten)
         finishMs:
           recording.klaarAt !== undefined && recording.gestoptAt !== undefined
@@ -150,6 +177,11 @@ export function startScreenOff(
         );
       },
       onRecording: (recording) => {
+        // Een stuk van de trektelling: heeft zijn eigen positie
+        if (recording.trektel) {
+          receiveScreenOffRecording(recording, undefined);
+          return;
+        }
         screenOff.startedAt = undefined;
         const current = lookup;
         lookup = undefined;
@@ -178,7 +210,14 @@ export function startScreenOff(
   );
 
   return () => {
-    stop();
+    // Na het uitzetten: wat de service nog afmaakte (het laatste stuk van een
+    // trektelling, een opname die liep) meteen ophalen, niet pas bij de
+    // volgende sessie
+    void stop()
+      .then(() => pendingScreenOffRecordings())
+      .then((recordings) =>
+        recordings.forEach((recording) => receiveScreenOffRecording(recording, undefined)),
+      );
     screenOff.startedAt = undefined;
     screenOff.ready = undefined;
   };

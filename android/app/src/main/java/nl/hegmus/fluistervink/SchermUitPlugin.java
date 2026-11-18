@@ -26,6 +26,10 @@ import org.json.JSONException;
  * gebeurtenis "opname" naar de webcode (base64, ±250 kB per minuut). De
  * webcode bewaart hem in IndexedDB en zegt dan `klaar`, waarna het bestand
  * weg mag. Mist de webcode hem (app gesloten), dan haalt `wachtend` hem later.
+ *
+ * Trektelling met het scherm uit: `trektelStart` laat de service de hele
+ * trektelling opnemen en knippen (TrektelOpname); elk stuk komt als
+ * "opname" met `trektel: true`, en de stand als gebeurtenis "trektel".
  */
 @CapacitorPlugin(name = "SchermUit")
 public class SchermUitPlugin extends Plugin implements WandelingService.Listener {
@@ -54,6 +58,19 @@ public class SchermUitPlugin extends Plugin implements WandelingService.Listener
     @Override
     public void load() {
         WandelingService.listener = this;
+    }
+
+    /**
+     * De app gaat dicht (weggeveegd): een trektelling niet zonder webcode
+     * laten doorlopen, want niemand verwerkt de stukken. Wat er al is, blijft
+     * liggen voor `wachtend`.
+     */
+    @Override
+    protected void handleOnDestroy() {
+        WandelingService service = WandelingService.instance;
+        if (service != null) service.stopTrektel("app_gesloten");
+        if (WandelingService.listener == this) WandelingService.listener = null;
+        super.handleOnDestroy();
     }
 
     /** Aanzetten: { sessieId, maxMs, minMs, trilStart, trilStop } */
@@ -97,10 +114,49 @@ public class SchermUitPlugin extends Plugin implements WandelingService.Listener
     @PluginMethod
     public void uit(PluginCall call) {
         WandelingService service = WandelingService.instance;
-        if (service != null) service.disarm();
-        else WandelingService.config = null;
+        if (service != null) {
+            service.disarm();
+            // Het laatste stuk van een trektelling staat dan klaar voor `wachtend`
+            service.flush();
+        } else WandelingService.config = null;
         WandelingService.webRecording = false;
         call.resolve();
+    }
+
+    /**
+     * Trektelling in de service: { doelMs, pauzeMs, maxStukMs, minSpraakMs,
+     * margeDb, vloerDb, maxMs }. Geeft { ok, reden?, accu? }.
+     */
+    @PluginMethod
+    public void trektelStart(PluginCall call) {
+        WandelingService service = WandelingService.instance;
+        JSObject result = new JSObject();
+        if (service == null) {
+            result.put("ok", false);
+            result.put("reden", "service draait niet");
+            call.resolve(result);
+            return;
+        }
+        WandelingService.TrektelConfig settings = new WandelingService.TrektelConfig();
+        settings.opties.doelMs = call.getLong("doelMs", settings.opties.doelMs);
+        settings.opties.pauzeMs = call.getLong("pauzeMs", settings.opties.pauzeMs);
+        settings.opties.maxMs = call.getLong("maxStukMs", settings.opties.maxMs);
+        settings.opties.minSpraakMs = call.getLong("minSpraakMs", settings.opties.minSpraakMs);
+        settings.opties.margeDb = call.getDouble("margeDb", settings.opties.margeDb);
+        settings.opties.vloerDb = call.getDouble("vloerDb", settings.opties.vloerDb);
+        settings.maxMs = call.getLong("maxMs", 4 * 60 * 60_000L);
+        String reden = service.startTrektel(settings);
+        result.put("ok", reden == null);
+        if (reden != null) result.put("reden", reden);
+        call.resolve(result);
+    }
+
+    /** Trektelling stoppen; geeft { reden, durationMs, stukken, stil, accuBegin, accuEind } */
+    @PluginMethod
+    public void trektelStop(PluginCall call) {
+        WandelingService service = WandelingService.instance;
+        JSObject data = service != null ? service.stopTrektel("app") : null;
+        call.resolve(data != null ? data : new JSObject());
     }
 
     /** Een lopende opname stoppen (de knop in de app, terwijl het scherm weer aan is) */
@@ -185,6 +241,15 @@ public class SchermUitPlugin extends Plugin implements WandelingService.Listener
     }
 
     @Override
+    public void trektel(String soort, JSObject data) {
+        JSObject event = new JSObject();
+        event.put("soort", soort);
+        event.put("data", data);
+        // Niet bewaren voor later: een oude "gestopt" zou een nieuwe telling stoppen
+        notifyListeners("trektel", event);
+    }
+
+    @Override
     public void log(String type, JSObject data) {
         JSObject event = new JSObject();
         event.put("type", type);
@@ -192,10 +257,15 @@ public class SchermUitPlugin extends Plugin implements WandelingService.Listener
         notifyListeners("log", event, true);
     }
 
-    /** { id, sessieId, startedAt, durationMs, type, data } uit de bestandsnaam en het bestand */
+    /**
+     * { id, sessieId, startedAt, durationMs, type, data, trektel? } uit de
+     * bestandsnaam en het bestand. Een stuk van een trektelling heeft
+     * "_trektel" achter de naam.
+     */
     private static JSObject payload(File file, JSObject info) {
         String[] parts = file.getName().replace(".m4a", "").split("_");
-        if (parts.length != 3) return null;
+        boolean trektel = parts.length == 4 && "trektel".equals(parts[3]);
+        if (parts.length != 3 && !trektel) return null;
         try {
             byte[] bytes = new byte[(int) file.length()];
             try (InputStream in = new FileInputStream(file)) {
@@ -211,6 +281,7 @@ public class SchermUitPlugin extends Plugin implements WandelingService.Listener
             info.put("startedAt", Long.parseLong(parts[1]));
             info.put("durationMs", Long.parseLong(parts[2]));
             info.put("type", Opname.MIME);
+            if (trektel) info.put("trektel", true);
             info.put("data", Base64.encodeToString(bytes, Base64.NO_WRAP));
             return info;
         } catch (IOException | NumberFormatException e) {

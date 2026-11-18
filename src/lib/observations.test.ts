@@ -48,6 +48,7 @@ import { gps } from './location.svelte';
 import { setPreference } from './preferences';
 import { UNKNOWN_PLACE_ACCURACY } from './spokenPlace';
 import { distanceMeters } from './geo';
+import { receiveScreenOffRecording } from './screenOff.svelte';
 
 // De wachtrij van begin tot eind, met een nagebootst model: wat het model
 // teruggeeft gaat door de echte validatie (parseResponse) en wordt echt in de
@@ -1224,6 +1225,47 @@ describe('netwerk weg', () => {
         expect(u).toMatchObject({ status: 'pending', waitingSince: expect.any(Number) });
       } else {
         expect(u?.status).toBe('failed');
+      }
+    },
+  );
+
+  // Trektelling in de service (proef scherm uit): een stuk komt als bestand
+  // van de service binnen en gaat dan dezelfde weg als een opname van de knop
+  it.each(Object.entries(STORINGEN))(
+    'storing "%s": een trektelstuk van de service gaat niet verloren',
+    async (_naam, { fetch, uitkomst }) => {
+      vi.stubGlobal('fetch', fetch());
+      const startedAt = clock + 5_000;
+      await receiveScreenOffRecording(
+        {
+          // Elke test een eigen id: hetzelfde bestand neemt de webcode maar één keer aan
+          id: `${crypto.randomUUID()}_${startedAt}_61000_trektel.m4a`,
+          sessieId: SESSION,
+          startedAt,
+          durationMs: 61_000,
+          type: 'audio/mp4',
+          data: btoa('aac'),
+          trektel: true,
+          schermUitMs: 61_000,
+        },
+        Promise.resolve({ source: 'recent', position: POSITION, waitMs: 0 }),
+      );
+      // Bewaren zet de wachtrij zelf aan; wachten tot die klaar is
+      const stored = () => db.utterances.filter((utt) => utt.trektel === true).first();
+      await vi.waitFor(async () => {
+        const u = await stored();
+        expect(u?.status !== 'pending' || u.waitingSince !== undefined).toBe(true);
+      });
+      stopWaiting();
+      const u = (await stored())!;
+      expect(u).toMatchObject({ trektel: true, audioDurationMs: 61_000, position: POSITION });
+      expect(u.audio).toBeDefined();
+      expect(u.transcript).toBeUndefined();
+      expect(interpret).not.toHaveBeenCalled();
+      if (uitkomst === 'wacht') {
+        expect(u).toMatchObject({ status: 'pending', waitingSince: expect.any(Number) });
+      } else {
+        expect(u.status).toBe('failed');
       }
     },
   );

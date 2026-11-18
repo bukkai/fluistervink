@@ -26,6 +26,10 @@ vi.mock('./log', () => ({ logEvent }));
 const devOptionOn = vi.hoisted(() => vi.fn());
 vi.mock('./devOptions', () => ({ devOptionOn }));
 
+// Positie per trektelstuk: opgevraagd toen de service het begin meldde
+const takeChunkLookup = vi.hoisted(() => vi.fn());
+vi.mock('./trektelRecorder.svelte', () => ({ takeChunkLookup }));
+
 const { receiveScreenOffRecording, screenOff, startScreenOff } = await import('./screenOff.svelte');
 
 let nextId = 0;
@@ -48,7 +52,7 @@ const lookup = { source: 'recent' as const, waitMs: 0 };
 
 describe('opnemen met het scherm uit', () => {
   let handlers: ScreenOffHandlers;
-  const stop = vi.fn();
+  const stop = vi.fn(async () => {});
   const onPress = vi.fn();
 
   beforeEach(() => {
@@ -64,6 +68,7 @@ describe('opnemen met het scherm uit', () => {
     });
     submitRecording.mockResolvedValue(undefined);
     currentPosition.mockResolvedValue(lookup);
+    takeChunkLookup.mockReturnValue(undefined);
   });
 
   it('doet niets zonder de ontwikkeloptie', () => {
@@ -223,5 +228,76 @@ describe('opnemen met het scherm uit', () => {
     expect(stop).toHaveBeenCalled();
     expect(screenOff.startedAt).toBeUndefined();
     expect(screenOff.ready).toBeUndefined();
+  });
+
+  it('haalt na het uitzetten meteen op wat de service nog afmaakte', async () => {
+    const off = startScreenOff('s1', 180_000, onPress);
+    await settle();
+    const last = recording({ id: 's1_5000_61000_trektel.m4a', trektel: true });
+    native.pendingScreenOffRecordings.mockResolvedValue([last]);
+    off();
+    await settle();
+    await settle();
+    expect(submitRecording).toHaveBeenCalledTimes(1);
+    expect(submitRecording.mock.calls[0][3]).toEqual({ trektel: true });
+    expect(native.doneScreenOffRecording).toHaveBeenCalledWith(last.id);
+  });
+
+  describe('trektelling in de service', () => {
+    const chunkLookup = { source: 'fresh' as const, waitMs: 120 };
+
+    it('bewaart een stuk als trektelstuk, met de positie van het begin van het stuk', async () => {
+      startScreenOff('s1', 180_000, onPress);
+      // Een opname met de volumeknop loopt niet: die mag het stuk niet raken
+      takeChunkLookup.mockReturnValue(Promise.resolve(chunkLookup));
+      const rec = recording({
+        trektel: true,
+        durationMs: 61_000,
+        spraakMs: 12_300,
+        piekDb: -18,
+        achtergrondDb: -55,
+        schermUitMs: 58_000,
+        gestoptAt: Date.now() - 40,
+      });
+      handlers.onRecording(rec);
+      await settle();
+
+      expect(takeChunkLookup).toHaveBeenCalledWith(rec.startedAt);
+      const [, stored, position, options] = submitRecording.mock.calls[0];
+      expect(stored).toMatchObject({ startedAt: rec.startedAt, durationMs: 61_000 });
+      expect(await position).toBe(chunkLookup);
+      expect(options).toEqual({ trektel: true });
+      expect(currentPosition).not.toHaveBeenCalled();
+      expect(native.doneScreenOffRecording).toHaveBeenCalledWith(rec.id);
+
+      const logged = logEvent.mock.calls.find(([type]) => type === 'trektel_stuk');
+      expect(logged?.[1]).toMatchObject({
+        durationMs: 61_000,
+        speechMs: 12_300,
+        peakDb: -18,
+        floorDb: -55,
+        screenOffMs: 58_000,
+      });
+      expect(logged?.[1].transferMs).toBeGreaterThanOrEqual(40);
+      expect(logEvent.mock.calls.some(([type]) => type === 'screen_off_recording')).toBe(false);
+    });
+
+    it('laat een lopende opname met de volumeknop met rust', async () => {
+      startScreenOff('s1', 180_000, onPress);
+      handlers.onStart(1000, 'volume_up');
+      handlers.onRecording(recording({ trektel: true }));
+      expect(screenOff.startedAt).toBe(1000);
+      await settle();
+      expect(submitRecording).toHaveBeenCalledTimes(1);
+    });
+
+    it('zonder gemeld begin: bewaard zonder positie, met de reden', async () => {
+      await receiveScreenOffRecording(recording({ trektel: true }), undefined);
+      const lookupUsed = await submitRecording.mock.calls[0][2];
+      expect(lookupUsed).toMatchObject({
+        source: 'none',
+        error: expect.stringContaining('trektel'),
+      });
+    });
   });
 });
