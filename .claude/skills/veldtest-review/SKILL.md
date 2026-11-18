@@ -42,21 +42,35 @@ In de zon valt contrast weg en zie je kleurverschil slecht. De gebruiker kijkt h
 
 ### 4. Zwak of wegvallend netwerk
 
-Dit is het belangrijkste scenario: een uitspraak die verloren gaat, kost een waarneming die je niet terugkrijgt. De app is local-first: elke uitspraak wordt eerst lokaal bewaard (audio, tijd, GPS) en daarna één voor één verwerkt (`src/lib/observations.ts`: transcriberen via `/api/transcribe`, interpreteren via `/api/messages`).
+Dit is het belangrijkste scenario: een uitspraak die verloren gaat, kost een waarneming die je niet terugkrijgt. De app is local-first: elke uitspraak wordt eerst lokaal bewaard (audio, tijd, GPS) en daarna één voor één verwerkt (`src/lib/queue.ts`: transcriberen via `/api/transcribe`, interpreteren via `/api/messages`). Zonder bereik wacht de wachtrij en gaat hij vanzelf door (`docs/plan-offline.md`).
 
 Loop deze momenten na, en wat de gebruiker merkt **zonder naar het scherm te kijken**:
 
 | Moment | Vragen |
 |---|---|
 | Netwerk weg vóór het inspreken | Kan opnemen nog? Wordt de uitspraak bewaard? |
-| Weg tijdens het uploaden van de audio | Blijft de audio bewaard? Trilt het als fout (`failed`, drie korte)? |
+| Weg tijdens het uploaden van de audio | Blijft de audio bewaard? Trilt het "wacht op bereik" (lang, kort)? |
+| Wifi met een inlogpagina (trein, camping) | Telt dat als geen bereik, niet als een leeg antwoord? (`api.ts`, test met `STORINGEN` in `src/test-helpers.ts`) |
 | Weg tussen transcriberen en interpreteren | Gaat het transcript verloren, of wordt het bewaard voor een nieuwe poging? |
 | Heel traag (2G, één streepje) | Time-out is 30 s (`src/lib/api.ts`). Blokkeert één hangende uitspraak de rest van de wachtrij? Hoe lang wacht de gebruiker op een tril? |
-| Netwerk komt terug | Wat gebeurt er met mislukte uitspraken? Zijn ze na de sessie nog terug te vinden en opnieuw te verwerken ("Opnieuw" in `SessionLog.svelte`)? |
+| Netwerk komt terug | Gaan de wachtende uitspraken vanzelf en op volgorde door? Na lang wachten één tril in plaats van een tril per uitspraak? Mislukte uitspraken (plafond, 401): na de sessie nog terug te vinden en opnieuw te verwerken ("Opnieuw" in `SessionLog.svelte`)? |
 | GPS zonder netwerk | Komt de positie nog binnen? (`src/lib/location.svelte.ts`) |
 | Opstarten zonder netwerk | Werkt de app (PWA-cache), of is een netwerkverzoek (toegangscode, gebied) vereist om te beginnen? |
 
-Let op de MVP-scope: **echte offline-ondersteuning** (automatisch verwerken zodra er weer verbinding is, sync-status) staat in CLAUDE.md onder "bewust niet in de MVP". Een uitspraak die bewaard blijft en later met "Opnieuw" te verwerken is, is dus goed genoeg. Een uitspraak die stil verdwijnt, of een fout zonder tril, is een echt probleem.
+Een uitspraak die bewaard blijft en wacht, of later met "Opnieuw" te verwerken is, is goed. Een uitspraak die stil verdwijnt, of een fout zonder tril, is een echt probleem. Elke nieuwe test over de wachtrij loopt alle storingen in `STORINGEN` (`src/test-helpers.ts`) langs.
+
+### 5. Op de telefoon proberen
+
+Wat in de browser en in Vitest niet echt na te bootsen is (`docs/plan-robuustheid.md`). Niet elke keer alles: kies wat bij de wijziging past, en zet in het rapport wat je niet kon proberen, zodat de eigenaar het in het veld doet.
+
+| Geval | Probeer | Goed als |
+|---|---|---|
+| Gebeld worden | Laat je bellen midden in een opname, en midden in een trektelling | De opname tot dan toe staat erin; de knop hangt niet op "opnemen"; de trektelling pauzeert en gaat verder na het gesprek |
+| Oortjes weg | Bluetooth-oortjes uitzetten tijdens een trektelling | Eén lange tril (pauze), de telling gaat verder met de microfoon van de telefoon |
+| Telefoon vol | Opslag bijna vol maken (grote video), dan inspreken | Drie korte trillen en "De telefoon is vol" op het scherm; een trektelling stopt met die uitleg |
+| Andermans stem | Laat iemand naast je een vogel noemen tijdens een trektelling, of zet een radio aan | Geen waarneming uit hun zin (anders: opname naar de testset) |
+| Wind | Trektelling in harde wind zonder iets te zeggen | Geen verzonnen waarnemingen (anders: opname naar de testset) |
+| Snel verplaatsen | Een stuk met de boot of de auto tijdens een sessie | Afstand voor eBird: zie de open vraag in `docs/plan-robuustheid.md` (#9) |
 
 ### Feedback zonder te kijken
 

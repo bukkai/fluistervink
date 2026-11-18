@@ -1,5 +1,5 @@
 // Bouwstenen voor de tests: nepwaarnemingen en nepantwoorden van het model.
-import { expect } from 'vitest';
+import { expect, vi } from 'vitest';
 import { crc32 } from './lib/xlsx';
 import type Anthropic from '@anthropic-ai/sdk';
 import type { Observation } from './lib/db';
@@ -145,4 +145,62 @@ export async function unzipStored(blob: Blob): Promise<Map<string, string>> {
   expect(view.getUint32(at, true)).toBe(0x02014b50);
   expect(view.getUint16(bytes.length - 12, true)).toBe(files.size);
   return files;
+}
+
+/**
+ * Storingen die in het veld voorkomen (docs/plan-robuustheid.md), als
+ * nagebootste `fetch`. Een nieuwe test over de wachtrij of de proxy hoort ze
+ * allemaal langs te lopen (`it.each(Object.entries(STORINGEN))`): de opname
+ * mag bij geen enkele verloren gaan.
+ * - `wacht`: de uitspraak wacht op bereik en gaat later vanzelf door
+ * - `mislukt`: de uitspraak mislukt, met de opname bewaard ("Opnieuw")
+ */
+export const STORINGEN: Record<
+  string,
+  { fetch: () => typeof fetch; uitkomst: 'wacht' | 'mislukt' }
+> = {
+  'geen bereik': {
+    fetch: () => vi.fn(async () => Promise.reject(new TypeError('Failed to fetch'))),
+    uitkomst: 'wacht',
+  },
+  'te traag (time-out)': {
+    fetch: () =>
+      vi.fn(async () =>
+        Promise.reject(new DOMException('The operation timed out.', 'TimeoutError')),
+      ),
+    uitkomst: 'wacht',
+  },
+  'wifi met inlogpagina': {
+    fetch: () =>
+      vi.fn(
+        async () =>
+          new Response('<!doctype html><title>Log in</title>', {
+            status: 200,
+            headers: { 'Content-Type': 'text/html' },
+          }),
+      ),
+    uitkomst: 'wacht',
+  },
+  'proxy even weg (503)': {
+    fetch: () => vi.fn(async () => Response.json({ error: 'Even weg' }, { status: 503 })),
+    uitkomst: 'wacht',
+  },
+  'Cloudflare-foutpagina (502, HTML)': {
+    fetch: () => vi.fn(async () => new Response('<html>Bad gateway</html>', { status: 502 })),
+    uitkomst: 'wacht',
+  },
+  'plafond per dag (429)': {
+    fetch: () =>
+      vi.fn(async () =>
+        Response.json({ error: 'Daglimiet bereikt', code: 'audio_limit' }, { status: 429 }),
+      ),
+    uitkomst: 'mislukt',
+  },
+};
+
+/** Telefoon vol: de volgende `add` op deze tabel mislukt zoals in IndexedDB. */
+export function opslagVol(table: { add: (...args: never[]) => unknown }) {
+  return vi
+    .spyOn(table as { add: () => Promise<unknown> }, 'add')
+    .mockRejectedValueOnce(new DOMException('Quota exceeded', 'QuotaExceededError'));
 }

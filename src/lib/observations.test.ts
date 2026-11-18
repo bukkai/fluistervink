@@ -1,7 +1,17 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import { Blob as NodeBlob } from 'node:buffer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { FakeLockManager, HOUTDUIF, KEEP, REE, VINK, VOS, toolResponse } from '../test-helpers';
+import {
+  FakeLockManager,
+  HOUTDUIF,
+  KEEP,
+  REE,
+  STORINGEN,
+  VINK,
+  VOS,
+  opslagVol,
+  toolResponse,
+} from '../test-helpers';
 import { db, storeAudio, type Observation, type PositionLookup, type Utterance } from './db';
 import { interpret } from './interpret';
 import { fillMissingAreas, nameFromSession } from './area';
@@ -699,6 +709,15 @@ describe('met de hand bewerken terwijl de stem corrigeert', () => {
     expect(obs).toMatchObject({ speciesId: KEEP, count: 3, status: 'reviewed' });
   });
 
+  it('met de stem verwijderd terwijl het formulier openstond: Opslaan zegt dat', async () => {
+    await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    const [opened] = await listObservations(SESSION);
+    await say('die laatste weg', ['delete_observation', { ref: 1 }]);
+    expect(await editObservation(opened.id, { count: 2 })).toBe(false);
+    // Niet stil teruggezet
+    expect(await db.observations.count()).toBe(0);
+  });
+
   it('changedFields vergelijkt ook plekken en lijsten op inhoud', () => {
     const position = { lat: 52, lon: 5, accuracy: 8, fixedAt: 0 };
     const original: Observation = {
@@ -732,8 +751,7 @@ describe('telefoon vol', () => {
       ...navigator,
       vibrate: (pattern: number[]) => (vibrations.push(pattern), true),
     });
-    const full = new DOMException('Quota exceeded', 'QuotaExceededError');
-    const spy = vi.spyOn(db.utterances, 'add').mockRejectedValueOnce(full);
+    const spy = opslagVol(db.utterances);
     const heard = vi.fn();
     const off = onSaveFailed(heard);
     try {
@@ -1166,6 +1184,26 @@ describe('netwerk weg', () => {
     expect((await db.utterances.get(second))?.status).toBe('failed');
     expect(vibrations).toEqual([FAILED, FAILED]);
   });
+  it.each(Object.entries(STORINGEN))(
+    'storing "%s": de opname gaat niet verloren',
+    async (_naam, { fetch, uitkomst }) => {
+      vi.stubGlobal('fetch', fetch());
+      const id = await record();
+      await processQueue();
+      stopWaiting();
+      const u = await db.utterances.get(id);
+      expect(u?.audio).toBeDefined();
+      expect(u?.transcript).toBeUndefined();
+      expect(interpret).not.toHaveBeenCalled();
+      expect(await db.observations.count()).toBe(0);
+      if (uitkomst === 'wacht') {
+        expect(u).toMatchObject({ status: 'pending', waitingSince: expect.any(Number) });
+      } else {
+        expect(u?.status).toBe('failed');
+      }
+    },
+  );
+
   describe('wachten op bereik', () => {
     const events = async (type: string) =>
       (await db.events.toArray()).filter((e) => e.type === type);

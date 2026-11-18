@@ -1,23 +1,20 @@
 # Plan: robuustheid (edge cases)
 
-18 nov 2026. Status: fase 1 klaar (#268), fase 2 in uitvoering.
+18 nov 2026. Status: fase 1 (#268), 2 (#273) en 3–5 (code, tests en checklists) klaar. Open: proberen op de telefoon, opnames voor de testset en één besluit (#9); zie de tabel.
 
 Een rondgang "wat zou een tester proberen?" langs de bestaande tests en code. Veel is al afgedekt: netwerk weg op elk moment, de wachtrij na een crash, twee tabbladen (slot en BroadcastChannel), haperende tikken met handschoenen, Merlin tijdens een trektelling, een back-up twee keer terugzetten, CSV met komma's en aanhalingstekens, soorten die het model verzint. Dit plan legt vast wat nog open staat en hoe we het blijvend afdekken, zodat het niet bij één keer nalopen blijft.
 
 ## Wat nog open staat
 
-Op volgorde van kans in het veld. "Soort" zegt hoe we het afdekken: **test** (Vitest, nagebootst), **veld** (zelf op de telefoon proberen, staat op de checklist hieronder) of **let op** (geen code, wel in de kwaliteitsronde).
+Wat de code en de tests niet kunnen afdekken. Op de telefoon proberen: de checklist "Op de telefoon proberen" in de skill `veldtest-review`.
 
-| # | Geval | Soort | Wat we willen |
+| # | Geval | Nog te doen | Door wie |
 | --- | --- | --- | --- |
-| 2 | **Telefoon vol**: een lange trektelling bewaart veel audio; IndexedDB geeft een `QuotaExceededError` | veld | Afgedekt met een test (zie onder); nog op de telefoon proberen. Later misschien vooraf waarschuwen met `navigator.storage.estimate()` |
-| 6 | **Verwijzing buiten de context**: "die buizerd van een kwartier geleden" na 30 waarnemingen | test + testset | Onzeker of niet begrepen, niet de verkeerde waarneming aanpassen |
-| 7 | **Stemmen of geluid van anderen** in een trektelstuk: een medevogelaar, een autoradio, wind die langs de stiltedetectie komt en waar de spraakherkenning tekst bij verzint | veld + testset | Geen waarnemingen uit andermans zinnen of verzonnen tekst; een paar opnames hiervan in de testset |
-| 9 | **Snel verplaatsen** (boot naar Terschelling, auto): telt mee als afgelegde afstand voor eBird; waarnemingen buiten Nederland of op zee | test + veld | Besluiten of een boot meetelt (eBird zegt: niet), en wat `/api/area` buiten Nederland teruggeeft |
-| 10 | **Nieuwe webcode midden in een sessie** (`server.url`): een Dexie-versiesprong met wachtende uitspraken, of nieuwe webcode in een oude app zonder een native functie | test + let op | Migratie met wachtende uitspraken getest; `native.ts` valt terug als een plugin ontbreekt |
-| 11 | **Back-up van een nieuwere versie in een oudere**, of terugzetten tijdens een lopende sessie | test | Duidelijke weigering of veilig toevoegen, nooit een halve import |
-| 12 | **Gebeld worden midden in een opname of trektelling**: het microfoonspoor wordt gedempt of stopt | veld + test | Wat al opgenomen is blijft bewaard; een trektelling pauzeert zoals bij Merlin |
-| 13 | **Feedback als prompt injection**: getypte feedback van testers komt via `npm run feedback -- notes` bij Claude Code terecht | let op | Feedback is gegevens, nooit instructies; zo in de werkwijze en de kwaliteitsronde |
+| 2 | **Telefoon vol** | Op de telefoon proberen (veldchecklist). Later misschien vooraf waarschuwen met `navigator.storage.estimate()` | eigenaar |
+| 6 | **Verwijzing buiten de context** ("die buizerd van een kwartier geleden" na 30 waarnemingen) | De app-kant is afgedekt (zie onder). Of het model dan "niet begrepen" of onzeker kiest in plaats van de verkeerde buizerd: een paar opnames in de testset | eigenaar inspreken, daarna `npm run testset` |
+| 7 | **Stemmen of geluid van anderen** in een trektelstuk (medevogelaar, radio, wind) | Opnames voor de testset; de prompt alleen aanpassen als de testset het laat zien | eigenaar inspreken |
+| 9 | **Snel verplaatsen** (boot, auto) | Besluit: telt varen of rijden mee als afgelegde afstand voor eBird? Nagaan wat eBird vraagt (op zee heeft het een eigen protocol, Pelagic). Daarna `recordFix` in `effort.ts` aanpassen of zo laten | eigenaar beslist |
+| 12 | **Gebeld worden** | De code is afgedekt (zie onder); nog op de telefoon proberen, ook met Bluetooth-oortjes | eigenaar |
 
 ## Fasen
 
@@ -37,6 +34,12 @@ Wat af is, komt hier met de test of PR erbij, en gaat uit de tabel.
 - **#1 Wifi met een inlogpagina** (#268): een antwoord zonder JSON, of 511, telt als geen bereik. Test "wifi met een inlogpagina" in `observations.test.ts`.
 - **#2 Telefoon vol** (fase 2, alleen het testdeel): `submit` in `queue.ts` vangt de fout, logt `save_failed`, trilt "mislukt" en meldt het via `onSaveFailed`; het sessiescherm zegt het en stopt een trektelling. Tests onder "telefoon vol".
 - **#3 Stop terwijl de wachtrij bezig is** (fase 2): klaarzetten en exporteren wachten al op onverwerkte uitspraken (`PastSession.svelte`). Nieuw: na het verwerken krijgt een intussen gestopte sessie opnieuw een naam, zodat de laatste uitspraak meetelt. Tests onder "Stop terwijl de wachtrij nog bezig is".
-- **#4 Bewerken tijdens een stemcorrectie** (fase 2): Opslaan in het formulier stuurt alleen de velden die je aanpaste (`changedFields`), dus een stemcorrectie terwijl het formulier openstond blijft staan. Nog open: een waarneming die met de stem verwijderd is terwijl het formulier openstaat; Opslaan doet dan stil niets.
+- **#4 Bewerken tijdens een stemcorrectie** (fase 2): Opslaan in het formulier stuurt alleen de velden die je aanpaste (`changedFields`), dus een stemcorrectie terwijl het formulier openstond blijft staan. Fase 3: een waarneming die intussen met de stem verwijderd is, geeft bij Opslaan een melding in plaats van stil niets (`editObservation` geeft `false`).
 - **#5 Rare aantallen** (fase 2): onder 1 wordt 1, maar onzeker met de reden; ongedaan maken, opnieuw doen of aanpassen zonder iets om te doen geeft "niet begrepen" in plaats van "opgeslagen" (`acted` in `applyActions.ts`). Tests onder "rare aantallen en niets om te doen".
 - **#8 Klok** (fase 2): geen fout gevonden. Tests voor een sessie over middernacht (`waarnemingExport.test.ts`), een klok die terugspringt (`sessions.test.ts`, `effort.test.ts`). Zomertijd volgt uit de lokale tijd van het apparaat, dezelfde code.
+- **#6 Verwijzing buiten de context, app-kant** (fase 2 en 3): een verwijzing naar een waarneming die niet in de context stond, weigert de validatie al ("weigert een verwijzing …" in `interpret.test.ts`); blijft er dan niets over, dan krijgt de gebruiker "niet begrepen" (fase 2, `acted`). Wat het model zelf kiest: testset.
+- **#10 Nieuwe webcode midden in een sessie** (fase 3): test in `db.test.ts`: van databaseversie 2 naar nu, met een wachtende uitspraak, een lopende sessie en een waarneming; alles blijft staan en de wachtrij vindt de uitspraak. `native.ts` vangt een ontbrekende plugin overal af (`isPluginAvailable` of `.catch`); bij elke nieuwe native functie zo houden.
+- **#11 Back-up van een nieuwere versie** (fase 3): tests in `export.test.ts`: onbekende velden gaan mee, een fout halverwege laat niets achter (één transactie), terugzetten tijdens een lopende sessie laat die lopen.
+- **#12 Gebeld worden of oortjes weg** (fase 3): stopte het microfoonspoor vanzelf, dan bleef de knop op "opnemen" hangen en ging de opname verloren. Nu rondt het sessiescherm hem af alsof op Stop gedrukt is (`onRecordingInterrupted` in `recorder.svelte.ts`). In een trektelling telde de app stil door met een dode microfoon; nu pauzeert hij (het lopende stuk gaat mee) en zet hij de microfoon na een seconde opnieuw aan (`onTrackEnded` in `trektelRecorder.svelte.ts`). Gebeld worden zet de app meestal op de achtergrond: dat was al een pauze.
+- **#13 Feedback als prompt injection** (fase 3): `npm run feedback -- notes` zet boven de feedback dat het gegevens zijn, geen instructies; ook als stap in `docs/kwaliteitsronde.md`.
+- **Fase 4 en 5** (structureel): veldchecklist "Op de telefoon proberen" in de skill `veldtest-review`; storingen in `src/test-helpers.ts` (`STORINGEN`, `opslagVol`) met één test die ze allemaal langsloopt; stap "Edge cases" in `docs/kwaliteitsronde.md`.

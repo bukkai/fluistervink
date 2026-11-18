@@ -103,7 +103,7 @@ function startChunk(): Chunk {
 
 /** Stopt een stuk; verstuurt het als er spraak in zat. */
 function endChunk(chunk: Chunk, cut: Cut) {
-  chunk.recorder.onstop = () => {
+  const send = () => {
     const audio = new Blob(chunk.parts, { type: chunk.recorder.mimeType });
     if (cut.hasSpeech && audio.size) {
       trektel.sent++;
@@ -117,7 +117,33 @@ function endChunk(chunk: Chunk, cut: Cut) {
       logEvent('trektel_silence', { ...cut, bytes: audio.size });
     }
   };
+  // Al vanzelf gestopt (het microfoonspoor hield op): de stukjes zijn er al
+  if (chunk.recorder.state === 'inactive') {
+    send();
+    return;
+  }
+  chunk.recorder.onstop = send;
   chunk.recorder.stop();
+}
+
+/** Zo lang na een weggevallen spoor de microfoon opnieuw proberen */
+export const TRACK_RETRY_MS = 1000;
+
+/**
+ * Het microfoonspoor hield op terwijl de app op het scherm stond (oortjes
+ * weg, een andere app pakt de microfoon). Zonder dit telde de app stil door
+ * met een dode microfoon. Pauzeren (het lopende stuk gaat mee, één lange
+ * tril) en de microfoon opnieuw aanzetten; lukt dat niet, dan stopt de
+ * telling zoals na een pauze. Gebeld worden zet de app meestal op de
+ * achtergrond: dat is gewoon een pauze (onVisibility).
+ */
+function onTrackEnded(opened: MediaStream) {
+  if (stream !== opened || trektel.status !== 'running') return;
+  logEvent('trektel_track_ended');
+  pauseTrektel();
+  setTimeout(() => {
+    if (trektel.status === 'paused' && !document.hidden) resumeTrektel();
+  }, TRACK_RETRY_MS);
 }
 
 /** Houdt het scherm aan (de trektelling stopt als het scherm op slot gaat). */
@@ -143,6 +169,8 @@ function onVisibility() {
 async function openMic(): Promise<void> {
   stream = await openMicrophone();
   noteMicrophone(stream, 'trektel');
+  const opened = stream;
+  opened.getAudioTracks?.()[0]?.addEventListener('ended', () => onTrackEnded(opened));
   audioContext = new AudioContext();
   const analyser = audioContext.createAnalyser();
   analyser.fftSize = 2048;

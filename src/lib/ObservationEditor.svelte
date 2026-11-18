@@ -144,7 +144,7 @@
     if (!selectedSpecies) return;
     // Alleen wat hier veranderde: een correctie met de stem terwijl het
     // formulier openstond, blijft staan
-    await editObservation(
+    gone = !(await editObservation(
       original.id,
       changedFields(original, {
         speciesId: selectedSpecies.id,
@@ -164,9 +164,12 @@
         recordedPosition: place.recordedPosition,
         placedByVoice: place.placedByVoice,
       }),
-    );
-    onclose(true);
+    ));
+    if (!gone) onclose(true);
   }
+
+  /** Intussen verwijderd (met de stem): niet stil sluiten, maar zeggen */
+  let gone = $state(false);
 
   /** De app twijfelde alleen over de plek ("aan de overkant van de rivier") */
   const onlyPlaceDoubt =
@@ -381,6 +384,13 @@
     {/if}
     <button type="button" class="link danger" onclick={remove}>Verwijderen</button>
   </div>
+
+  {#if gone}
+    <p class="error">
+      Deze waarneming is intussen verwijderd, bijvoorbeeld met de stem. Terugzetten kan onder
+      "Verwijderd" bij de sessie.
+    </p>
+  {/if}
 
   <!-- Altijd in beeld, ook bij een lang formulier (feedback 16 nov) -->
   <div class="buttons">

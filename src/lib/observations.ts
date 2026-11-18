@@ -25,17 +25,21 @@ export function spokenAt(utterance: Utterance): number {
 
 /**
  * Handmatige correctie in de review. De waarneming geldt daarna als
- * nagelopen; met de stem kan hij nog steeds aangepast worden.
+ * nagelopen; met de stem kan hij nog steeds aangepast worden. False als hij
+ * er niet meer is (intussen met de stem verwijderd terwijl het formulier
+ * openstond).
  */
-export async function editObservation(id: string, patch: Partial<Observation>): Promise<void> {
-  await db.transaction('rw', db.observations, async () => {
+export async function editObservation(id: string, patch: Partial<Observation>): Promise<boolean> {
+  return db.transaction('rw', db.observations, async () => {
     const current = await db.observations.get(id);
+    if (!current) return false;
     await db.observations.update(id, {
       ...patch,
-      ...(current && codesForNewSpecies(current, patch)),
+      ...codesForNewSpecies(current, patch),
       editedAt: Date.now(),
       status: 'reviewed',
     });
+    return true;
   });
 }
 
