@@ -2,6 +2,10 @@
 
 Wat waar staat. Ontwerp en werkafspraken staan in `CLAUDE.md` in de hoofdmap, de stand van vandaag in `NOTES.md`, installeren en ontwikkelen in de `README.md`.
 
+## Ontwerp
+
+- `ontwerp.md`: de uitwerking van de keuzes in `CLAUDE.md` per onderwerp, met de plekken in de code.
+
 ## Richting
 
 - `roadmap.md`: waar de app naartoe gaat, met de stand per plan.
@@ -20,9 +24,9 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 | `roadmap-android.md` | vogelen zonder naar de telefoon te kijken, vijf stappen; stap 1–2 gebouwd |
 | `plan-ebird.md` | inspanning en export naar eBird; afgerond 16 nov (keuze "Ik gebruik eBird" bij Instellingen) |
 | `plan-soortgroepen.md` | zoogdieren, reptielen en amfibieën, dagvlinders en libellen inspreken; afgerond 16 nov (voor iedereen, standaard aan) |
-| `plan-offline.md` | offline wachtrij: zonder bereik doorvogelen, vanzelf verwerken; gebouwd 17 nov, proeven in het veld nog te doen |
+| `plan-offline.md` | offline wachtrij: zonder bereik doorvogelen, vanzelf verwerken; afgerond, op stable sinds 18 nov |
 | `plan-ios.md` | iPhone-app; voorstel, na de lancering |
-| `plan-robuustheid.md` | edge cases die een tester zou proberen, en hoe we ze blijvend afdekken; code klaar, nog proberen op de telefoon, testset-opnames en één besluit |
+| `plan-robuustheid.md` | edge cases die een tester zou proberen, en hoe we ze blijvend afdekken; code klaar, nog proberen op de telefoon en testset-opnames |
 
 ## Naslag
 
@@ -32,7 +36,7 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 - `waarneming-nl.md`: importformaat, soortenlijst en codes van waarneming.nl.
 - `proxy.md`: de proxy: toegang, kosten, statistieken en wat testers delen.
 - `kwaliteitsronde.md`: de periodieke ronde over de hele codebase, met logboek.
-- `beheer.md`: API-sleutels en weetjes bij het bouwen van de Android-app.
+- `beheer.md`: API-sleutels, weetjes bij het bouwen van de Android-app, de branch-regel op `main`.
 
 ## Archief
 
@@ -40,4 +44,5 @@ Afgerond, alleen nog om terug te lezen.
 
 - `archief/mijlpaal-mvp.md`: de beoordeling van de MVP (12 okt).
 - `archief/veldtests.md`: bevindingen uit de eerste veldtests (9–12 okt).
-- `archief/werklog-2026.md`: de oude stand uit `NOTES.md` (13 okt – 12 nov).
+- `archief/werklog-2026.md`: de oude stand uit `NOTES.md` (13 okt – 18 nov).
+- `archief/kwaliteitsronde-logboek.md`: oudere regels uit het logboek van de kwaliteitsronde (24 okt – 11 nov).

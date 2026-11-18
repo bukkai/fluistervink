@@ -1,6 +1,6 @@
 # Plan: offline wachtrij
 
-Voorstel van 17 nov 2026, gebouwd op 17 nov in vier PR's (#251, #254, #255 en de laatste die het voor iedereen aanzet); de proeven in het veld (punt 4 en 5) staan in die laatste PR als checklist. Punt 1 van "Na v1.0" in `docs/roadmap.md`. Tot nu toe stond dit bij "Bewust níet in de MVP" in `CLAUDE.md`; de eigenaar wil het nu als eerste.
+Voorstel van 17 nov 2026, gebouwd op 17 nov in vier PR's (#251, #254, #255, #256). **Afgerond:** in het veld getest op 17 nov (vliegtuigmodus, corrigeren, trektelling), op stable sinds 18 nov. Punt 1 van "Na v1.0" in `docs/roadmap.md`. Tot nu toe stond dit bij "Bewust níet in de MVP" in `CLAUDE.md`; de eigenaar wil het nu als eerste.
 
 ## Waarom
 

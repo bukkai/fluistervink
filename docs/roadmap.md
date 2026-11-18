@@ -17,9 +17,9 @@ De vier sporen van 13 okt, met de stand op 12 nov:
 
 ## Komende stappen (18 nov)
 
-1. **Deze week:** de laatste proeven op de telefoon (plek die later komt, gebeld worden en oortjes weg, de regel over de microfoon van de oortjes), dan een release naar stable, zodat de testers de offline wachtrij nog tijdens de gesloten test krijgen. Direct daarna de kwaliteitsronde (`docs/kwaliteitsronde.md`), ook een voorwaarde vóór de aanvraag voor productie.
+1. ~~Release naar stable met de offline wachtrij, daarna de kwaliteitsronde~~ (18 nov, #279). Nog de proeven op de telefoon (gebeld worden en oortjes weg, de microfoon van de oortjes; `NOTES.md`).
 2. **Tot ongeveer 1 dec:** de aanvraag voorbereiden (`docs/lancering.md`, punt 4): plafond en daglimiet bij OpenAI en Anthropic, feedback van de testers en de testset, de afvinklijst bijwerken, de laatste release een paar dagen laten staan.
-3. **Ondertussen, los van de app:** ~~nagaan of observation.org dezelfde bulkimport heeft~~ (18 nov: dezelfde database, zie punt 5); de kosten per actieve gebruiker per week zichtbaar maken in Developer en Statistieken, voor de keuze over de betaalde laag (punt 6); daarna het wake word trainen met openWakeWord en meten op de testset (punt 4).
+3. **Ondertussen, los van de app:** ~~observation.org~~ (18 nov: dezelfde database, zie punt 5) en ~~kosten per actieve gebruiker per week~~ (#277, voor de betaalde laag, punt 6); nu het wake word trainen met openWakeWord en meten op de testset (punt 4).
 4. **Na de goedkeuring:** de stabiele AAB naar Productie; opnemen met het scherm uit mergen en taggen (verklaring microfoon); dan de microfoon delen en het wake word in de app, eerst als proef die alleen logt.
 
 ## Lopende plannen
