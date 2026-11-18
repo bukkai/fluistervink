@@ -309,8 +309,10 @@
         onPaused: () => vibrate('trektelPaused'),
         onResumed: () => vibrate('recording'),
       },
-      // Proef scherm uit: de service neemt de telling op, het scherm mag uit
-      { native: screenOff.ready === true },
+      // Proef scherm uit: de service neemt de telling op, het scherm mag uit.
+      // Altijd proberen met de optie aan: de service zegt zelf of het kan
+      // (anders de gewone trektelling, `trektel_native_failed` in het log)
+      { native: screenOffEnabled() },
     );
     if (started) vibrate('recording');
   }

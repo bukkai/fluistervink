@@ -182,6 +182,14 @@ public class WandelingService extends Service {
         handler.removeCallbacks(stopAfterMax);
         handler.postDelayed(stopAfterMax, MAX_DURATION_MS);
         updateScreenOff();
+        if (config != null) {
+            // De webcode zette de proef misschien aan vóór de service draaide
+            // (`aan` gaf dan "service draait niet"): zeggen dat het nu kan
+            JSObject data = new JSObject();
+            data.put("microfoon", microphoneReady());
+            if (microphoneError != null) data.put("fout", microphoneError);
+            log("service_klaar", data);
+        }
         // Sluit Android de app toch, dan niet vanzelf herstarten: de webcode
         // start de service weer bij het openen als de sessie nog loopt
         return START_NOT_STICKY;

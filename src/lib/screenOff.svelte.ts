@@ -194,7 +194,10 @@ export function startScreenOff(
       onLog: (type, data) => {
         if (type === 'weggegooid' || type === 'niet_gestart') screenOff.startedAt = undefined;
         // De service kreeg het type microfoon later (startte pas na het aanzetten)
-        if (type === 'knop_aan' && data.microfoon === true) screenOff.ready = true;
+        // Of de service startte pas na het aanzetten (`service draait niet`)
+        if ((type === 'knop_aan' || type === 'service_klaar') && data.microfoon === true) {
+          screenOff.ready = true;
+        }
         logEvent(`screen_off_${type}`, data, context);
       },
     },

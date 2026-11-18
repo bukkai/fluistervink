@@ -174,6 +174,19 @@ describe('opnemen met het scherm uit', () => {
     expect(screenOff.ready).toBe(true);
   });
 
+  it('is ook klaar als de service pas na het aanzetten start (scherm aan)', async () => {
+    native.listenScreenOff.mockImplementation((_options, h: ScreenOffHandlers) => {
+      handlers = h;
+      return { done: Promise.resolve({ ok: false, reden: 'service draait niet' }), stop };
+    });
+    startScreenOff('s1', 180_000, onPress);
+    await settle();
+    handlers.onLog('service_klaar', { microfoon: false, fout: 'geen microfoontoestemming' });
+    expect(screenOff.ready).toBeUndefined();
+    handlers.onLog('service_klaar', { microfoon: true });
+    expect(screenOff.ready).toBe(true);
+  });
+
   it('geeft de volumeknop door als de webcode zelf opneemt', () => {
     startScreenOff('s1', 180_000, onPress);
     handlers.onPress('volume_up');
