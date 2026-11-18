@@ -38,7 +38,7 @@ Besloten 17 nov, bij de proef van twee weken met 12 testers op de gesloten test.
 
 Is stap 2 vergeten, dan zegt `npm run release` dat en welke commits het zijn.
 
-**Android:** een tag `v0.*` bouwt de beta- én de stabiele AAB van dezelfde commit. Staat er native code op `main` die nog niet naar de testers mag, upload dan alleen de beta-AAB naar de interne test en laat de gesloten test staan. Een toestemming waarvoor Google een verklaring wil (zoals de microfoon in de service), haalt de stabiele build zelf uit het manifest (`android/app/src/stable/AndroidManifest.xml`): dan kunnen beide AAB's gewoon mee. Webwijzigingen hebben hier geen last van: de stabiele app laadt live van `fluistervink.nl`.
+**Android:** een tag `v0.*` bouwt de beta- én de stabiele AAB van dezelfde commit. Staat er native code op `main` die nog niet naar de testers mag, upload dan alleen de beta-AAB naar de interne test en laat de gesloten test staan. Een toestemming waarvoor Google een verklaring wil (zoals de microfoon in de service), haalt de stabiele build zelf uit het manifest (`android/app/src/stable/AndroidManifest.xml`). De verklaring in de Play Console moet hem wel noemen zodra de beta in de interne test staat, anders weigert Play de stabiele release (`docs/google-play.md`). Webwijzigingen hebben hier geen last van: de stabiele app laadt live van `fluistervink.nl`.
 
 De Android-app laadt de webcode van zijn adres, dus een nieuwe stabiele webversie staat meteen ook in de stabiele app. Alleen bij wijzigingen in `android/` een nieuwe app-versie, zie hieronder.
 

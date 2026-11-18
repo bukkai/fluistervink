@@ -71,6 +71,36 @@ Video (de eigenaar neemt hem op, niet-openbaar op YouTube, link in het formulier
 4. Op de melding tikken opent de app. "Stop": de melding verdwijnt.
 5. De sessie openen: de waarneming op de kaart.
 
+### Microfoon (opnemen met het scherm uit)
+
+Sinds v0.4 (18 nov) heeft de **beta-build** ook het type `microphone` (recht `FOREGROUND_SERVICE_MICROPHONE`) op dezelfde `WandelingService`; de stabiele build niet (`android/app/src/stable/AndroidManifest.xml`). De verklaring geldt voor de hele app, dus zodra de beta in de interne test staat, moet hij ook in het formulier, anders weigert Play elke release die beoordeeld wordt (gesloten test, productie). Het formulier aanvullen: naast locatie ook microfoon aanvinken, met de tekst en video hieronder.
+
+Taaktype: kies wat het dichtst bij "door de gebruiker gestarte spraakopname" ligt; staat er niets passends, dan **Other**. De tekst in het Engels:
+
+```
+In addition to location (see above), the same foreground service (WandelingService) uses the microphone type, for one feature: recording a spoken observation while the screen is off.
+
+How it works: during an active birding session the user turns the screen off and puts the phone in a pocket. To record an observation, the user presses a volume key: the phone gives a short vibration and the service starts recording, and the notification changes to "Opname loopt · volumeknop stopt" (recording · volume key stops). The user speaks the observation ("two oystercatchers flying south") and presses the volume key again to stop; another short vibration confirms. The recording is saved on the device first and then transcribed and turned into an observation, exactly like a recording made with the on-screen button, followed by the usual confirming vibration.
+
+The microphone is only open between those two key presses (at most 3 minutes per recording); the app does not listen continuously and does not record in the background on its own. The microphone type is only added to the foreground service when the user has enabled the feature, and only while the app is in the foreground (when the session screen is open), as Android 14 requires. Outside a session the volume keys keep their normal function.
+
+Why it is needed: birdwatchers hold binoculars in one hand and often wear gloves. Waking the screen, unlocking the phone and finding the record button takes several seconds, and a bird that calls or flies over is gone by then. With the screen off and a physical key, the user can record without looking at the phone. Without the microphone foreground service type, Android does not allow the app to record while the screen is off.
+
+User impact if deferred or interrupted: the observation the user is speaking is lost, or the user has to take out the phone, unlock it and look at the screen, which is exactly what the app is meant to avoid.
+
+Note: the feature is currently being tested in our internal testing build before it is rolled out to all users. The build in closed testing does not declare the microphone foreground service type yet.
+```
+
+Video (niet-openbaar op YouTube), zo'n 45–60 seconden. Met het scherm uit toont een schermopname alleen zwart, dus **film de telefoon met een tweede telefoon** (met geluid, zodat je de uitspraak hoort). Vooraf: de beta uit Play, ontwikkeloptie "Opnemen met het scherm uit" aan.
+
+1. App openen, "Begin met vogelen": de melding "Aan het vogelen" verschijnt.
+2. Scherm uit (aan/uit-knop), telefoon even laten zien met zwart scherm.
+3. Volumeknop indrukken (zeg erbij: "volume key"), dan de aan/uit-knop: op het vergrendelscherm staat de melding "Opname loopt · volumeknop stopt". Scherm weer uit.
+4. Een waarneming inspreken ("twee scholeksters, overvliegend naar het zuiden"), dan nog eens de volumeknop.
+5. Scherm aan, ontgrendelen: de waarneming staat in de lijst. Op "Stop": de melding verdwijnt.
+
+Ondertitels of een korte tekst in de beschrijving van de video helpen de beoordelaar: "Screen off → volume key starts recording → speak → volume key stops → observation appears."
+
 ## Short description
 
 ```
