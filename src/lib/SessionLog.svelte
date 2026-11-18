@@ -52,14 +52,19 @@
     editing?: string;
   } = $props();
 
+  // Alleen het id: het sessie-object zelf verandert tijdens een sessie bij elke
+  // GPS-meting (afgelegde afstand), en dan zou alles hieronder elke seconde
+  // opnieuw lopen.
+  const sessionId = $derived(session.id);
+
   // Opnieuw opvragen als de sessie wisselt; liveQuery volgt daarna zelf de database
-  let observations = $derived(liveQuery(() => listObservations(session.id)));
-  let utterances = $derived(liveQuery(() => listUtterances(session.id)));
-  let deleted = $derived(liveQuery(() => listDeleted(session.id)));
+  let observations = $derived(liveQuery(() => listObservations(sessionId)));
+  let utterances = $derived(liveQuery(() => listUtterances(sessionId)));
+  let deleted = $derived(liveQuery(() => listDeleted(sessionId)));
 
   // Gebiedsnamen die nog ontbreken (geen verbinding, oudere sessies) alsnog opzoeken
   $effect(() => {
-    fillMissingAreas(session.id);
+    fillMissingAreas(sessionId);
   });
 
   let queued = $derived(

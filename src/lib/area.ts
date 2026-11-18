@@ -65,12 +65,23 @@ export async function attachAreaToObservations(
 
 let filling = false;
 
+/** Na een mislukte poging (geen verbinding) zo lang niet vanzelf opnieuw. */
+export const AREA_RETRY_MS = 60_000;
+let failedAt = -Infinity;
+
 /**
  * Zoekt alsnog de gebieden op die nog ontbreken, bv. na een uitspraak zonder
- * verbinding of bij sessies van vóór deze functie. Eén voor één.
+ * verbinding of bij sessies van vóór deze functie. Eén voor één. Mislukte de
+ * vorige poging korter dan `AREA_RETRY_MS` geleden, dan niets, tenzij `force`
+ * (de wachtrij weet dat er weer verbinding is): zonder bereik zou het scherm
+ * het anders bij elke wijziging aan de sessie opnieuw proberen.
  */
-export async function fillMissingAreas(sessionId: string): Promise<void> {
+export async function fillMissingAreas(
+  sessionId: string,
+  { force = false, now = Date.now() }: { force?: boolean; now?: number } = {},
+): Promise<void> {
   if (filling) return;
+  if (!force && now - failedAt < AREA_RETRY_MS) return;
   filling = true;
   try {
     const missing = await db.utterances
@@ -80,7 +91,10 @@ export async function fillMissingAreas(sessionId: string): Promise<void> {
       .toArray();
     for (const u of missing) {
       // Mislukt er één (geen verbinding), dan de rest ook; volgende keer verder
-      if (!(await attachArea(u.id, u.position!))) break;
+      if (!(await attachArea(u.id, u.position!))) {
+        failedAt = now;
+        break;
+      }
     }
     // Bv. gestopt zonder verbinding, of een sessie van vóór deze functie
     const session = await db.sessions.get(sessionId);

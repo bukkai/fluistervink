@@ -389,7 +389,7 @@ async function runQueue(): Promise<void> {
     vibrate(catchUp.failed ? 'failed' : 'saved');
     confirmCatchUp(catchUp.done, catchUp.failed).catch(() => {});
   }
-  for (const sessionId of resumed) fillMissingAreas(sessionId).catch(() => {});
+  for (const sessionId of resumed) fillMissingAreas(sessionId, { force: true }).catch(() => {});
   for (const sessionId of touched) {
     if (resumed.has(sessionId)) continue;
     const session = await db.sessions.get(sessionId).catch(() => undefined);
