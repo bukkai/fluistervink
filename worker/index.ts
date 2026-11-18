@@ -21,6 +21,7 @@ import {
 import {
   activitySince,
   audioSecondsToday,
+  messagesToday,
   lastUsedPerTester,
   recordUsage,
   sessionFrom,
@@ -73,6 +74,14 @@ const PER_SECOND_MODELS = ['gpt-transcribe', 'whisper-1'];
  * tellen; met de knop haal je dat nooit. De eigenaar valt erbuiten (testset).
  */
 const AUDIO_SECONDS_PER_DAY = 5 * 60 * 60;
+/**
+ * Plafond op verzoeken aan het model per installatie per dag. De drukste dag
+ * tot nu toe had zo'n 100 uitspraken, een trektelling van 5 uur hooguit 300
+ * stukken. Zonder dit plafond hield alleen de grens van 60 per minuut een
+ * misbruikte installatie tegen, en dat kon honderden dollars per dag kosten;
+ * nu hooguit zo'n $10 (1500 × 256 kB aan invoer).
+ */
+const MESSAGES_PER_DAY = 1500;
 
 const CLAUDE_MODELS = ['claude-haiku-5-5', 'claude-sonnet-5-5', 'claude-opus-5-5'];
 
@@ -127,7 +136,7 @@ export default {
         return await transcribe(request, env, tester, meter(request, env, ctx, tester));
       }
       if (pathname === '/api/messages' && request.method === 'POST') {
-        return await messages(request, env, meter(request, env, ctx, tester));
+        return await messages(request, env, tester, meter(request, env, ctx, tester));
       }
       if (pathname === '/api/usage' && request.method === 'GET') {
         return await usage(request, env, tester);
@@ -335,10 +344,20 @@ async function transcribe(
 }
 
 /**
- * Zit de tester vandaag aan het plafond? Kan D1 het niet zeggen, dan niet:
+ * Zit de tester vandaag aan het plafond voor het model? Kan D1 het niet zeggen, dan niet:
  * een uitspraak mag niet mislukken omdat het tellen hapert (net als bij het
  * opslaan van het verbruik).
  */
+async function overDailyMessages(env: WorkerEnv, tester: string): Promise<boolean> {
+  try {
+    return (await messagesToday(env.USAGE, tester)) >= MESSAGES_PER_DAY;
+  } catch (error) {
+    console.error('Plafond niet na te gaan', error);
+    return false;
+  }
+}
+
+/** Net zo, voor de spraak: 5 uur audio per dag. */
 async function overDailyAudio(env: WorkerEnv, tester: string): Promise<boolean> {
   try {
     return (await audioSecondsToday(env.USAGE, tester)) >= AUDIO_SECONDS_PER_DAY;
@@ -377,7 +396,22 @@ function confidence(logprobs: { logprob: number }[] | undefined): number | undef
  * tools samen; de proxy laat alleen door wat de app zelf gebruikt (zie
  * checkMessage), zodat een toegangscode geen vrije toegang tot ons tegoed is.
  */
-async function messages(request: Request, env: WorkerEnv, meter: Meter): Promise<Response> {
+async function messages(
+  request: Request,
+  env: WorkerEnv,
+  tester: string,
+  meter: Meter,
+): Promise<Response> {
+  if (tester !== OWNER && (await overDailyMessages(env, tester))) {
+    return json(
+      {
+        error:
+          'Daglimiet bereikt: vandaag zijn er al heel veel uitspraken verwerkt. Morgen kan het weer.',
+        code: 'message_limit',
+      },
+      429,
+    );
+  }
   const raw = await readBody(request, MAX_MESSAGE_BYTES);
   if (raw instanceof Response) return raw;
   let parsed: Record<string, unknown>;
