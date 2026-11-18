@@ -14,18 +14,25 @@ const MAX_ACCURACY_M = 50;
 const MIN_STEP_M = 20;
 /** Sneller dan dit (180 km/u) is een sprong van de GPS, geen verplaatsing */
 const MAX_SPEED_MS = 50;
+/**
+ * Sneller dan dit (30 km/u) is varen of rijden: telt niet mee als afstand
+ * (besloten 18 nov, docs/plan-robuustheid.md #9). Lopen en fietsen wel.
+ */
+export const MAX_BIRDING_SPEED_MS = 30 / 3.6;
 /** Tot deze afstand telt een sessie als op één plek (eBird: Stationary) */
 const STATIONARY_MAX_M = 50;
 
 export type DistanceStep =
-  | { kind: 'anchor' | 'better' | 'counted'; anchor: Position; addM: number }
+  | { kind: 'anchor' | 'better' | 'counted' | 'transport'; anchor: Position; addM: number }
   | { kind: 'inaccurate' | 'small' | 'jump' };
 
 /**
  * Wat een nieuwe GPS-meting doet met de teller. Een stap telt pas als hij
  * groter is dan de onnauwkeurigheid van beide metingen samen (en minstens
  * 20 m); dan wordt de meting het nieuwe ankerpunt. Een nauwkeuriger meting
- * vlakbij vervangt het ankerpunt zonder iets op te tellen.
+ * vlakbij vervangt het ankerpunt zonder iets op te tellen. Een stap in een
+ * auto of boot telt niet, maar verzet wel het ankerpunt: anders telt na de
+ * rit de hele rit alsnog mee, met een gemiddelde snelheid van lopen.
  */
 export function distanceStep(anchor: Position | undefined, fix: Position): DistanceStep {
   if (fix.accuracy > MAX_ACCURACY_M) return { kind: 'inaccurate' };
@@ -38,6 +45,9 @@ export function distanceStep(anchor: Position | undefined, fix: Position): Dista
   }
   const seconds = (fix.fixedAt - anchor.fixedAt) / 1000;
   if (seconds > 0 && meters / seconds > MAX_SPEED_MS) return { kind: 'jump' };
+  if (seconds > 0 && meters / seconds > MAX_BIRDING_SPEED_MS) {
+    return { kind: 'transport', anchor: fix, addM: 0 };
+  }
   return { kind: 'counted', anchor: fix, addM: meters };
 }
 

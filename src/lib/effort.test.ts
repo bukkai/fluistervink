@@ -48,6 +48,15 @@ describe('distanceStep', () => {
   it('negeert een sprong van de GPS', () => {
     expect(distanceStep(fix(0), fix(2000, 5, 10)).kind).toBe('jump');
   });
+
+  it('telt fietsen mee, maar varen en rijden niet', () => {
+    // 25 km/u: fietsen
+    const bike = distanceStep(fix(0), fix(25_000 / 60, 5, 60));
+    expect(bike.kind).toBe('counted');
+    // 50 km/u: auto of boot; geen afstand, wel een nieuw ankerpunt
+    const car = distanceStep(fix(0), fix(50_000 / 60, 5, 60));
+    expect(car).toEqual({ kind: 'transport', anchor: fix(50_000 / 60, 5, 60), addM: 0 });
+  });
 });
 
 describe('duur', () => {
@@ -107,5 +116,17 @@ describe('een sessie', () => {
     expect(await recordFix(session.id, fix(5000, 5, 4000))).toBe('anchor');
     stored = await db.sessions.get(session.id);
     expect(stored?.effort?.distanceM).toBeCloseTo(150, 0);
+  });
+
+  it('telt een stuk met de auto niet mee, ook niet na de rit', async () => {
+    const session = await startSession();
+    await recordFix(session.id, fix(0, 5, 0));
+    expect(await recordFix(session.id, fix(500, 5, 600))).toBe('counted');
+    // 10 km in 10 minuten: met de auto
+    expect(await recordFix(session.id, fix(10_500, 5, 1200))).toBe('transport');
+    // Daarna weer lopen, een uur later: alleen die 300 m
+    expect(await recordFix(session.id, fix(10_800, 5, 4800))).toBe('counted');
+    const stored = await db.sessions.get(session.id);
+    expect(stored?.effort?.distanceM).toBeCloseTo(800, 0);
   });
 });
