@@ -257,6 +257,17 @@ interface RawFields {
  * een waarschuwing); de omschrijving blijft dan, zodat de gebruiker thuis de
  * plek op de kaart zet.
  */
+/**
+ * Tekst van het model, of undefined als hij leeg is. Het model zet soms
+ * "null" als tekst in een veld dat hij leeg had moeten laten (18 nov: plek
+ * "null" bij "Grote rotslijster en vijf vinken").
+ */
+export function modelText(value: string | null | undefined): string | undefined {
+  const text = typeof value === 'string' ? value.trim() : '';
+  if (!text || /^(null|undefined|none|n\/a|-)$/i.test(text)) return undefined;
+  return text;
+}
+
 function toSpokenPlace(
   tool: string,
   input: RawFields,
@@ -275,7 +286,8 @@ function toSpokenPlace(
     warnings.push(`${tool}: windrichting "${direction}" genegeerd`);
     direction = undefined;
   }
-  const text = input.place_description?.trim() || describePlace(distanceM, direction as Direction);
+  const text =
+    modelText(input.place_description) || describePlace(distanceM, direction as Direction);
   if (!text) return undefined;
   // Het model laat de afstand soms weg terwijl die in de omschrijving staat
   // ("300 meter ten westen" → alleen W); dan haalt de app hem er zelf uit
@@ -382,8 +394,8 @@ function toAction(
     sex: input.sex ?? undefined,
     uncertain: input.uncertain,
     uncertainReason: input.uncertain ? input.uncertain_reason : undefined,
-    remarks: input.remarks?.trim() || undefined,
-    privateNote: input.private_note?.trim() || undefined,
+    remarks: modelText(input.remarks),
+    privateNote: modelText(input.private_note),
     spokenPlace: toSpokenPlace(block.name, input, warnings),
   };
   // Weglaten wat het model niet meegaf, zodat een update alleen wijzigt wat bedoeld is
@@ -412,7 +424,7 @@ function toAction(
 
   // Een dwaalgast die niet in de prompt staat: de app zoekt de gezegde naam op.
   // Altijd onzeker, want die soort zie je zelden en spraakherkenning kent hem niet.
-  const said = input.unlisted_species?.trim();
+  const said = modelText(input.unlisted_species);
   const vagrant = said ? findVagrant(said) : undefined;
   if (vagrant) {
     fields.speciesId = vagrant.id;

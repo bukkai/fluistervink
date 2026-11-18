@@ -274,6 +274,17 @@ describe('plek uit de uitspraak', () => {
     expect(add({}).actions[0]).not.toHaveProperty('fields.spokenPlace');
   });
 
+  it('"null" als tekst is geen plek en geen opmerking', () => {
+    const { actions } = add({
+      place_description: 'null',
+      place_distance_m: null,
+      place_direction: null,
+      remarks: ' NULL ',
+    });
+    expect(actions[0]).not.toHaveProperty('fields.spokenPlace');
+    expect(actions[0]).not.toHaveProperty('fields.remarks');
+  });
+
   it('laat een onmogelijke afstand of richting weg, met een waarschuwing', () => {
     const { actions, warnings } = add({
       place_description: 'ver weg',

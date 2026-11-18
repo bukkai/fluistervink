@@ -44,6 +44,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         'Valt de microfoon weg tijdens een trektelling (bijvoorbeeld als je oortjes uitgaan), dan pauzeert de telling even en zet de app de microfoon opnieuw aan. Eerst telde hij stil door zonder iets te horen. Lukt dat niet, dan zegt het scherm waarom de telling gestopt is.',
       ],
       Inspreken: [
+        'Een waarneming kreeg soms als plek "null" mee, terwijl je geen plek had genoemd. Dat gebeurt niet meer.',
         'Word je gebeld of gaan je oortjes uit midden in een opname, dan bewaart de app wat er al was. Eerst bleef de knop op "opnemen" hangen en ging de opname verloren.',
         'Zijn er oortjes of een headset verbonden, dan zegt het sessiescherm met welke microfoon de app luistert. Dat is die van de telefoon: praat dus naar de telefoon, ook als die in je zak zit.',
         'Had de GPS nog geen plek (in vliegtuigmodus of binnen kan de eerste meting minuten duren), dan krijgen de uitspraken van daarvoor de eerste plek die binnenkomt alsnog. In een trektelling klopt die precies; lopend zie je bij de waarneming "positie … min later".',
