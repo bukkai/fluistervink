@@ -1,29 +1,28 @@
 import {
   db,
   audioBlob,
-  isStoredAudio,
   storeAudio,
-  type Position,
   type PositionLookup,
   type ProcessingMetrics,
   type Utterance,
 } from './db';
 import { ApiError } from './api';
 import { applyActions } from './applyActions';
-import { attachArea, fillMissingAreas, nameFromSession } from './area';
+import { fillMissingAreas, nameFromSession } from './area';
+import { migrateAudioOnce } from './audioMigration';
 import { devNoteText } from './devNotePrefix';
 import { isEmptyTrektelChunk, utteranceFeedback, vibrate } from './feedback';
 import { INSTANCE_ID } from './instance.svelte';
 import { MODEL, interpret, promptVersionFor, type Interpretation } from './interpret';
-import { currentPosition, gps } from './location.svelte';
+import { currentPosition } from './location.svelte';
 import { APP_VERSION, logEvent, wasHiddenSince } from './log';
 import { PLATFORM } from './native';
 import { listObservations, spokenAt } from './observations';
 import { preferenceOn } from './preferences';
 import type { Recording } from './recorder.svelte';
 import { confirmAloud, confirmCatchUp } from './spoken';
-import { placeFromSpeech } from './spokenPlace';
 import { TRANSCRIBE_MODEL, transcribe, transcribePromptVersionFor } from './transcribe';
+import { attachPosition } from './utterancePosition';
 import { checkZeemeeuw } from './zeemeeuw.svelte';
 
 // Local-first verwerking: elke uitspraak wordt eerst opgeslagen (status
@@ -123,85 +122,6 @@ async function submit(
   if (!fields.trektel && listening) vibrate('waiting');
   processQueue();
   attachPosition(id, lookup);
-}
-
-/**
- * Koppelt de positie aan de uitspraak zodra die bekend is. Is de uitspraak
- * dan al verwerkt, dan krijgen de waarnemingen eruit de positie alsnog.
- * Daarna het gebied van waarneming.nl, op dezelfde manier.
- */
-async function attachPosition(utteranceId: string, pending: Promise<PositionLookup>) {
-  const { position, ...positionLookup } = await pending;
-  if (!position) {
-    // Intussen al een latere plek gekregen (`positionLater`): die laten staan
-    const saved = await db.utterances.get(utteranceId);
-    if (saved?.position) return;
-    await db.utterances.update(utteranceId, { positionLookup });
-    // Kwam de eerste meting net binnen terwijl deze opvraag opgaf: meteen gebruiken
-    const latest = gps.latest && { ...gps.latest };
-    if (latest && saved) await positionLater(latest, saved.sessionId);
-    return;
-  }
-  await setPosition(utteranceId, position, positionLookup);
-}
-
-/** Zo ver terug krijgen uitspraken zonder plek de eerste latere meting nog. */
-export const LATER_MAX_MS = 10 * 60_000;
-/** Wandeltempo in m/s: zo ver kun je verder zijn als de plek later komt. */
-const WALKING_SPEED = 1.4;
-
-/**
- * De GPS heeft (weer) een plek, na uitspraken waarbij hij er geen had: de
- * GPS zonder fix, bv. in vliegtuigmodus of binnen, waar de eerste meting
- * minuten kan duren. Die uitspraken (tot `LATER_MAX_MS` terug) krijgen deze
- * plek alsnog. In een trektelling sta je stil, dus dan klopt hij; anders
- * groeit de nauwkeurigheid met hoe ver je in die tijd gelopen kunt hebben.
- * Alleen uitspraken van deze sessie: een vorige sessie kan vlak daarvoor
- * gestopt zijn, kilometers verderop (met de auto naar de volgende plek).
- */
-export async function positionLater(fix: Position, sessionId: string): Promise<void> {
-  const unplaced = await db.utterances
-    .where('recordedAt')
-    .between(fix.fixedAt - LATER_MAX_MS, fix.fixedAt, true, true)
-    .filter((u) => u.sessionId === sessionId && !u.position && u.positionLookup?.source === 'none')
-    .toArray();
-  for (const u of unplaced) {
-    const laterMs = fix.fixedAt - u.recordedAt;
-    const accuracy = u.trektel
-      ? fix.accuracy
-      : Math.round(fix.accuracy + (WALKING_SPEED * laterMs) / 1000);
-    await setPosition(
-      u.id,
-      { ...fix, accuracy },
-      { source: 'later', waitMs: laterMs, error: u.positionLookup?.error },
-    );
-  }
-  if (unplaced.length)
-    logEvent('position_later', { count: unplaced.length, accuracy: fix.accuracy });
-}
-
-/** Positie bij de uitspraak en de waarnemingen eruit, daarna het gebied. */
-async function setPosition(
-  utteranceId: string,
-  position: Position,
-  positionLookup: Omit<PositionLookup, 'position'>,
-) {
-  await db.transaction('rw', db.utterances, db.observations, async () => {
-    await db.utterances.update(utteranceId, { position, positionLookup });
-    await db.observations
-      .where('utteranceId')
-      .equals(utteranceId)
-      .modify((obs) => {
-        if (!obs.position) {
-          // Plek genoemd in de uitspraak ("500 m zuid"): vanaf de GPS uitrekenen
-          if (obs.spokenPlace) Object.assign(obs, placeFromSpeech(position, obs.spokenPlace));
-          else obs.position = position;
-        }
-        // Al met de hand gezet: de GPS wordt de plek om naar terug te gaan
-        else if (obs.recordedPosition === null) obs.recordedPosition = position;
-      });
-  });
-  await attachArea(utteranceId, position);
 }
 
 /** Welk plafond per dag van de proxy: spraak (`audio_limit`) of het model (`message_limit`) */
@@ -324,7 +244,7 @@ async function runQueue(): Promise<void> {
   const stuck = await db.utterances.where('status').equals('processing').toArray();
   const dbMs = Date.now() - dbStart;
   if (dbMs >= SLOW_MS) logEvent('queue_db_slow', { dbMs });
-  await (audioMigration ??= migrateOnce());
+  await migrateAudioOnce();
   for (const u of stuck) {
     logEvent('requeued', undefined, { sessionId: u.sessionId, utteranceId: u.id });
     await db.utterances
@@ -498,85 +418,9 @@ export function stopWaiting(): void {
   document.removeEventListener('visibilitychange', resumeWhenVisible);
 }
 
-function queueError(error: unknown, u: Utterance, step: 'requeue' | 'process' | 'migrate'): void {
+function queueError(error: unknown, u: Utterance, step: 'requeue' | 'process'): void {
   const message = error instanceof Error ? error.message : String(error);
   logEvent('queue_error', { step, message }, { sessionId: u.sessionId, utteranceId: u.id });
-}
-
-let audioMigration: Promise<void> | undefined;
-
-/** Gezet als alle opnames bytes zijn; nieuwe opnames zijn dat altijd. */
-const AUDIO_MIGRATED_KEY = 'fluistervink.audioMigrated';
-
-/**
- * `migrateAudio` één keer per apparaat: daarna hoeft de app niet bij elke
- * start alle opnames te lezen. Mislukt het, dan loopt de wachtrij gewoon door
- * en probeert de volgende ronde het opnieuw.
- */
-async function migrateOnce(): Promise<void> {
-  // Opslag geblokkeerd: dan elke start opnieuw, maar wel migreren
-  const storage = {
-    done: () => {
-      try {
-        return !!localStorage.getItem(AUDIO_MIGRATED_KEY);
-      } catch {
-        return false;
-      }
-    },
-    mark: () => {
-      try {
-        localStorage.setItem(AUDIO_MIGRATED_KEY, '1');
-      } catch {
-        // Dan de volgende start opnieuw kijken
-      }
-    },
-  };
-  try {
-    if (storage.done()) return;
-    if (await migrateAudio()) storage.mark();
-  } catch (error) {
-    audioMigration = undefined;
-    logEvent('queue_error', {
-      step: 'migrate',
-      message: error instanceof Error ? error.message : String(error),
-    });
-  }
-}
-
-/**
- * Zet opnames die nog als Blob in de database staan om (zie `StoredAudio` in
- * db.ts), één keer per start. Is een Blob niet meer te lezen, dan gaat hij
- * eruit: zonder opname kan de uitspraak niet meer verwerkt worden, maar houdt
- * hij de rest van de wachtrij ook niet meer op. Geeft false als er een
- * opname niet weggeschreven kon worden (dan de volgende start opnieuw).
- */
-export async function migrateAudio(): Promise<boolean> {
-  let complete = true;
-  const failed = (error: unknown, u: Utterance) => {
-    queueError(error, u, 'migrate');
-    complete = false;
-  };
-  const ids = await db.utterances.filter((u) => !!u.audio && !isStoredAudio(u.audio)).primaryKeys();
-  for (const id of ids) {
-    const u = await db.utterances.get(id);
-    if (!u?.audio || isStoredAudio(u.audio)) continue;
-    let audio;
-    try {
-      audio = await storeAudio(u.audio);
-    } catch (error) {
-      queueError(error, u, 'migrate');
-      const waiting = u.transcript === undefined && u.status !== 'done';
-      await db.utterances
-        .update(id, {
-          audio: undefined,
-          ...(waiting && { status: 'failed', error: 'Opname niet meer te lezen' }),
-        })
-        .catch((error) => failed(error, u));
-      continue;
-    }
-    await db.utterances.update(id, { audio }).catch((error) => failed(error, u));
-  }
-  return complete;
 }
 
 /**

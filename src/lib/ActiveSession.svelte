@@ -9,14 +9,7 @@
   import { recordFix } from './effort';
   import { watchKeyboard } from './keyboard';
   import { currentPosition, gps, startTracking, stopTracking } from './location.svelte';
-  import {
-    onDailyLimit,
-    onLongWait,
-    onSaveFailed,
-    positionLater,
-    submitRecording,
-    submitText,
-  } from './queue';
+  import { onDailyLimit, onLongWait, onSaveFailed, submitRecording, submitText } from './queue';
   import {
     onRecordingInterrupted,
     recorder,
@@ -24,6 +17,7 @@
     stopRecording,
   } from './recorder.svelte';
   import SessionLog from './SessionLog.svelte';
+  import { positionLater } from './utterancePosition';
   import { syncSessionService } from './sessionService';
   import { createTalkButton } from './talkButton';
   import { trektelEnabled } from './trektel';

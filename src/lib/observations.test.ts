@@ -30,14 +30,14 @@ import {
   recordedPlace,
   setSkipExport,
 } from './observations';
+import { migrateAudio } from './audioMigration';
+import { positionLater } from './utterancePosition';
 import {
   STEAL_AFTER_MS,
-  migrateAudio,
   onDailyLimit,
   LONG_WAIT_MS,
   onLongWait,
   onSaveFailed,
-  positionLater,
   processQueue,
   retry,
   retryNow,
