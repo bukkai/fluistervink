@@ -106,10 +106,11 @@
       </dd>
     </dl>
     <p>
-      Bij de trektelling: één lange tril als hij pauzeert (andere app, scherm op slot), twee lange
-      als hij gestopt is. Dat gebeurt ook als je die dag al 5 uur hebt ingesproken, het maximum per
-      dag. Zonder bereik telt hij gewoon door; na 2 uur zonder bereik komen er ook twee lange
-      trillen, maar dan loopt de telling door.
+      Bij de trektelling: één lange tril als hij pauzeert (andere app, scherm op slot, oortjes los),
+      twee lange als hij gestopt is. Dat gebeurt ook als je die dag al 5 uur hebt ingesproken, het
+      maximum per dag, of als de microfoon niet meer aangaat; op het scherm staat dan waarom. Zonder
+      bereik telt hij gewoon door; na 2 uur zonder bereik komen er ook twee lange trillen, maar dan
+      loopt de telling door.
     </p>
     {#if isNativeApp}
       <p>
