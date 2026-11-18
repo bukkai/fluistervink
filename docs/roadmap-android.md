@@ -94,11 +94,15 @@ Wat de proeven lieten zien (18 nov, Sony WH-1000XM5, Pocket Casts, Fairphone 5 m
 
 Logcat met draadloze foutopsporing: verbinding valt weg zodra het scherm uitgaat; het log daarna ophalen met `adb logcat -b all -d`, en vooraf de buffer vergroten (`adb logcat -G 16M`), want Bluetooth vult de gewone in ±1,5 minuut.
 
+**Trektelling met het scherm uit (18 nov, proef in de beta):** met de ontwikkeloptie aan en de service met het type microfoon neemt de service de hele trektelling op en knipt hij zelf, ook met het scherm aan (geen overdracht, dus geen gat of dubbele opname). Geen Wake Lock meer, vergrendelen pauzeert niet. Waarom knippen in Java en hoe het werkt: `docs/plan-trektelmodus.md`, punt 4. Nog in het veld na te gaan: een kwartier met het scherm uit (komen alle stukken door, wat kost het aan accu), scherm tussendoor aan, gebeld worden, Merlin openen.
+
 ## Stap 4: de microfoon delen
 
 Zodra de microfoon lang open staat (trektelmodus nu al, het wake word straks), botst dat met Merlin en met bellen. Met `AudioRecordingCallback` merkt de app dat een andere app de microfoon wil, laat hem los, en pakt hem daarna terug (twee korte trillen bij pauzeren en hervatten). Staat in de latere roadmap van `CLAUDE.md`; wordt pas nodig bij stap 5, of eerder als Maarten er bij het trektellen last van heeft.
 
 **Stand (11 nov):** het deel dat nu al kan, zit achter een ontwikkeloptie: een trektelling pauzeert bij een andere app in plaats van te stoppen, en gaat verder als je terugkomt (binnen 15 minuten). De native `AudioRecordingCallback` voegt pas iets toe als de app ook op de achtergrond opneemt (stap 3): zolang Fluistervink alleen op het scherm opneemt, geeft Android de microfoon vanzelf aan de app op het scherm.
+
+**Stand (18 nov):** de trektelling in de service (stap 3) gebruikt hem: wil een andere app de microfoon, dan zet Android ons op stilte (`isClientSilenced`, Android 10+; als terugval een seconde lang alleen nullen). De telling pauzeert dan met de bestaande lange tril en gaat vanzelf verder als het geluid terug is, ook zonder terug te gaan naar Fluistervink. De microfoon zelf houdt de service vast: Android deelt hem vanaf versie 10, en zo hoeft hij niet vanaf de achtergrond opnieuw aan (dat staat Android niet toe). Log `trektel_microfoon` (stil of niet, aantal opnames).
 
 ## Stap 5: het wake word "Fluistervink"
 
@@ -130,7 +134,7 @@ Uit de voorstellen van 8 nov, nog open; kunnen tussen de stappen door, want ze v
 | 1 | Volumeknop en sluiterknopje als inspreekknop, snelkoppeling | ja, klein | nu, tijdens de gesloten test |
 | 2 | Gesproken bevestiging | ja, klein | na stap 1 |
 | 3 | Opnemen met het scherm uit, knop op de oortjes, microfoonkeuze | ja, groot | proef in de beta-build (interne test) sinds 18 nov; in de stabiele pas met de verklaring bij Google |
-| 4 | Microfoon delen met Merlin | ja | met of na stap 3 |
+| 4 | Microfoon delen met Merlin | ja | in de trektelling met het scherm uit als proef sinds 18 nov |
 | 5 | Wake word | ja, groot | na de lancering, eerst een proef |
 | – | iPhone-app | – | na de lancering, `docs/plan-ios.md` |
 

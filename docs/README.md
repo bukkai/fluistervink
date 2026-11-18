@@ -20,7 +20,7 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 | --- | --- |
 | `plan-capacitor.md` | de native laag; fase 0–2 en 4 klaar, fase 3 loopt via `roadmap-android.md` |
 | `plan-laagdrempelig.md` | aanmelden zonder code; klaar, naslag voor het instellen |
-| `plan-trektelmodus.md` | trektelmodus; gebouwd, proef met tester Maarten |
+| `plan-trektelmodus.md` | trektelmodus; gebouwd, proef met tester Maarten; met het scherm uit als proef in de beta (18 nov) |
 | `roadmap-android.md` | vogelen zonder naar de telefoon te kijken, vijf stappen; stap 1–2 gebouwd |
 | `plan-ebird.md` | inspanning en export naar eBird; afgerond 16 nov (keuze "Ik gebruik eBird" bij Instellingen) |
 | `plan-soortgroepen.md` | zoogdieren, reptielen en amfibieën, dagvlinders en libellen inspreken; afgerond 16 nov (voor iedereen, standaard aan) |
