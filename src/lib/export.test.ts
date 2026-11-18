@@ -107,3 +107,35 @@ describe('importJson', () => {
     await expect(importJson(file)).rejects.toThrow('Ongeldige export');
   });
 });
+
+describe('importJson en het log', () => {
+  const events = [
+    { id: 7, at: 0, type: 'voor de sessie' },
+    { id: 8, at: 1, type: 'app_start', instance: 'a' },
+    { id: 9, at: 2, type: 'gps_fix', instance: 'a', data: { accuracy: 8 } },
+    { id: 10, at: 3, type: 'na de sessie' },
+  ];
+
+  it('zet het log binnen de tijd van een toegevoegde sessie terug, met een eigen nummer', async () => {
+    await db.events.add({ at: 50, type: 'eigen' });
+    await importJson(exportFile({ events }));
+    const restored = await db.events.where('at').between(1, 2, true, true).toArray();
+    expect(restored.map((e) => e.type)).toEqual(['app_start', 'gps_fix']);
+    expect(restored[1].data).toEqual({ accuracy: 8 });
+    expect(await db.events.where('type').anyOf('voor de sessie', 'na de sessie').count()).toBe(0);
+  });
+
+  it('zet het log niet dubbel terug, en niet bij een sessie die er al was', async () => {
+    await db.events.add({ at: 1, type: 'app_start', instance: 'a' });
+    await importJson(exportFile({ events }));
+    await importJson(exportFile({ events: [...events, { at: 2, type: 'later', instance: 'b' }] }));
+    const restored = await db.events.where('at').between(1, 2, true, true).toArray();
+    expect(restored.map((e) => e.type)).toEqual(['app_start', 'gps_fix']);
+  });
+
+  it('weigert een log met een rare soort', async () => {
+    const file = exportFile({ events: [{ at: 1, type: { html: '<b>' } }] });
+    await expect(importJson(file)).rejects.toThrow('Ongeldige export: log');
+    expect(await db.sessions.count()).toBe(0);
+  });
+});
