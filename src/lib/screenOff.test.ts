@@ -79,7 +79,7 @@ describe('opnemen met het scherm uit', () => {
       maxMs: 180_000,
       minMs: 500,
       trilStart: [40, 60, 40],
-      trilStop: [400],
+      trilStop: [200],
     });
   });
 

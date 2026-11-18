@@ -20,12 +20,8 @@ const PATTERNS = {
    * dan "niet begrepen".
    */
   screenOffStart: [40, 60, 40],
-  /**
-   * Opname gestopt met het scherm uit: één lange tril. Met 200 ms voelde de
-   * eigenaar hem in de zak niet en drukte nog eens (18 nov, oortjesknop).
-   * Iets korter dan "gepauzeerd" van de trektelling (die nooit tegelijk loopt).
-   */
-  screenOffStop: [400],
+  /** Opname gestopt met het scherm uit: één stevige tril, korter dan "gepauzeerd" */
+  screenOffStop: [200],
   /** Opgeslagen (ook een dev note of een correctie): één korte tril */
   saved: [120],
   /** Opgeslagen maar onzeker: kort, lang */
