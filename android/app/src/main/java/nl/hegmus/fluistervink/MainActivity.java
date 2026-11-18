@@ -18,7 +18,9 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(KnopPlugin.class);
         registerPlugin(SnelkoppelingPlugin.class);
         registerPlugin(SprekenPlugin.class);
-        registerPlugin(SchermUitPlugin.class);
+        // Alleen als het manifest de microfoon in de service toestaat (de beta;
+        // de stabiele build haalt hem eruit, src/stable/AndroidManifest.xml)
+        if (SchermUitPlugin.beschikbaar(this)) registerPlugin(SchermUitPlugin.class);
         registerPlugin(MicrofoonPlugin.class);
         super.onCreate(savedInstanceState);
 

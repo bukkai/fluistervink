@@ -82,6 +82,8 @@ Alleen nodig bij wijzigingen in `android/` of `capacitor.config.ts`; webwijzigin
 1. Mergen naar `main`, dan `git tag v0.2 && git push origin v0.2` (elke tag een hoger nummer).
 2. Beide artifacts downloaden en in de Play Console een nieuwe release maken: beta naar de interne test, stable naar de gesloten test (stap 5.3 en 5.4).
 
+**Toestemmingen alleen in de beta** (18 nov): wat in `android/app/src/stable/AndroidManifest.xml` staat, haalt de stabiele build uit het manifest (nu: de microfoon in de service, voor opnemen met het scherm uit). Zo kan een native proef in de interne test, die Google niet beoordeelt, terwijl de gesloten test de toestemmingen houdt die al zijn goedgekeurd. Vraagt de Play Console bij het maken van de release in de interne test toch om een verklaring, sla dan niets op: het concept weggooien en eerst overleggen. Na het uploaden nagaan bij **App-bundels** in de Play Console: de stabiele mag `FOREGROUND_SERVICE_MICROPHONE` niet hebben.
+
 Het versienummer komt vanzelf uit git (`versionCode` = 2 × aantal commits, +1 voor de beta), dus het is altijd hoger dan het vorige. Play weigert een AAB met een `versionCode` die al eerder is geüpload; dat gebeurt als je de workflow twee keer op dezelfde commit draait.
 
 Later kan het uploaden ook automatisch vanuit de workflow (met een serviceaccount van Google Cloud); voor af en toe een release is met de hand eenvoudiger.

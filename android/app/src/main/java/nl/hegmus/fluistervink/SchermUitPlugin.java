@@ -1,6 +1,8 @@
 package nl.hegmus.fluistervink;
 
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.util.Base64;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -27,6 +29,27 @@ import org.json.JSONException;
  */
 @CapacitorPlugin(name = "SchermUit")
 public class SchermUitPlugin extends Plugin implements WandelingService.Listener {
+
+    /**
+     * Staat de microfoon in de service in het manifest? Alleen in de beta: de
+     * stabiele build haalt hem eruit tot er een verklaring bij Google Play is
+     * (src/stable/AndroidManifest.xml). Zonder registreert MainActivity de
+     * plugin niet, zodat de webcode de ontwikkeloptie niet toont.
+     */
+    static boolean beschikbaar(Context context) {
+        try {
+            PackageInfo info = context
+                .getPackageManager()
+                .getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS);
+            if (info.requestedPermissions == null) return false;
+            for (String permission : info.requestedPermissions) {
+                if ("android.permission.FOREGROUND_SERVICE_MICROPHONE".equals(permission)) return true;
+            }
+        } catch (PackageManager.NameNotFoundException ignored) {
+            // Kan niet: het is de eigen app
+        }
+        return false;
+    }
 
     @Override
     public void load() {

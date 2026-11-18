@@ -67,6 +67,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    // Wat Google Play nog niet van de stabiele app mag zien (een toestemming
+    // die een verklaring vraagt, zoals de microfoon in de service), gaat er
+    // voor stabiel weer uit: src/stable/AndroidManifest.xml. Zo kan een native
+    // proef al in de beta (interne test), zonder de stabiele te raken.
+    if (stable) {
+        sourceSets {
+            debug.manifest.srcFile 'src/stable/AndroidManifest.xml'
+            release.manifest.srcFile 'src/stable/AndroidManifest.xml'
+        }
+    }
 }
 
 repositories {
