@@ -79,6 +79,9 @@ public class WandelingService extends Service {
      */
     private static final long MEDIA_DOUBLE_MS = 500;
 
+    /** Na een mediatoets zo lang "gepauzeerd" melden (reportPaused) */
+    private static final long PLAYING_AGAIN_MS = 300;
+
     /** Langer ingedrukt dan dit: lang indrukken (alleen loggen) */
     private static final long MEDIA_LONG_MS = 800;
 
@@ -355,12 +358,7 @@ public class WandelingService extends Service {
                 }
             }
         );
-        session.setPlaybackState(
-            new PlaybackState.Builder()
-                .setState(PlaybackState.STATE_PLAYING, 0, 1f)
-                .setActions(PlaybackState.ACTION_PLAY | PlaybackState.ACTION_PAUSE | PlaybackState.ACTION_PLAY_PAUSE)
-                .build()
-        );
+        session.setPlaybackState(playbackState(PlaybackState.STATE_PLAYING));
         // De knop op de oortjes of een afstandsbediening: een mediatoets.
         // Komt ook binnen als de sessie niet actief is (scherm aan), zolang
         // Android ons de mediaknop geeft (holdMediaButton). Niet doorgeven
@@ -440,7 +438,35 @@ public class WandelingService extends Service {
         mediaPress(key, event.getDownTime());
     }
 
+    private static PlaybackState playbackState(int state) {
+        return new PlaybackState.Builder()
+            .setState(state, 0, 1f)
+            .setActions(PlaybackState.ACTION_PLAY | PlaybackState.ACTION_PAUSE | PlaybackState.ACTION_PLAY_PAUSE)
+            .build();
+    }
+
+    /**
+     * Na elke mediatoets: even "gepauzeerd" en dan weer "speelt" melden. Oortjes
+     * als de Sony WH-1000XM5 sturen om en om pauzeren en afspelen, en Android
+     * gooit "afspelen" weg zolang er muziek speelt (logcat 18 nov:
+     * "AvrcpTargetService: Ignore passthrough play during voice communication
+     * or music playing"); met een podcast aan kwam dus maar de helft aan.
+     * Horen de oortjes na het pauzeren weer "speelt", dan sturen ze de
+     * volgende keer weer pauzeren.
+     */
+    private final Runnable reportPlayingAgain = () -> {
+        if (mediaSession != null) mediaSession.setPlaybackState(playbackState(PlaybackState.STATE_PLAYING));
+    };
+
+    private void reportPaused() {
+        if (mediaSession == null) return;
+        mediaSession.setPlaybackState(playbackState(PlaybackState.STATE_PAUSED));
+        handler.removeCallbacks(reportPlayingAgain);
+        handler.postDelayed(reportPlayingAgain, PLAYING_AGAIN_MS);
+    }
+
     private void mediaPress(String key, long at) {
+        reportPaused();
         boolean twice = lastMediaKeyAt > 0 && at - lastMediaKeyAt < MEDIA_DOUBLE_MS;
         lastMediaKeyAt = at;
         JSObject data = mediaLog(key);
