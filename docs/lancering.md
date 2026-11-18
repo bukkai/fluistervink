@@ -21,9 +21,9 @@ Eigenaar:
 - [x] `npm run release`: welkom (#168) en back-up (#167) naar `fluistervink.nl`.
 - [x] Play Console → Testen → **Gesloten tests**: track aanmaken (bv. "Stabiel"), de stabiele AAB van de laatste tag uploaden en uitrollen (`docs/google-play.md`, stap 5.4).
 - [x] Deelnamelink van die track: `https://play.google.com/apps/testing/nl.hegmus.fluistervink`. Winkelpagina (pas zichtbaar na deelnemen): `https://play.google.com/store/apps/details?id=nl.hegmus.fluistervink`.
-- [ ] 15–20 testers werven (Gmail-adressen in de lijst van de gesloten test) en de deelnamelink sturen; een code is niet meer nodig.
+- [x] 15–20 testers werven (12 sinds 17 nov, genoeg voor de regel van Google) (Gmail-adressen in de lijst van de gesloten test) en de deelnamelink sturen; een code is niet meer nodig.
 - [x] Contactadres voor de Play Store en de privacypagina: `info@fluistervink.nl` (bestaat sinds 9 nov).
-- [ ] Plafond en daglimiet bij OpenAI en Anthropic nalopen: straks kan iedereen zonder code installeren.
+- [ ] Plafond en daglimiet bij OpenAI en Anthropic nalopen: straks kan iedereen zonder code installeren. De proxy begrenst nu elke installatie (sinds 18 nov ook het model per dag, `docs/proxy.md`); het plafond bij de aanbieders is het vangnet. Voorstel in `NOTES.md`.
 
 Claude (in PR's):
 
@@ -35,11 +35,13 @@ Claude (in PR's):
 
 ## 2. Play Console invullen (Dashboard → App instellen)
 
-- [ ] Winkelvermelding: naam "Fluistervink", teksten, pictogram 512×512, feature graphic 1024×500, schermafbeeldingen, contactadres.
-- [ ] Privacybeleid: `https://fluistervink.nl/privacy`.
-- [ ] Gegevensveiligheid, contentclassificatie (vragenlijst), doelgroep (13+ of 18+, niet kinderen: anders gelden de gezinsregels), advertenties: nee, app-toegang: alles zonder inloggen.
-- [ ] Verklaring foreground service, met video.
-- [ ] Landen: Nederland en België.
+Afgevinkt op 18 nov: zonder deze stappen laat de Play Console een gesloten test niet uitrollen, en die loopt sinds 9 nov. Bij de aanvraag voor productie nog een keer langs het dashboard.
+
+- [x] Winkelvermelding: naam "Fluistervink", teksten, pictogram 512×512, feature graphic 1024×500, schermafbeeldingen, contactadres.
+- [x] Privacybeleid: `https://fluistervink.nl/privacy`.
+- [x] Gegevensveiligheid, contentclassificatie (vragenlijst), doelgroep (13+ of 18+, niet kinderen: anders gelden de gezinsregels), advertenties: nee, app-toegang: alles zonder inloggen.
+- [x] Verklaring foreground service, met video.
+- [ ] Landen: Nederland en België (nagaan of dat voor productie ook zo staat).
 
 ## 3. Logo
 
