@@ -23,7 +23,7 @@ Eigenaar:
 - [x] Deelnamelink van die track: `https://play.google.com/apps/testing/nl.hegmus.fluistervink`. Winkelpagina (pas zichtbaar na deelnemen): `https://play.google.com/store/apps/details?id=nl.hegmus.fluistervink`.
 - [x] 15–20 testers werven (12 sinds 17 nov, genoeg voor de regel van Google) (Gmail-adressen in de lijst van de gesloten test) en de deelnamelink sturen; een code is niet meer nodig.
 - [x] Contactadres voor de Play Store en de privacypagina: `info@fluistervink.nl` (bestaat sinds 9 nov).
-- [ ] Plafond en daglimiet bij OpenAI en Anthropic nalopen: straks kan iedereen zonder code installeren. De proxy begrenst nu elke installatie (sinds 18 nov ook het model per dag, `docs/proxy.md`); het plafond bij de aanbieders is het vangnet. Voorstel in `NOTES.md`.
+- [x] Plafond en daglimiet bij OpenAI en Anthropic: ingesteld op 18 nov. De proxy begrenst elke installatie (ook het model per dag, `docs/proxy.md`); het plafond bij de aanbieders is het vangnet.
 
 Claude (in PR's):
 
