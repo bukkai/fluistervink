@@ -83,6 +83,8 @@ Nog uit te zoeken in het veld (en daarna de nette uitwerking):
 - **Buiten de sessie, of met de optie uit:** geen mediasessie, dus de knop doet wat hij altijd doet. De podcast-app krijgt de knop dan via zijn eigen "media button receiver" terug (zo hervat hij ook na een herstart); nagaan in het veld.
 - Geen nieuwe toestemming in het manifest; de stabiele build verandert niet (geen plugin, geen microfoon in de service).
 
+**Proef 18 nov (0.878, Sony WH-1000XM5, podcast aan):** werkt. Alle 8 drukken (dubbeltik, steeds `KEYCODE_MEDIA_PAUSE`) kwamen aan en gaven een opname; de podcast speelde door. Dat de knop "om en om" leek te werken, was een stop-tril die in de zak niet te voelen was (stop, meteen weer gedrukt, lege opname). **Besloten:** de podcast speelt door tijdens een opname (geen audiofocus), ook nu we weten dat hij als feedback had kunnen dienen.
+
 Nog na te gaan in het veld: oortjes zonder podcast, met een podcast aan (en een nieuwe aflevering midden in de sessie), een sluiterknopje (stuurt meestal een volumetoets, sommige ook afspelen/pauzeren), Samsung, en of het stille stukje in de oortjes een tikje geeft.
 
 ## Stap 4: de microfoon delen
