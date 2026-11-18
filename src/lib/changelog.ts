@@ -29,6 +29,9 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     date: '2026-11-18',
     topics: {
+      'Android-app': [
+        'De uitleg om van Fluistervink Beta over te stappen naar de gewone app heeft een stap erbij: eerst de beta-test verlaten. Anders gaf Google Play na opnieuw installeren toch weer de beta.',
+      ],
       Export: [
         'Voor eBird telt de afgelegde afstand alleen nog lopen en fietsen. Een stuk met de auto of de boot (sneller dan 30 km/u) telt niet meer mee.',
       ],

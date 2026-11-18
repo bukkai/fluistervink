@@ -6,6 +6,10 @@
   // (de sessies staan in de app en gaan bij het verwijderen weg). Alleen in de
   // beta-app en niet bij de eigenaar; "Later" verbergt hem tot de volgende keer
   // dat de app opent.
+  // Wie zich ooit via de link van de interne test heeft aangemeld, blijft daar
+  // tester, ook als hij niet meer op de lijst staat, en krijgt dan van Play
+  // toch weer de beta. Daarom eerst de interne test verlaten.
+  const INTERNAL_TEST_URL = 'https://play.google.com/apps/internaltest/4701242842814722001';
   const CLOSED_TEST_URL = 'https://play.google.com/apps/testing/nl.hegmus.fluistervink';
   const STORE_URL = 'https://play.google.com/store/apps/details?id=nl.hegmus.fluistervink';
 
@@ -27,6 +31,11 @@
         komt in Downloads. Alles al geëxporteerd: deze stap kun je overslaan.
       </li>
       <li>
+        Open <a class="link" href={INTERNAL_TEST_URL} target="_blank" rel="noopener"
+          >de link van de beta</a
+        > en tik op "Programma verlaten". Anders krijg je bij stap 4 van Google Play gewoon weer de beta.
+      </li>
+      <li>
         Open <a class="link" href={CLOSED_TEST_URL} target="_blank" rel="noopener">deze link</a> en tik
         op "Word tester".
       </li>
@@ -38,7 +47,7 @@
     </ol>
     <p class="hint">
       Bij het verwijderen gaan de sessies in de app weg; wat al bij waarneming.nl staat, blijft daar
-      gewoon. Lukt stap 2 of 3 niet, laat het dan weten via Feedback in het menu.
+      gewoon. Lukt stap 2, 3 of 4 niet, laat het dan weten via Feedback in het menu.
     </p>
     <button class="btn secondary block" onclick={onlater}>Later</button>
   </div>
