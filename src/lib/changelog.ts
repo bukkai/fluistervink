@@ -39,10 +39,11 @@ export const CHANGELOG: ChangelogEntry[] = [
         'Maakt de spraakherkenning "goudborstje" van "roodborstje", dan wordt het nu gewoon een roodborst.',
         'De Chileense Flamingo staat in de soortenlijst: een exoot die in Nederland geregeld te zien is.',
         'Op een wifi waar je eerst moet inloggen (trein, camping) wachten je uitspraken nu tot er echt internet is. Eerst gingen ze verloren.',
+        'Vindt de GPS na een halve minuut nog geen plek, dan staat er "Nog geen locatie, inspreken kan gewoon" in plaats van een eindeloos "Locatie zoeken…".',
       ],
       Nalopen: [
         'Bij het nalopen van de onzekere: pas je er een aan en sla je hem op, dan telt hij als nagelopen. Eerst werd hij overgeslagen.',
-        'Locatie aanpassen: de knop heet nu "Huidige locatie", met een vizier ervoor.',
+        'Locatie aanpassen: de knop heet nu "Huidige locatie", met een vizier ervoor. Vindt hij je plek niet, dan geeft hij het na 10 seconden op (was 20) en zegt hij erbij als het aan het bereik ligt. Laadt de kaart niet, dan staat dat eronder.',
         'Waarnemingen zonder plek (bijvoorbeeld een trektelling waarbij de GPS geen plek vond)? Onder de kaart zet "Plek kiezen voor alle" ze in één keer op de plek waar je stond.',
       ],
     },
