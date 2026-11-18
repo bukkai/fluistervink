@@ -20,7 +20,7 @@ Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/ro
 
 Elk punt na het proberen hier weghalen.
 
-- **Trektelling met het scherm uit** (#289, nog niet gemerged): debug-APK `apk/fluistervink-0.903-trektel-scherm-uit.apk` laadt de preview van de branch (eigen opslag: toegangscode opnieuw invullen, ontwikkeloptie "Opnemen met het scherm uit" aan; eerst de Play-versie weg, dus eerst een JSON-export). Trektelling starten (melding: "Trektelling loopt · het scherm mag uit"), dan:
+- **Trektelling met het scherm uit** (#289, nog niet gemerged): debug-APK `apk/fluistervink-0.906-trektel-scherm-uit.apk` laadt de preview van de branch (eigen opslag: toegangscode opnieuw invullen, ontwikkeloptie "Opnemen met het scherm uit" aan; eerst de Play-versie weg, dus eerst een JSON-export). Trektelling starten (melding: "Trektelling loopt · het scherm mag uit"), dan:
   1. Een kwartier tellen met het scherm uit, af en toe iets inspreken: komen alle stukken door, met plek, en klopt het knippen?
   2. Scherm tussendoor aan en de app openen: lampje en tellers lopen gewoon, geen dubbele stukken, niets weggevallen op de grens.
   3. Gebeld worden: één lange tril (pauze), na het ophangen vanzelf een tril en verder.
