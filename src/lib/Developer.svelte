@@ -27,6 +27,7 @@
     type SessionCost,
   } from './costs';
   import { db } from './db';
+  import { costPerUserWeek } from './stats';
   import { ACTIVE_DAYS, lastSeen, splitActive } from './testers';
   import { describeImport, exportAllJson, importJson, saveFile } from './export';
 
@@ -182,6 +183,21 @@
       .filter(Boolean)
       .join(' · ');
   }
+  // Kosten per actieve gebruiker per week, voor de betaalde laag
+  // (docs/roadmap.md, punt 6). Lege weken vóór het eerste gebruik weg.
+  const userWeeks = $derived.by(() => {
+    const weeks = costPerUserWeek(usageRows, startOfLastMonth(new Date()));
+    const last = weeks.findLastIndex((w) => w.users > 0);
+    return weeks.slice(0, last + 1);
+  });
+  /** Gemiddeld per actieve gebruiker over de hele weken, en omgerekend per maand */
+  const perUserAverage = $derived.by(() => {
+    const full = userWeeks.filter((w) => !w.current && w.users > 0);
+    const users = full.reduce((sum, w) => sum + w.users, 0);
+    if (!users) return undefined;
+    const week = full.reduce((sum, w) => sum + w.cost, 0) / users;
+    return { week, month: (week * 52) / 12, weeks: full.length };
+  });
   const maxTesterCost = $derived(Math.max(...(costs?.perTester.map((t) => t.cost) ?? []), 0));
 
   async function remove(tester: Tester) {
@@ -310,6 +326,44 @@
             {showAllTesters ? 'Toon minder' : `Alle testers (${costs.perTester.length})`}
           </button>
         {/if}
+      {/if}
+      {#if userWeeks.length}
+        <h3>Per actieve gebruiker, per week</h3>
+        <div class="table">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Week van</th>
+                <th scope="col">Gebr.</th>
+                <th scope="col">Gem.</th>
+                <th scope="col">Mediaan</th>
+                <th scope="col">Hoogste</th>
+              </tr>
+            </thead>
+            <tbody>
+              {#each userWeeks as w (w.week)}
+                <tr>
+                  <th scope="row"
+                    >{dateFormat.format(new Date(w.week))}{w.current ? ' (nu)' : ''}</th
+                  >
+                  <td>{w.users}</td>
+                  <td>{w.users ? money(w.perUser) : '–'}</td>
+                  <td>{w.users ? money(w.median) : '–'}</td>
+                  <td>{w.users ? money(w.max) : '–'}</td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        </div>
+        <p class="hint">
+          {#if perUserAverage}
+            Gemiddeld {money(perUserAverage.week)} per actieve gebruiker per week, ongeveer {money(
+              perUserAverage.month,
+            )} per maand (over {count(perUserAverage.weeks, 'hele week', 'hele weken')}).
+          {/if}
+          Actief: minstens één uitspraak in een sessie die week. Zonder de eigenaar en de testset; beide
+          omgevingen.
+        </p>
       {/if}
       {#if costs.unknownModels.length}
         <p class="message error">
@@ -554,6 +608,36 @@
   h3 {
     margin: 0.25rem 0 0;
     font-size: 0.95rem;
+  }
+
+  .table {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  th,
+  td {
+    padding: 0.35rem 0.2rem;
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th:first-child {
+    text-align: left;
+    font-weight: 400;
+    white-space: nowrap;
+  }
+
+  thead th {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
   }
 
   .totals {
