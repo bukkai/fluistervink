@@ -4,7 +4,7 @@
 // gegeven te verzamelen. "Gebruiken" = minstens één uitspraak in een sessie;
 // alleen thuis nalopen telt niet mee.
 
-import { dayOf } from './costs';
+import { dayOf, rowCost, type UsageRow } from './costs';
 
 /** Gebruik per dag en tester, zoals de proxy het samenvat. */
 export interface ActivityRow {
@@ -111,6 +111,69 @@ export function perWeek(rows: ActivityRow[], count: number, now = new Date()): W
       else stats.resumed++;
     }
     weeks.push(stats);
+  }
+  return weeks;
+}
+
+/** Kosten per actieve gebruiker in één week, voor de betaalde laag. */
+export interface WeekCost {
+  /** Maandag van de week, `2026-11-16` */
+  week: string;
+  /** Deze week nog niet om */
+  current: boolean;
+  /** Gebruikers met minstens één uitspraak in een sessie */
+  users: number;
+  /** Dollars, alle actieve gebruikers samen */
+  cost: number;
+  perUser: number;
+  median: number;
+  max: number;
+}
+
+/**
+ * Kosten per actieve gebruiker per week, nieuwste eerst: hoeveel kost één
+ * gebruiker, en hoeveel de duurste (een trektelling kost veel meer dan een
+ * wandeling). Zonder de eigenaar en zonder de testset (geen sessie): die
+ * zeggen niets over een gewone gebruiker. Alleen hele weken vanaf `from`
+ * (de eerste opgehaalde dag), plus de lopende week.
+ */
+export function costPerUserWeek(rows: UsageRow[], from: string, now = new Date()): WeekCost[] {
+  const perWeek = new Map<string, Map<string, number>>();
+  for (const row of rows) {
+    if (!row.session || row.tester === 'eigenaar') continue;
+    const cost = rowCost(row);
+    if (cost === undefined) continue;
+    const week = weekOf(row.day);
+    const testers = perWeek.get(week) ?? new Map<string, number>();
+    testers.set(row.tester, (testers.get(row.tester) ?? 0) + cost);
+    perWeek.set(week, testers);
+  }
+  // Actief: minstens één uitspraak (spraakherkenning) in een sessie die week
+  const active = new Map<string, Set<string>>();
+  for (const row of rows) {
+    if (!row.session || row.tester === 'eigenaar' || row.model.startsWith('claude-')) continue;
+    if (!row.requests) continue;
+    const week = weekOf(row.day);
+    if (!active.has(week)) active.set(week, new Set());
+    active.get(week)!.add(row.tester);
+  }
+
+  const thisWeek = weekOf(dayOf(now));
+  const weeks: WeekCost[] = [];
+  for (let week = thisWeek; week >= from; week = addDays(week, -7)) {
+    const users = [...(active.get(week) ?? [])];
+    const costs = users.map((t) => perWeek.get(week)?.get(t) ?? 0).sort((a, b) => a - b);
+    const cost = costs.reduce((sum, c) => sum + c, 0);
+    const mid = Math.floor(costs.length / 2);
+    weeks.push({
+      week,
+      current: week === thisWeek,
+      users: users.length,
+      cost,
+      perUser: users.length ? cost / users.length : 0,
+      median: !costs.length ? 0 : costs.length % 2 ? costs[mid] : (costs[mid - 1] + costs[mid]) / 2,
+      max: costs.at(-1) ?? 0,
+    });
   }
   return weeks;
 }
