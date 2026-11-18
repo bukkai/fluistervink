@@ -32,14 +32,14 @@ Elk punt na het proberen hier weghalen.
 
 ## Met de testset nagaan
 
-Na de eerstvolgende gedeelde sessie (`npm run testset`; moet sinds #265 vanzelf eindigen):
+**Uitslag 18 nov** (129 uitspraken van 16–18 nov, prompt c025f8b4, ~$0,08; `testset/resultaten/2026-11-18-20-37_…`): 80% helemaal goed, soorten 92%, correcties 7/7, gedrag 92%. Veel "fouten" zijn verouderde labels: de blauwe reiger ("Uiteraard van de blauwe reiger") en flamingo + kraanvogel komen nu wel binnen, en de trektelstukken van 16 nov (verwerking stopte na "500 m noord") geven nu veel soorten die het label mist. "Goudborstje" wordt roodborst (#264).
 
-- **Prompt veranderd:** trektelling zonder gedrag is overvliegend, "roepje vink" en "zit" blijven, een ree ter plaatse (#261); "groepje merel" zonder aantal is roepend, "groepje van twintig vinken" een groep (#259); opmerking zonder het woord "feedback" wordt niets, met het woord (ook in een trektelstuk) feedback (#242); altijd met kandidaten (#235); "goudborstje" wordt roodborst (#264).
-- **Opnames inspreken:** iemand anders die een vogel noemt, radio, wind zonder iets te zeggen, "die buizerd van een kwartier geleden" na veel waarnemingen (robuustheid #6, #7); een paar Latijnse namen (#157: het model kan het, de spraakherkenning nog niet gemeten).
+- **Zelf beoordelen (#261):** vijf keer kiest het model nu overvliegend in een trektelstuk waar het nagelopen label ter plaatse zegt (houtduif, regenwulp, buizerd, kramsvogel, koperwiek). Zaten ze echt, of niet aangepast bij het nalopen? Zo nodig het label rechtzetten.
+- **Echte fouten:** "drieëndertig zilver" → grote zilverreiger (label zilverplevier); "3kj pont" → Pontische meeuw (label zilvermeeuw); "korenwolven" → grauwe gors; "grote rotslijster" → grote lijster. Allemaal één keer; geen promptregel.
+- **Nog niet gemeten:** iemand anders die een vogel noemt, radio, wind zonder iets te zeggen, "die buizerd van een kwartier geleden" na veel waarnemingen (robuustheid #6, #7); een paar Latijnse namen (#157: het model kan het, de spraakherkenning nog niet gemeten). Hiervoor opnames inspreken.
 - **Oortjes na een gesprek** (18 nov): de microfoon ging pas na 0,65 s open en het begin van "vijf overvliegende mussen waarvan twee mannetjes" viel weg; het model hing "van twee mannetjes" aan de kwartels. Wachten op het starttikje helpt; komt het vaker voor, dan nagaan of de oortjesmicrofoon sneller of warm kan.
-- **Gemist:** "Uiteraard van de blauwe reiger. Twee roepende kwartels. En een appelvink." leverde geen blauwe reiger op (18 nov, met oortjes).
-- **Idee uit feedback** (18 nov): "die houtduiven" zonder eerdere waarneming is waarschijnlijk "drie houtduiven". Promptregel alleen als de testset het vaker laat zien.
-- **Opletten:** bereik als schatting ("tussen de vijftig en honderd", #215); preciezere leeftijd ("juveniel, ik denk derde kalenderjaar" werd juveniel; promptregel alleen als het vaker voorkomt).
+- **Idee uit feedback** (18 nov): "die houtduiven" zonder eerdere waarneming is waarschijnlijk "drie houtduiven". De testset gaf er 2 (label 1): promptregel alleen als het vaker voorkomt.
+- **Opletten:** bereik als schatting ("tussen de vijftig en honderd", #215); preciezere leeftijd ("juveniel, ik denk derde kalenderjaar" wordt nu derde kalenderjaar, het label zegt juveniel; promptregel alleen als het vaker voorkomt).
 
 ## Steeds
 
