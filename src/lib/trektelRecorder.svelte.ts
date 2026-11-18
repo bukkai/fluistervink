@@ -6,7 +6,7 @@
 
 import type { PositionLookup } from './db';
 import { logEvent } from './log';
-import { microphoneConstraints } from './microphone';
+import { openMicrophone } from './microphone';
 import { noteMicrophone } from './microphoneStatus.svelte';
 import { AUDIO_BITS_PER_SECOND, MIME_TYPES, type Recording } from './recorder.svelte';
 import {
@@ -141,7 +141,7 @@ function onVisibility() {
 
 /** Microfoon aan, meter en eerste stuk starten. Gooit als de microfoon niet aangaat. */
 async function openMic(): Promise<void> {
-  stream = await navigator.mediaDevices.getUserMedia({ audio: await microphoneConstraints() });
+  stream = await openMicrophone();
   noteMicrophone(stream, 'trektel');
   audioContext = new AudioContext();
   const analyser = audioContext.createAnalyser();
@@ -203,8 +203,7 @@ async function resumeTrektel(): Promise<void> {
   stopWhenStarted = false;
   try {
     await openMic();
-  } catch (error) {
-    logEvent('mic_error', { name: (error as Error).name, message: (error as Error).message });
+  } catch {
     trektel.status = 'paused';
     stopTrektel('hidden');
     return;
@@ -234,7 +233,6 @@ export async function startTrektel(next: TrektelHandlers): Promise<boolean> {
   } catch (error) {
     closeMic();
     handlers = undefined;
-    logEvent('mic_error', { name: (error as Error).name, message: (error as Error).message });
     trektel.status = 'idle';
     trektel.error =
       error instanceof DOMException && error.name === 'NotAllowedError'

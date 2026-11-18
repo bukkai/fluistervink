@@ -31,6 +31,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     topics: {
       Trektelling: [
         'Tik je tijdens een trektelling op Instellingen of een ander scherm, dan vraagt de app eerst of de telling mag stoppen. Hij stopte daar zonder iets te zeggen.',
+        'Ging de microfoon bij "Trektelling starten" de eerste keer niet aan (vooral vlak na het geven van toestemming), dan probeert de app het nu meteen nog een keer, net als de knop Inspreken al deed.',
       ],
       Inspreken: [
         'Zijn er oortjes of een headset verbonden, dan zegt het sessiescherm met welke microfoon de app luistert. Dat is die van de telefoon: praat dus naar de telefoon, ook als die in je zak zit.',

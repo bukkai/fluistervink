@@ -1,5 +1,4 @@
-import { logEvent } from './log';
-import { microphoneConstraints } from './microphone';
+import { openMicrophone } from './microphone';
 import { noteMicrophone } from './microphoneStatus.svelte';
 
 // Opname via de microfoon (MediaRecorder). De microfoon gaat alleen aan
@@ -25,14 +24,6 @@ const MIN_DURATION_MS = 500;
 /** Bestandsformaten in volgorde van voorkeur; Chrome op Android kan webm/opus. */
 export const MIME_TYPES = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/mp4'];
 
-/**
- * De microfoon ging niet aan, maar niet omdat toegang geweigerd is. Op Android
- * gebeurt dat vaak één keer, vlak na het geven van toestemming
- * (NotReadableError "Could not start audio source"); de tweede poging lukt dan.
- */
-const RETRY_ERRORS = ['NotReadableError', 'AbortError'];
-const RETRY_AFTER_MS = 500;
-
 /** Toestand voor de interface. */
 export const recorder = $state<{
   status: 'idle' | 'starting' | 'recording' | 'denied' | 'unsupported';
@@ -52,23 +43,14 @@ export async function startRecording(): Promise<boolean> {
   recorder.status = 'starting';
   recorder.failed = undefined;
 
-  let stream: MediaStream | undefined;
-  for (let attempt = 1; !stream; attempt++) {
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: await microphoneConstraints() });
-    } catch (error) {
-      const { name, message } = error as Error;
-      const retry = attempt === 1 && RETRY_ERRORS.includes(name);
-      logEvent('mic_error', { name, message, attempt, retry });
-      if (retry) {
-        await new Promise((resolve) => setTimeout(resolve, RETRY_AFTER_MS));
-        continue;
-      }
-      const denied = error instanceof DOMException && name === 'NotAllowedError';
-      recorder.status = denied ? 'denied' : 'idle';
-      recorder.failed = !denied || undefined;
-      return false;
-    }
+  let stream: MediaStream;
+  try {
+    stream = await openMicrophone();
+  } catch (error) {
+    const denied = error instanceof DOMException && error.name === 'NotAllowedError';
+    recorder.status = denied ? 'denied' : 'idle';
+    recorder.failed = !denied || undefined;
+    return false;
   }
 
   // Welke microfoon het werd: voor het log (haperen van Bluetooth-audio) en het sessiescherm

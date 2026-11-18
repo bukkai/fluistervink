@@ -149,4 +149,25 @@ describe('trektelling naar de achtergrond', () => {
     expect(trektel.status).toBe('paused');
     expect(micOn).toBe(0);
   });
+
+  it('microfoon gaat de eerste keer niet aan (net toestemming gegeven): nog eens proberen', async () => {
+    const getUserMedia = navigator.mediaDevices.getUserMedia;
+    let calls = 0;
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      value: {
+        getUserMedia: async (constraints: MediaStreamConstraints) => {
+          if (++calls === 1)
+            throw new DOMException('Could not start audio source', 'NotReadableError');
+          return getUserMedia(constraints);
+        },
+      },
+    });
+    const starting = startTrektel(handlers());
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(await starting).toBe(true);
+    expect(calls).toBe(2);
+    expect(trektel.status).toBe('running');
+    expect(trektel.error).toBeUndefined();
+  });
 });

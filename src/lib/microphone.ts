@@ -13,6 +13,7 @@
 // buurt" (MicrofoonPlugin.java).
 
 import { devOptionOn } from './devOptions';
+import { logEvent } from './log';
 
 /** Namen van microfoons die via Bluetooth of een headset lopen. */
 const EXTERNAL = /bluetooth|headset|hands-?free|\bbt\b|car|auto/i;
@@ -77,4 +78,31 @@ export async function microphoneConstraints(): Promise<MediaTrackConstraints> {
     echoCancellation: false,
     ...(deviceId ? { deviceId: { ideal: deviceId } } : {}),
   };
+}
+
+/**
+ * De microfoon ging niet aan, maar niet omdat toegang geweigerd is. Op Android
+ * gebeurt dat vaak één keer, vlak na het geven van toestemming
+ * (NotReadableError "Could not start audio source"); de tweede poging lukt dan.
+ * Op 18 nov ook bij de trektelling, vlak na de vraag om locatietoestemming.
+ */
+const RETRY_ERRORS = ['NotReadableError', 'AbortError'];
+export const RETRY_AFTER_MS = 500;
+
+/**
+ * Zet de microfoon aan, met zo nodig één tweede poging. Elke mislukte poging
+ * komt in het log (`mic_error`); gooit de fout van de laatste.
+ */
+export async function openMicrophone(): Promise<MediaStream> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await navigator.mediaDevices.getUserMedia({ audio: await microphoneConstraints() });
+    } catch (error) {
+      const { name, message } = error as Error;
+      const retry = attempt === 1 && RETRY_ERRORS.includes(name);
+      logEvent('mic_error', { name, message, attempt, retry });
+      if (!retry) throw error;
+      await new Promise((resolve) => setTimeout(resolve, RETRY_AFTER_MS));
+    }
+  }
 }
