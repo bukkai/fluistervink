@@ -1,7 +1,7 @@
 <script lang="ts">
   import { timeFormat } from './format';
   import { liveQuery } from 'dexie';
-  import type { Session } from './db';
+  import { db, type Session } from './db';
   import { renameSession } from './area';
   import { countSpecies, listObservations } from './observations';
   import { deleteSessions, formatDuration, resumeSession } from './sessions';
@@ -32,6 +32,18 @@
 
   let observations = $derived(liveQuery(() => listObservations(session.id)));
   let uncertainCount = $derived($observations?.filter((obs) => obs.uncertain).length ?? 0);
+
+  // Uitspraken die nog niet verwerkt zijn (vooral: wachten op bereik). Pas als
+  // ze binnen zijn klopt de lijst, dus dan pas klaarzetten of exporteren.
+  let unprocessed = $derived(
+    liveQuery(() =>
+      db.utterances
+        .where('status')
+        .anyOf('pending', 'processing')
+        .filter((u) => u.sessionId === session.id)
+        .count(),
+    ),
+  );
 
   // Kaart en lijst aan elkaar gekoppeld: een nieuw object bij elke tik, zodat
   // ook nog eens dezelfde waarneming kiezen opnieuw werkt.
@@ -228,6 +240,12 @@
           >Toch nog niet klaar</button
         >
       </div>
+    {:else if $unprocessed}
+      <p class="first">
+        Nog {$unprocessed === 1 ? '1 uitspraak wacht' : `${$unprocessed} uitspraken wachten`} op verwerking,
+        bijvoorbeeld omdat er geen bereik was. Dat gaat vanzelf zodra er verbinding is; daarna kun je
+        de sessie klaarzetten.
+      </p>
     {:else}
       {#if uncertainCount > 0}
         <p class="warning">
@@ -246,7 +264,7 @@
       </p>
     {/if}
     <div class="actions only-this">
-      <button class="btn secondary block" onclick={exportOnlyThis}
+      <button class="btn secondary block" onclick={exportOnlyThis} disabled={!!$unprocessed}
         >Alleen deze sessie exporteren{ebird ? ' voor waarneming.nl' : ''}</button
       >
     </div>

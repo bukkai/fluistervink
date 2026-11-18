@@ -1,6 +1,6 @@
 # Plan: offline wachtrij
 
-Voorstel van 17 nov 2026, nog niet goedgekeurd. Punt 1 van "Na v1.0" in `docs/roadmap.md`. Tot nu toe stond dit bij "Bewust níet in de MVP" in `CLAUDE.md`; de eigenaar wil het nu als eerste.
+Voorstel van 17 nov 2026, gebouwd op 17 nov in vier PR's (#251, #254, #255, #256). **Afgerond:** in het veld getest op 17 nov (vliegtuigmodus, corrigeren, trektelling), op stable sinds 18 nov. Punt 1 van "Na v1.0" in `docs/roadmap.md`. Tot nu toe stond dit bij "Bewust níet in de MVP" in `CLAUDE.md`; de eigenaar wil het nu als eerste.
 
 ## Waarom
 
@@ -70,10 +70,14 @@ Een trektelling zonder bereik blijft gewoon opnemen: de stukken stapelen zich op
 2. **Laten zien en voelen** (punt 3): regel op het sessiescherm, trilpatroon. `#uitleg` en de trilpatronen daar bijwerken.
 3. **Proeven** (punt 4 en 5): vliegtuigmodus in de PWA en de app, een wandeling met het netwerk uit, een korte trektelling offline. Daarna de ontwikkeloptie weg en voor iedereen aan, met een regel in de changelog en `CLAUDE.md` bijgewerkt (de zin onder "Local-first" en de MVP-lijst).
 
+Zo gebouwd: #251 (punt 1 en 2), #254 (punt 3), #255 (trektelling na 2 uur, een token dat niet meer werkt vernieuwen) en een laatste PR die het voor iedereen aanzet, met daarbij: gebieden en de naam van de sessie alsnog na het inhalen, en klaarzetten of exporteren pas als alles verwerkt is.
+
 Alles is webcode: geen nieuwe app-versie nodig, tenzij de proef in punt 4 laat zien dat de app offline niet opent.
 
 ## Open vragen
 
-1. **Trilpatroon voor "bewaard, wacht op bereik"** (`src/lib/feedback.ts`). Voorstel: lang, kort (450, 150, 120): het spiegelbeeld van onzeker (kort, lang). Eén lange is al "trektelling gepauzeerd", drie korte blijft voor een echte fout.
-2. **Na hoeveel wachten geen tril meer per uitspraak?** Voorstel: een minuut.
-3. **Grens voor een trektelling offline:** 2 uur, of geen grens?
+Alle drie gebouwd volgens het voorstel; bij te stellen na de proeven.
+
+1. **Trilpatroon voor "bewaard, wacht op bereik"** (`src/lib/feedback.ts`): lang, kort (450, 150, 120), het spiegelbeeld van onzeker (kort, lang). Eén lange is al "trektelling gepauzeerd", drie korte blijft voor een echte fout.
+2. **Na hoeveel wachten geen tril meer per uitspraak?** Een minuut (`CATCH_UP_AFTER_MS` in `src/lib/queue.ts`).
+3. **Grens voor een trektelling offline:** na 2 uur een melding en twee lange trillen, de telling loopt door (`LONG_WAIT_MS`).

@@ -144,8 +144,8 @@ const loader = await createServer({
   optimizeDeps: { noDiscovery: true },
   server: { middlewareMode: true, hmr: false, ws: false },
 });
-const { MODEL, interpret, parseResponse, promptVersionFor } =
-  await loader.ssrLoadModule('/src/lib/interpret.ts');
+const { MODEL, interpret, parseResponse } = await loader.ssrLoadModule('/src/lib/interpret.ts');
+const { promptVersionFor } = await loader.ssrLoadModule('/src/lib/prompt.ts');
 const { transcribe } = await loader.ssrLoadModule('/src/lib/transcribe.ts');
 const { devNoteText } = await loader.ssrLoadModule('/src/lib/devNotePrefix.ts');
 const vocab = await loader.ssrLoadModule('/src/lib/vocab.ts');
@@ -366,6 +366,7 @@ async function run(item) {
     model,
     contextText,
     groups: opts.soortgroepen,
+    trektel: u.trektel,
   });
   return {
     ...result,
@@ -653,3 +654,10 @@ writeFileSync(
   ),
 );
 console.log(`\nBewaard in ${file.replace(ROOT + '/', '')}`);
+
+// Zelf stoppen: met de online D1 start de Cloudflare-plugin een eigen
+// verbinding naar Cloudflare (een tweede workerd), die hij bewaart om te
+// hergebruiken en bij proxy.close() niet opruimt. Zonder exit blijft het
+// proces daarop wachten. Eerst stdout leeg laten lopen (bij een pipe).
+await new Promise((resolve) => process.stdout.write('', resolve));
+process.exit(0);

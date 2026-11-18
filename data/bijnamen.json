@@ -13,6 +13,7 @@
  { "soort": 155, "naam": "Oeverzwaluw", "bijnamen": ["oever", "oevertje"] },
  { "soort": 7, "naam": "Ooievaar", "bijnamen": ["ooi"] },
  { "soort": 161, "naam": "Pimpelmees", "bijnamen": ["pim"] },
+ { "soort": 168, "naam": "Roodborst", "bijnamen": [], "verhaspelingen": ["goudborst", "goudborstje"] },
  { "soort": 45, "naam": "Roodborsttapuit", "bijnamen": ["robotap", "rbt", "rbt'tje"] },
  { "soort": 173, "naam": "Scholekster", "bijnamen": ["schollie"] },
  { "soort": 34, "naam": "Steenuil", "bijnamen": ["SU"] },

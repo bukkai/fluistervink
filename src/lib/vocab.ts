@@ -191,12 +191,20 @@ export function findVagrant(name: string): Species | undefined {
 /**
  * Bijnamen en afkortingen uit vogelaarsjargon ("tova", "robotap", "KBV"),
  * zie data/bijnamen.json. `naam` staat er alleen voor de leesbaarheid.
+ * `verhaspelingen`: wat de spraakherkenning vaak van de soort maakt maar geen
+ * vogel is ("goudborstje" voor roodborstje). Die gaan wel naar het model, niet
+ * in de prompt van de spraakherkenning: daar zouden ze de verkeerde schrijfwijze
+ * juist aanmoedigen.
  */
 export interface Alias {
   soort: number;
   naam: string;
   bijnamen: string[];
+  verhaspelingen?: string[];
 }
+
+/** Alles waaraan het model de soort herkent: bijnamen en verhaspelingen */
+export const heardNames = (a: Alias): string[] => [...a.bijnamen, ...(a.verhaspelingen ?? [])];
 
 const allAliases = (aliasList as Alias[]).filter((a) => {
   if (isPromptSpecies(a.soort, true)) return true;

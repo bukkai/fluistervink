@@ -127,9 +127,17 @@ function rareReason(speciesId: number): string | undefined {
   return `Zeldzame soort (${speciesName(speciesId)}): klopt het?`;
 }
 
-/** Voert de acties uit en geeft terug wat er veranderde. */
-export async function applyActions(utterance: Utterance, actions: Action[]): Promise<Change[]> {
+/**
+ * Voert de acties uit en geeft terug wat er veranderde. `acted`: er gebeurde
+ * iets (ook een undo, redo of feedback); zo niet, dan krijgt de gebruiker
+ * "niet begrepen" in plaats van "opgeslagen".
+ */
+export async function applyActions(
+  utterance: Utterance,
+  actions: Action[],
+): Promise<{ changes: Change[]; acted: boolean }> {
   const changes: Change[] = [];
+  let acted = false;
   let order = Date.now();
   // Waarschijnlijk per ongeluk opgenomen: alles wat eruit komt onzeker, zodat
   // het bij het nalopen opvalt
@@ -167,6 +175,7 @@ export async function applyActions(utterance: Utterance, actions: Action[]): Pro
         Object.assign(observation, withReason(observation, rareReason(observation.speciesId)));
         await db.observations.add(observation);
         changes.push({ type: 'add', observationId: observation.id });
+        acted = true;
         break;
       }
 
@@ -175,8 +184,14 @@ export async function applyActions(utterance: Utterance, actions: Action[]): Pro
         if (!current) break;
         const patch: Partial<Observation> = { ...action.fields };
         Object.assign(patch, codesForNewSpecies(current, patch));
+        // Onder de 1 ("nog vijf eraf" bij drie): 1, maar onzeker, want er is
+        // iets verkeerd verstaan of geteld. Na de twijfel hieronder gezet.
+        let belowOne: string | undefined;
         if (action.addCount) {
-          patch.count = Math.max(1, (patch.count ?? current.count) + action.addCount);
+          const base = patch.count ?? current.count;
+          patch.count = Math.max(1, base + action.addCount);
+          if (base + action.addCount < 1)
+            belowOne = `${base} − ${-action.addCount} kan niet: op 1 gezet`;
         }
         // Een correctie zonder twijfel maakt een eerder onzekere waarneming
         // zeker; alleen een opmerking of notitie toevoegen niet
@@ -230,6 +245,7 @@ export async function applyActions(utterance: Utterance, actions: Action[]): Pro
           }
           Object.assign(patch, placeUncertainty(merged));
         }
+        Object.assign(patch, withReason({ ...current, ...patch }, belowOne));
         Object.assign(patch, accidental);
         // Andere soort: is die zeldzaam (instelling)?
         if (
@@ -245,6 +261,7 @@ export async function applyActions(utterance: Utterance, actions: Action[]): Pro
         ) as Partial<Observation>;
         await db.observations.update(current.id, patch);
         changes.push({ type: 'update', observationId: current.id, before });
+        acted = true;
         break;
       }
 
@@ -252,27 +269,32 @@ export async function applyActions(utterance: Utterance, actions: Action[]): Pro
         const current = await moveToBin(action.observationId, 'voice');
         if (!current) break;
         changes.push({ type: 'delete', observation: current });
+        acted = true;
         break;
       }
 
       case 'undo':
-        await undoPrevious(utterance);
+        if (await undoPrevious(utterance)) acted = true;
         break;
 
       case 'redo':
-        await redoUndo(utterance);
+        if (await redoUndo(utterance)) acted = true;
         break;
 
       case 'dev_note':
         // Geen wijziging aan waarnemingen; de uitspraak wordt een dev note
+        acted = true;
         break;
     }
   }
-  return changes;
+  return { changes, acted };
 }
 
-/** Draait de meest recente, nog niet teruggedraaide uitspraak terug. */
-async function undoPrevious(utterance: Utterance): Promise<void> {
+/**
+ * Draait de meest recente, nog niet teruggedraaide uitspraak terug. False als
+ * er niets terug te draaien was.
+ */
+async function undoPrevious(utterance: Utterance): Promise<boolean> {
   const previous = (await listUtterances(utterance.sessionId)).find(
     (u) =>
       u.id !== utterance.id &&
@@ -281,11 +303,12 @@ async function undoPrevious(utterance: Utterance): Promise<void> {
       !u.undone &&
       u.changes?.length,
   );
-  if (!previous) return;
+  if (!previous) return false;
 
   const changes = await revert(previous.changes!);
   await db.utterances.update(previous.id, { undone: true });
   await db.utterances.update(utterance.id, { undid: { utteranceId: previous.id, changes } });
+  return true;
 }
 
 /**
@@ -293,15 +316,16 @@ async function undoPrevious(utterance: Utterance): Promise<void> {
  * die undo zelf teruggedraaid, en kan een nieuwe undo de oorspronkelijke
  * uitspraak weer terugdraaien.
  */
-async function redoUndo(utterance: Utterance): Promise<void> {
+async function redoUndo(utterance: Utterance): Promise<boolean> {
   const undo = (await listUtterances(utterance.sessionId)).find(
     (u) => u.id !== utterance.id && u.recordedAt <= utterance.recordedAt && !u.undone && u.undid,
   );
-  if (!undo) return;
+  if (!undo) return false;
 
   await revert(undo.undid!.changes);
   await db.utterances.update(undo.undid!.utteranceId, { undone: false });
   await db.utterances.update(undo.id, { undone: true });
+  return true;
 }
 
 /**

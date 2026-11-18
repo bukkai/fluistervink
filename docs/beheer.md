@@ -1,4 +1,4 @@
-# Beheer: sleutels en de Android-app bouwen
+# Beheer: sleutels, de Android-app bouwen, de branch-regel
 
 Praktische weetjes voor de eigenaar, verplaatst uit `NOTES.md` op 12 nov 2026. Hoe je de Android-app voor het eerst opzet, staat in de README; releases in `docs/google-play.md`; de twee omgevingen in `docs/omgevingen.md`.
 
@@ -15,3 +15,7 @@ Praktische weetjes voor de eigenaar, verplaatst uit `NOTES.md` op 12 nov 2026. H
 - De app heeft een eigen database (los van de PWA in Chrome): eenmalig overzetten met de JSON-export en -import.
 - Icoon en opstartscherm (9 nov, PR #176): `npm run app-icons` maakt ze uit `public/icon.svg`; daarvoor stond het standaardicoon van Capacitor erin. Pas te zien na een nieuwe tag; debug-APK `apk/fluistervink-0.533-beta.apk`. In dezelfde PR Gradle terug naar 8.14.3: Dependabot (#147) had 9.8.2 gezet, waarmee niets meer bouwde (ook de release-workflow niet); grote Gradle-versies slaat Dependabot nu over.
 - In een nieuwe worktree eerst `npm run build` en `npx cap sync android`, en `ANDROID_HOME=~/Library/Android/sdk` (er is geen `local.properties`).
+
+## Branch-regel op main
+
+Sinds 12 nov een ruleset "main beschermen" (GitHub → Settings → Rules): een PR kan pas gemerged worden als de check `check` groen is; geen force-push, `main` niet te verwijderen. De eigenaar (beheerder) mag er altijd omheen, dus NOTES-commits direct op `main` blijven werken, en een PR met een hangende check kun je toch mergen ("bypass rules"). De PR's van de soortenlijst-workflow krijgen geen check vanzelf (GITHUB_TOKEN): sluiten en heropenen, of omheen mergen.

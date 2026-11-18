@@ -13,7 +13,7 @@ import {
   type Utterance,
 } from './db';
 import { getTester, type Area } from './api';
-import { APP_VERSION, CHANNEL, logEvent } from './log';
+import { APP_VERSION, CHANNEL, logEvent, type LogEvent } from './log';
 import { DIRECTIONS } from './spokenPlace';
 import { PLATFORM, isNativeApp, saveFileNative, type SaveResult } from './native';
 
@@ -107,8 +107,10 @@ export interface ImportResult {
 /**
  * Leest een JSON-export (van `exportAllJson`) terug in. Alleen sessies die
  * er nog niet zijn, met hun uitspraken, waarnemingen en prullenbak, plus losse
- * feedback die er nog niet is; het gebeurtenissenlog niet. Opnames alleen als
- * de export ze bevat. Er wordt niets overschreven.
+ * feedback die er nog niet is. Van het gebeurtenissenlog alleen wat binnen de
+ * tijd van een toegevoegde sessie valt: anders deelt de app die sessies
+ * opnieuw zonder log en overschrijft hij de versie die de ontwikkelaar al had
+ * (17 nov). Opnames alleen als de export ze bevat. Er wordt niets overschreven.
  */
 export async function importJson(file: File): Promise<ImportResult> {
   const data = JSON.parse(await file.text());
@@ -122,8 +124,9 @@ export async function importJson(file: File): Promise<ImportResult> {
   }));
   const observations: Observation[] = data.observations ?? [];
   const deleted: DeletedObservation[] = data.deletedObservations ?? [];
+  const events: LogEvent[] = data.events ?? [];
 
-  const tables = [db.sessions, db.utterances, db.observations, db.deletedObservations];
+  const tables = [db.sessions, db.utterances, db.observations, db.deletedObservations, db.events];
   const result = await db.transaction('rw', tables, async () => {
     const existing = new Set(await db.sessions.toCollection().primaryKeys());
     const fresh = sessions.filter((s) => !existing.has(s.id));
@@ -131,14 +134,14 @@ export async function importJson(file: File): Promise<ImportResult> {
     const lastObservation = (id: string) =>
       Math.max(0, ...observations.filter((o) => o.sessionId === id).map((o) => o.observedAt));
 
-    await db.sessions.bulkAdd(
-      fresh.map((s) => ({
-        ...s,
-        // Een sessie die bij het exporteren nog liep, komt binnen als gestopt
-        status: 'ended' as const,
-        endedAt: s.endedAt ?? (lastObservation(s.id) || s.startedAt),
-      })),
-    );
+    const added = fresh.map((s) => ({
+      ...s,
+      // Een sessie die bij het exporteren nog liep, komt binnen als gestopt
+      status: 'ended' as const,
+      endedAt: s.endedAt ?? (lastObservation(s.id) || s.startedAt),
+    }));
+    await db.sessions.bulkAdd(added);
+    await db.events.bulkAdd(await eventsToRestore(events, added));
     // Losse feedback hoort bij geen sessie: per uitspraak nagaan
     const loose = utterances.filter((u) => u.sessionId === '');
     const present = new Set(
@@ -179,6 +182,30 @@ export async function importJson(file: File): Promise<ImportResult> {
   return counts;
 }
 
+/**
+ * Het log binnen de tijd van de toegevoegde sessies (zoals `snapshot` in
+ * share.ts het meestuurt), zonder het nummer uit de andere database en zonder
+ * wat er hier al staat (zelfde tijd, soort en exemplaar).
+ */
+async function eventsToRestore(
+  events: LogEvent[],
+  sessions: { startedAt: number; endedAt: number }[],
+): Promise<LogEvent[]> {
+  const inSession = events.filter((e) =>
+    sessions.some((s) => e.at >= s.startedAt && e.at <= s.endedAt),
+  );
+  if (!inSession.length) return [];
+  const key = (e: LogEvent) => `${e.at}|${e.type}|${e.instance ?? ''}`;
+  const first = Math.min(...inSession.map((e) => e.at));
+  const last = Math.max(...inSession.map((e) => e.at));
+  const present = new Set(
+    (await db.events.where('at').between(first, last, true, true).toArray()).map(key),
+  );
+  const restored = new Map<string, LogEvent>();
+  for (const { id: _, ...e } of inSession) if (!present.has(key(e))) restored.set(key(e), e);
+  return [...restored.values()];
+}
+
 /** Uitkomst van een import in een zin, voor op het scherm */
 export function describeImport({ added, skipped, feedback }: ImportResult): string {
   return [
@@ -202,6 +229,7 @@ function checkImport(data: {
   utterances?: unknown;
   observations?: unknown;
   deletedObservations?: unknown;
+  events?: unknown;
 }): void {
   if (!Array.isArray(data?.sessions) || !Array.isArray(data?.utterances)) {
     throw new Error('Dit is geen export van Fluistervink.');
@@ -295,5 +323,17 @@ function checkImport(data: {
         optional(o.area, isArea);
       if (!ok) fail('waarneming');
     }
+  }
+  const events = data.events ?? [];
+  if (!Array.isArray(events)) fail('log');
+  const isText = (value: unknown) => typeof value === 'string' && value.length <= 100;
+  for (const e of events as LogEvent[]) {
+    const ok =
+      isNumber(e?.at) &&
+      isText(e.type) &&
+      optional(e.instance, isText) &&
+      optional(e.sessionId, isText) &&
+      optional(e.utteranceId, isText);
+    if (!ok) fail('log');
   }
 }

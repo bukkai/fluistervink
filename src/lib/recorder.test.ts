@@ -3,7 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // Microfoon en opname nagebootst: het gaat om wat er gebeurt als de microfoon
 // niet meteen aangaat.
 vi.mock('./log', () => ({ logEvent: vi.fn() }));
-vi.mock('./microphone', () => ({ microphoneConstraints: async () => true }));
+vi.mock('./microphone', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./microphone')>()),
+  microphoneConstraints: async () => true,
+}));
 
 // Vóór het importeren: recorder.status kijkt bij het laden of MediaRecorder bestaat
 vi.hoisted(() => {
@@ -13,11 +16,14 @@ vi.hoisted(() => {
     ondataavailable?: (event: { data: Blob }) => void;
     onstop?: () => void;
     state = 'recording';
+    static last?: FakeRecorder;
     constructor(public stream: unknown) {
-      (globalThis as Record<string, unknown>).lastRecorder = this;
+      FakeRecorder.last = this;
     }
     start() {}
     stop() {
+      this.ondataavailable?.({ data: new Blob(['opus']) });
+      this.state = 'inactive';
       this.onstop?.();
     }
   }
@@ -25,7 +31,7 @@ vi.hoisted(() => {
 });
 
 import { logEvent } from './log';
-import { recorder, startRecording, stopRecording } from './recorder.svelte';
+import { onRecordingInterrupted, recorder, startRecording, stopRecording } from './recorder.svelte';
 
 const stream = { getTracks: () => [{ stop() {} }], getAudioTracks: () => [] };
 let getUserMedia: ReturnType<typeof vi.fn>;
@@ -83,7 +89,7 @@ describe('microfoon aanzetten', () => {
   it('telt met measureHidden de stukjes met het scherm aan en op slot', async () => {
     getUserMedia.mockResolvedValue(stream);
     expect(await startRecording({ measureHidden: true })).toBe(true);
-    const fake = (globalThis as Record<string, unknown>).lastRecorder as {
+    const fake = (MediaRecorder as unknown as { last: unknown }).last as {
       ondataavailable: (event: { data: Blob }) => void;
     };
     fake.ondataavailable({ data: new Blob(['x'.repeat(4000)]) });
@@ -97,8 +103,48 @@ describe('microfoon aanzetten', () => {
     await vi.advanceTimersByTimeAsync(3000);
     const recording = await stopRecording();
     expect(recording?.chunkStats).toEqual({
-      visible: { count: 1, bytes: 4000 },
+      // Plus het laatste stukje dat de recorder bij stoppen geeft (4 bytes)
+      visible: { count: 2, bytes: 4004 },
       hidden: { count: 2, bytes: 500 },
     });
+  });
+});
+
+describe('opname stopt vanzelf (gebeld, oortjes weg)', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      value: { getUserMedia: vi.fn().mockResolvedValue(stream) },
+    });
+    recorder.status = 'idle';
+  });
+
+  afterEach(() => vi.useRealTimers());
+
+  it('het scherm hoort het, de knop hangt niet en de opname is er nog', async () => {
+    const heard = vi.fn();
+    const off = onRecordingInterrupted(heard);
+    expect(await startRecording()).toBe(true);
+    await vi.advanceTimersByTimeAsync(4000);
+    // Het spoor houdt op: de recorder stopt zonder dat iemand op Stop drukte
+    const fake = (MediaRecorder as unknown as { last: MediaRecorder }).last;
+    fake.stop();
+    off();
+    expect(heard).toHaveBeenCalledOnce();
+    expect(recorder.status).toBe('idle');
+    const recording = await stopRecording();
+    expect(recording).toMatchObject({ durationMs: 4000 });
+    expect(recording?.audio.size).toBeGreaterThan(0);
+  });
+
+  it('gewoon op Stop gedrukt: geen melding', async () => {
+    const heard = vi.fn();
+    const off = onRecordingInterrupted(heard);
+    await startRecording();
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(await stopRecording()).toMatchObject({ durationMs: 2000 });
+    off();
+    expect(heard).not.toHaveBeenCalled();
   });
 });

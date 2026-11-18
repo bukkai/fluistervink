@@ -19,7 +19,7 @@
     setSkipExport,
     spokenAt,
   } from './observations';
-  import { LONG_WAIT_MS, retry } from './queue';
+  import { LONG_WAIT_MS, retry, retryNow } from './queue';
   import {
     DEFAULT_COUNTING_METHOD,
     activityName,
@@ -52,21 +52,26 @@
     editing?: string;
   } = $props();
 
+  // Alleen het id: het sessie-object zelf verandert tijdens een sessie bij elke
+  // GPS-meting (afgelegde afstand), en dan zou alles hieronder elke seconde
+  // opnieuw lopen.
+  const sessionId = $derived(session.id);
+
   // Opnieuw opvragen als de sessie wisselt; liveQuery volgt daarna zelf de database
-  let observations = $derived(liveQuery(() => listObservations(session.id)));
-  let utterances = $derived(liveQuery(() => listUtterances(session.id)));
-  let deleted = $derived(liveQuery(() => listDeleted(session.id)));
+  let observations = $derived(liveQuery(() => listObservations(sessionId)));
+  let utterances = $derived(liveQuery(() => listUtterances(sessionId)));
+  let deleted = $derived(liveQuery(() => listDeleted(sessionId)));
 
   // Gebiedsnamen die nog ontbreken (geen verbinding, oudere sessies) alsnog opzoeken
   $effect(() => {
-    fillMissingAreas(session.id);
+    fillMissingAreas(sessionId);
   });
 
   let queued = $derived(
     $utterances?.filter((u) => u.status === 'pending' || u.status === 'processing').length ?? 0,
   );
 
-  // Wacht er een uitspraak op bereik (ontwikkeloptie offlineWachtrij)? Dan
+  // Wacht er een uitspraak op bereik? Dan
   // geen foutmelding, maar een rustige regel: het is geen fout.
   let waitingSince = $derived(
     Math.min(
@@ -81,6 +86,19 @@
   let longWait = $derived(waiting && Date.now() - waitingSince >= LONG_WAIT_MS);
 
   let failed = $derived($utterances?.filter((u) => u.status === 'failed').length ?? 0);
+
+  /** "Probeer opnieuw" loopt: knop uit en het pictogram draait */
+  let retrying = $state(false);
+
+  async function tryAgain() {
+    retrying = true;
+    try {
+      // Even laten draaien, ook als het meteen weer mislukt: dan zie je dat er geprobeerd is
+      await Promise.all([retryNow(), new Promise((resolve) => setTimeout(resolve, 600))]);
+    } finally {
+      retrying = false;
+    }
+  }
 
   let utteranceById = $derived(new Map(($utterances ?? []).map((u) => [u.id, u])));
 
@@ -156,7 +174,10 @@
   function positionAge(obs: Observation): string | undefined {
     if (!obs.position) return undefined;
     const minutes = Math.floor((obs.observedAt - obs.position.fixedAt) / 60_000);
-    return minutes >= 1 ? `positie ${minutes} min oud` : undefined;
+    if (minutes >= 1) return `positie ${minutes} min oud`;
+    // De GPS had nog geen plek; deze kwam later (`positionLater`)
+    const later = Math.floor((obs.position.fixedAt - obs.observedAt) / 60_000);
+    return later >= 1 ? `positie ${later} min later` : undefined;
   }
 
   /**
@@ -204,11 +225,32 @@
 </script>
 
 {#if waiting}
-  <p class="queue waiting" role="status">
-    Geen bereik{longWait ? ', al meer dan 2 uur' : ''}: {queued === 1
-      ? '1 uitspraak wacht'
-      : `${queued} uitspraken wachten`}. Ze worden verwerkt zodra er verbinding is.
-  </p>
+  <div class="queue waiting">
+    <p role="status">
+      Geen bereik{longWait ? ', al meer dan 2 uur' : ''}: {queued === 1
+        ? '1 uitspraak wacht'
+        : `${queued} uitspraken wachten`}. Ze worden verwerkt zodra er verbinding is.
+    </p>
+    <button
+      class="retry"
+      class:spinning={retrying}
+      onclick={tryAgain}
+      disabled={retrying}
+      aria-label="Probeer opnieuw"
+      title="Probeer opnieuw"
+    >
+      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+        <path
+          d="M20 12a8 8 0 0 1-14 5.3M4 12a8 8 0 0 1 14-5.3M18 3v3.7h-3.7M6 21v-3.7h3.7"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </button>
+  </div>
 {:else if queued}
   <p class="queue">
     {queued === 1 ? '1 uitspraak' : `${queued} uitspraken`} in de wachtrij (zie Uitspraken)
@@ -447,9 +489,53 @@
   }
 
   .queue.waiting {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    padding-right: 0.3rem;
     color: var(--fg);
     background: var(--surface);
     border: 1px solid var(--border);
+  }
+
+  .queue.waiting p {
+    flex: 1;
+    margin: 0;
+  }
+
+  /* Rond knopje met twee pijlen in een cirkel, groot genoeg voor een handschoen */
+  .retry {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    color: var(--brand-strong);
+    background: none;
+    cursor: pointer;
+  }
+
+  .retry:active {
+    background: color-mix(in srgb, var(--brand) 12%, transparent);
+  }
+
+  .retry.spinning svg {
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .retry.spinning svg {
+      animation: none;
+    }
   }
 
   ul {

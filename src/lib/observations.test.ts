@@ -1,32 +1,50 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import { Blob as NodeBlob } from 'node:buffer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { FakeLockManager, HOUTDUIF, KEEP, REE, VINK, VOS, toolResponse } from '../test-helpers';
+import {
+  FakeLockManager,
+  HOUTDUIF,
+  KEEP,
+  REE,
+  STORINGEN,
+  VINK,
+  VOS,
+  opslagVol,
+  toolResponse,
+} from '../test-helpers';
+import { ApiError } from './api';
 import { db, storeAudio, type Observation, type PositionLookup, type Utterance } from './db';
 import { interpret } from './interpret';
+import { fillMissingAreas, nameFromSession } from './area';
 import { isAccidental, isBareNo } from './applyActions';
 import {
   HAND_ACCURACY,
+  changedFields,
   chooseCandidate,
   confirmObservation,
   copyObservation,
   editObservation,
   listObservations,
   placeByHand,
+  placeUnplaced,
   recordedPlace,
   setSkipExport,
 } from './observations';
+import { migrateAudio } from './audioMigration';
+import { positionLater } from './utterancePosition';
 import {
   STEAL_AFTER_MS,
-  migrateAudio,
-  onAudioLimit,
+  onDailyLimit,
   LONG_WAIT_MS,
   onLongWait,
+  onSaveFailed,
   processQueue,
   retry,
+  retryNow,
   stopWaiting,
   submitText,
 } from './queue';
+import { gps } from './location.svelte';
 import { setPreference } from './preferences';
 import { UNKNOWN_PLACE_ACCURACY } from './spokenPlace';
 import { distanceMeters } from './geo';
@@ -70,7 +88,11 @@ vi.mock('./location.svelte', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./location.svelte')>()),
   currentPosition: () => new Promise<PositionLookup>((resolve) => (gpsLookup.resolve = resolve)),
 }));
-vi.mock('./area', () => ({ attachArea: async () => false }));
+vi.mock('./area', () => ({
+  attachArea: async () => false,
+  fillMissingAreas: vi.fn(async () => {}),
+  nameFromSession: vi.fn(async () => {}),
+}));
 
 // Aanmelden als installatie: standaard het echte, per test na te bootsen
 const installer = vi.hoisted(() => ({
@@ -301,9 +323,36 @@ describe('plek met de hand in de review', () => {
     expect(saved).not.toHaveProperty('recordedPosition');
   });
 
-  it('Mijn plek nu: nauwkeurigheid van de meting, afgerond en niet beter dan met de hand', () => {
+  it('Huidige locatie: nauwkeurigheid van de meting, afgerond en niet beter dan met de hand', () => {
     expect(placeByHand({}, 0, 52.1, 5.1, 23.6).position?.accuracy).toBe(24);
     expect(placeByHand({}, 0, 52.1, 5.1, 3).position?.accuracy).toBe(HAND_ACCURACY);
+  });
+
+  it('Plek kiezen voor alle waarnemingen zonder plek: alleen die, gezegde plek vanaf daar', async () => {
+    await say('roepje vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    await say('houtduif', ['add_observation', { species_id: HOUTDUIF, count: 2 }]);
+    await say('keep', ['add_observation', { species_id: KEEP, count: 1 }]);
+    const [keep, duif, vink] = await listObservations(SESSION);
+    // Vink en houtduif zonder GPS (trektelling zonder fix), de houtduif "500 m zuid"
+    await db.observations.update(vink.id, { position: undefined });
+    await db.observations.update(duif.id, {
+      position: undefined,
+      spokenPlace: { text: '500 m zuid', distanceM: 500, direction: 'Z' },
+    });
+
+    const ids = await placeUnplaced(SESSION, 52.1, 5.1, 30);
+    expect(ids.sort()).toEqual([vink.id, duif.id].sort());
+
+    const placed = await db.observations.bulkGet([vink.id, duif.id, keep.id]);
+    expect(placed[0]?.position).toMatchObject({ lat: 52.1, lon: 5.1, accuracy: 30 });
+    expect(placed[0]?.recordedPosition).toBeNull();
+    // 500 m zuid van de gekozen plek
+    expect(placed[1]?.position?.lat).toBeCloseTo(52.1 - 500 / 111_000, 3);
+    expect(placed[1]?.placedByVoice).toBe(true);
+    // Had al een plek: blijft staan
+    expect(placed[2]?.position).toEqual(POSITION);
+    // Nog een keer: niets meer zonder plek
+    expect(await placeUnplaced(SESSION, 52.2, 5.2)).toEqual([]);
   });
 
   it('zonder GPS: terug betekent weer geen locatie', () => {
@@ -438,6 +487,82 @@ describe('plek uit de uitspraak', () => {
   });
 });
 
+describe('plek die later komt (GPS zonder fix)', () => {
+  const FIX = { lat: 52.0, lon: 5.9, accuracy: 7, fixedAt: Date.parse('2026-10-11T15:00:00') };
+  const none = { source: 'none' as const, waitMs: 10_000, error: 'Timeout expired' };
+
+  async function unplaced(minutesBefore: number, extra: Partial<Utterance> = {}) {
+    const id = crypto.randomUUID();
+    await db.utterances.add({
+      id,
+      sessionId: SESSION,
+      recordedAt: FIX.fixedAt - minutesBefore * 60_000,
+      transcript: 'vink',
+      status: 'done',
+      positionLookup: none,
+      ...extra,
+    });
+    await db.observations.add({
+      id: 'obs-' + id,
+      sessionId: SESSION,
+      utteranceId: id,
+      speciesId: VINK,
+      count: 1,
+      observedAt: FIX.fixedAt - minutesBefore * 60_000,
+      createdAt: 0,
+      uncertain: false,
+      status: 'draft',
+    });
+    return id;
+  }
+
+  afterEach(() => {
+    gps.latest = undefined;
+  });
+
+  it('eerdere uitspraken zonder plek krijgen de eerste meting alsnog', async () => {
+    const trektel = await unplaced(3, { trektel: true });
+    const walking = await unplaced(2);
+    const tooOld = await unplaced(20);
+    // Nog aan het zoeken: die krijgt zijn eigen meting
+    const searching = await unplaced(1, { positionLookup: undefined });
+    // Vorige sessie, vlak daarvoor gestopt: kan kilometers verderop zijn
+    const otherSession = await unplaced(4, { sessionId: 'vorige-sessie' });
+
+    await positionLater(FIX, SESSION);
+
+    const [t, w, old, busy, other] = await db.utterances.bulkGet([
+      trektel,
+      walking,
+      tooOld,
+      searching,
+      otherSession,
+    ]);
+    // Trektelling: je stond stil, de plek klopt
+    expect(t?.position).toEqual(FIX);
+    expect(t?.positionLookup).toMatchObject({ source: 'later', waitMs: 3 * 60_000 });
+    // Lopend: zo ver kun je in 2 minuten zijn (1,4 m/s)
+    expect(w?.position?.accuracy).toBe(7 + 168);
+    expect(old?.position).toBeUndefined();
+    expect(busy?.position).toBeUndefined();
+    expect(other?.position).toBeUndefined();
+    expect((await db.observations.get('obs-' + trektel))?.position).toEqual(FIX);
+  });
+
+  it('meting kwam net binnen terwijl het opvragen opgaf: meteen gebruikt', async () => {
+    model.respond = () => toolResponse(['add_observation', { species_id: VINK, count: 1 }]);
+    await submitText(SESSION, 'vink');
+    await vi.waitFor(async () => expect(await db.observations.count()).toBe(1));
+    gps.latest = { ...FIX, fixedAt: Date.now() + 1000 };
+    gpsLookup.resolve({ ...none });
+    await vi.waitFor(async () => {
+      const [u] = await db.utterances.toArray();
+      expect(u.positionLookup?.source).toBe('later');
+      expect((await listObservations(SESSION))[0].position).toMatchObject({ lat: FIX.lat });
+    });
+  });
+});
+
 describe('kopiëren in de review', () => {
   it('maakt een nieuwe waarneming met dezelfde tijd, plek, bron en velden', async () => {
     await say('vier wilde eenden en een winterkoning', [
@@ -507,6 +632,180 @@ describe('ongedaan maken', () => {
     await say('ongedaan maken', ['undo', {}]);
     await say('ongedaan maken', ['undo', {}]);
     expect(await db.observations.count()).toBe(0);
+  });
+});
+
+describe('rare aantallen en niets om te doen', () => {
+  it('"nog vijf eraf" bij drie: 1, maar onzeker met de reden', async () => {
+    await say('drie vinken', ['add_observation', { species_id: VINK, count: 3 }]);
+    const u = await say('nog vijf eraf', ['update_observation', { ref: 1, add_count: -5 }]);
+    const [obs] = await listObservations(SESSION);
+    expect(obs).toMatchObject({
+      count: 1,
+      uncertain: true,
+      uncertainReason: '3 − 5 kan niet: op 1 gezet',
+    });
+    expect(u.result).toBe('uncertain');
+  });
+
+  it('"nog twee eraf" bij vijf: gewoon drie, zeker', async () => {
+    await say('vijf vinken', ['add_observation', { species_id: VINK, count: 5 }]);
+    await say('twee eraf', ['update_observation', { ref: 1, add_count: -2 }]);
+    const [obs] = await listObservations(SESSION);
+    expect(obs).toMatchObject({ count: 3, uncertain: false });
+  });
+
+  it('ongedaan maken zonder iets om terug te draaien: niet begrepen', async () => {
+    const u = await say('ongedaan maken', ['undo', {}]);
+    expect(u.result).toBe('ignored');
+    expect(u.undid).toBeUndefined();
+  });
+
+  it('opnieuw doen zonder eerdere undo: niet begrepen', async () => {
+    await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    const u = await say('toch niet ongedaan maken', ['redo', {}]);
+    expect(u.result).toBe('ignored');
+    expect(await db.observations.count()).toBe(1);
+  });
+
+  it('"die laatste weg" in een lege sessie: niet begrepen', async () => {
+    const u = await say('die laatste weg', ['delete_observation', { ref: 1 }]);
+    expect(u.result).toBe('ignored');
+  });
+
+  it('een waarneming die intussen weg is aanpassen: niet begrepen', async () => {
+    await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    const [obs] = await listObservations(SESSION);
+    // Het model kreeg de vink nog in de context; daarna met de hand verwijderd
+    model.respond = () => toolResponse(['update_observation', { ref: 1, species_id: KEEP }]);
+    const id = await queue('nee, keep');
+    vi.mocked(interpret).mockImplementationOnce(async (_t, recent) => {
+      const response = model.respond(recent);
+      const { parseResponse } = await vi.importActual<typeof import('./interpret')>('./interpret');
+      const parsed = parseResponse(response, recent);
+      await db.observations.delete(obs.id);
+      return { ...parsed, response, context: '', contextIds: [], timing: { requestMs: 0 } };
+    });
+    await processQueue();
+    expect((await db.utterances.get(id))?.result).toBe('ignored');
+  });
+
+  it('een groot geschat aantal komt er gewoon in', async () => {
+    await say("zo'n tweeënhalfduizend kolganzen", [
+      'add_observation',
+      { species_id: VINK, count: 2500 },
+    ]);
+    const [obs] = await listObservations(SESSION);
+    expect(obs.count).toBe(2500);
+  });
+});
+
+describe('met de hand bewerken terwijl de stem corrigeert', () => {
+  it('Opslaan overschrijft een stemcorrectie niet, alleen wat je zelf aanpaste', async () => {
+    await say('twee vinken', ['add_observation', { species_id: VINK, count: 2 }]);
+    // Formulier open: een kopie van de waarneming
+    const [opened] = await listObservations(SESSION);
+    // Intussen met de stem: "nee, keep"
+    await say('nee, die laatste was een keep', [
+      'update_observation',
+      { ref: 1, species_id: KEEP },
+    ]);
+    // In het formulier alleen het aantal aangepast, dan Opslaan
+    await editObservation(
+      opened.id,
+      changedFields(opened, { speciesId: opened.speciesId, count: 3, remarks: undefined }),
+    );
+    const [obs] = await listObservations(SESSION);
+    expect(obs).toMatchObject({ speciesId: KEEP, count: 3, status: 'reviewed' });
+  });
+
+  it('met de stem verwijderd terwijl het formulier openstond: Opslaan zegt dat', async () => {
+    await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    const [opened] = await listObservations(SESSION);
+    await say('die laatste weg', ['delete_observation', { ref: 1 }]);
+    expect(await editObservation(opened.id, { count: 2 })).toBe(false);
+    // Niet stil teruggezet
+    expect(await db.observations.count()).toBe(0);
+  });
+
+  it('changedFields vergelijkt ook plekken en lijsten op inhoud', () => {
+    const position = { lat: 52, lon: 5, accuracy: 8, fixedAt: 0 };
+    const original: Observation = {
+      id: 'w',
+      sessionId: SESSION,
+      utteranceId: 'u',
+      speciesId: VINK,
+      count: 1,
+      observedAt: 0,
+      createdAt: 0,
+      uncertain: true,
+      candidates: [VINK, KEEP],
+      position,
+      status: 'draft',
+    };
+    expect(
+      changedFields(original, {
+        speciesId: VINK,
+        position: { ...position },
+        candidates: [VINK, KEEP],
+        uncertain: false,
+      }),
+    ).toEqual({ uncertain: false });
+  });
+});
+
+describe('telefoon vol', () => {
+  it('opslaan mislukt: geen fout naar boven, wel "mislukt" en het sessiescherm hoort het', async () => {
+    const vibrations: unknown[] = [];
+    vi.stubGlobal('navigator', {
+      ...navigator,
+      vibrate: (pattern: number[]) => (vibrations.push(pattern), true),
+    });
+    const spy = opslagVol(db.utterances);
+    const heard = vi.fn();
+    const off = onSaveFailed(heard);
+    try {
+      await expect(submitText(SESSION, 'roepje vink')).resolves.toBeUndefined();
+    } finally {
+      off();
+      spy.mockRestore();
+      vi.unstubAllGlobals();
+    }
+    expect(heard).toHaveBeenCalledWith(true);
+    expect(vibrations).toEqual([[120, 150, 120, 150, 120]]);
+    const [event] = (await db.events.toArray()).filter((e) => e.type === 'save_failed');
+    expect(event.data).toMatchObject({ full: true, trektel: false });
+    expect(await db.utterances.count()).toBe(0);
+  });
+
+  it('een andere fout bij het opslaan is niet "vol"', async () => {
+    const spy = vi.spyOn(db.utterances, 'add').mockRejectedValueOnce(new Error('kapot'));
+    const heard = vi.fn();
+    const off = onSaveFailed(heard);
+    try {
+      await submitText(SESSION, 'roepje vink');
+    } finally {
+      off();
+      spy.mockRestore();
+    }
+    expect(heard).toHaveBeenCalledWith(false);
+  });
+});
+
+describe('Stop terwijl de wachtrij nog bezig is', () => {
+  it('de laatste uitspraak telt mee voor de naam van de gestopte sessie', async () => {
+    await db.sessions.add({ id: SESSION, startedAt: clock, status: 'ended', endedAt: clock + 1 });
+    vi.mocked(nameFromSession).mockClear();
+    await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    expect(await db.observations.count()).toBe(1);
+    expect(nameFromSession).toHaveBeenCalledWith(SESSION);
+  });
+
+  it('een lopende sessie krijgt geen nieuwe naam per uitspraak', async () => {
+    await db.sessions.add({ id: SESSION, startedAt: clock, status: 'active' });
+    vi.mocked(nameFromSession).mockClear();
+    await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    expect(nameFromSession).not.toHaveBeenCalled();
   });
 });
 
@@ -734,6 +1033,7 @@ describe('netwerk weg', () => {
   });
 
   afterEach(() => {
+    stopWaiting();
     vi.unstubAllGlobals();
   });
 
@@ -765,30 +1065,32 @@ describe('netwerk weg', () => {
 
   const FAILED = [120, 150, 120, 150, 120];
 
-  it('weg tijdens het uploaden: opname blijft bewaard, drie korte trillen', async () => {
+  const WAITING = [450, 150, 120];
+
+  it('weg tijdens het uploaden: opname blijft bewaard en wacht op bereik', async () => {
     network(false);
     const id = await record();
     await processQueue();
     const u = await db.utterances.get(id);
-    expect(u?.status).toBe('failed');
+    expect(u).toMatchObject({ status: 'pending', waitingSince: expect.any(Number) });
     expect(u?.audio).toBeDefined();
     expect(u?.transcript).toBeUndefined();
-    expect(u?.error).toMatch(/^Spraakherkenning: /);
-    expect(vibrations).toEqual([FAILED]);
+    expect(u?.error).toBeUndefined();
+    expect(vibrations).toEqual([WAITING]);
     expect(interpret).not.toHaveBeenCalled();
   });
 
-  it('weg tussen verstaan en interpreteren: transcript blijft, opnieuw slaat het verstaan over', async () => {
+  it('fout van het model na het verstaan: transcript blijft, opnieuw slaat het verstaan over', async () => {
     network(true);
     model.respond = () => {
-      throw new Error('Geen internetverbinding');
+      throw new Error('Het model weigerde de uitspraak te verwerken');
     };
     const id = await record();
     await processQueue();
     expect(await db.utterances.get(id)).toMatchObject({
       status: 'failed',
       transcript: 'Roepje vink.',
-      error: 'Geen internetverbinding',
+      error: 'Het model weigerde de uitspraak te verwerken',
     });
     expect(vibrations).toEqual([FAILED]);
 
@@ -810,11 +1112,11 @@ describe('netwerk weg', () => {
       ),
     );
     const reached = vi.fn();
-    const off = onAudioLimit(reached);
+    const off = onDailyLimit(reached);
     const id = await record();
     await processQueue();
     off();
-    expect(reached).toHaveBeenCalledTimes(1);
+    expect(reached).toHaveBeenCalledExactlyOnceWith('audio');
     const u = await db.utterances.get(id);
     expect(u).toMatchObject({ status: 'failed', error: expect.stringMatching(/Daglimiet/) });
     expect(u?.audio).toBeDefined();
@@ -827,11 +1129,25 @@ describe('netwerk weg', () => {
       vi.fn(async () => Response.json({ error: 'Te veel verzoeken' }, { status: 429 })),
     );
     const reached = vi.fn();
-    const off = onAudioLimit(reached);
+    const off = onDailyLimit(reached);
     await record();
     await processQueue();
     off();
     expect(reached).not.toHaveBeenCalled();
+  });
+
+  it('plafond van het model per dag: het sessiescherm hoort het ook', async () => {
+    network(true);
+    model.respond = () => {
+      throw new ApiError('Daglimiet bereikt', 429, 'message_limit');
+    };
+    const reached = vi.fn();
+    const off = onDailyLimit(reached);
+    const id = await record();
+    await processQueue();
+    off();
+    expect(reached).toHaveBeenCalledExactlyOnceWith('messages');
+    expect((await db.utterances.get(id))?.status).toBe('failed');
   });
 
   it('token werkt niet meer (401): opnieuw aanmelden en het verzoek herhalen', async () => {
@@ -881,7 +1197,10 @@ describe('netwerk weg', () => {
   });
 
   it('een mislukte uitspraak houdt de rest van de wachtrij niet op', async () => {
-    network(false);
+    network(true);
+    model.respond = () => {
+      throw new Error('Het model weigerde de uitspraak te verwerken');
+    };
     const first = await record();
     const second = await record();
     await processQueue();
@@ -889,13 +1208,31 @@ describe('netwerk weg', () => {
     expect((await db.utterances.get(second))?.status).toBe('failed');
     expect(vibrations).toEqual([FAILED, FAILED]);
   });
-  describe('wachten op bereik (ontwikkeloptie offlineWachtrij)', () => {
-    const OPTION = 'fluistervink.dev.offlineWachtrij';
+  it.each(Object.entries(STORINGEN))(
+    'storing "%s": de opname gaat niet verloren',
+    async (_naam, { fetch, uitkomst }) => {
+      vi.stubGlobal('fetch', fetch());
+      const id = await record();
+      await processQueue();
+      stopWaiting();
+      const u = await db.utterances.get(id);
+      expect(u?.audio).toBeDefined();
+      expect(u?.transcript).toBeUndefined();
+      expect(interpret).not.toHaveBeenCalled();
+      expect(await db.observations.count()).toBe(0);
+      if (uitkomst === 'wacht') {
+        expect(u).toMatchObject({ status: 'pending', waitingSince: expect.any(Number) });
+      } else {
+        expect(u?.status).toBe('failed');
+      }
+    },
+  );
+
+  describe('wachten op bereik', () => {
     const events = async (type: string) =>
       (await db.events.toArray()).filter((e) => e.type === type);
 
     beforeEach(() => {
-      localStorage.setItem(OPTION, '1');
       vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       model.respond = () => toolResponse(['add_observation', { species_id: VINK, count: 1 }]);
     });
@@ -903,11 +1240,9 @@ describe('netwerk weg', () => {
     afterEach(() => {
       stopWaiting();
       vi.useRealTimers();
-      localStorage.removeItem(OPTION);
       vi.mocked(interpret).mockClear();
     });
 
-    const WAITING = [450, 150, 120];
     const SAVED = [120];
 
     it('zonder bereik: niets mislukt, de wachtrij stopt bij de eerste', async () => {
@@ -947,6 +1282,34 @@ describe('netwerk weg', () => {
       expect(vibrations).toEqual([WAITING, SAVED, SAVED]);
     });
 
+    it('wifi met een inlogpagina (HTML met status 200 of 511): wachten, niet verwerken', async () => {
+      const portal = '<!doctype html><title>Log in op de wifi</title>';
+      for (const status of [200, 511]) {
+        vi.stubGlobal(
+          'fetch',
+          vi.fn(async () => {
+            transcribeCalls++;
+            return new Response(portal, { status, headers: { 'Content-Type': 'text/html' } });
+          }),
+        );
+        const id = await record();
+        await processQueue();
+        const u = await db.utterances.get(id);
+        expect(u).toMatchObject({ status: 'pending', waitingSince: expect.any(Number) });
+        expect(u?.transcript).toBeUndefined();
+        expect(u?.error).toBeUndefined();
+        expect(interpret).not.toHaveBeenCalled();
+        stopWaiting();
+        await db.utterances.delete(id);
+      }
+      expect(vibrations).toEqual([WAITING, WAITING]);
+      // Ingelogd op de wifi: gewoon verwerken
+      const id = await record();
+      network(true);
+      await processQueue();
+      expect((await db.utterances.get(id))?.status).toBe('done');
+    });
+
     it('langer dan een minuut gewacht: één tril als alles binnen is', async () => {
       network(false);
       const first = await record();
@@ -973,6 +1336,28 @@ describe('netwerk weg', () => {
       expect(await events('attempt_failed')).toEqual([]);
     });
 
+    it('Probeer opnieuw: verwerkt meteen als er weer bereik is', async () => {
+      network(false);
+      const id = await record();
+      await processQueue();
+      expect((await db.utterances.get(id))?.status).toBe('pending');
+      network(true);
+      await retryNow();
+      expect((await db.utterances.get(id))?.status).toBe('done');
+      expect(await events('queue_retry_now')).toHaveLength(1);
+    });
+
+    it('Probeer opnieuw zonder bereik: blijft wachten, niets mislukt', async () => {
+      network(false);
+      const id = await record();
+      await processQueue();
+      await retryNow();
+      const u = await db.utterances.get(id);
+      expect(u?.status).toBe('pending');
+      expect(u?.error).toBeUndefined();
+      expect(transcribeCalls).toBe(2);
+    });
+
     it('weer online: verwerkt alles op volgorde en logt queue_resumed', async () => {
       const seen: string[] = [];
       model.respond = (recent) => {
@@ -994,6 +1379,8 @@ describe('netwerk weg', () => {
       const [resumed] = await events('queue_resumed');
       expect(resumed?.data).toMatchObject({ count: 2, waitedMs: expect.any(Number) });
       expect(resumed?.utteranceId).toBe(first);
+      // Gebieden en de naam van de sessie alsnog opzoeken, meteen (niet de pauze na een mislukte poging)
+      expect(fillMissingAreas).toHaveBeenCalledWith(SESSION, { force: true });
     });
 
     it('probeert het vanzelf opnieuw na 15 s, 30 s, 1 min en daarna elke 2 min', async () => {

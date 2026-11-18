@@ -9,14 +9,21 @@
   import { recordFix } from './effort';
   import { watchKeyboard } from './keyboard';
   import { currentPosition, gps, startTracking, stopTracking } from './location.svelte';
-  import { onAudioLimit, onLongWait, submitRecording, submitText } from './queue';
-  import { recorder, startRecording, stopRecording } from './recorder.svelte';
+  import { onDailyLimit, onLongWait, onSaveFailed, submitRecording, submitText } from './queue';
+  import {
+    onRecordingInterrupted,
+    recorder,
+    startRecording,
+    stopRecording,
+  } from './recorder.svelte';
   import { screenOff, screenOffEnabled, startScreenOff, stopScreenOff } from './screenOff.svelte';
   import SessionLog from './SessionLog.svelte';
+  import { positionLater } from './utterancePosition';
   import { syncSessionService } from './sessionService';
   import { createTalkButton } from './talkButton';
   import { trektelEnabled } from './trektel';
   import { startTrektel, stopTrektel, trektel, trektelSupported } from './trektelRecorder.svelte';
+  import { microphoneLine, refreshMicrophones } from './microphoneStatus.svelte';
 
   let { session }: { session: Session } = $props();
 
@@ -89,6 +96,20 @@
     return () => {
       if (Object.keys(fixCounts).length) logEvent('distance_fixes', fixCounts, { sessionId });
     };
+  });
+
+  // Eerste meting (of weer een na zoeken): uitspraken van daarvoor zonder
+  // plek krijgen hem alsnog (vliegtuigmodus, binnen: de eerste fix kan
+  // minuten duren)
+  let hadFix = false;
+  $effect(() => {
+    const fix = gps.status === 'ok' ? gps.latest : undefined;
+    if (fix && !hadFix)
+      positionLater(
+        $state.snapshot(fix),
+        untrack(() => session.id),
+      );
+    hadFix = fix !== undefined;
   });
 
   // Voorlopige naam van de sessie uit de startpositie. Niet bij voortzetten.
@@ -208,8 +229,18 @@
         { sessionId: session.id },
       );
     }
+    // Een vorige melding "niet bewaard" geldt niet meer; mislukt het weer, dan komt hij terug
+    saveError = undefined;
     await submitRecording(session.id, recording, lookup);
   }
+
+  // Opname vanzelf gestopt (gebeld, oortjes weg): bewaren wat er was
+  $effect(() =>
+    onRecordingInterrupted(() => {
+      logEvent('recording_interrupted', undefined, { sessionId: session.id });
+      void finishRecording();
+    }),
+  );
 
   // Opnemen met het scherm uit (ontwikkeloptie, screenOff.svelte.ts): de
   // volumeknop met het scherm uit neemt op in de service. Niet tijdens een
@@ -243,6 +274,22 @@
     };
   });
 
+  // Welke microfoon luistert: alleen een regel als er oortjes met microfoon
+  // zijn (feedback 17 nov). Opnieuw kijken als er iets verbonden wordt.
+  $effect(() => {
+    void refreshMicrophones();
+    const media = navigator.mediaDevices;
+    const onChange = () => void refreshMicrophones();
+    media?.addEventListener('devicechange', onChange);
+    // De Android-app hoort Bluetooth niet altijd via devicechange
+    const timer = setInterval(onChange, 30_000);
+    return () => {
+      media?.removeEventListener('devicechange', onChange);
+      clearInterval(timer);
+    };
+  });
+  let micLine = $derived(microphoneLine());
+
   // Trektelmodus (docs/plan-trektelmodus.md): alleen als hij bij Instellingen aanstaat
   const trektelOn = trektelEnabled() && trektelSupported();
 
@@ -261,19 +308,39 @@
     if (started) vibrate('recording');
   }
 
-  // Plafond per dag bereikt (5 uur spraak, proxy): de trektelling stoppen in
+  // Plafond per dag bereikt (5 uur spraak of 1500 keer het model, proxy): de trektelling stoppen in
   // plaats van stukken op te nemen die vandaag niet meer verwerkt worden
   $effect(() =>
-    onAudioLimit(() => {
+    onDailyLimit((limit) => {
       if (trektel.status === 'idle') return;
       stopTrektel('limit');
-      trektel.error =
-        'Trektelling gestopt: vandaag is er al 5 uur ingesproken, het maximum per dag. De stukken blijven bewaard; tik morgen op Opnieuw om ze te laten verwerken.';
+      const why =
+        limit === 'audio'
+          ? 'vandaag is er al 5 uur ingesproken, het maximum per dag'
+          : 'vandaag zijn er al heel veel uitspraken verwerkt, het maximum per dag';
+      trektel.error = `Trektelling gestopt: ${why}. De stukken blijven bewaard; tik morgen op Opnieuw om ze te laten verwerken.`;
+    }),
+  );
+
+  // Uitspraak niet bewaard, meestal omdat de telefoon vol is: zeggen, en een
+  // trektelling stoppen (elk volgend stuk zou ook verloren gaan)
+  let saveError = $state<string>();
+  $effect(() =>
+    onSaveFailed((full) => {
+      const why = full
+        ? 'De telefoon is vol: de laatste opname kon niet bewaard worden. Maak ruimte vrij (bijvoorbeeld foto’s of oude opnames wissen) en probeer het opnieuw.'
+        : 'De laatste opname kon niet bewaard worden. Probeer het opnieuw.';
+      if (trektel.status === 'idle') {
+        saveError = why;
+        return;
+      }
+      stopTrektel('storage');
+      trektel.error = `Trektelling gestopt. ${why}`;
     }),
   );
 
   // Trektelling zonder bereik: al 2 uur wachten de stukken (offline wachtrij,
-  // ontwikkeloptie). Twee lange trillen; de regel boven de lijst zegt het
+  // docs/plan-offline.md). Twee lange trillen; de regel boven de lijst zegt het
   // ook. De telling gaat gewoon door.
   $effect(() =>
     onLongWait(() => {
@@ -348,6 +415,8 @@
     <span class="dot"></span>
     {#if gps.status === 'ok' && gps.latest}
       Locatie ±{Math.round(gps.latest.accuracy)} m
+    {:else if gps.status === 'searching' && gps.slow}
+      Nog geen locatie, inspreken kan gewoon
     {:else}
       {gpsLabels[gps.status]}
     {/if}
@@ -422,6 +491,9 @@
         <span class="sent">{trektel.sent} {trektel.sent === 1 ? 'stuk' : 'stukken'} verstuurd</span>
       {/if}
     </p>
+    {#if micLine}
+      <p class="mic source">{micLine}</p>
+    {/if}
   {:else}
     {#if trektelOn && trektel.error}
       <p class="mic denied">{trektel.error}</p>
@@ -452,8 +524,12 @@
       </svg>
       <span>{talkLabel}</span>
     </button>
-    {#if micMessage}
+    {#if saveError}
+      <p class="mic denied">{saveError}</p>
+    {:else if micMessage}
       <p class="mic denied">{micMessage}</p>
+    {:else if micLine}
+      <p class="mic source">{micLine}</p>
     {/if}
   {/if}
 </div>

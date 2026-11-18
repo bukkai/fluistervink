@@ -159,3 +159,15 @@ export function setTrektelEnabled(on: boolean): void {
   if (on) localStorage.setItem(SETTING_KEY, '1');
   else localStorage.removeItem(SETTING_KEY);
 }
+
+/**
+ * Leidt deze link weg van het hoofdscherm? Daar loopt de trektelling; op elk
+ * ander scherm stopt hij (ActiveSession ruimt de microfoon op). Alleen eigen
+ * adressen (#…); een lege hash of "#/" is het hoofdscherm zelf.
+ */
+export function leavesSessionScreen(href: string | null): boolean {
+  if (!href?.startsWith('#')) return false;
+  return href.replace(/^#\/?/, '') !== '';
+}
+
+export const LEAVE_TREKTEL_TEXT = 'Op een ander scherm stopt de trektelling. Toch weggaan?';

@@ -10,14 +10,25 @@ import { logEvent } from './log';
 const FRESH_MS = 15_000;
 /** Zo lang wachten we hooguit op een verse positie. */
 const MAX_WAIT_MS = 10_000;
+/**
+ * Na zo lang zoeken zonder plek zegt het sessiescherm dat inspreken gewoon
+ * kan. Zonder bereik (vliegtuigmodus, binnen) duurt de eerste plek soms
+ * minuten (17 nov: ruim 3 minuten), en "Locatie zoeken…" lijkt dan te hangen.
+ */
+export const SLOW_MS = 30_000;
+/** "Huidige locatie" op het kaartje geeft het na zo lang op. */
+export const HERE_TIMEOUT_MS = 10_000;
 
 /** Toestand voor de interface; Svelte werkt de weergave automatisch bij. */
 export const gps = $state<{
   status: 'off' | 'searching' | 'ok' | 'denied' | 'unavailable';
   latest?: Position;
+  /** Al langer dan SLOW_MS aan het zoeken, nog nooit een plek gehad */
+  slow?: boolean;
 }>({ status: 'off' });
 
 let watchId: number | undefined;
+let slowTimer: ReturnType<typeof setTimeout> | undefined;
 
 export function startTracking(): void {
   if (watchId !== undefined) return;
@@ -27,9 +38,15 @@ export function startTracking(): void {
   }
   gps.status = 'searching';
   const startedAt = Date.now();
+  slowTimer = setTimeout(() => {
+    if (gps.status !== 'searching' || gps.latest) return;
+    gps.slow = true;
+    logEvent('gps_slow', { afterMs: Date.now() - startedAt, online: navigator.onLine });
+  }, SLOW_MS);
   watchId = navigator.geolocation.watchPosition(
     (fix) => {
       gps.latest = toPosition(fix);
+      gps.slow = false;
       if (gps.status !== 'ok') {
         // Hoe lang het duurt voor er een positie is, en hoe nauwkeurig die is
         logEvent('gps_fix', { afterMs: Date.now() - startedAt, accuracy: fix.coords.accuracy });
@@ -49,8 +66,11 @@ export function startTracking(): void {
 export function stopTracking(): void {
   if (watchId !== undefined) navigator.geolocation.clearWatch(watchId);
   watchId = undefined;
+  clearTimeout(slowTimer);
+  slowTimer = undefined;
   gps.status = 'off';
   gps.latest = undefined;
+  gps.slow = false;
 }
 
 /**
@@ -91,10 +111,13 @@ export async function currentPosition(): Promise<PositionLookup> {
 }
 
 /**
- * Eén losse meting, buiten een sessie: de knop "Mijn plek nu" op het kaartje
+ * Eén losse meting, buiten een sessie: de knop "Huidige locatie" op het kaartje
  * van Locatie aanpassen. Geeft bij een fout een zin voor op het scherm.
  */
 export function positionNow(): Promise<Position> {
+  // Loopt er een sessie, dan is de GPS al warm: een verse plek meteen geven
+  if (gps.latest && Date.now() - gps.latest.fixedAt <= FRESH_MS)
+    return Promise.resolve($state.snapshot(gps.latest));
   return new Promise((resolve, reject) => {
     if (!('geolocation' in navigator)) {
       reject(new Error('Deze telefoon of browser geeft geen locatie.'));
@@ -103,18 +126,26 @@ export function positionNow(): Promise<Position> {
     navigator.geolocation.getCurrentPosition(
       (fix) => resolve(toPosition(fix)),
       (error) => {
-        logEvent('gps_error', { code: error.code, message: error.message, by: 'here' });
-        reject(
-          new Error(
-            error.code === error.PERMISSION_DENIED
-              ? 'De app mag je locatie niet gebruiken. Zet dat aan bij de instellingen van je telefoon.'
-              : 'Je plek is niet gevonden. Probeer het buiten nog eens, of tik op de kaart.',
-          ),
-        );
+        logEvent('gps_error', {
+          code: error.code,
+          message: error.message,
+          by: 'here',
+          online: navigator.onLine,
+        });
+        reject(new Error(hereMessage(error.code === error.PERMISSION_DENIED)));
       },
-      { enableHighAccuracy: true, maximumAge: FRESH_MS, timeout: 20_000 },
+      { enableHighAccuracy: true, maximumAge: FRESH_MS, timeout: HERE_TIMEOUT_MS },
     );
   });
+}
+
+/** Zin op het scherm als "Huidige locatie" niet lukt. */
+export function hereMessage(denied: boolean, online = navigator.onLine): string {
+  if (denied)
+    return 'De app mag je locatie niet gebruiken. Zet dat aan bij de instellingen van je telefoon.';
+  return online
+    ? 'Je plek is niet gevonden. Probeer het buiten nog eens, of tik op de kaart.'
+    : 'Je plek is niet gevonden: zonder bereik doet de GPS er soms minuten over. Tik op de kaart, of probeer het later nog eens.';
 }
 
 function toPosition(fix: GeolocationPosition): Position {

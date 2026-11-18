@@ -3,10 +3,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // Microfoon, geluidsmeter en opname nagebootst: het gaat hier om wanneer de
 // microfoon aan en uit gaat, niet om het knippen (dat test trektel.test.ts).
 vi.mock('./log', () => ({ logEvent: vi.fn() }));
-vi.mock('./microphone', () => ({ microphoneConstraints: async () => true }));
+vi.mock('./microphone', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./microphone')>()),
+  microphoneConstraints: async () => true,
+}));
 
 import { TREKTEL_PAUSE_MAX_MS } from './trektel';
-import { startTrektel, stopTrektel, trektel, type TrektelHandlers } from './trektelRecorder.svelte';
+import {
+  TRACK_RETRY_MS,
+  startTrektel,
+  stopTrektel,
+  trektel,
+  type TrektelHandlers,
+} from './trektelRecorder.svelte';
 
 let hidden = false;
 let micOn = 0;
@@ -14,13 +23,18 @@ let micOn = 0;
 class FakeRecorder {
   static isTypeSupported = () => true;
   mimeType = 'audio/webm';
+  state = 'recording';
   ondataavailable?: (event: { data: Blob }) => void;
   onstop?: () => void;
   start() {}
   stop() {
+    this.state = 'inactive';
     this.onstop?.();
   }
 }
+
+/** Het spoor van de laatst geopende microfoon, om het te laten ophouden */
+let track: EventTarget & { stop: () => void };
 
 class FakeAudioContext {
   createAnalyser() {
@@ -61,7 +75,11 @@ describe('trektelling naar de achtergrond', () => {
       value: {
         getUserMedia: async () => {
           micOn++;
-          return { getTracks: () => [{ stop: () => micOn-- }] };
+          track = Object.assign(new EventTarget(), {
+            stop: () => micOn--,
+            getSettings: () => ({}),
+          });
+          return { getTracks: () => [track], getAudioTracks: () => [track] };
         },
       },
     });
@@ -145,5 +163,102 @@ describe('trektelling naar de achtergrond', () => {
     await vi.advanceTimersByTimeAsync(0);
     expect(trektel.status).toBe('paused');
     expect(micOn).toBe(0);
+  });
+
+  it('microfoon gaat de eerste keer niet aan (net toestemming gegeven): nog eens proberen', async () => {
+    const getUserMedia = navigator.mediaDevices.getUserMedia;
+    let calls = 0;
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      value: {
+        getUserMedia: async (constraints: MediaStreamConstraints) => {
+          if (++calls === 1)
+            throw new DOMException('Could not start audio source', 'NotReadableError');
+          return getUserMedia(constraints);
+        },
+      },
+    });
+    const starting = startTrektel(handlers());
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(await starting).toBe(true);
+    expect(calls).toBe(2);
+    expect(trektel.status).toBe('running');
+    expect(trektel.error).toBeUndefined();
+  });
+});
+
+describe('microfoonspoor valt weg tijdens de trektelling', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    hidden = false;
+    micOn = 0;
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden });
+    vi.stubGlobal('MediaRecorder', FakeRecorder);
+    vi.stubGlobal('AudioContext', FakeAudioContext);
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      value: {
+        getUserMedia: async () => {
+          micOn++;
+          track = Object.assign(new EventTarget(), {
+            stop: () => micOn--,
+            getSettings: () => ({}),
+          });
+          return { getTracks: () => [track], getAudioTracks: () => [track] };
+        },
+      },
+    });
+  });
+
+  afterEach(() => {
+    stopTrektel();
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('pauzeert en zet de microfoon opnieuw aan, op het scherm', async () => {
+    const h = handlers({ onPaused: vi.fn(), onResumed: vi.fn() });
+    await startTrektel(h);
+    const first = track;
+    first.dispatchEvent(new Event('ended'));
+    expect(trektel.status).toBe('paused');
+    expect(h.onPaused).toHaveBeenCalledOnce();
+
+    await vi.advanceTimersByTimeAsync(TRACK_RETRY_MS);
+    expect(trektel.status).toBe('running');
+    expect(track).not.toBe(first);
+    expect(micOn).toBe(1);
+    expect(h.onResumed).toHaveBeenCalledOnce();
+  });
+
+  it('gaat de microfoon niet meer aan, dan stopt de telling', async () => {
+    const h = handlers();
+    await startTrektel(h);
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      value: {
+        getUserMedia: async () => {
+          throw new DOMException('Permission denied', 'NotAllowedError');
+        },
+      },
+    });
+    track.dispatchEvent(new Event('ended'));
+    await vi.advanceTimersByTimeAsync(TRACK_RETRY_MS);
+    expect(trektel.status).toBe('idle');
+    expect(h.onStopped).toHaveBeenCalledWith('mic');
+    // Niet stil: het scherm zegt waarom
+    expect(trektel.error).toMatch(/microfoon/);
+  });
+
+  it('een spoor dat de app zelf uitzet, telt niet als weggevallen', async () => {
+    const h = handlers({ onPaused: vi.fn() });
+    await startTrektel(h);
+    const old = track;
+    setHidden(true);
+    setHidden(false);
+    await vi.advanceTimersByTimeAsync(0);
+    old.dispatchEvent(new Event('ended'));
+    expect(trektel.status).toBe('running');
+    expect(h.onPaused).toHaveBeenCalledOnce();
   });
 });

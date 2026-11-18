@@ -1,5 +1,5 @@
 import { db, type DeletedObservation, type Observation, type Utterance } from './db';
-import type { Place } from './spokenPlace';
+import { placeFromSpeech, type Place } from './spokenPlace';
 import { convertCodes, getSpecies } from './vocab';
 
 // Waarnemingen en uitspraken ophalen, en bewerken met de hand (review). De
@@ -25,18 +25,38 @@ export function spokenAt(utterance: Utterance): number {
 
 /**
  * Handmatige correctie in de review. De waarneming geldt daarna als
- * nagelopen; met de stem kan hij nog steeds aangepast worden.
+ * nagelopen; met de stem kan hij nog steeds aangepast worden. False als hij
+ * er niet meer is (intussen met de stem verwijderd terwijl het formulier
+ * openstond).
  */
-export async function editObservation(id: string, patch: Partial<Observation>): Promise<void> {
-  await db.transaction('rw', db.observations, async () => {
+export async function editObservation(id: string, patch: Partial<Observation>): Promise<boolean> {
+  return db.transaction('rw', db.observations, async () => {
     const current = await db.observations.get(id);
+    if (!current) return false;
     await db.observations.update(id, {
       ...patch,
-      ...(current && codesForNewSpecies(current, patch)),
+      ...codesForNewSpecies(current, patch),
       editedAt: Date.now(),
       status: 'reviewed',
     });
+    return true;
   });
+}
+
+/**
+ * Alleen de velden die in het formulier echt anders zijn dan bij het openen.
+ * Zo overschrijft Opslaan geen correctie met de stem die binnenkwam terwijl
+ * het formulier openstond ("nee, keep" terwijl je het aantal aanpaste): wat
+ * je zelf veranderde wint, de rest blijft zoals de stem het zette.
+ */
+export function changedFields(
+  original: Observation,
+  form: Partial<Observation>,
+): Partial<Observation> {
+  const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+  return Object.fromEntries(
+    Object.entries(form).filter(([key, value]) => !same(value, original[key as keyof Observation])),
+  ) as Partial<Observation>;
 }
 
 /**
@@ -70,7 +90,7 @@ export type { Place };
  * Plek met de hand gezet (tikken of slepen op de kaart). De GPS-positie
  * blijft bewaard in `recordedPosition`, ook als de plek vaker verzet wordt.
  * Als meettijd de tijd van de waarneming, zodat er geen "positie oud" staat.
- * Met "Mijn plek nu" op het kaartje de nauwkeurigheid van die GPS-meting
+ * Met "Huidige locatie" op het kaartje de nauwkeurigheid van die GPS-meting
  * (afgerond, niet beter dan HAND_ACCURACY).
  */
 export function placeByHand(
@@ -93,6 +113,41 @@ export function placeByHand(
         ? current.recordedPosition
         : (current.position ?? null),
   };
+}
+
+/**
+ * Alle waarnemingen van een sessie zonder plek in één keer op dezelfde plek
+ * (bv. een trektelling zonder GPS-fix). De gekozen plek geldt als waar de
+ * gebruiker stond: een gezegde plek ("500 m zuid") wordt daarvandaan
+ * uitgerekend, zoals bij een GPS-positie die later binnenkomt; de rest krijgt
+ * de plek zoals met de hand gezet. Geeft de id's van de verzette waarnemingen.
+ */
+export async function placeUnplaced(
+  sessionId: string,
+  lat: number,
+  lon: number,
+  accuracy = HAND_ACCURACY,
+): Promise<string[]> {
+  const ids: string[] = [];
+  await db.observations
+    .where('sessionId')
+    .equals(sessionId)
+    .filter((obs) => !obs.position)
+    .modify((obs) => {
+      ids.push(obs.id);
+      if (obs.spokenPlace) {
+        const stood = {
+          lat,
+          lon,
+          accuracy: Math.max(HAND_ACCURACY, Math.round(accuracy)),
+          fixedAt: obs.observedAt,
+        };
+        Object.assign(obs, placeFromSpeech(stood, obs.spokenPlace));
+      } else {
+        Object.assign(obs, placeByHand(obs, obs.observedAt, lat, lon, accuracy));
+      }
+    });
+  return ids;
 }
 
 /** Terug naar de plek van de GPS ("Terug naar de opgenomen plek") */

@@ -33,14 +33,61 @@ export async function attachArea(utteranceId: string, position: Position): Promi
   return true;
 }
 
+/**
+ * Gebied bij waarnemingen die met de hand een plek kregen ("Plek kiezen" voor
+ * alle waarnemingen zonder plek): één keer opzoeken, daarna de sessienaam
+ * opnieuw bepalen. Geeft false als het opzoeken mislukte (geen verbinding).
+ */
+export async function attachAreaToObservations(
+  sessionId: string,
+  ids: string[],
+  position: Pick<Position, 'lat' | 'lon'>,
+): Promise<boolean> {
+  if (!ids.length) return true;
+  let area;
+  try {
+    area = await fetchArea(position.lat, position.lon);
+  } catch (error) {
+    logEvent('area_error', { message: (error as Error).message }, { sessionId });
+    return false;
+  }
+  await db.observations
+    .where('id')
+    .anyOf(ids)
+    .filter((obs) => obs.area === undefined)
+    .modify({ area });
+  // Een met de hand gegeven naam blijft staan (setPlace)
+  const session = await db.sessions.get(sessionId);
+  if (session?.status === 'ended') await nameFromSession(sessionId);
+  else if (area) await setPlace(sessionId, area, 'start');
+  return true;
+}
+
 let filling = false;
+
+/** Na een mislukte poging (geen verbinding) zo lang niet vanzelf opnieuw. */
+export const AREA_RETRY_MS = 60_000;
+let failedAt = -Infinity;
+/** Sessies waarvoor de wachtrij opzoeken vroeg terwijl er al een liep */
+const forcedLater = new Set<string>();
 
 /**
  * Zoekt alsnog de gebieden op die nog ontbreken, bv. na een uitspraak zonder
- * verbinding of bij sessies van vóór deze functie. Eén voor één.
+ * verbinding of bij sessies van vóór deze functie. Eén voor één. Mislukte de
+ * vorige poging korter dan `AREA_RETRY_MS` geleden, dan niets, tenzij `force`
+ * (de wachtrij weet dat er weer verbinding is): zonder bereik zou het scherm
+ * het anders bij elke wijziging aan de sessie opnieuw proberen.
  */
-export async function fillMissingAreas(sessionId: string): Promise<void> {
-  if (filling) return;
+export async function fillMissingAreas(
+  sessionId: string,
+  { force = false, now = Date.now() }: { force?: boolean; now?: number } = {},
+): Promise<void> {
+  if (filling) {
+    // De wachtrij heeft net weer verbinding: niet laten vallen, maar straks doen
+    if (force) forcedLater.add(sessionId);
+    return;
+  }
+  if (!force && now - failedAt < AREA_RETRY_MS) return;
   filling = true;
   try {
     const missing = await db.utterances
@@ -50,13 +97,20 @@ export async function fillMissingAreas(sessionId: string): Promise<void> {
       .toArray();
     for (const u of missing) {
       // Mislukt er één (geen verbinding), dan de rest ook; volgende keer verder
-      if (!(await attachArea(u.id, u.position!))) break;
+      if (!(await attachArea(u.id, u.position!))) {
+        failedAt = now;
+        break;
+      }
     }
     // Bv. gestopt zonder verbinding, of een sessie van vóór deze functie
     const session = await db.sessions.get(sessionId);
     if (session?.status === 'ended') await nameFromSession(sessionId);
   } finally {
     filling = false;
+  }
+  for (const next of forcedLater) {
+    forcedLater.delete(next);
+    await fillMissingAreas(next, { force: true });
   }
 }
 

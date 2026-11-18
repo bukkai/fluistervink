@@ -60,6 +60,10 @@
     <!-- Inspreken (getUserMedia in de WebView) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <!-- Microfoon van Bluetooth-oortjes (MicrofoonPlugin, proef): zonder deze
+         toestemming toont de WebView hem niet. Alleen gevraagd als je de proef aanzet. -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <!-- Tijd en plaats van een waarneming -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />

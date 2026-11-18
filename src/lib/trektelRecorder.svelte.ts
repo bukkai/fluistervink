@@ -6,7 +6,8 @@
 
 import type { PositionLookup } from './db';
 import { logEvent } from './log';
-import { microphoneConstraints } from './microphone';
+import { openMicrophone } from './microphone';
+import { noteMicrophone } from './microphoneStatus.svelte';
 import { AUDIO_BITS_PER_SECOND, MIME_TYPES, type Recording } from './recorder.svelte';
 import {
   createChunker,
@@ -18,7 +19,7 @@ import {
 } from './trektel';
 
 /** `limit`: de proxy verwerkt vandaag niets meer (plafond per dag) */
-type StopReason = 'max' | 'hidden' | 'limit';
+type StopReason = 'max' | 'hidden' | 'limit' | 'storage' | 'mic';
 
 export interface TrektelHandlers {
   /** Bij het begin van elk stuk: de positie van dat moment opvragen. */
@@ -102,7 +103,7 @@ function startChunk(): Chunk {
 
 /** Stopt een stuk; verstuurt het als er spraak in zat. */
 function endChunk(chunk: Chunk, cut: Cut) {
-  chunk.recorder.onstop = () => {
+  const send = () => {
     const audio = new Blob(chunk.parts, { type: chunk.recorder.mimeType });
     if (cut.hasSpeech && audio.size) {
       trektel.sent++;
@@ -116,7 +117,33 @@ function endChunk(chunk: Chunk, cut: Cut) {
       logEvent('trektel_silence', { ...cut, bytes: audio.size });
     }
   };
+  // Al vanzelf gestopt (het microfoonspoor hield op): de stukjes zijn er al
+  if (chunk.recorder.state === 'inactive') {
+    send();
+    return;
+  }
+  chunk.recorder.onstop = send;
   chunk.recorder.stop();
+}
+
+/** Zo lang na een weggevallen spoor de microfoon opnieuw proberen */
+export const TRACK_RETRY_MS = 1000;
+
+/**
+ * Het microfoonspoor hield op terwijl de app op het scherm stond (oortjes
+ * weg, een andere app pakt de microfoon). Zonder dit telde de app stil door
+ * met een dode microfoon. Pauzeren (het lopende stuk gaat mee, één lange
+ * tril) en de microfoon opnieuw aanzetten; lukt dat niet, dan stopt de
+ * telling zoals na een pauze. Gebeld worden zet de app meestal op de
+ * achtergrond: dat is gewoon een pauze (onVisibility).
+ */
+function onTrackEnded(opened: MediaStream) {
+  if (stream !== opened || trektel.status !== 'running') return;
+  logEvent('trektel_track_ended');
+  pauseTrektel();
+  setTimeout(() => {
+    if (trektel.status === 'paused' && !document.hidden) resumeTrektel();
+  }, TRACK_RETRY_MS);
 }
 
 /** Houdt het scherm aan (de trektelling stopt als het scherm op slot gaat). */
@@ -140,7 +167,10 @@ function onVisibility() {
 
 /** Microfoon aan, meter en eerste stuk starten. Gooit als de microfoon niet aangaat. */
 async function openMic(): Promise<void> {
-  stream = await navigator.mediaDevices.getUserMedia({ audio: await microphoneConstraints() });
+  stream = await openMicrophone();
+  noteMicrophone(stream, 'trektel');
+  const opened = stream;
+  opened.getAudioTracks?.()[0]?.addEventListener('ended', () => onTrackEnded(opened));
   audioContext = new AudioContext();
   const analyser = audioContext.createAnalyser();
   analyser.fftSize = 2048;
@@ -201,10 +231,12 @@ async function resumeTrektel(): Promise<void> {
   stopWhenStarted = false;
   try {
     await openMic();
-  } catch (error) {
-    logEvent('mic_error', { name: (error as Error).name, message: (error as Error).message });
+  } catch {
     trektel.status = 'paused';
-    stopTrektel('hidden');
+    stopTrektel('mic');
+    // Niet stil stoppen: wie later kijkt, moet weten waarom
+    trektel.error =
+      'Trektelling gestopt: de microfoon ging niet meer aan. Start de telling opnieuw; wat al ingesproken was, is bewaard.';
     return;
   }
   pausedMs += away;
@@ -232,7 +264,6 @@ export async function startTrektel(next: TrektelHandlers): Promise<boolean> {
   } catch (error) {
     closeMic();
     handlers = undefined;
-    logEvent('mic_error', { name: (error as Error).name, message: (error as Error).message });
     trektel.status = 'idle';
     trektel.error =
       error instanceof DOMException && error.name === 'NotAllowedError'

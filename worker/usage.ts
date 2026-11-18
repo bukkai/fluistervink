@@ -123,6 +123,26 @@ export async function audioSecondsToday(
   return results[0]?.seconds ?? 0;
 }
 
+/**
+ * Aantal verzoeken aan het model (Anthropic) van een tester vandaag, over
+ * beide omgevingen. Voor het plafond per dag in de proxy.
+ */
+export async function messagesToday(
+  db: D1Database,
+  tester: string,
+  now = new Date(),
+): Promise<number> {
+  await ensureTable(db);
+  const { results } = await db
+    .prepare(
+      `SELECT SUM(requests) AS requests FROM usage
+       WHERE day = ? AND tester = ? AND model LIKE 'claude-%'`,
+    )
+    .bind(dayOf(now), tester)
+    .all<{ requests: number | null }>();
+  return results[0]?.requests ?? 0;
+}
+
 /** Alle regels vanaf `from` (een datum als `2026-09-01`), voor de eigenaar. */
 export async function usageSince(db: D1Database, from: string): Promise<UsageRow[]> {
   await ensureTable(db);

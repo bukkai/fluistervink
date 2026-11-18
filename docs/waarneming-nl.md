@@ -37,6 +37,16 @@ Gevolgen:
 - Geen inspanning: de bulkimport heeft geen kolommen voor duur, afstand, waarnemers of een volledige lijst (nagegaan 11 nov 2026, `docs/plan-ebird.md`). Elke regel is een losse waarneming. Of de API iets als een telling of lijst kent, nagaan bij de aanvraag van een client-ID.
 - Nog na te gaan bij de eerste echte import: of verzamelsoorten als `Anatinae indet.` ("Eend onbekend") worden herkend.
 
+### observation.org
+
+Nagegaan op 18 nov 2026. observation.org is geen ander platform maar dezelfde database onder een andere naam (Observation International; ook waarnemingen.be). Bewijs: `/api/v1/observations/300000000/` (een waarneming in Kroatië) en `/api/v1/species/2/` geven op beide domeinen precies hetzelfde terug, en de importpagina staat op hetzelfde adres (`/import/observations/`). De HTML-pagina's zitten achter een botcheck (Anubis), dus het voorbeeldbestand van observation.org zelf is niet bekeken; de API niet.
+
+Gevolgen:
+
+- Een import bij waarneming.nl staat meteen ook op observation.org, ook buiten Nederland (waarneming.nl neemt waarnemingen van overal aan). Voor een Nederlandse gebruiker is "export naar observation.org" er dus al.
+- Wat wél verschilt, is de taal van de site: observation.org staat meestal op Engels, en `activity`, `life stage`, `method` en `counting method` gaan op tekst in die taal (zie hierboven). Exporteren voor een Engelstalige gebruiker vraagt dus alleen een keuze voor de taal van die kolommen; de Engelse namen staan al in `data/attributen-vogels.json` (`en`). Dat hoort bij de app in het Engels (`docs/roadmap.md`, punt 8).
+- Nog na te gaan, ingelogd: of het voorbeeldbestand van observation.org dezelfde kolommen heeft (vrijwel zeker), en of de import naast tekst ook ID's aanneemt (dan valt het taalprobleem helemaal weg).
+
 ## 2. Soortenlijst
 
 Bron: de openbare API van waarneming.nl, zonder sleutel.

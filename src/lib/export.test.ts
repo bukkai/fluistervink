@@ -39,6 +39,38 @@ describe('importJson', () => {
     expect(await db.utterances.get('los')).toMatchObject({ transcript: 'eigen tekst' });
   });
 
+  it('een back-up van een nieuwere versie: onbekende velden gaan gewoon mee', async () => {
+    const file = exportFile({
+      sessions: [{ id: 'sessie', startedAt: 1, endedAt: 2, status: 'ended', later: { x: 1 } }],
+      observations: [observation({ id: 'o1', position, ...{ nieuwVeld: 'ja' } })],
+    });
+    expect(await importJson(file)).toMatchObject({ added: 1 });
+    expect(await db.observations.get('o1')).toMatchObject({ nieuwVeld: 'ja' });
+  });
+
+  it('gaat er halverwege iets mis, dan komt er niets binnen', async () => {
+    // Een waarneming met hetzelfde id staat er al, bij een andere sessie
+    await db.observations.add(observation({ id: 'o1', sessionId: 'andere' }));
+    await expect(importJson(exportFile())).rejects.toThrow();
+    expect(await db.sessions.count()).toBe(0);
+    expect(await db.utterances.count()).toBe(0);
+    expect(await db.observations.get('o1')).toMatchObject({ sessionId: 'andere' });
+  });
+
+  it('terugzetten tijdens een lopende sessie: die blijft lopen en wordt niet overschreven', async () => {
+    await db.sessions.add({ id: 'sessie', startedAt: 5, status: 'active' });
+    const file = exportFile({
+      sessions: [
+        { id: 'sessie', startedAt: 1, endedAt: 2, status: 'ended' },
+        { id: 'oud', startedAt: 1, status: 'active' },
+      ],
+    });
+    expect(await importJson(file)).toMatchObject({ added: 1, skipped: 1 });
+    expect(await db.sessions.get('sessie')).toMatchObject({ startedAt: 5, status: 'active' });
+    // Liep bij het maken van de back-up nog: komt binnen als gestopt
+    expect((await db.sessions.get('oud'))?.status).toBe('ended');
+  });
+
   it('beschrijft de uitkomst in een zin', () => {
     expect(describeImport({ added: 2, skipped: 1, feedback: 1 })).toBe(
       '2 sessies teruggezet, te vinden bij Vorige sessies. 1 stond er al. 1× losse feedback teruggezet.',
@@ -105,5 +137,37 @@ describe('importJson', () => {
   it('weigert een prullenbak met een ongeldige waarneming', async () => {
     const file = exportFile({ deletedObservations: [{ ...observation(), count: '3' }] });
     await expect(importJson(file)).rejects.toThrow('Ongeldige export');
+  });
+});
+
+describe('importJson en het log', () => {
+  const events = [
+    { id: 7, at: 0, type: 'voor de sessie' },
+    { id: 8, at: 1, type: 'app_start', instance: 'a' },
+    { id: 9, at: 2, type: 'gps_fix', instance: 'a', data: { accuracy: 8 } },
+    { id: 10, at: 3, type: 'na de sessie' },
+  ];
+
+  it('zet het log binnen de tijd van een toegevoegde sessie terug, met een eigen nummer', async () => {
+    await db.events.add({ at: 50, type: 'eigen' });
+    await importJson(exportFile({ events }));
+    const restored = await db.events.where('at').between(1, 2, true, true).toArray();
+    expect(restored.map((e) => e.type)).toEqual(['app_start', 'gps_fix']);
+    expect(restored[1].data).toEqual({ accuracy: 8 });
+    expect(await db.events.where('type').anyOf('voor de sessie', 'na de sessie').count()).toBe(0);
+  });
+
+  it('zet het log niet dubbel terug, en niet bij een sessie die er al was', async () => {
+    await db.events.add({ at: 1, type: 'app_start', instance: 'a' });
+    await importJson(exportFile({ events }));
+    await importJson(exportFile({ events: [...events, { at: 2, type: 'later', instance: 'b' }] }));
+    const restored = await db.events.where('at').between(1, 2, true, true).toArray();
+    expect(restored.map((e) => e.type)).toEqual(['app_start', 'gps_fix']);
+  });
+
+  it('weigert een log met een rare soort', async () => {
+    const file = exportFile({ events: [{ at: 1, type: { html: '<b>' } }] });
+    await expect(importJson(file)).rejects.toThrow('Ongeldige export: log');
+    expect(await db.sessions.count()).toBe(0);
   });
 });

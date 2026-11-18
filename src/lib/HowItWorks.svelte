@@ -92,16 +92,25 @@
       <dd>Opgeslagen, maar onzeker. Thuis even nalopen.</dd>
       <dt>Twee korte</dt>
       <dd>Niet begrepen, niets opgeslagen. Zeg het nog eens.</dd>
+      <dt>Lang, kort</dt>
+      <dd>
+        Bewaard, maar er is geen bereik. Vogel gewoon door: zodra er weer verbinding is, verwerkt de
+        app alles vanzelf, in de volgorde waarin je het zei. Ook "nee, keep" werkt dan nog. Moest je
+        langer dan een minuut wachten, dan komt er daarna één korte tril als alles binnen is, niet
+        een per waarneming.
+      </dd>
       <dt>Drie korte</dt>
       <dd>
-        Er ging iets mis, bijvoorbeeld geen bereik. De opname is bewaard: tik later bij "Uitspraken"
+        Er ging iets mis waar wachten niet helpt. De opname is bewaard: tik later bij "Uitspraken"
         op "Opnieuw". Komt deze tril meteen na het indrukken, dan ging de microfoon niet aan.
       </dd>
     </dl>
     <p>
-      Bij de trektelling: één lange tril als hij pauzeert (andere app, scherm op slot), twee lange
-      als hij gestopt is. Dat gebeurt ook als je die dag al 5 uur hebt ingesproken, het maximum per
-      dag.
+      Bij de trektelling: één lange tril als hij pauzeert (andere app, scherm op slot, oortjes los),
+      twee lange als hij gestopt is. Dat gebeurt ook als je die dag al 5 uur hebt ingesproken, het
+      maximum per dag, of als de microfoon niet meer aangaat; op het scherm staat dan waarom. Zonder
+      bereik telt hij gewoon door; na 2 uur zonder bereik komen er ook twee lange trillen, maar dan
+      loopt de telling door.
     </p>
     {#if isNativeApp}
       <p>

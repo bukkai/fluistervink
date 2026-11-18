@@ -15,6 +15,13 @@ De vier sporen van 13 okt, met de stand op 12 nov:
 3. **Klaar voor vreemden:** twee omgevingen (`docs/omgevingen.md`), aanmelden zonder code (`docs/plan-laagdrempelig.md`), welkom voor nieuwelingen, back-up bij Instellingen: klaar.
 4. **Thuis meer waarde dan alleen exporteren:** kaart met clusters, snel nalopen (onzekere één voor één, "Alles klopt"), samenvatting van een sessie: klaar.
 
+## Komende stappen (18 nov)
+
+1. ~~Release naar stable met de offline wachtrij, daarna de kwaliteitsronde~~ (18 nov, #279). Nog de proeven op de telefoon (gebeld worden en oortjes weg, de microfoon van de oortjes; `NOTES.md`).
+2. **Tot ongeveer 1 dec:** de aanvraag voorbereiden (`docs/lancering.md`, punt 4): plafond en daglimiet bij OpenAI en Anthropic, feedback van de testers en de testset, de afvinklijst bijwerken, de laatste release een paar dagen laten staan.
+3. **Ondertussen, los van de app:** ~~observation.org~~ (18 nov: dezelfde database, zie punt 5) en ~~kosten per actieve gebruiker per week~~ (#277, voor de betaalde laag, punt 6); nu het wake word trainen met openWakeWord en meten op de testset (punt 4).
+4. **Na de goedkeuring:** de stabiele AAB naar Productie; opnemen met het scherm uit mergen en taggen (verklaring microfoon); dan de microfoon delen en het wake word in de app, eerst als proef die alleen logt.
+
 ## Lopende plannen
 
 | Plan | Stand (16 nov) |
@@ -32,14 +39,14 @@ Volgorde besloten op 17 nov. Alles komt eerst achter een ontwikkeloptie op `main
 
 **Eerst: vogelen zonder netwerk en zonder scherm.**
 
-1. **Offline wachtrij** (`docs/plan-offline.md`): een uitspraak zonder bereik blijft wachten en wordt vanzelf verwerkt zodra er weer verbinding is, met een zichtbare stand ("3 uitspraken wachten op bereik"). Alleen webcode, dus kan meteen.
+1. **Offline wachtrij** (`docs/plan-offline.md`): een uitspraak zonder bereik blijft wachten en wordt vanzelf verwerkt zodra er weer verbinding is, met een zichtbare stand ("3 uitspraken wachten op bereik"). Gebouwd op 17 nov; voor iedereen na de proeven in het veld.
 2. **Opnemen met het scherm uit** en starten met de knop op de oortjes (`docs/roadmap-android.md`, stap 3; gevraagd door Maarten voor op de fiets). Vraagt een nieuwe verklaring bij Google (microfoon in de service), dus: de proef nu op een eigen branch met een debug-APK, op `main` en in een tag pas na de productierelease.
 3. **De microfoon delen** met Merlin en bellen (`AudioRecordingCallback`, stap 4), nodig voor het wake word.
 4. **Wake word "Fluistervink"**, open source (openWakeWord, stap 5). Het model trainen en meten op de opnames uit de testset kan al eerder, los van de app; in de app pas na stap 2 en 3, eerst een proef die alleen logt.
 
 **Daarna: breder en betaalbaar.**
 
-5. **Export naar observation.org**: hetzelfde platform als waarneming.nl, met dezelfde soort-ID's; nagaan of de bulkimport hetzelfde is. Ook trektellen.nl (import nog uitzoeken). iNaturalist als laatste (zonder foto of geluid telt een waarneming daar nauwelijks). Inzenden via de API van waarneming.nl pas als er meer gebruikers zijn.
+5. **Export naar observation.org**: nagegaan 18 nov (`docs/waarneming-nl.md`, "observation.org"): dezelfde database als waarneming.nl, dus een import bij waarneming.nl staat er al. Alleen voor Engelstaligen nodig: gedrag, methode, kleed en telmethode in het Engels (bij punt 8). Ook trektellen.nl (import nog uitzoeken). iNaturalist als laatste (zonder foto of geluid telt een waarneming daar nauwelijks). Inzenden via de API van waarneming.nl pas als er meer gebruikers zijn.
 6. **Betaalde laag**, vóór het aantal gebruikers flink groeit. Eerst de kosten per actieve gebruiker meten (de proef van 17 nov–1 dec, Developer en Statistieken). Dan Play Billing (verplicht voor digitale extra's in een Android-app): de aankoop hangt aan het Google-account, de proxy controleert hem en koppelt hem aan het installatietoken, dus geen eigen accounts. Denkrichting: gratis met een plafond per dag, betaald een ruimer plafond en de trektelmodus. Native, dus een nieuwe app-versie; voorwaarden en `#privacy` erbij.
 7. **Vogels van andere landen**, gewoon in het Nederlands (regiolijsten van observation.org, `docs/ideeen.md`).
 8. **De app in het Engels**: teksten, Engelse prompt en soortnamen, Engelse bijnamen. Het meeste werk is een Engelse testset met Engelstalige sprekers.

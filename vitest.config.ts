@@ -11,6 +11,10 @@ export default defineConfig({
   },
   test: {
     environment: 'happy-dom',
+    // Eén happy-dom per worker, met elk testbestand in een eigen context: de
+    // wachtrij en andere modules met toestand blijven per bestand los, maar
+    // happy-dom niet steeds opnieuw opzetten scheelt ruim de helft (13 → 5 s)
+    pool: 'vmThreads',
     setupFiles: ['src/test-setup.ts'],
     include: ['src/**/*.test.ts', 'worker/**/*.test.ts', 'build/**/*.test.ts'],
   },

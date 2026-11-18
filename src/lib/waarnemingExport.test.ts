@@ -168,6 +168,20 @@ describe('meer sessies in één export', () => {
     expect((await result.file.text()).split('\r\n')).toHaveLength(4);
   });
 
+  it('een sessie over middernacht: elke waarneming met haar eigen datum', async () => {
+    const before = observation({ observedAt: Date.parse('2026-10-11T23:55:00'), position });
+    const after = observation({ observedAt: Date.parse('2026-10-12T00:10:00'), position });
+    await db.observations.bulkAdd([after, before]);
+    const { file, filename } = await buildExport([
+      { ...session, startedAt: Date.parse('2026-10-11T23:30:00') },
+    ]);
+    const lines = (await file.text()).split('\r\n');
+    expect(lines[1]).toMatch(/^2026-10-11,23:55,/);
+    expect(lines[2]).toMatch(/^2026-10-12,00:10,/);
+    // Naar het begin van de sessie
+    expect(filename).toBe('waarneming-2026-10-11-2330.csv');
+  });
+
   it('noemt een bestand met sessies van één dag naar die dag', async () => {
     const sameDay = { ...second, startedAt: Date.parse('2026-10-11T18:00:00') };
     const result = await buildExport([session, sameDay]);

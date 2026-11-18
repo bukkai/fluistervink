@@ -3,12 +3,11 @@
 // localStorage; het kaartje bij Instellingen staat alleen bij de eigenaar.
 
 /**
- * - `offlineWachtrij`: zonder bereik wacht een uitspraak in plaats van te
- *   mislukken (docs/plan-offline.md, queue.ts)
+ * - `oortjesMicrofoon`: de microfoon van Bluetooth-oortjes (microphone.ts)
  * - `schermUit`: opnemen met het scherm uit, met de volumeknop (proef,
  *   docs/roadmap-android.md stap 3)
  */
-export type DevOption = 'offlineWachtrij' | 'schermUit';
+export type DevOption = 'oortjesMicrofoon' | 'schermUit';
 
 const PREFIX = 'fluistervink.dev.';
 

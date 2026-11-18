@@ -27,13 +27,57 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026-11-18',
+    topics: {
+      Export: [
+        'Voor eBird telt de afgelegde afstand alleen nog lopen en fietsen. Een stuk met de auto of de boot (sneller dan 30 km/u) telt niet meer mee.',
+      ],
+      'Back-up': [
+        'Zet je een back-up terug, dan komt ook het logboek van die sessies mee. Deel je sessies met de ontwikkelaar, dan ging dat logboek eerst verloren.',
+      ],
+      Trektelling: [
+        'Tik je tijdens een trektelling op Instellingen of een ander scherm, dan vraagt de app eerst of de telling mag stoppen. Hij stopte daar zonder iets te zeggen.',
+        'Ging de microfoon bij "Trektelling starten" de eerste keer niet aan (vooral vlak na het geven van toestemming), dan probeert de app het nu meteen nog een keer, net als de knop Inspreken al deed.',
+        'Valt de microfoon weg tijdens een trektelling (bijvoorbeeld als je oortjes uitgaan), dan pauzeert de telling even en zet de app de microfoon opnieuw aan. Eerst telde hij stil door zonder iets te horen. Lukt dat niet, dan zegt het scherm waarom de telling gestopt is.',
+      ],
+      Inspreken: [
+        'Word je gebeld of gaan je oortjes uit midden in een opname, dan bewaart de app wat er al was. Eerst bleef de knop op "opnemen" hangen en ging de opname verloren.',
+        'Zijn er oortjes of een headset verbonden, dan zegt het sessiescherm met welke microfoon de app luistert. Dat is die van de telefoon: praat dus naar de telefoon, ook als die in je zak zit.',
+        'Had de GPS nog geen plek (in vliegtuigmodus of binnen kan de eerste meting minuten duren), dan krijgen de uitspraken van daarvoor de eerste plek die binnenkomt alsnog. In een trektelling klopt die precies; lopend zie je bij de waarneming "positie … min later".',
+        'Wacht de app op bereik, dan kun je het met het knopje met de twee pijlen meteen opnieuw proberen.',
+        'Maakt de spraakherkenning "goudborstje" van "roodborstje", dan wordt het nu gewoon een roodborst.',
+        'De Chileense Flamingo staat in de soortenlijst: een exoot die in Nederland geregeld te zien is.',
+        'Op een wifi waar je eerst moet inloggen (trein, camping) wachten je uitspraken nu tot er echt internet is. Eerst gingen ze verloren.',
+        'Vindt de GPS na een halve minuut nog geen plek, dan staat er "Nog geen locatie, inspreken kan gewoon" in plaats van een eindeloos "Locatie zoeken…".',
+        '"Ongedaan maken" terwijl er niets ongedaan te maken is, geeft nu twee trillen (niet begrepen) in plaats van één (opgeslagen).',
+        '"Nog vijf eraf" bij drie vogels maakt er één van, maar onzeker, zodat je hem bij het nalopen ziet.',
+        'Is de telefoon vol, dan zegt de app dat de opname niet bewaard kon worden (en stopt een trektelling), in plaats van de opname stil kwijt te raken.',
+      ],
+      Nalopen: [
+        'Bij het nalopen van de onzekere: pas je er een aan en sla je hem op, dan telt hij als nagelopen. Eerst werd hij overgeslagen.',
+        'Is een waarneming met de stem verwijderd terwijl je hem aan het bewerken was, dan zegt Opslaan dat nu, in plaats van stil niets te doen.',
+        'Verbeter je met de stem terwijl het bewerkformulier openstaat, dan zet Opslaan die verbetering niet meer terug: alleen wat je in het formulier zelf aanpaste, wordt opgeslagen.',
+        'Locatie aanpassen: de knop heet nu "Huidige locatie", met een vizier ervoor. Vindt hij je plek niet, dan geeft hij het na 10 seconden op (was 20) en zegt hij erbij als het aan het bereik ligt. Laadt de kaart niet, dan staat dat eronder.',
+        'Waarnemingen zonder plek (bijvoorbeeld een trektelling waarbij de GPS geen plek vond)? Onder de kaart zet "Plek kiezen voor alle" ze in één keer op de plek waar je stond.',
+      ],
+    },
+  },
+  {
     date: '2026-11-17',
     topics: {
       Inspreken: [
+        'Geen bereik? Vogel gewoon door. De app bewaart wat je zegt en verwerkt het vanzelf zodra er weer verbinding is, in de goede volgorde. Je voelt dan lang, kort ("bewaard, wacht op bereik") in plaats van drie korte trillen, en je hoeft thuis niet meer per uitspraak op Opnieuw te tikken.',
+        'Verstaat de spraakherkenning "groepje merel" waar je "roepje merel" zei, dan wordt het nu gewoon een roepende merel. Bedoel je echt een groepje, noem dan het aantal ("groepje van twintig vinken").',
         'Zeg je bij een nieuwe waarneming waar de vogel zit ("200 meter ten noorden van hier"), dan komt die plek weer mee. Sinds gisteren viel hij weg.',
       ],
       Trektelling: [
+        'In een trektelling is een vogel zonder gedrag nu overvliegend. Zeg je iets anders ("zit", "foeragerend", "roepje"), dan geldt dat.',
+        'Een trektelling zonder bereik telt gewoon door; de stukken worden verwerkt zodra er weer verbinding is.',
         'Noemde je in een trektelling een plek, dan raakte de app de soorten daarna in hetzelfde stuk kwijt. Dat is opgelost.',
+      ],
+      'Over de app': [
+        'Wie de app voor het eerst opent, krijgt een rustig welkom in drie stappen: hoe het werkt, toestemming voor microfoon en locatie, en de vraag of je wilt meehelpen. Geen losse meldingen meer boven en onder de startknop.',
+        'In het welkom kun je het eerst thuis proberen: zeg één zin en zie meteen wat Fluistervink ervan maakt, met de tril die erbij hoort. Er wordt niets bewaard.',
       ],
     },
   },
@@ -69,52 +113,35 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-11-13',
     topics: {
       Export: [
-        'Gebruik je eBird? Zet bij Instellingen "Ik gebruik eBird" aan. Na het stoppen vraagt de app of je alles hebt genoteerd, en bij een sessie staat een kaartje waarmee je hem als checklist voor eBird exporteert, met duur en afstand.',
-        'Voor wie eBird gebruikt: bij Sessies staat een knop "Exporteren voor eBird" voor alle nagelopen sessies in één bestand. Is de vraag "alles genoteerd?" bij een sessie nog open, dan beantwoord je hem daar met één tik, of je kiest "Niet naar eBird". In de lijst zie je per sessie wat al naar waarneming.nl en naar eBird is.',
+        'Exporteren voor eBird: zet bij Instellingen "Ik gebruik eBird" aan en exporteer je sessies als checklist, met duur en afstand.',
       ],
     },
   },
   {
     date: '2026-11-12',
     topics: {
-      Trektelling: [
-        'Geen "niet begrepen"-tril meer als je op Stop drukt en het laatste stuk leeg is. Onder de stopknop staat niet meer "eerste stuk na 1 minuut".',
-      ],
       Inspreken: [
-        'Een bereik als "tussen de vijftig en honderd" of "enkele honderden" wordt een schatting (75, of 300), met je eigen woorden als opmerking voor waarneming.nl.',
-        'De inspreekknop staat iets hoger, zodat je de gloed tijdens het opnemen helemaal ziet.',
+        'Een bereik als "tussen de vijftig en honderd" wordt een schatting, met je eigen woorden als opmerking voor waarneming.nl.',
       ],
-      Nalopen: [
-        'Een opname terugluisteren bij het nalopen of aanpassen: nog eens tikken pauzeert, en er speelt nooit meer dan één opname tegelijk.',
-        'De samenvatting van een sessie noemt niet meer welke soorten nieuw zijn dit jaar: de app is er niet om soorten te verzamelen, dat doet waarneming.nl.',
-      ],
+      Nalopen: ['Er speelt nooit meer dan één opname tegelijk; nog eens tikken pauzeert.'],
     },
   },
   {
     date: '2026-11-11',
     topics: {
-      Inspreken: ['De eerste opname na de vraag om de microfoon is niet meer leeg.'],
       Trektelling: [
-        'De app verwerkt hooguit 5 uur spraak per dag. Kom je daarboven, dan stopt een lopende trektelling met uitleg op het scherm. Wat je daarna inspreekt, blijft bewaard: tik de volgende dag op "Opnieuw".',
         'Naar Merlin of het scherm op slot pauzeert de telling in plaats van te stoppen.',
-        'De knop "Trektelling starten" staat nu bovenaan naast de locatie, zodat de lijst met waarnemingen meer ruimte heeft. Ook de uitleg onder de inspreekknop is weg.',
-        'Op Stop drukken terwijl de microfoon net weer aanging (terug van Merlin) stopt de telling nu echt. Aanhoudende wind telt niet meer als spraak als de microfoon stil begon.',
-        'De stopknop springt niet meer op en neer.',
+        'De app verwerkt hooguit 5 uur spraak per dag; daarboven stopt een trektelling met uitleg.',
       ],
       Nalopen: [
         'Bij een waarneming staat een kaartje met de plek. Tik erop om de plek te verzetten.',
-        'Na een sessie: de naam wijzig je met het potloodje, en de linkjes onderaan zijn knoppen geworden die je makkelijker raakt.',
-        'Nieuw bij Instellingen, onder "Nalopen en export": een zeldzame soort wordt onzeker, een samenvatting van elke sessie, en een herinnering om te exporteren. Alle drie staan aan.',
+        'Nieuw bij Instellingen: een zeldzame soort wordt onzeker, en een herinnering om te exporteren.',
       ],
       'Android-app': [
-        'De volumeknop kan de inspreekknop zijn (bij Instellingen).',
-        '"Begin met vogelen" als snelkoppeling op het app-pictogram, en als tegel in de snelle instellingen.',
+        'De volumeknop kan de inspreekknop zijn.',
+        '"Begin met vogelen" als snelkoppeling op het app-pictogram en in de snelle instellingen.',
       ],
-      'Over de app': [
-        'Na een update zie je onderin even "Bijgewerkt naar versie …", en deze lijst met wat er nieuw is.',
-        '"Hoe werkt het?" is korter.',
-        'Privacy: duidelijker dat de ontwikkelaar ziet hoeveel de app gebruikt wordt (alleen aantallen).',
-      ],
+      'Over de app': ['Na een update zie je "Bijgewerkt naar versie …" en deze lijst.'],
     },
   },
   {
@@ -123,10 +150,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       Inspreken: [
         'Zeldzame dwaalgasten (zoals de Roodkopklauwier) worden herkend, altijd als onzeker.',
       ],
-      Trektelling: [
-        'Feedback midden in een trektelling blijft een losse opmerking; de waarnemingen eromheen blijven staan.',
-      ],
-      Nalopen: ['Locatie aanpassen: de knop "Mijn plek nu" zet de plek op waar je nu staat.'],
+      Nalopen: ['Locatie aanpassen: zet de plek op waar je nu staat.'],
       'Back-up': ['De back-up is kleiner: alleen opnames die nog nodig zijn.'],
       'Android-app': ['Nieuw icoon en opstartscherm met de vink.'],
     },
@@ -138,15 +162,11 @@ export const CHANGELOG: ChangelogEntry[] = [
         'De inspreekknop staat onderaan, in de duimzone.',
         'Ook wetenschappelijke namen inspreken ("Fringilla coelebs").',
         'De plek van de vogel uit wat je zegt: "buizerd, 500 meter zuid van hier".',
-        'Een kale "nee, waterhoen" maakt de verbetering onzeker: het kan ook "een waterhoen" zijn geweest.',
       ],
       Trektelling: ['Trektelmodus: de microfoon blijft aan, voor wie op één plek telt.'],
       Nalopen: ['De plek van een waarneming is met de hand te verzetten op een kaartje.'],
       'Back-up': ['Back-up maken en terugzetten bij Instellingen.'],
-      'Over de app': [
-        'Welkom voor wie de app voor het eerst opent, met de eerste sessie in vier stappen.',
-        '"Wandeling" heet nu "sessie": ook voor de fiets, de vogelhut of de tuin.',
-      ],
+      'Over de app': ['"Wandeling" heet nu "sessie": ook voor de fiets, de vogelhut of de tuin.'],
     },
   },
   {

@@ -1,7 +1,7 @@
 <script lang="ts">
   // Ontwikkelopties: alleen voor de eigenaar (devOptions.ts)
   import { devOptionOn, setDevOption, type DevOption } from './devOptions';
-  import { screenOffSupported } from './native';
+  import { requestBluetoothMicrophone, screenOffSupported } from './native';
 
   interface Item {
     option: DevOption;
@@ -14,9 +14,9 @@
   // Een nieuwe optie komt hier, met haar naam in devOptions.ts
   const items: Item[] = [
     {
-      option: 'offlineWachtrij',
-      label: 'Wachten op bereik',
-      hint: 'Zonder bereik mislukt een uitspraak niet meer: hij blijft bewaard en wordt vanzelf verwerkt zodra er weer verbinding is, op volgorde. Trilt dan lang, kort (bewaard, wacht op bereik), met een regel op het sessiescherm. Na meer dan een minuut wachten één tril als alles binnen is.',
+      option: 'oortjesMicrofoon',
+      label: 'Microfoon van de oortjes (proef)',
+      hint: 'Met oortjes of een headset neemt de app op met hun microfoon in plaats van die van de telefoon, voor als de telefoon in je zak zit. In de Android-app vraagt hij daarvoor "Apparaten in de buurt". Bluetooth klinkt slechter en een podcast kan even pauzeren; de testset moet laten zien wat het kost.',
     },
     {
       option: 'schermUit',
@@ -33,6 +33,10 @@
 
   function toggle(item: Item) {
     setDevOption(item.option, checked[item.option]);
+    // Zonder deze toestemming ziet de WebView de microfoon van Bluetooth-oortjes niet
+    if (item.option === 'oortjesMicrofoon' && checked[item.option]) {
+      void requestBluetoothMicrophone();
+    }
   }
 </script>
 

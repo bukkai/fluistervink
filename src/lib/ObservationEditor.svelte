@@ -7,6 +7,7 @@
   import {
     copyObservation,
     deleteObservation,
+    changedFields,
     editObservation,
     placeByHand,
     recordedPlace,
@@ -34,12 +35,19 @@
     utterance,
     onclose,
     oncopy,
+    reviewing = false,
   }: {
     observation: Observation;
     utterance?: Utterance;
-    onclose: () => void;
+    /** `saved`: na Opslaan of Verwijderen, niet na Annuleren */
+    onclose: (saved?: boolean) => void;
     /** Zonder: geen knop Kopiëren (bv. bij het nalopen van de onzekere) */
     oncopy?: (id: string) => void;
+    /**
+     * Geopend vanuit het nalopen van de onzekere: Opslaan geldt dan als
+     * nagelopen, dus Onzeker staat uit (weer aan te vinken bij twijfel)
+     */
+    reviewing?: boolean;
   } = $props();
 
   // Kopie van de waarneming bij het openen; pas bij "Opslaan" naar de database
@@ -54,7 +62,8 @@
   let sex = $state(original.sex === 'unknown' ? undefined : original.sex);
   let remarks = $state(original.remarks ?? '');
   let privateNote = $state(original.privateNote ?? '');
-  let uncertain = $state(original.uncertain);
+  // svelte-ignore state_referenced_locally
+  let uncertain = $state(reviewing ? false : original.uncertain);
   /** Plek en bewaarde GPS-plek; pas bij "Opslaan" naar de database */
   let place = $state.raw<Place>({
     position: original.position,
@@ -133,26 +142,34 @@
   async function save(event: SubmitEvent) {
     event.preventDefault();
     if (!selectedSpecies) return;
-    await editObservation(original.id, {
-      speciesId: selectedSpecies.id,
-      count,
-      countingMethodId,
-      activityId,
-      methodId,
-      lifeStageId,
-      sex,
-      remarks: remarks.trim() || undefined,
-      privateNote: privateNote.trim() || undefined,
-      uncertain,
-      uncertainReason: uncertain ? original.uncertainReason : undefined,
-      candidates:
-        uncertain && selectedSpecies.id === original.speciesId ? original.candidates : undefined,
-      position: place.position,
-      recordedPosition: place.recordedPosition,
-      placedByVoice: place.placedByVoice,
-    });
-    onclose();
+    // Alleen wat hier veranderde: een correctie met de stem terwijl het
+    // formulier openstond, blijft staan
+    gone = !(await editObservation(
+      original.id,
+      changedFields(original, {
+        speciesId: selectedSpecies.id,
+        count,
+        countingMethodId,
+        activityId,
+        methodId,
+        lifeStageId,
+        sex,
+        remarks: remarks.trim() || undefined,
+        privateNote: privateNote.trim() || undefined,
+        uncertain,
+        uncertainReason: uncertain ? original.uncertainReason : undefined,
+        candidates:
+          uncertain && selectedSpecies.id === original.speciesId ? original.candidates : undefined,
+        position: place.position,
+        recordedPosition: place.recordedPosition,
+        placedByVoice: place.placedByVoice,
+      }),
+    ));
+    if (!gone) onclose(true);
   }
+
+  /** Intussen verwijderd (met de stem): niet stil sluiten, maar zeggen */
+  let gone = $state(false);
 
   /** De app twijfelde alleen over de plek ("aan de overkant van de rivier") */
   const onlyPlaceDoubt =
@@ -175,7 +192,7 @@
   async function remove() {
     // Geen bevestiging nodig: hij komt in "Verwijderd" en is terug te zetten
     await deleteObservation(original.id);
-    onclose();
+    onclose(true);
   }
 
   /**
@@ -368,10 +385,17 @@
     <button type="button" class="link danger" onclick={remove}>Verwijderen</button>
   </div>
 
+  {#if gone}
+    <p class="error">
+      Deze waarneming is intussen verwijderd, bijvoorbeeld met de stem. Terugzetten kan onder
+      "Verwijderd" bij de sessie.
+    </p>
+  {/if}
+
   <!-- Altijd in beeld, ook bij een lang formulier (feedback 16 nov) -->
   <div class="buttons">
     <button type="submit" class="btn" disabled={!valid}>Opslaan</button>
-    <button type="button" class="btn secondary" onclick={onclose}>Annuleren</button>
+    <button type="button" class="btn secondary" onclick={() => onclose()}>Annuleren</button>
   </div>
 </form>
 

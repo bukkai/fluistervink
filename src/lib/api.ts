@@ -113,7 +113,13 @@ async function timedRequest<T>(
     }
     throw new ApiError(navigator.onLine ? 'Proxy niet bereikbaar' : 'Geen internetverbinding', 0);
   }
-  const body = await response.json().catch(() => ({}));
+  const body = parseBody(await response.text().catch(() => ''));
+  // De proxy antwoordt altijd met JSON. Geen JSON bij een geslaagd antwoord
+  // (of 511) komt van iets onderweg, meestal de inlogpagina van een wifi
+  // (trein, camping): dan is er geen echt bereik, en wacht de wachtrij.
+  if (body === undefined && (response.ok || response.status === 511)) {
+    throw new ApiError('Geen antwoord van de proxy (inlogpagina van een wifi?)', 0);
+  }
   const timing: Timing = {
     requestMs: Math.round(performance.now() - start),
     upstreamMs: upstreamDuration(response),
@@ -141,12 +147,22 @@ async function timedRequest<T>(
       return timedRequest<T>(path, init, timeoutMs);
     }
     throw new ApiError(
-      body.error ?? `HTTP ${response.status}`,
+      typeof body?.error === 'string' ? body.error : `HTTP ${response.status}`,
       response.status,
-      typeof body.code === 'string' ? body.code : undefined,
+      typeof body?.code === 'string' ? body.code : undefined,
     );
   }
   return { data: body as T, timing };
+}
+
+/** Een JSON-object, of undefined als het antwoord dat niet is (bv. HTML). */
+function parseBody(text: string): Record<string, unknown> | undefined {
+  try {
+    const value: unknown = JSON.parse(text);
+    return value && typeof value === 'object' ? (value as Record<string, unknown>) : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /**

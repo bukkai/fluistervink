@@ -17,12 +17,14 @@
     position?: Position;
     /** Zonder positie: beginnen bij de andere waarnemingen van de sessie */
     sessionId: string;
-    /** `accuracy` alleen bij "Mijn plek nu": die van de GPS-meting */
+    /** `accuracy` alleen bij "Huidige locatie": die van de GPS-meting */
     onplace: (lat: number, lon: number, accuracy?: number) => void;
   } = $props();
 
   let locating = $state(false);
   let hereError = $state<string>();
+  /** Kaarttegels laden niet (meestal geen bereik) */
+  let tilesFailed = $state(false);
 
   let container = $state<HTMLDivElement>();
   let map: LeafletMap | undefined;
@@ -45,7 +47,10 @@
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      }).addTo(created);
+      })
+        .on('tileerror', () => (tilesFailed = true))
+        .on('load', () => (tilesFailed = false))
+        .addTo(created);
 
       if (position) {
         created.setView([position.lat, position.lon], 17);
@@ -99,7 +104,7 @@
     };
   });
 
-  // "Mijn plek nu": wie thuis of later naloopt en er nog staat (of de GPS
+  // "Huidige locatie": wie thuis of later naloopt en er nog staat (of de GPS
   // had bij het inspreken nog geen plek), zet de stip waar hij nu is
   async function here() {
     locating = true;
@@ -134,9 +139,23 @@
 </script>
 
 <div class="map" bind:this={container}></div>
-<p class="hint">Tik op de kaart of sleep de stip naar de plek van de vogel.</p>
+{#if tilesFailed}
+  <p class="hint" role="status">
+    De kaart laadt niet{navigator.onLine ? '' : ': geen bereik'}. "Huidige locatie" werkt wel; op de
+    kaart tikken kan later, als je weer bereik hebt.
+  </p>
+{:else}
+  <p class="hint">Tik op de kaart of sleep de stip naar de plek van de vogel.</p>
+{/if}
 <button type="button" class="btn secondary here" onclick={here} disabled={locating}>
-  {locating ? 'Plek zoeken…' : 'Mijn plek nu'}
+  <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+    <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <circle cx="12" cy="12" r="7" />
+      <circle cx="12" cy="12" r="2" fill="currentColor" />
+      <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+    </g>
+  </svg>
+  {locating ? 'Plek zoeken…' : 'Huidige locatie'}
 </button>
 {#if hereError}
   <p class="error" role="alert">{hereError}</p>
@@ -159,6 +178,9 @@
   }
 
   .here {
+    display: inline-flex;
+    gap: 0.4rem;
+    align-items: center;
     align-self: flex-start;
     margin-top: 0.4rem;
   }

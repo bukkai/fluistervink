@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { dayFormat, formatMoment, timeFormat } from './lib/format';
+  import { timeFormat } from './lib/format';
   import StillBirding from './lib/StillBirding.svelte';
   import { liveQuery } from 'dexie';
   import { onDestroy } from 'svelte';
@@ -22,10 +22,9 @@
   import { instance } from './lib/instance.svelte';
   import { processQueue } from './lib/queue';
   import { syncSessionService } from './lib/sessionService';
-  import { preferenceOn } from './lib/preferences';
-  import { exportReminder, reminderText, snooze, snoozedAt } from './lib/exportReminder';
-  import { isNativeApp, listenShortcut, setShortcut } from './lib/native';
-  import MoveToStable from './lib/MoveToStable.svelte';
+  import { LEAVE_TREKTEL_TEXT, leavesSessionScreen } from './lib/trektel';
+  import { trektel } from './lib/trektelRecorder.svelte';
+  import { listenShortcut, setShortcut } from './lib/native';
   import {
     SHARE_CHANGED,
     scheduleShare,
@@ -37,6 +36,7 @@
   import DevNotes from './lib/DevNotes.svelte';
   import Developer from './lib/Developer.svelte';
   import Changelog from './lib/Changelog.svelte';
+  import Home from './lib/Home.svelte';
   import HowItWorks from './lib/HowItWorks.svelte';
   import PastSession from './lib/PastSession.svelte';
   import PastSessions from './lib/PastSessions.svelte';
@@ -109,6 +109,20 @@
   window.addEventListener('hashchange', onHashChange);
   onDestroy(() => window.removeEventListener('hashchange', onHashChange));
 
+  // Een trektelling loopt alleen op het hoofdscherm: elk ander scherm zet de
+  // microfoon uit (feedback 17 nov: naar Instellingen en de telling was weg).
+  // Daarom eerst vragen, bij elke link in de app (menu, kaartjes, tips).
+  const guardTrektel = (event: MouseEvent) => {
+    if (trektel.status === 'idle') return;
+    const link = event.target instanceof Element ? event.target.closest('a') : null;
+    if (!link || !leavesSessionScreen(link.getAttribute('href'))) return;
+    if (confirm(LEAVE_TREKTEL_TEXT)) return;
+    event.preventDefault();
+    menuOpen = false;
+  };
+  document.addEventListener('click', guardTrektel, true);
+  onDestroy(() => document.removeEventListener('click', guardTrektel, true));
+
   let opened = $derived(
     route.startsWith('sessie/')
       ? past.find((s) => s.id === route.slice('sessie/'.length))
@@ -141,11 +155,6 @@
     return getTester() === OWNER;
   });
 
-  // Wie de beta-app uit Play heeft (interne test), vragen over te stappen naar
-  // de gewone app (MoveToStable.svelte). De eigenaar blijft op de beta.
-  let moveLater = $state(false);
-  let askMove = $derived(CHANNEL === 'beta' && isNativeApp && !isOwner && !moveLater);
-
   // Delen met de ontwikkelaar pas na toestemming (share.ts). Zolang er niet
   // gekozen is, vraagt het hoofdscherm het; ook aan wie de app al had.
   let askShare = $state(!shareChoiceMade());
@@ -154,13 +163,14 @@
     askShare = false;
   }
 
-  // Klok voor de looptijd van de lopende sessie
+  // Klok voor de looptijd van de lopende sessie en de herinnering op het startscherm
   let now = $state(Date.now());
   const timer = setInterval(() => (now = Date.now()), 1000);
   onDestroy(() => clearInterval(timer));
 
   // Welkom voor nieuwelingen (welcome.ts): pas als duidelijk is dat er nog
-  // geen enkele sessie is, zodat het niet even opflitst bij wie al sessies heeft
+  // geen enkele sessie is, zodat het niet even opflitst bij wie al sessies heeft.
+  // Het welkom vervangt het hoofdscherm en stelt ook de vraag over delen.
   let welcomeClosed = $state(welcomeDone());
   let showWelcome = $derived($sessions?.length === 0 && !welcomeClosed);
 
@@ -169,18 +179,6 @@
     welcomeClosed = true;
     await startSession();
     requestPersistentStorage();
-  }
-
-  // Herinnering aan de export (instelling, standaard aan; exportReminder.ts)
-  let snoozed = $state(snoozedAt());
-  let reminder = $derived(
-    $sessions && preferenceOn('exportHerinnering')
-      ? exportReminder($sessions, now, snoozed)
-      : undefined,
-  );
-  function remindLater() {
-    snooze();
-    snoozed = Date.now();
   }
 
   // Snelkoppeling "Begin met vogelen" op het app-pictogram, voor iedereen.
@@ -338,69 +336,24 @@
       />
     {/if}
     <ActiveSession session={active} />
+  {:else if showWelcome}
+    <Welcome
+      askShare={askShare && !installProblem}
+      onshare={chooseShare}
+      onclose={() => (welcomeClosed = true)}
+    />
   {:else}
-    <section class="home">
-      <img class="hero" src="/icon.svg" alt="" width="112" height="112" />
-      <h1>Klaar om te gaan vogelen?</h1>
-      <p class="intro">
-        Waar je ook bent: lopend, op de fiets, in de vogelhut of in de tuin. Zie of hoor je iets,
-        druk dan op de knop en zeg het, bijvoorbeeld
-        <em>"zes overvliegende houtduiven"</em> of <em>"roepje vink"</em>.
-      </p>
-      {#if installProblem}
-        <p class="notice">
-          De app kon zich niet aanmelden ({installProblem}). Probeer het later opnieuw.
-        </p>
-      {/if}
-      {#if askMove}
-        <MoveToStable onlater={() => (moveLater = true)} />
-      {/if}
-      {#if stale?.kind === 'stopped'}
-        <p class="welcome">
-          Je sessie van {formatMoment(stale.session.startedAt)} stond nog aan. Na 8 uur zonder uitspraken
-          is hij vanzelf gestopt.
-          <a href="#sessie/{stale.session.id}">Bekijken</a> ·
-          <button class="link" onclick={() => (stale = undefined)}>Oké</button>
-        </p>
-      {/if}
-      {#if reminder}
-        <p class="welcome">
-          {reminderText(reminder)}
-          <a href="#sessies">Naar de sessies</a> ·
-          <button class="link" onclick={remindLater}>Later</button>
-        </p>
-      {/if}
-      {#if askShare && !installProblem && !showWelcome}
-        <div class="consent card">
-          <strong>Delen met de ontwikkelaar?</strong>
-          <p>
-            Fluistervink is nog in ontwikkeling. Mag de app na elke sessie je uitspraken (als
-            tekst), wat de app ervan maakte, je correcties en feedback, en de locaties van je
-            waarnemingen naar de ontwikkelaar sturen? Opnames niet, tenzij je dat bij Instellingen
-            aanzet. Alleen de ontwikkelaar kan het lezen; je kunt het altijd weer uitzetten.
-            <a href="#privacy">Meer over privacy</a>
-          </p>
-          <div class="consent-buttons">
-            <button class="btn" onclick={() => chooseShare(true)}>Ja, delen</button>
-            <button class="btn secondary" onclick={() => chooseShare(false)}>Liever niet</button>
-          </div>
-        </div>
-      {/if}
-      <button class="start" onclick={start}>Begin met vogelen</button>
-      {#if showWelcome}
-        <Welcome onclose={() => (welcomeClosed = true)} />
-      {/if}
-      {#if past[0]}
-        <a class="last card" href="#sessie/{past[0].id}">
-          <span>
-            <span class="muted">Laatste sessie</span><br />
-            <strong>{past[0].place?.name ?? 'Vogelsessie'}</strong>
-            <span class="muted">· {dayFormat.format(past[0].startedAt)}</span>
-          </span>
-          <span class="chevron" aria-hidden="true">›</span>
-        </a>
-      {/if}
-    </section>
+    <Home
+      sessions={$sessions}
+      {now}
+      {installProblem}
+      {isOwner}
+      {stale}
+      ondismissstale={() => (stale = undefined)}
+      {askShare}
+      onshare={chooseShare}
+      onstart={start}
+    />
   {/if}
 </main>
 
@@ -505,101 +458,6 @@
     max-width: 32rem;
     margin: 0 auto;
     padding: 0 1rem 1rem;
-  }
-
-  .home {
-    display: grid;
-    justify-items: center;
-    gap: 1rem;
-    margin-top: 2rem;
-    text-align: center;
-  }
-
-  .hero {
-    border-radius: 1.75rem;
-    box-shadow: 0 8px 24px rgb(60 55 50 / 0.18);
-  }
-
-  .home h1 {
-    margin: 0.5rem 0 0;
-    font-size: 1.6rem;
-    line-height: 1.2;
-    letter-spacing: -0.01em;
-  }
-
-  .intro {
-    margin: 0;
-    max-width: 24rem;
-    font-size: 1.05rem;
-    color: var(--muted);
-  }
-
-  .notice {
-    margin: 0;
-    padding: 0.5rem 0.9rem;
-    border-radius: var(--radius);
-    color: var(--amber);
-    background: var(--amber-soft);
-  }
-
-  .welcome {
-    margin: 0;
-    padding: 0.5rem 0.9rem;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    background: var(--surface);
-  }
-
-  .consent {
-    display: grid;
-    gap: 0.5rem;
-    box-sizing: border-box;
-    width: 100%;
-    padding: 0.9rem 1rem;
-    text-align: left;
-  }
-
-  .consent p {
-    margin: 0;
-  }
-
-  .consent a {
-    color: inherit;
-  }
-
-  .consent-buttons,
-  .last {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-sizing: border-box;
-    width: 100%;
-    margin-top: 0;
-    padding: 0.75rem 1rem;
-    text-align: left;
-    color: inherit;
-    text-decoration: none;
-  }
-
-  .chevron {
-    font-size: 1.5rem;
-    color: var(--muted);
-  }
-
-  .start {
-    width: 100%;
-    margin-top: 0.5rem;
-    padding: 2.25rem 1.5rem;
-    border: none;
-    border-radius: 1rem;
-    font: inherit;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--on-brand);
-    background: var(--brand);
-    box-shadow:
-      0 2px 0 var(--brand-strong),
-      0 6px 16px rgb(60 55 50 / 0.18);
   }
 
   .session-head {

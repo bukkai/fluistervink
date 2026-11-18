@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  aliases,
   allSpecies,
   codesFor,
   convertCodes,
@@ -9,6 +10,7 @@ import {
   groupOf,
   groupOfCode,
   groups,
+  heardNames,
   isPromptSpecies,
   isVagrant,
   promptSpeciesOf,
@@ -203,5 +205,23 @@ describe('searchSpecies', () => {
   it('geeft niets bij een leeg veld en hooguit het maximum', () => {
     expect(names('  ')).toEqual([]);
     expect(searchSpecies(allSpecies, 'e', 5)).toHaveLength(5);
+  });
+});
+
+describe('bijnamen', () => {
+  it('kent verhaspelingen van de spraakherkenning, maar niet als bijnaam', () => {
+    // "goudborstje" voor roodborstje: wel naar het model, niet in de prompt van
+    // de spraakherkenning (die krijgt alleen de bijnamen)
+    const roodborst = aliases.find((a) => a.naam === 'Roodborst')!;
+    expect(roodborst.soort).toBe(168);
+    expect(heardNames(roodborst)).toContain('goudborstje');
+    expect(aliases.flatMap((a) => a.bijnamen)).not.toContain('goudborst');
+  });
+});
+
+describe('soortenlijst', () => {
+  it('heeft de Chileense Flamingo, een exoot die hier geregeld voorkomt', () => {
+    expect(isPromptSpecies(238)).toBe(true);
+    expect(isVagrant(238)).toBe(false);
   });
 });
