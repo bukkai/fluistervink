@@ -36,6 +36,23 @@ export const recorder = $state<{
 
 let mediaRecorder: MediaRecorder | undefined;
 let chunks: Blob[] = [];
+/** De opname zoals hij wordt als de recorder stopt (met de hand of vanzelf) */
+let stopped: Promise<Recording | undefined> | undefined;
+let stopRequested = false;
+
+const interruptedListeners = new Set<() => void>();
+
+/**
+ * De opname stopte vanzelf: het microfoonspoor hield op (gebeld worden,
+ * Bluetooth-oortjes weg, een andere app pakt de microfoon). Het sessiescherm
+ * rondt hem dan af alsof op Stop gedrukt is, zodat wat er al was bewaard
+ * wordt en de knop niet op "opnemen" blijft hangen. Geeft een functie om af
+ * te melden.
+ */
+export function onRecordingInterrupted(listener: () => void): () => void {
+  interruptedListeners.add(listener);
+  return () => interruptedListeners.delete(listener);
+}
 
 /** Geeft true terug als de opname loopt. */
 export async function startRecording(): Promise<boolean> {
@@ -62,26 +79,11 @@ export async function startRecording(): Promise<boolean> {
     audioBitsPerSecond: AUDIO_BITS_PER_SECOND,
   });
   chunks = [];
-  mediaRecorder.ondataavailable = (event) => chunks.push(event.data);
-  mediaRecorder.start();
-  recorder.startedAt = Date.now();
-  recorder.status = 'recording';
-  return true;
-}
-
-/**
- * Stopt de opname en zet de microfoon uit. Geeft niets terug als er geen
- * opname liep of als hij te kort was.
- */
-export function stopRecording(): Promise<Recording | undefined> {
   const current = mediaRecorder;
-  const startedAt = recorder.startedAt;
-  if (!current || current.state === 'inactive' || startedAt === undefined) {
-    return Promise.resolve(undefined);
-  }
-  mediaRecorder = undefined;
-
-  return new Promise((resolve) => {
+  current.ondataavailable = (event) => chunks.push(event.data);
+  const startedAt = Date.now();
+  stopRequested = false;
+  stopped = new Promise((resolve) => {
     current.onstop = () => {
       current.stream.getTracks().forEach((track) => track.stop());
       recorder.status = 'idle';
@@ -92,7 +94,29 @@ export function stopRecording(): Promise<Recording | undefined> {
       resolve(
         durationMs < MIN_DURATION_MS || !audio.size ? undefined : { audio, startedAt, durationMs },
       );
+      if (!stopRequested) for (const listener of interruptedListeners) listener();
     };
-    current.stop();
   });
+  current.start();
+  recorder.startedAt = startedAt;
+  recorder.status = 'recording';
+  return true;
+}
+
+/**
+ * Stopt de opname en zet de microfoon uit. Geeft niets terug als er geen
+ * opname liep of als hij te kort was.
+ */
+export function stopRecording(): Promise<Recording | undefined> {
+  const current = mediaRecorder;
+  const result = stopped;
+  if (!current || !result) return Promise.resolve(undefined);
+  mediaRecorder = undefined;
+  stopped = undefined;
+  // Vanzelf gestopt (zie onRecordingInterrupted): de opname is er al
+  if (current.state !== 'inactive') {
+    stopRequested = true;
+    current.stop();
+  }
+  return result;
 }

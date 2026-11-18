@@ -16,9 +16,14 @@ vi.hoisted(() => {
     ondataavailable?: (event: { data: Blob }) => void;
     onstop?: () => void;
     state = 'recording';
-    constructor(public stream: unknown) {}
+    static last?: FakeRecorder;
+    constructor(public stream: unknown) {
+      FakeRecorder.last = this;
+    }
     start() {}
     stop() {
+      this.ondataavailable?.({ data: new Blob(['opus']) });
+      this.state = 'inactive';
       this.onstop?.();
     }
   }
@@ -26,7 +31,7 @@ vi.hoisted(() => {
 });
 
 import { logEvent } from './log';
-import { recorder, startRecording, stopRecording } from './recorder.svelte';
+import { onRecordingInterrupted, recorder, startRecording, stopRecording } from './recorder.svelte';
 
 const stream = { getTracks: () => [{ stop() {} }], getAudioTracks: () => [] };
 let getUserMedia: ReturnType<typeof vi.fn>;
@@ -79,5 +84,44 @@ describe('microfoon aanzetten', () => {
     expect(getUserMedia).toHaveBeenCalledOnce();
     expect(recorder.status).toBe('denied');
     expect(recorder.failed).toBeUndefined();
+  });
+});
+
+describe('opname stopt vanzelf (gebeld, oortjes weg)', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      value: { getUserMedia: vi.fn().mockResolvedValue(stream) },
+    });
+    recorder.status = 'idle';
+  });
+
+  afterEach(() => vi.useRealTimers());
+
+  it('het scherm hoort het, de knop hangt niet en de opname is er nog', async () => {
+    const heard = vi.fn();
+    const off = onRecordingInterrupted(heard);
+    expect(await startRecording()).toBe(true);
+    await vi.advanceTimersByTimeAsync(4000);
+    // Het spoor houdt op: de recorder stopt zonder dat iemand op Stop drukte
+    const fake = (MediaRecorder as unknown as { last: MediaRecorder }).last;
+    fake.stop();
+    off();
+    expect(heard).toHaveBeenCalledOnce();
+    expect(recorder.status).toBe('idle');
+    const recording = await stopRecording();
+    expect(recording).toMatchObject({ durationMs: 4000 });
+    expect(recording?.audio.size).toBeGreaterThan(0);
+  });
+
+  it('gewoon op Stop gedrukt: geen melding', async () => {
+    const heard = vi.fn();
+    const off = onRecordingInterrupted(heard);
+    await startRecording();
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(await stopRecording()).toMatchObject({ durationMs: 2000 });
+    off();
+    expect(heard).not.toHaveBeenCalled();
   });
 });

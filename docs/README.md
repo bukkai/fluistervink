@@ -22,7 +22,7 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 | `plan-soortgroepen.md` | zoogdieren, reptielen en amfibieën, dagvlinders en libellen inspreken; afgerond 16 nov (voor iedereen, standaard aan) |
 | `plan-offline.md` | offline wachtrij: zonder bereik doorvogelen, vanzelf verwerken; gebouwd 17 nov, proeven in het veld nog te doen |
 | `plan-ios.md` | iPhone-app; voorstel, na de lancering |
-| `plan-robuustheid.md` | edge cases die een tester zou proberen, en hoe we ze blijvend afdekken; fase 1 loopt |
+| `plan-robuustheid.md` | edge cases die een tester zou proberen, en hoe we ze blijvend afdekken; code klaar, nog proberen op de telefoon, testset-opnames en één besluit |
 
 ## Naslag
 

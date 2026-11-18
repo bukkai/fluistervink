@@ -39,6 +39,38 @@ describe('importJson', () => {
     expect(await db.utterances.get('los')).toMatchObject({ transcript: 'eigen tekst' });
   });
 
+  it('een back-up van een nieuwere versie: onbekende velden gaan gewoon mee', async () => {
+    const file = exportFile({
+      sessions: [{ id: 'sessie', startedAt: 1, endedAt: 2, status: 'ended', later: { x: 1 } }],
+      observations: [observation({ id: 'o1', position, ...{ nieuwVeld: 'ja' } })],
+    });
+    expect(await importJson(file)).toMatchObject({ added: 1 });
+    expect(await db.observations.get('o1')).toMatchObject({ nieuwVeld: 'ja' });
+  });
+
+  it('gaat er halverwege iets mis, dan komt er niets binnen', async () => {
+    // Een waarneming met hetzelfde id staat er al, bij een andere sessie
+    await db.observations.add(observation({ id: 'o1', sessionId: 'andere' }));
+    await expect(importJson(exportFile())).rejects.toThrow();
+    expect(await db.sessions.count()).toBe(0);
+    expect(await db.utterances.count()).toBe(0);
+    expect(await db.observations.get('o1')).toMatchObject({ sessionId: 'andere' });
+  });
+
+  it('terugzetten tijdens een lopende sessie: die blijft lopen en wordt niet overschreven', async () => {
+    await db.sessions.add({ id: 'sessie', startedAt: 5, status: 'active' });
+    const file = exportFile({
+      sessions: [
+        { id: 'sessie', startedAt: 1, endedAt: 2, status: 'ended' },
+        { id: 'oud', startedAt: 1, status: 'active' },
+      ],
+    });
+    expect(await importJson(file)).toMatchObject({ added: 1, skipped: 1 });
+    expect(await db.sessions.get('sessie')).toMatchObject({ startedAt: 5, status: 'active' });
+    // Liep bij het maken van de back-up nog: komt binnen als gestopt
+    expect((await db.sessions.get('oud'))?.status).toBe('ended');
+  });
+
   it('beschrijft de uitkomst in een zin', () => {
     expect(describeImport({ added: 2, skipped: 1, feedback: 1 })).toBe(
       '2 sessies teruggezet, te vinden bij Vorige sessies. 1 stond er al. 1× losse feedback teruggezet.',

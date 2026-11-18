@@ -35,7 +35,7 @@ export function noteMicrophone(stream: MediaStream, mode: 'opname' | 'trektel'):
   } catch {
     return;
   }
-  const { deviceId: _, groupId: __, ...settings } = track?.getSettings() ?? {};
+  const { deviceId: _, groupId: __, ...settings } = track?.getSettings?.() ?? {};
   microphone.using = micKind(track?.label);
   if (microphone.using === 'oortjes') microphone.headset = true;
   logEvent('mic_opened', {

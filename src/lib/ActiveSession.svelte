@@ -17,7 +17,12 @@
     submitRecording,
     submitText,
   } from './queue';
-  import { recorder, startRecording, stopRecording } from './recorder.svelte';
+  import {
+    onRecordingInterrupted,
+    recorder,
+    startRecording,
+    stopRecording,
+  } from './recorder.svelte';
   import SessionLog from './SessionLog.svelte';
   import { syncSessionService } from './sessionService';
   import { createTalkButton } from './talkButton';
@@ -209,6 +214,14 @@
     saveError = undefined;
     await submitRecording(session.id, recording, lookup);
   }
+
+  // Opname vanzelf gestopt (gebeld, oortjes weg): bewaren wat er was
+  $effect(() =>
+    onRecordingInterrupted(() => {
+      logEvent('recording_interrupted', undefined, { sessionId: session.id });
+      void finishRecording();
+    }),
+  );
 
   // Lopende tijd tijdens de opname
   $effect(() => {
