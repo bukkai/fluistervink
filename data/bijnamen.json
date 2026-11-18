@@ -92,5 +92,6 @@
  { "soort": 380, "naam": "Gewone Bruinvis", "bijnamen": ["bruinvis"] },
  { "soort": 442, "naam": "Gewone pad", "bijnamen": ["pad", "padje"] },
  { "soort": 444, "naam": "Groene Kikker onbekend", "bijnamen": ["groene kikker"] },
- { "soort": 1430, "naam": "Koolwitje onbekend", "bijnamen": ["koolwitje"] }
+ { "soort": 1430, "naam": "Koolwitje onbekend", "bijnamen": ["koolwitje"] },
+ { "soort": 402, "naam": "Europese Hamster", "bijnamen": ["korenwolf", "hamster"] }
 ]

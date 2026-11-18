@@ -110,7 +110,8 @@ export function isPromptSpecies(id: number, withGroups = false): boolean {
 // Dwaalgasten: zeer zeldzame soorten die niet in de prompt staan. Noemt de
 // gebruiker er een, dan geeft het model de naam door (unlisted_species) en
 // zoekt de app hem hier op. Geen uitheemse ontsnapte kooivogels (zeldzaamheid
-// 0 in de bron): die zijn geen dwaalgast.
+// 0 in de bron): die zijn geen dwaalgast. Ook zeldzame andere dieren (wolf,
+// knoflookpad), maar alleen met de andere soortgroepen aan.
 
 /** Kleine letters, zonder accenten, spaties, streepjes en apostroffen */
 function normalizeName(name: string): string {
@@ -121,13 +122,26 @@ function normalizeName(name: string): string {
 }
 
 const VAGRANT_RARITY = 4;
-const vagrants = allSpecies.filter(
-  (s) => s.rarity === VAGRANT_RARITY && s.type === 'S' && !promptSpeciesIds.has(s.id),
+const vagrants = allSpeciesAllGroups.filter(
+  (s) => s.rarity === VAGRANT_RARITY && s.type === 'S' && !promptSpeciesAllGroupsIds.has(s.id),
 );
 const vagrantIds = new Set(vagrants.map((s) => s.id));
+
+/**
+ * Bijnamen van dwaalgasten (data/bijnamen.json): niet in de prompt, alleen om
+ * de gezegde naam op te zoeken ("korenwolf" is de Europese Hamster).
+ */
+const vagrantAliases = (aliasList as Alias[]).filter((a) => vagrantIds.has(a.soort));
+
 const keysOf = (s: Species) => [normalizeName(s.name), normalizeName(s.scientific)];
-const vagrantKeys = vagrants.flatMap((s) => keysOf(s).map((key) => ({ key, s })));
+const vagrantKeys = [
+  ...vagrants.flatMap((s) => keysOf(s).map((key) => ({ key, s }))),
+  ...vagrantAliases.flatMap((a) =>
+    a.bijnamen.map((name) => ({ key: normalizeName(name), s: speciesById.get(a.soort)! })),
+  ),
+];
 const promptKeys = species.flatMap(keysOf);
+const promptKeysAllGroups = promptSpeciesAllGroups.flatMap(keysOf);
 
 /** Is dit een dwaalgast (zeer zeldzaam, niet in de prompt)? */
 export function isVagrant(id: number): boolean {
@@ -162,16 +176,38 @@ export function editDistance(a: string, b: string, max = Infinity): number {
  * Dwaalgast bij een gezegde naam (Nederlands of wetenschappelijk), met een
  * paar letters speling. Liever geen soort dan een verkeerde: niets als twee
  * dwaalgasten even goed passen, of als een soort uit de prompt minstens zo
- * goed past ("roodborsttapuit" is geen Roodkeeltapuit).
+ * goed past ("roodborsttapuit" is geen Roodkeeltapuit). `withGroups`: ook
+ * andere dieren (keuze 'soortgroepen' bij Instellingen), anders alleen vogels.
  */
-export function findVagrant(name: string): Species | undefined {
+export function findVagrant(name: string, withGroups = false): Species | undefined {
   const said = normalizeName(name);
-  const max = allowedTypos(said.length);
   if (!said) return undefined;
+  // Ook in het enkelvoud: het model geeft de naam soms zoals gezegd ("korenwolven")
+  for (const form of new Set([said, ...singulars(said)])) {
+    const found = findVagrantKey(form, withGroups);
+    if (found) return found;
+  }
+  return undefined;
+}
+
+/** Mogelijke enkelvouden van een genormaliseerde naam: korenwolven, knoflookpadden, rietgorzen */
+function singulars(said: string): string[] {
+  return [
+    said.replace(/ven$/, 'f'),
+    said.replace(/zen$/, 's'),
+    said.replace(/([bdgklmnprt])\1en$/, '$1'),
+    said.replace(/en$/, ''),
+    said.replace(/s$/, ''),
+  ].filter((form) => form !== said && form.length >= 3);
+}
+
+function findVagrantKey(said: string, withGroups: boolean): Species | undefined {
+  const max = allowedTypos(said.length);
   let best: Species | undefined;
   let bestDistance = max + 1;
   let tie = false;
   for (const { key, s } of vagrantKeys) {
+    if (!withGroups && s.group !== BIRDS) continue;
     const d = editDistance(said, key, max);
     if (d < bestDistance) {
       best = s;
@@ -182,7 +218,8 @@ export function findVagrant(name: string): Species | undefined {
     }
   }
   if (!best || tie) return undefined;
-  if (promptKeys.some((key) => editDistance(said, key, bestDistance) <= bestDistance)) {
+  const listed = withGroups ? promptKeysAllGroups : promptKeys;
+  if (listed.some((key) => editDistance(said, key, bestDistance) <= bestDistance)) {
     return undefined;
   }
   return best;
@@ -208,6 +245,7 @@ export const heardNames = (a: Alias): string[] => [...a.bijnamen, ...(a.verhaspe
 
 const allAliases = (aliasList as Alias[]).filter((a) => {
   if (isPromptSpecies(a.soort, true)) return true;
+  if (vagrantIds.has(a.soort)) return false; // alleen voor findVagrant
   console.warn(`bijnamen.json: onbekende soort-ID ${a.soort} (${a.naam})`);
   return false;
 });

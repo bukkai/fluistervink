@@ -136,6 +136,16 @@ function describe(obs: Observation, here?: Position): string {
  * testset ook bewaarde antwoorden kan scoren.
  * @param context De recente waarnemingen zoals het model ze kreeg (#1 eerst)
  */
+/**
+ * De gezegde naam uit een twijfelreden als "Gezegd: wolf (niet in de lijst)",
+ * alleen bij een verzamelsoort (zoals de prompt het vraagt), anders niets.
+ */
+function saidInReason(speciesId: number | undefined, reason: unknown): string | undefined {
+  if (speciesId === undefined || !/onbekend/i.test(speciesName(speciesId))) return undefined;
+  if (typeof reason !== 'string') return undefined;
+  return reason.match(/gezegd:\s*"?([^"(;,]+?)"?\s*\(niet in de lijst/i)?.[1];
+}
+
 export function parseResponse(
   response: Anthropic.Message,
   context: Observation[],
@@ -424,12 +434,15 @@ function toAction(
 
   // Een dwaalgast die niet in de prompt staat: de app zoekt de gezegde naam op.
   // Altijd onzeker, want die soort zie je zelden en spraakherkenning kent hem niet.
+  // Het model laat unlisted_species soms leeg en zet de naam alleen in de
+  // twijfelreden ("Gezegd: wolf (niet in de lijst)", testset 18 nov): dan die.
   const said = modelText(input.unlisted_species);
-  const vagrant = said ? findVagrant(said) : undefined;
+  const named = said ?? saidInReason(fields.speciesId, input.uncertain_reason);
+  const vagrant = named ? findVagrant(named, withGroups) : undefined;
   if (vagrant) {
     fields.speciesId = vagrant.id;
     fields.uncertain = true;
-    fields.uncertainReason = `Dwaalgast, niet in de vaste lijst (gezegd: "${said}")`;
+    fields.uncertainReason = `Dwaalgast, niet in de vaste lijst (gezegd: "${named}")`;
   } else if (said) {
     warnings.push(`${block.name}: "${said}" niet gevonden bij de dwaalgasten`);
   }

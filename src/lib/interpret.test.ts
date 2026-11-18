@@ -388,6 +388,78 @@ describe('andere soortgroepen', () => {
     expect(warnings).toHaveLength(2);
   });
 
+  it('zoekt een gezegd zeldzaam dier op, alleen met de ontwikkeloptie', () => {
+    // Testset 18 nov: "Wauw, een wolf!" werd Hondachtige (Canis) onbekend
+    const response = toolResponse([
+      'add_observation',
+      {
+        species_name: 'Hondachtige (Canis) onbekend',
+        species_id: 685743,
+        unlisted_species: 'wolf',
+        count: 1,
+        activity_id: 15,
+        method_id: 123,
+        uncertain: true,
+        uncertain_reason: 'Gezegd: wolf (niet in de lijst)',
+      },
+    ]);
+    const { actions, rejected, warnings } = parseResponse(response, [], true);
+    expect(rejected).toEqual([]);
+    expect(warnings).toEqual([]);
+    expect(actions[0]).toMatchObject({
+      type: 'add',
+      fields: {
+        speciesId: 70056,
+        activityId: 15,
+        methodId: 123,
+        uncertain: true,
+        uncertainReason: 'Dwaalgast, niet in de vaste lijst (gezegd: "wolf")',
+      },
+    });
+  });
+
+  it('neemt de gezegde naam uit de twijfelreden als unlisted_species leeg is', () => {
+    // Testset 18 nov: "drie korenwolven" → Zoogdier onbekend, naam alleen in de reden
+    const { actions, warnings } = parseResponse(
+      toolResponse([
+        'add_observation',
+        {
+          species_name: 'Zoogdier onbekend',
+          species_id: 20449,
+          count: 3,
+          activity_id: 15,
+          method_id: 123,
+          uncertain: true,
+          uncertain_reason: 'Gezegd: korenwolven (niet in de lijst)',
+        },
+      ]),
+      [],
+      true,
+    );
+    expect(warnings).toEqual([]);
+    expect(actions[0]).toMatchObject({ fields: { speciesId: 402, count: 3, uncertain: true } });
+  });
+
+  it('leest de twijfelreden niet bij een gewone soort', () => {
+    const { actions } = parseResponse(
+      toolResponse([
+        'add_observation',
+        {
+          species_name: 'Ree',
+          species_id: REE,
+          count: 1,
+          activity_id: 15,
+          method_id: 123,
+          uncertain: true,
+          uncertain_reason: 'Gezegd: wolf (niet in de lijst)',
+        },
+      ]),
+      [],
+      true,
+    );
+    expect(actions[0]).toMatchObject({ fields: { speciesId: REE } });
+  });
+
   it('controleert de codes bij een aanpassing tegen de soort van die waarneming', () => {
     const ree = observation({ speciesId: REE, activityId: 15 });
     const { actions } = parseResponse(

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   aliases,
+  aliasesOf,
   allSpecies,
   codesFor,
   convertCodes,
@@ -65,6 +66,47 @@ describe('findVagrant', () => {
     // Roodkopgans: uitheems, zeldzaamheid 0 in de bron
     expect(findVagrant('roodkopgans')).toBeUndefined();
   });
+
+  describe('andere dieren', () => {
+    const WOLF = 70056;
+    const KNOFLOOKPAD = 449;
+    const HAMSTER = 402;
+
+    it('vindt een zeldzaam ander dier alleen met de andere soortgroepen aan', () => {
+      expect(findVagrant('wolf', true)?.id).toBe(WOLF);
+      expect(findVagrant('knoflookpad', true)?.id).toBe(KNOFLOOKPAD);
+      expect(findVagrant('Pelobates fuscus', true)?.id).toBe(KNOFLOOKPAD);
+      expect(isVagrant(WOLF)).toBe(true);
+      expect(findVagrant('wolf')).toBeUndefined();
+      expect(findVagrant('knoflookpad')).toBeUndefined();
+    });
+
+    it('vindt een dwaalgast ook op een bijnaam die niet in de prompt staat', () => {
+      expect(findVagrant('korenwolf', true)?.id).toBe(HAMSTER);
+      expect(findVagrant('Korenwolf', true)?.id).toBe(HAMSTER);
+    });
+
+    it('vindt een dwaalgast ook in het meervoud', () => {
+      expect(findVagrant('korenwolven', true)?.id).toBe(HAMSTER);
+      expect(findVagrant('knoflookpadden', true)?.id).toBe(KNOFLOOKPAD);
+      expect(findVagrant('wolven', true)?.id).toBe(WOLF);
+      expect(findVagrant('roodkopklauwieren')?.id).toBe(ROODKOPKLAUWIER);
+      // Het enkelvoud is een gewone soort: geen dwaalgast
+      expect(findVagrant('kruisbekken')).toBeUndefined();
+      expect(aliases.some((a) => a.soort === HAMSTER)).toBe(false);
+      expect(aliasesOf(2).some((a) => a.soort === HAMSTER)).toBe(false);
+    });
+
+    it('kiest geen zeldzaam dier als een dier uit de prompt minstens zo goed past', () => {
+      // Boommarter staat in de prompt
+      expect(findVagrant('boommarter', true)).toBeUndefined();
+      expect(findVagrant('ree', true)).toBeUndefined();
+    });
+
+    it('vindt nog steeds vogels met de andere soortgroepen aan', () => {
+      expect(findVagrant('roodkopklauwier', true)?.id).toBe(ROODKOPKLAUWIER);
+    });
+  });
 });
 
 describe('editDistance', () => {
@@ -99,7 +141,7 @@ describe('soortgroepen', () => {
     expect(promptSpeciesOf(2).map((s) => s.name)).toContain('Ree');
   });
 
-  it('zoekt geen dwaalgasten buiten de vogels', () => {
+  it('zoekt zonder de andere soortgroepen geen dwaalgasten buiten de vogels', () => {
     expect(findVagrant('alpenmarmot')).toBeUndefined();
   });
 

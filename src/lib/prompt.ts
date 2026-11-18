@@ -129,7 +129,7 @@ const fieldPropertiesWithGroups = {
   unlisted_species: {
     type: 'string',
     description:
-      'Alleen als de gebruiker duidelijk een vogel noemt die niet in de soortenlijst staat (een zeldzame dwaalgast): de naam zoals gezegd, bv. "roodkopklauwier". species_name en species_id zijn dan de best passende verzamelsoort, anders Vogel onbekend. Niet voor andere dieren. Zie "Soorten".',
+      'Alleen als de gebruiker duidelijk een soort noemt die niet in de soortenlijst staat (een zeldzame dwaalgast of een zeldzaam ander dier): de naam zoals gezegd, bv. "roodkopklauwier" of "wolf". species_name en species_id zijn dan de best passende verzamelsoort van zijn groep (Vogel onbekend, Zoogdier onbekend, enz.). Zie "Soorten" en "Andere dieren".',
   },
   activity_id: { type: 'integer', enum: enumOf(allGroupCodes('activities')) },
   method_id: { type: 'integer', enum: enumOf(allGroupCodes('methods')) },
@@ -279,7 +279,7 @@ Naast vogels spreekt de gebruiker ook zoogdieren, reptielen en amfibieën, dagvl
 
 - Namen die op een vogel lijken: "koevinkje" is een dagvlinder, geen vink. "Kleine vos" en "grote vos" zijn dagvlinders; alleen "vos" is het zoogdier. Ook "atalanta", "dagpauwoog", "groentje", "landkaartje" en "hooibeestje" zijn dagvlinders.
 - "Das", "ree", "haas", "mol" en "pad" zijn ook gewone woorden. Gaat de zin niet over een dier, roep dan geen tool aan. Is het wel een waarneming maar twijfel je aan de soort, dan uncertain.
-- Een dier dat niet in de lijst staat → de verzamelsoort van zijn groep ("Zoogdier onbekend", "Vleermuis onbekend", "Kikker/pad onbekend", "Hagedis onbekend", "Dagvlinder onbekend", "Libel onbekend"), met uncertain en de gezegde naam in uncertain_reason. unlisted_species is alleen voor vogels.
+- Een dier dat niet in de lijst staat → de verzamelsoort van zijn groep ("Zoogdier onbekend", "Vleermuis onbekend", "Kikker/pad onbekend", "Hagedis onbekend", "Dagvlinder onbekend", "Libel onbekend"), met uncertain en de gezegde naam in uncertain_reason. Is het een echte soortnaam (een zeldzaam dier als "wolf", "knoflookpad", "goudjakhals"), zet die naam dan ook in unlisted_species, net als bij een dwaalgast: de app zoekt de soort zelf op. "Korenwolf" is de Europese hamster, een zoogdier, geen vogel.
 - Vleermuizen: "op de batdetector", "met de detector" → methode batdetector.
 - Sporen van zoogdieren: "prenten", "pootafdrukken" → methode prenten; "keutels", "uitwerpselen" → uitwerpselen; "vraatsporen" → vraatsporen. Activiteit ter plaatse.
 - Libellen: "paring", "paringswiel", "in copula" → in copula; "tandem" → tandem; "eileggend", "eiafzettend" → eileggend; "uitsluipend" → vervellend.
