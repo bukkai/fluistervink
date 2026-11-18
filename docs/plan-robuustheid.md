@@ -13,7 +13,7 @@ Wat de code en de tests niet kunnen afdekken. Op de telefoon proberen: de checkl
 | 2 | **Telefoon vol** | Op de telefoon proberen (veldchecklist). Later misschien vooraf waarschuwen met `navigator.storage.estimate()` | eigenaar |
 | 6 | **Verwijzing buiten de context** ("die buizerd van een kwartier geleden" na 30 waarnemingen) | De app-kant is afgedekt (zie onder). Of het model dan "niet begrepen" of onzeker kiest in plaats van de verkeerde buizerd: een paar opnames in de testset | eigenaar inspreken, daarna `npm run testset` |
 | 7 | **Stemmen of geluid van anderen** in een trektelstuk (medevogelaar, radio, wind) | Opnames voor de testset; de prompt alleen aanpassen als de testset het laat zien | eigenaar inspreken |
-| 9 | **Snel verplaatsen** (boot, auto) | Besluit: telt varen of rijden mee als afgelegde afstand voor eBird? Nagaan wat eBird vraagt (op zee heeft het een eigen protocol, Pelagic). Daarna `recordFix` in `effort.ts` aanpassen of zo laten | eigenaar beslist |
+| 9 | **Snel verplaatsen** (boot, auto) | Besloten 18 nov: varen en rijden tellen **niet** mee als afgelegde afstand. Een stap sneller dan 30 km/u telt niet, maar verzet wel het ankerpunt (`distanceStep` in `effort.ts`, soort `transport`) | besloten |
 | 12 | **Gebeld worden** | De code is afgedekt (zie onder); nog op de telefoon proberen, ook met Bluetooth-oortjes | eigenaar |
 
 ## Fasen
