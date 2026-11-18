@@ -75,7 +75,7 @@ Video (de eigenaar neemt hem op, niet-openbaar op YouTube, link in het formulier
 
 Sinds v0.4 (18 nov) heeft de **beta-build** ook het type `microphone` (recht `FOREGROUND_SERVICE_MICROPHONE`) op dezelfde `WandelingService`; de stabiele build niet (`android/app/src/stable/AndroidManifest.xml`). De verklaring geldt voor de hele app, dus zodra de beta in de interne test staat, moet hij ook in het formulier, anders weigert Play elke release die beoordeeld wordt (gesloten test, productie). Het formulier aanvullen: naast locatie ook microfoon aanvinken, met de tekst en video hieronder.
 
-Taaktype: kies wat het dichtst bij "door de gebruiker gestarte spraakopname" ligt; staat er niets passends, dan **Other**. De tekst in het Engels:
+Taaktype: **Background audio input** (het formulier biedt alleen dat en Other; 18 nov). Dat vraagt alleen een video. Vraagt het formulier ergens om een beschrijving (of later bij een vraag van Google), gebruik dan deze tekst in het Engels:
 
 ```
 In addition to location (see above), the same foreground service (WandelingService) uses the microphone type, for one feature: recording a spoken observation while the screen is off.
