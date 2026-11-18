@@ -51,6 +51,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         'Wacht de app op bereik, dan kun je het met het knopje met de twee pijlen meteen opnieuw proberen.',
         'Maakt de spraakherkenning "goudborstje" van "roodborstje", dan wordt het nu gewoon een roodborst.',
         'De Chileense Flamingo staat in de soortenlijst: een exoot die in Nederland geregeld te zien is.',
+        'Met "Ook andere dieren inspreken" aan herkent de app nu ook zeldzame andere dieren, zoals een wolf of een knoflookpad, net als dwaalgasten altijd als onzeker. "Korenwolf" wordt de Europese hamster.',
         'Op een wifi waar je eerst moet inloggen (trein, camping) wachten je uitspraken nu tot er echt internet is. Eerst gingen ze verloren.',
         'Vindt de GPS na een halve minuut nog geen plek, dan staat er "Nog geen locatie, inspreken kan gewoon" in plaats van een eindeloos "Locatie zoeken…".',
         '"Ongedaan maken" terwijl er niets ongedaan te maken is, geeft nu twee trillen (niet begrepen) in plaats van één (opgeslagen).',
