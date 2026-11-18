@@ -2,6 +2,10 @@
 
 Wat waar staat. Ontwerp en werkafspraken staan in `CLAUDE.md` in de hoofdmap, de stand van vandaag in `NOTES.md`, installeren en ontwikkelen in de `README.md`.
 
+## Ontwerp
+
+- `ontwerp.md`: de uitwerking van de keuzes in `CLAUDE.md` per onderwerp, met de plekken in de code.
+
 ## Richting
 
 - `roadmap.md`: waar de app naartoe gaat, met de stand per plan.
