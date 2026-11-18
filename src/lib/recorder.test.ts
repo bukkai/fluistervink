@@ -85,6 +85,29 @@ describe('microfoon aanzetten', () => {
     expect(recorder.status).toBe('denied');
     expect(recorder.failed).toBeUndefined();
   });
+
+  it('telt met measureHidden de stukjes met het scherm aan en op slot', async () => {
+    getUserMedia.mockResolvedValue(stream);
+    expect(await startRecording({ measureHidden: true })).toBe(true);
+    const fake = (MediaRecorder as unknown as { last: unknown }).last as {
+      ondataavailable: (event: { data: Blob }) => void;
+    };
+    fake.ondataavailable({ data: new Blob(['x'.repeat(4000)]) });
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+    try {
+      fake.ondataavailable({ data: new Blob(['x'.repeat(300)]) });
+      fake.ondataavailable({ data: new Blob(['x'.repeat(200)]) });
+    } finally {
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });
+    }
+    await vi.advanceTimersByTimeAsync(3000);
+    const recording = await stopRecording();
+    expect(recording?.chunkStats).toEqual({
+      // Plus het laatste stukje dat de recorder bij stoppen geeft (4 bytes)
+      visible: { count: 2, bytes: 4004 },
+      hidden: { count: 2, bytes: 500 },
+    });
+  });
 });
 
 describe('opname stopt vanzelf (gebeld, oortjes weg)', () => {

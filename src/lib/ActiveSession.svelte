@@ -5,7 +5,7 @@
   import { vibrate } from './feedback';
   import { logEvent } from './log';
   import { preferenceOn } from './preferences';
-  import { listenVolumeKey, volumeKeySupported } from './native';
+  import { listenVolumeKey, setWebRecording, volumeKeySupported } from './native';
   import { recordFix } from './effort';
   import { watchKeyboard } from './keyboard';
   import { currentPosition, gps, startTracking, stopTracking } from './location.svelte';
@@ -16,6 +16,7 @@
     startRecording,
     stopRecording,
   } from './recorder.svelte';
+  import { screenOff, screenOffEnabled, startScreenOff, stopScreenOff } from './screenOff.svelte';
   import SessionLog from './SessionLog.svelte';
   import { positionLater } from './utterancePosition';
   import { syncSessionService } from './sessionService';
@@ -125,9 +126,16 @@
   // Naar een andere app (Merlin) of scherm uit tijdens een opname: stoppen en
   // bewaren wat er is. Anders houdt de app de microfoon vast zonder iets op te
   // nemen, en blijft de knop op "Stop" staan.
+  // Behalve met de proef opnemen met het scherm uit: dan mag de app op de
+  // achtergrond de microfoon houden (service met type microfoon), en stopt de
+  // volumeknop de opname.
   $effect(() => {
     function onHidden() {
       if (!document.hidden || recorder.status !== 'recording') return;
+      if (screenOff.ready) {
+        logEvent('recording_continues_hidden', undefined, { sessionId: session.id });
+        return;
+      }
       logEvent('recording_stopped_hidden', undefined, { sessionId: session.id });
       finishRecording();
     }
@@ -145,8 +153,12 @@
   let lookup: Promise<PositionLookup> | undefined;
   let maxTimer: ReturnType<typeof setTimeout> | undefined;
   let elapsed = $state(0);
+  // Een opname van de service (scherm uit, ontwikkeloptie) telt als lopende
+  // opname: de knop zegt Stop en stopt hem, als het scherm weer aan is
+  let talkStatus = $derived(screenOff.startedAt !== undefined ? 'recording' : recorder.status);
+  let talkStartedAt = $derived(screenOff.startedAt ?? recorder.startedAt);
   let talkLabel = $derived(
-    recorder.status === 'recording'
+    talkStatus === 'recording'
       ? `Stop · ${Math.floor(elapsed / 1000)} s`
       : recorder.status === 'starting'
         ? 'Microfoon aanzetten…'
@@ -155,13 +167,13 @@
 
   // Tikken of vasthouden, bestand tegen haperend contact (handschoenen)
   const talk = createTalkButton({
-    status: () => recorder.status,
+    status: () => talkStatus,
     start: async () => {
       // Tijd en positie horen bij het begin van de opname, niet bij het eind
       lookup = currentPosition();
       // Lukte de service bij de start nog niet (geen locatietoestemming), dan nu
       syncSessionService(session.id);
-      if (!(await startRecording())) {
+      if (!(await startRecording({ measureHidden: screenOff.ready }))) {
         // Niet stil mislukken: wie niet naar het scherm kijkt, denkt anders dat hij opneemt
         if (recorder.failed) vibrate('failed');
         return false;
@@ -170,7 +182,7 @@
       maxTimer = setTimeout(finishRecording, MAX_RECORDING_MS);
       return true;
     },
-    finish: finishRecording,
+    finish: () => (screenOff.startedAt !== undefined ? stopScreenOff() : finishRecording()),
     log: (type, data) => logEvent(type, data, { sessionId: session.id }),
   });
 
@@ -206,8 +218,17 @@
     clearTimeout(maxTimer);
     const recording = await stopRecording();
     if (!recording || !lookup) return;
-    // Niet als de opname stopte omdat de app naar de achtergrond ging
+    // Niet als de opname stopte omdat de app naar de achtergrond ging; wel
+    // als hij met het scherm uit doorliep en de volumeknop hem stopte
     if (!document.hidden) vibrate('recorded');
+    else if (screenOff.ready) vibrate('screenOffStop');
+    if (recording.chunkStats) {
+      logEvent(
+        'recording_chunks',
+        { durationMs: recording.durationMs, ...recording.chunkStats },
+        { sessionId: session.id },
+      );
+    }
     // Een vorige melding "niet bewaard" geldt niet meer; mislukt het weer, dan komt hij terug
     saveError = undefined;
     await submitRecording(session.id, recording, lookup);
@@ -221,10 +242,32 @@
     }),
   );
 
+  // Opnemen met het scherm uit (ontwikkeloptie, screenOff.svelte.ts): de
+  // volumeknop met het scherm uit neemt op in de service. Niet tijdens een
+  // trektelling: die heeft de microfoon al.
+  $effect(() => {
+    if (trektel.status !== 'idle') return;
+    return startScreenOff(
+      untrack(() => session.id),
+      MAX_RECORDING_MS,
+      // Scherm op slot tijdens een opname met de knop: de volumeknop stopt hem
+      () => {
+        if (recorder.status === 'recording') finishRecording();
+      },
+    );
+  });
+
+  // De service moet weten of de app zelf opneemt: dan stopt de volumeknop met
+  // het scherm uit die opname, in plaats van er een tweede te starten
+  $effect(() => {
+    const busy = recorder.status === 'recording';
+    if (screenOffEnabled()) setWebRecording(busy);
+  });
+
   // Lopende tijd tijdens de opname
   $effect(() => {
-    if (recorder.status !== 'recording') return;
-    const timer = setInterval(() => (elapsed = Date.now() - (recorder.startedAt ?? 0)), 200);
+    if (talkStatus !== 'recording') return;
+    const timer = setInterval(() => (elapsed = Date.now() - (talkStartedAt ?? 0)), 200);
     return () => {
       clearInterval(timer);
       elapsed = 0;
@@ -419,7 +462,7 @@
 <div class="talk-space" style:height="{barHeight}px"></div>
 <div
   class="talk-bar"
-  class:hidden={typing && recorder.status !== 'recording'}
+  class:hidden={typing && talkStatus !== 'recording'}
   class:compact={editing !== undefined && trektel.startedAt === undefined}
   bind:clientHeight={barHeight}
 >
@@ -457,7 +500,7 @@
     {/if}
     <button
       class="talk"
-      class:recording={recorder.status === 'recording'}
+      class:recording={talkStatus === 'recording'}
       disabled={recorder.status === 'unsupported'}
       onpointerdown={press}
       onpointerup={release}
@@ -466,7 +509,7 @@
       aria-label={editing === undefined ? undefined : talkLabel}
     >
       <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true">
-        {#if recorder.status === 'recording'}
+        {#if talkStatus === 'recording'}
           <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
         {:else}
           <rect x="9" y="2.5" width="6" height="12" rx="3" fill="currentColor" />

@@ -56,6 +56,24 @@ Wat het oplevert:
 
 Eerst een korte proef-PR (opnemen in de service, één opname doorgeven, meten), net als in fase 2. Werkt de overdracht naar de WebView op de achtergrond niet goed, dan overleggen voor de nette uitwerking.
 
+**Stand (17 nov): proef gebouwd, draft-PR, niet mergen vóór de productierelease.** Ontwikkeloptie "Opnemen met het scherm uit" (`schermUit`). Hoe het werkt:
+
+- De service krijgt het type microfoon pas als de webcode het aanzet (`SchermUitPlugin.aan`, vanuit het sessiescherm, dus met de app op het scherm). Lukt dat niet (geen toestemming, Android weigert), dan blijft hij gewoon locatie.
+- **Volumeknop met het scherm uit:** een mediasessie met een eigen volumeregeling (`VolumeProvider`), alleen actief met het scherm uit of tijdens een opname. Android geeft de volumeknop dan aan die sessie in plaats van het volume te veranderen. Met de app op het scherm blijft het de bestaande KnopPlugin (stap 1).
+- **Opname:** `AudioRecord` → AAC in .m4a (`audio/mp4`, 32 kbit/s mono, 16 kHz). Opus zoals de webknop kan Android pas vanaf versie 10 maken; de app moet vanaf 8. Dezelfde regels als de webknop: hooguit 3 minuten, korter dan 0,5 s wordt weggegooid. Trillen bij start en stop doet de service zelf (patronen van de webcode), zodat het niet op de WebView wacht.
+- **Overdracht:** het bestand staat eerst op de telefoon (`files/scherm-uit/`, de naam bevat sessie, starttijd en duur), gaat als base64 in een gebeurtenis naar de webcode, die hem met `submitRecording` bewaart en dan pas het bestand laat weghalen. Mist de webcode hem (app gesloten), dan haalt `wachtend` hem bij de volgende keer (zonder positie).
+- **Meten:** `screen_off_recording` in het log met `finishMs` (bestand afmaken), `bridgeMs` (Java → WebView), `transferMs` (volumeknop → aangekomen), `saveMs` (IndexedDB), `hidden` en `peak` (0 = Android gaf alleen stilte). Verder `screen_off_on`, `screen_off_knop_aan/uit`, `screen_off_started`, `screen_off_weggegooid`, `screen_off_niet_gestart`, `screen_off_mediaknop`.
+
+Eerste meting (17 nov, eigenaar, twee opnames met het scherm uit, beide goed verwerkt): de webcode hoort binnen 10–20 ms dat een opname begint; van de volumeknop (stop) tot de opname in de webcode ±0,36 s, waarvan ±0,35 s het afmaken van het bestand en maar ±10 ms de overdracht naar de WebView; bewaren 30–50 ms. **De overdracht werkt dus goed**, ook met de app op de achtergrond. Het afmaken kan korter met kleinere stukken uit `AudioRecord` (nu een halve seconde).
+
+Tweede stap (17 nov, na de eerste proef): **een opname met de knop in de app loopt door als je het scherm op slot zet**, zolang de service het type microfoon heeft; de volumeknop met het scherm uit stopt hem dan (`SchermUit.webOpname`, gebeurtenis `druk`). Of de WebView op de achtergrond echt geluid blijft opnemen, laat `recording_chunks` zien (bytes per seconde met het scherm aan en op slot). Gemeten (17 nov, 23:55): een opname van 27,7 s, na 10 s vergrendeld: met het scherm aan 10 stukjes, 37,8 kB; op slot 17 stukjes, 63,3 kB, dus ±3,7 kB per seconde in beide gevallen. **De WebView blijft op de achtergrond gewoon opnemen**, en de hele uitspraak kwam goed door ("…Roepje Siberische boompieper", het deel na het vergrendelen). De volumeknop met het scherm uit stopte hem (`screen_off_press_web`). Tijdens een opname in de service kwam ook één keer een mediaknop binnen (`KEYCODE_MEDIA_PAUSE`): de mediasessie kan die dus krijgen. Ook duidelijker trillen met het scherm uit: start twee snelle tikjes, stop één stevige tril (het tikje van 30 ms voelde de eigenaar in de zak niet).
+
+Nog uit te zoeken in het veld (en daarna de nette uitwerking):
+
+- Of de volumeknop met het scherm uit echt bij de mediasessie aankomt, ook met een podcast aan (Android geeft de volumeknop aan de sessie die "speelt"; een podcast speelt dan ook) en op een Samsung (die vangt de volumeknop soms zelf).
+- **Knop op de oortjes:** de mediasessie logt alleen welke mediaknop binnenkomt (`screen_off_mediaknop`), en doet er niets mee. Android stuurt de mediaknop naar de app die het laatst echt geluid afspeelde; onze sessie speelt niets, dus waarschijnlijk komt hij niet aan zolang er een podcast of muziek-app is geweest. Uitzoeken in de volgende PR (eventueel een kort stil geluid afspelen om de knop te krijgen, maar dat neemt de knop van de podcast af).
+- **Microfoonkeuze:** nu altijd `MIC` (die van de telefoon, zonder echo-onderdrukking). Voor de oortjes: `AudioRecord.setPreferredDevice` met een Bluetooth-SCO-apparaat, en de SCO-verbinding aanzetten (`AudioManager.setCommunicationDevice`, Android 12+); dat zet de oortjes in belmodus (smalbandig, podcast pauzeert). Volgende PR, met de testset erbij.
+
 ## Stap 4: de microfoon delen
 
 Zodra de microfoon lang open staat (trektelmodus nu al, het wake word straks), botst dat met Merlin en met bellen. Met `AudioRecordingCallback` merkt de app dat een andere app de microfoon wil, laat hem los, en pakt hem daarna terug (twee korte trillen bij pauzeren en hervatten). Staat in de latere roadmap van `CLAUDE.md`; wordt pas nodig bij stap 5, of eerder als Maarten er bij het trektellen last van heeft.
@@ -91,7 +109,7 @@ Uit de voorstellen van 8 nov, nog open; kunnen tussen de stappen door, want ze v
 | --- | --- | --- | --- |
 | 1 | Volumeknop en sluiterknopje als inspreekknop, snelkoppeling | ja, klein | nu, tijdens de gesloten test |
 | 2 | Gesproken bevestiging | ja, klein | na stap 1 |
-| 3 | Opnemen met het scherm uit, knop op de oortjes, microfoonkeuze | ja, groot | proef nu kan; nette uitwerking na de productierelease (nieuwe verklaring bij Google) |
+| 3 | Opnemen met het scherm uit, knop op de oortjes, microfoonkeuze | ja, groot | proef in de beta-build (interne test) sinds 18 nov; in de stabiele pas met de verklaring bij Google |
 | 4 | Microfoon delen met Merlin | ja | met of na stap 3 |
 | 5 | Wake word | ja, groot | na de lancering, eerst een proef |
 | – | iPhone-app | – | na de lancering, `docs/plan-ios.md` |
@@ -102,10 +120,10 @@ Elke stap is één à twee PR's en gaat eerst op een wandeling mee voordat de vo
 
 1. Volumeknop: **tikken** om te starten en te stoppen. Of dat prettig werkt, merken we in het veld.
 2. Gesproken bevestiging: **alleen met oortjes**, nooit via de luidspreker.
-3. Stap 3 (opnemen met het scherm uit) **na de productierelease**.
+3. Stap 3 (opnemen met het scherm uit) **in de stabiele app pas na de productierelease**; als proef al in de beta (punt 6).
 4. Wake word: **open source** (openWakeWord), geen licentie.
 
 5. **Alleen voor de eigenaar tot het bevalt:** nieuwe functies uit deze roadmap komen achter een ontwikkeloptie die alleen met de code van de eigenaar zichtbaar is (zoals Developer, `isOwner` in `App.svelte`). Uitzondering: de volumeknop, die is voor iedereen (eerst standaard uit, sinds 16 nov standaard aan). De gesproken bevestiging is sinds 16 nov een proef voor iedereen, standaard uit. Native delen gaan gewoon mee in de Play-versie en doen bij anderen niets.
-6. **Geen aparte ontwikkel-app.** Gevolg: stap 3 en 5 vragen een nieuwe toestemming (microfoon in de service) die Google bij elke release met een verklaring wil zien, ook als alleen de eigenaar de functie gebruikt. Die stappen wachten dus echt tot na de productierelease (punt 3).
+6. **Geen aparte ontwikkel-app.** Stap 3 en 5 vragen een nieuwe toestemming (microfoon in de service) die Google met een verklaring wil zien. Bijgesteld op 18 nov: zo'n toestemming staat in het manifest van de beta, en de stabiele build haalt hem eruit (`android/app/src/stable/AndroidManifest.xml`, via `FLUISTERVINK_KANAAL` in `build.gradle`). De beta gaat alleen naar de interne test (alleen de eigenaar, niet beoordeeld); de stabiele in de gesloten test houdt de toestemmingen die Google al kent. Zonder de toestemming registreert `MainActivity` de plugin niet, zodat de ontwikkeloptie in de stabiele app niet verschijnt. Na de verklaring de regel uit `src/stable/` halen.
 
 Stap 1 is begonnen (PR #185).

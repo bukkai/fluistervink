@@ -14,7 +14,7 @@ import com.getcapacitor.annotation.CapacitorPlugin;
  * elke druk als gebeurtenis "druk" door; het volume verandert dan niet.
  * Bluetooth-sluiterknopjes sturen dezelfde toets, dus die werken ook.
  * Alleen met de app op het scherm: met het scherm uit gaan de toetsen naar
- * Android zelf (dat komt pas met stap 3).
+ * Android zelf, of (proef opnemen met het scherm uit) naar WandelingService.
  */
 @CapacitorPlugin(name = "Knop")
 public class KnopPlugin extends Plugin {
@@ -45,8 +45,16 @@ public class KnopPlugin extends Plugin {
      */
     static boolean handle(KeyEvent event) {
         int code = event.getKeyCode();
-        if (!active || instance == null) return false;
         if (code != KeyEvent.KEYCODE_VOLUME_UP && code != KeyEvent.KEYCODE_VOLUME_DOWN) return false;
+        // Loopt er een opname van de service (scherm was uit, nu weer aan):
+        // deze druk stopt die, de webcode krijgt hem niet
+        if (WandelingService.isRecording()) {
+            if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
+                WandelingService.instance.press("app_" + (code == KeyEvent.KEYCODE_VOLUME_UP ? "volume_up" : "volume_down"));
+            }
+            return true;
+        }
+        if (!active || instance == null) return false;
         // Alleen het indrukken telt; vasthouden (herhaling) en loslaten slikken
         if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
             JSObject data = new JSObject();

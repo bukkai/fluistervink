@@ -14,6 +14,14 @@ const PATTERNS = {
    * niet als de app intussen op de achtergrond staat.
    */
   recorded: [30],
+  /**
+   * Opname gestart met het scherm uit (proef, screenOff.svelte.ts): het tikje
+   * hierboven voel je in een broekzak niet (17 nov). Twee snelle tikjes, sneller
+   * dan "niet begrepen".
+   */
+  screenOffStart: [40, 60, 40],
+  /** Opname gestopt met het scherm uit: één stevige tril, korter dan "gepauzeerd" */
+  screenOffStop: [200],
   /** Opgeslagen (ook een dev note of een correctie): één korte tril */
   saved: [120],
   /** Opgeslagen maar onzeker: kort, lang */
@@ -37,6 +45,11 @@ const PATTERNS = {
 };
 
 export type Feedback = keyof typeof PATTERNS;
+
+/** Het patroon zelf, voor de service die zonder de webcode trilt (opnemen met het scherm uit) */
+export function vibrationPattern(feedback: Feedback): number[] {
+  return PATTERNS[feedback];
+}
 
 /**
  * Trilt, als het apparaat dat kan. In de Android-app via Android zelf; in de

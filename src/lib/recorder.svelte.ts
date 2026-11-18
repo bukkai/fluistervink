@@ -10,6 +10,18 @@ export interface Recording {
   /** Moment waarop de opname echt begon */
   startedAt: number;
   durationMs: number;
+  /**
+   * Met `measureHidden`: stukjes van een seconde met het scherm aan en op
+   * slot, en hun grootte. Opus bij stilte is maar een paar honderd bytes per
+   * seconde, spraak een paar kB: zo is te zien of er na het vergrendelen nog
+   * geluid binnenkwam.
+   */
+  chunkStats?: { visible: ChunkCount; hidden: ChunkCount };
+}
+
+interface ChunkCount {
+  count: number;
+  bytes: number;
 }
 
 /**
@@ -19,7 +31,7 @@ export interface Recording {
 export const AUDIO_BITS_PER_SECOND = 32_000;
 
 /** Kortere opnames zijn een per ongeluk aangetikte knop. */
-const MIN_DURATION_MS = 500;
+export const MIN_DURATION_MS = 500;
 
 /** Bestandsformaten in volgorde van voorkeur; Chrome op Android kan webm/opus. */
 export const MIME_TYPES = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/mp4'];
@@ -54,8 +66,12 @@ export function onRecordingInterrupted(listener: () => void): () => void {
   return () => interruptedListeners.delete(listener);
 }
 
-/** Geeft true terug als de opname loopt. */
-export async function startRecording(): Promise<boolean> {
+/**
+ * Geeft true terug als de opname loopt.
+ * @param options.measureHidden Per seconde bijhouden of het scherm aan of op
+ *   slot was (proef opnemen met het scherm uit, `chunkStats`)
+ */
+export async function startRecording(options: { measureHidden?: boolean } = {}): Promise<boolean> {
   if (recorder.status !== 'idle' && recorder.status !== 'denied') return false;
   recorder.status = 'starting';
   recorder.failed = undefined;
@@ -80,7 +96,16 @@ export async function startRecording(): Promise<boolean> {
   });
   chunks = [];
   const current = mediaRecorder;
-  current.ondataavailable = (event) => chunks.push(event.data);
+  const stats = options.measureHidden
+    ? { visible: { count: 0, bytes: 0 }, hidden: { count: 0, bytes: 0 } }
+    : undefined;
+  current.ondataavailable = (event) => {
+    chunks.push(event.data);
+    if (!stats) return;
+    const count = document.hidden ? stats.hidden : stats.visible;
+    count.count++;
+    count.bytes += event.data.size;
+  };
   const startedAt = Date.now();
   stopRequested = false;
   stopped = new Promise((resolve) => {
@@ -92,12 +117,14 @@ export async function startRecording(): Promise<boolean> {
       const durationMs = Date.now() - startedAt;
       const audio = new Blob(chunks, { type: current.mimeType });
       resolve(
-        durationMs < MIN_DURATION_MS || !audio.size ? undefined : { audio, startedAt, durationMs },
+        durationMs < MIN_DURATION_MS || !audio.size
+          ? undefined
+          : { audio, startedAt, durationMs, ...(stats && { chunkStats: stats }) },
       );
       if (!stopRequested) for (const listener of interruptedListeners) listener();
     };
   });
-  current.start();
+  current.start(stats ? 1000 : undefined);
   recorder.startedAt = startedAt;
   recorder.status = 'recording';
   return true;

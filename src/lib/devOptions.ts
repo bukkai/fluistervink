@@ -2,8 +2,12 @@
 // bevallen (docs/roadmap-android.md, besloten 11 nov). Per telefoon in
 // localStorage; het kaartje bij Instellingen staat alleen bij de eigenaar.
 
-/** Voeg hier de naam van een nieuwe optie toe */
-export type DevOption = 'oortjesMicrofoon';
+/**
+ * - `oortjesMicrofoon`: de microfoon van Bluetooth-oortjes (microphone.ts)
+ * - `schermUit`: opnemen met het scherm uit, met de volumeknop (proef,
+ *   docs/roadmap-android.md stap 3)
+ */
+export type DevOption = 'oortjesMicrofoon' | 'schermUit';
 
 const PREFIX = 'fluistervink.dev.';
 

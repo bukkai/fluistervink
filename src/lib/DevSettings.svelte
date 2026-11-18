@@ -1,7 +1,7 @@
 <script lang="ts">
   // Ontwikkelopties: alleen voor de eigenaar (devOptions.ts)
   import { devOptionOn, setDevOption, type DevOption } from './devOptions';
-  import { requestBluetoothMicrophone } from './native';
+  import { requestBluetoothMicrophone, screenOffSupported } from './native';
 
   interface Item {
     option: DevOption;
@@ -17,6 +17,12 @@
       option: 'oortjesMicrofoon',
       label: 'Microfoon van de oortjes (proef)',
       hint: 'Met oortjes of een headset neemt de app op met hun microfoon in plaats van die van de telefoon, voor als de telefoon in je zak zit. In de Android-app vraagt hij daarvoor "Apparaten in de buurt". Bluetooth klinkt slechter en een podcast kan even pauzeren; de testset moet laten zien wat het kost.',
+    },
+    {
+      option: 'schermUit',
+      label: 'Opnemen met het scherm uit',
+      hint: 'Proef: tijdens een sessie start en stopt de volumeknop een opname, ook met het scherm uit. Werkt vanaf de volgende sessie (of open de sessie opnieuw).',
+      available: screenOffSupported,
     },
   ];
 
