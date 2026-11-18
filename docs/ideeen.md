@@ -33,3 +33,7 @@ Nog niet gepland; eerst overleggen. Verplaatst uit `NOTES.md` op 12 nov 2026. Wa
   - Niet alle landen meebundelen: de proxy haalt een lijst op en de app bewaart hem in IndexedDB (dan werkt hij ook met slecht bereik op de bestemming). Even downloaden vóór vertrek.
   - Gevolgen: de systeemprompt verandert per land (eigen cache bij Anthropic, dus de eerste uitspraak is iets duurder), de STT-prompt krijgt de namen van dat land, `findVagrant` en "zeldzame soort wordt onzeker" rekenen met de zeldzaamheid van dat land, de Nederlandse bijnamen blijven gelden. Exporteren gaat via observation.org (werkt wereldwijd, dezelfde import), of eBird als dat er is.
   - Hangt samen met het Engelse idee hierboven: dezelfde lijsten, alleen de taal van de namen verschilt.
+
+## Verwerken met het scherm uit (18 nov)
+
+Chromium zet de webcode 60 s na het vergrendelen stil (gemeten bij #289, `page_frozen`), ook met de service en een Web Lock. De service neemt dan wel op, maar de stukken worden pas bij het ontgrendelen verwerkt, en de tril na het verwerken blijft weg. Oplossing: de service verwerkt zelf (spraakherkenning en model via de proxy) zolang de pagina stilstaat, en de webcode neemt de uitkomst over bij het ontgrendelen. Groot, want de wachtrij met zijn regels (op volgorde, wachten op bereik, correcties met context) staat in de webcode. Eerst kijken of het in het veld stoort (Maarten kijkt af en toe op de telefoon).
