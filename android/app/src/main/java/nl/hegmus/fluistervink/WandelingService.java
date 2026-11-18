@@ -464,17 +464,20 @@ public class WandelingService extends Service {
         JSObject data = new JSObject();
         data.put("waarom", why);
         data.put("audiofocus", false);
-        AudioManager audio = getSystemService(AudioManager.class);
-        if (audio != null) {
-            // Wie de knop had, mag Android ons niet vertellen; wel of er iets speelt
-            data.put("anderGeluid", audio.isMusicActive());
-            int players = 0;
-            for (AudioPlaybackConfiguration playback : audio.getActivePlaybackConfigurations()) {
-                int usage = playback.getAudioAttributes().getUsage();
-                if (usage == AudioAttributes.USAGE_MEDIA || usage == AudioAttributes.USAGE_UNKNOWN) players++;
-            }
-            data.put("mediaSpelers", players);
-        }
+        // Wie de knop had, mag Android ons niet vertellen; wel of er iets speelt
+        boolean playingBefore = putPlaying(data);
+        // Daarna nog eens kijken (na onze stilte): speelt een podcast nog?
+        // Zo zien we of de stilte hem pauzeert (feedback 18 nov)
+        handler.postDelayed(
+            () -> {
+                JSObject after = new JSObject();
+                after.put("waarom", why);
+                boolean playingAfter = putPlaying(after);
+                if (playingBefore && !playingAfter) after.put("gepauzeerd", true);
+                log("knop_claim_na", after);
+            },
+            SILENCE_MS + 1_500
+        );
         try {
             int rate = 16_000;
             int samples = (rate * SILENCE_MS) / 1000;
@@ -514,6 +517,21 @@ public class WandelingService extends Service {
             data.put("fout", e.getClass().getSimpleName() + ": " + e.getMessage());
         }
         log("knop_claim", data);
+    }
+
+    /** Speelt er mediageluid (andere apps; onze stilte is dan al voorbij)? In `data`. */
+    private boolean putPlaying(JSObject data) {
+        AudioManager audio = getSystemService(AudioManager.class);
+        if (audio == null) return false;
+        boolean playing = audio.isMusicActive();
+        data.put("anderGeluid", playing);
+        int players = 0;
+        for (AudioPlaybackConfiguration playback : audio.getActivePlaybackConfigurations()) {
+            int usage = playback.getAudioAttributes().getUsage();
+            if (usage == AudioAttributes.USAGE_MEDIA || usage == AudioAttributes.USAGE_UNKNOWN) players++;
+        }
+        data.put("mediaSpelers", players);
+        return playing;
     }
 
     /** Een druk op de volumeknop of de oortjes (mediasessie of MainActivity): starten of stoppen */
