@@ -4,8 +4,8 @@
 
 /**
  * - `oortjesMicrofoon`: de microfoon van Bluetooth-oortjes (microphone.ts)
- * - `schermUit`: opnemen met het scherm uit, met de volumeknop (proef,
- *   docs/roadmap-android.md stap 3)
+ * - `schermUit`: opnemen met het scherm uit, met de volumeknop of de knop op
+ *   de oortjes (proef, docs/roadmap-android.md stap 3)
  */
 export type DevOption = 'oortjesMicrofoon' | 'schermUit';
 

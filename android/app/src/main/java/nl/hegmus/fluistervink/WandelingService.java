@@ -12,6 +12,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
+import android.media.AudioAttributes;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioPlaybackConfiguration;
+import android.media.AudioTrack;
 import android.media.VolumeProvider;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
@@ -20,6 +25,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.KeyEvent;
 import androidx.annotation.NonNull;
@@ -42,7 +48,9 @@ import java.util.concurrent.Executors;
  * ontwikkeloptie, SchermUitPlugin): dan krijgt de service ook het type
  * microfoon, vangt hij met het scherm uit de volumeknop op (een mediasessie
  * met een eigen volumeregeling), en neemt hij zelf op (Opname). Elke opname
- * gaat als bestand naar de webcode, die hem bewaart en verwerkt.
+ * gaat als bestand naar de webcode, die hem bewaart en verwerkt. De knop op
+ * de oortjes (of een Bluetooth-afstandsbediening die mediatoetsen stuurt)
+ * doet hetzelfde als de volumeknop, via dezelfde mediasessie.
  */
 public class WandelingService extends Service {
 
@@ -59,6 +67,21 @@ public class WandelingService extends Service {
 
     /** Drukken binnen deze tijd na de vorige tellen niet: vasthouden, of een knopje dat herhaalt */
     private static final long KEY_DEBOUNCE_MS = 400;
+
+    /**
+     * Mediaknop (oortjes) binnen deze tijd na de vorige: een dubbele druk.
+     * Doet niets, alleen loggen (anders start en stopt hij meteen weer).
+     */
+    private static final long MEDIA_DOUBLE_MS = 500;
+
+    /** Langer ingedrukt dan dit: lang indrukken (alleen loggen) */
+    private static final long MEDIA_LONG_MS = 800;
+
+    /** Stil geluid om de mediaknop te krijgen (claimMediaButton) */
+    private static final int SILENCE_MS = 300;
+
+    /** Niet opnieuw claimen als het scherm binnen deze tijd weer uitgaat (even kijken) */
+    private static final long CLAIM_AGAIN_MS = 15_000;
 
     /** Zoals "failed" in src/lib/feedback.ts: drie korte */
     private static final long[] TRIL_MISLUKT = { 0, 120, 150, 120, 150, 120 };
@@ -110,6 +133,9 @@ public class WandelingService extends Service {
     private boolean screenOff = false;
     private boolean receiverRegistered = false;
     private long lastKeyAt = 0;
+    private long lastMediaKeyAt = 0;
+    /** Wanneer we de mediaknop het laatst probeerden te krijgen (uptime), 0 = nooit */
+    private long claimedAt = 0;
     private Opname opname;
     private String opnameVia;
 
@@ -234,6 +260,11 @@ public class WandelingService extends Service {
         public void onReceive(Context context, Intent intent) {
             screenOff = Intent.ACTION_SCREEN_OFF.equals(intent.getAction());
             updateMediaSession();
+            // Scherm uit: misschien is er intussen een podcast begonnen; de
+            // knop op de oortjes weer naar ons. Niet na even kijken.
+            if (screenOff && SystemClock.uptimeMillis() - claimedAt > CLAIM_AGAIN_MS) {
+                claimMediaButton("scherm_uit");
+            }
         }
     };
 
@@ -253,6 +284,9 @@ public class WandelingService extends Service {
             screenOff = power != null && !power.isInteractive();
         }
         updateMediaSession();
+        // Begin van de sessie (of de optie net aangezet): de knop op de
+        // oortjes naar ons, ook als er net een podcast speelde
+        if (claimedAt == 0) claimMediaButton("sessie");
     }
 
     private void releaseScreenOff() {
@@ -264,6 +298,7 @@ public class WandelingService extends Service {
             mediaSession.setActive(false);
             mediaSession.release();
             mediaSession = null;
+            claimedAt = 0;
         }
     }
 
@@ -271,10 +306,15 @@ public class WandelingService extends Service {
      * De mediasessie vangt de volumeknop alleen zolang hij actief is: met het
      * scherm uit, of tijdens een opname (ook op het vergrendelscherm). Met de
      * app op het scherm vangt MainActivity hem eerst (KnopPlugin), en in een
-     * andere app doet de volumeknop gewoon het volume.
+     * andere app doet de volumeknop gewoon het volume. De knop op de oortjes
+     * hangt daar niet van af, alleen van wie het laatst geluid afspeelde.
      */
     private void updateMediaSession() {
-        boolean wanted = config != null && (screenOff || opname != null);
+        if (config == null) return;
+        // De sessie bestaat de hele sessie lang, ook met het scherm aan: dan
+        // kan Android hem de knop op de oortjes geven (claimMediaButton)
+        if (mediaSession == null) mediaSession = createMediaSession();
+        boolean wanted = screenOff || opname != null;
         if (!wanted) {
             if (mediaSession != null && mediaSession.isActive()) {
                 mediaSession.setActive(false);
@@ -282,7 +322,6 @@ public class WandelingService extends Service {
             }
             return;
         }
-        if (mediaSession == null) mediaSession = createMediaSession();
         if (!mediaSession.isActive()) {
             mediaSession.setActive(true);
             JSObject data = new JSObject();
@@ -307,20 +346,36 @@ public class WandelingService extends Service {
                 }
             }
         );
-        session.setPlaybackState(new PlaybackState.Builder().setState(PlaybackState.STATE_PLAYING, 0, 1f).build());
-        // Alleen om te leren of de knop op de oortjes ons bereikt (latere PR):
-        // loggen, verder niets
+        session.setPlaybackState(
+            new PlaybackState.Builder()
+                .setState(PlaybackState.STATE_PLAYING, 0, 1f)
+                .setActions(PlaybackState.ACTION_PLAY | PlaybackState.ACTION_PAUSE | PlaybackState.ACTION_PLAY_PAUSE)
+                .build()
+        );
+        // De knop op de oortjes of een afstandsbediening: een mediatoets.
+        // Komt ook binnen als de sessie niet actief is (scherm aan), zolang
+        // Android ons de mediaknop geeft (claimMediaButton). Niet doorgeven
+        // aan Android (super): dat zou bij een dubbele druk "volgende" doen.
         session.setCallback(
             new MediaSession.Callback() {
                 @Override
                 public boolean onMediaButtonEvent(@NonNull Intent intent) {
                     KeyEvent event = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
-                    if (event != null && event.getAction() == KeyEvent.ACTION_DOWN) {
-                        JSObject data = new JSObject();
-                        data.put("toets", KeyEvent.keyCodeToString(event.getKeyCode()));
-                        log("mediaknop", data);
-                    }
-                    return super.onMediaButtonEvent(intent);
+                    if (event == null) return false;
+                    mediaKey(event);
+                    return true;
+                }
+
+                // Sommige Bluetooth-apparaten (AVRCP) of horloges sturen geen
+                // toets maar meteen afspelen of pauzeren
+                @Override
+                public void onPlay() {
+                    mediaPress("transport_play", SystemClock.uptimeMillis());
+                }
+
+                @Override
+                public void onPause() {
+                    mediaPress("transport_pause", SystemClock.uptimeMillis());
                 }
             },
             handler
@@ -328,7 +383,148 @@ public class WandelingService extends Service {
         return session;
     }
 
-    /** Een druk op de volumeknop (mediasessie of MainActivity): starten of stoppen */
+    // --- De knop op de oortjes (mediaknop) ---
+
+    private static boolean isTalkKey(int code) {
+        return (
+            code == KeyEvent.KEYCODE_HEADSETHOOK ||
+            code == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE ||
+            code == KeyEvent.KEYCODE_MEDIA_PLAY ||
+            code == KeyEvent.KEYCODE_MEDIA_PAUSE
+        );
+    }
+
+    /**
+     * Een mediatoets: indrukken start of stopt een opname, net als de
+     * volumeknop. Andere toetsen (volgende, vorige), vasthouden, lang
+     * indrukken en een dubbele druk doen niets; alles komt wel in het log.
+     */
+    private void mediaKey(KeyEvent event) {
+        int code = event.getKeyCode();
+        String key = KeyEvent.keyCodeToString(code);
+        if (event.getAction() == KeyEvent.ACTION_UP) {
+            long heldMs = event.getEventTime() - event.getDownTime();
+            if (isTalkKey(code) && heldMs >= MEDIA_LONG_MS) {
+                JSObject data = mediaLog(key);
+                data.put("actie", "lang");
+                data.put("ingedruktMs", heldMs);
+                log("mediaknop", data);
+            }
+            return;
+        }
+        if (event.getAction() != KeyEvent.ACTION_DOWN) return;
+        if (!isTalkKey(code)) {
+            JSObject data = mediaLog(key);
+            data.put("actie", "genegeerd");
+            log("mediaknop", data);
+            return;
+        }
+        // Vasthouden: Android herhaalt de toets
+        if (event.getRepeatCount() > 0) {
+            if (event.getRepeatCount() == 1) {
+                JSObject data = mediaLog(key);
+                data.put("actie", "vasthouden");
+                log("mediaknop", data);
+            }
+            return;
+        }
+        mediaPress(key, event.getDownTime());
+    }
+
+    private void mediaPress(String key, long at) {
+        boolean twice = lastMediaKeyAt > 0 && at - lastMediaKeyAt < MEDIA_DOUBLE_MS;
+        lastMediaKeyAt = at;
+        JSObject data = mediaLog(key);
+        data.put("actie", twice ? "dubbel" : "druk");
+        log("mediaknop", data);
+        if (!twice) press("oortjes");
+    }
+
+    /** Wat we bij elke mediatoets loggen: welke, en sinds wanneer we de knop hebben */
+    private JSObject mediaLog(String key) {
+        JSObject data = new JSObject();
+        data.put("toets", key);
+        data.put("schermUit", screenOff);
+        if (claimedAt > 0) data.put("sindsClaimMs", SystemClock.uptimeMillis() - claimedAt);
+        return data;
+    }
+
+    /**
+     * Android geeft de mediaknop (oortjes, afstandsbediening) aan de app die
+     * het laatst geluid begon af te spelen en een mediasessie heeft. Onze
+     * sessie speelt niets, dus na een podcast krijgt de podcast de knop.
+     * Daarom spelen we kort stilte af (gebruik "media", zonder audiofocus):
+     * dan zijn wij de laatste. Dat helpt alleen als er verder niets speelt;
+     * speelt een podcast nog, dan zet Android die weer vooraan zodra onze
+     * stilte stopt.
+     *
+     * Bewust niet verder (proeven 18 nov, docs/roadmap-android.md): stilte
+     * blijven afspelen zolang een podcast speelt gaf ons de knop wel, maar
+     * Android (Bluetooth AVRCP) gooit "afspelen" weg als er muziek speelt en
+     * "pauzeren" als er niets speelt. Oortjes die die twee zelf afwisselen
+     * (Sony WH-1000XM5) kwamen dus maar half door, ook als we tussendoor
+     * "gepauzeerd" meldden. Voor een knop op het stuur: een sluiterknopje,
+     * dat een volumetoets stuurt.
+     */
+    private void claimMediaButton(String why) {
+        if (config == null || mediaSession == null) return;
+        claimedAt = SystemClock.uptimeMillis();
+        JSObject data = new JSObject();
+        data.put("waarom", why);
+        data.put("audiofocus", false);
+        AudioManager audio = getSystemService(AudioManager.class);
+        if (audio != null) {
+            // Wie de knop had, mag Android ons niet vertellen; wel of er iets speelt
+            data.put("anderGeluid", audio.isMusicActive());
+            int players = 0;
+            for (AudioPlaybackConfiguration playback : audio.getActivePlaybackConfigurations()) {
+                int usage = playback.getAudioAttributes().getUsage();
+                if (usage == AudioAttributes.USAGE_MEDIA || usage == AudioAttributes.USAGE_UNKNOWN) players++;
+            }
+            data.put("mediaSpelers", players);
+        }
+        try {
+            int rate = 16_000;
+            int samples = (rate * SILENCE_MS) / 1000;
+            AudioTrack track = new AudioTrack.Builder()
+                .setAudioAttributes(
+                    new AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                        .build()
+                )
+                .setAudioFormat(
+                    new AudioFormat.Builder()
+                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                        .setSampleRate(rate)
+                        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                        .build()
+                )
+                .setTransferMode(AudioTrack.MODE_STATIC)
+                .setBufferSizeInBytes(samples * 2)
+                .build();
+            track.write(new short[samples], 0, samples);
+            track.play();
+            handler.postDelayed(
+                () -> {
+                    try {
+                        track.stop();
+                    } catch (IllegalStateException ignored) {
+                        // Al gestopt
+                    }
+                    track.release();
+                },
+                SILENCE_MS + 500
+            );
+            data.put("ok", true);
+        } catch (RuntimeException e) {
+            data.put("ok", false);
+            data.put("fout", e.getClass().getSimpleName() + ": " + e.getMessage());
+        }
+        log("knop_claim", data);
+    }
+
+    /** Een druk op de volumeknop of de oortjes (mediasessie of MainActivity): starten of stoppen */
     void press(String via) {
         long now = System.currentTimeMillis();
         boolean bounce = now - lastKeyAt < KEY_DEBOUNCE_MS;
@@ -376,7 +572,7 @@ public class WandelingService extends Service {
         opnameVia = via;
         TrillenPlugin.tril(this, settings.trilStart);
         handler.postDelayed(recordingTooLong, settings.maxMs);
-        updateNotification("Opname loopt · volumeknop stopt");
+        updateNotification("Opname loopt · volumeknop of oortjes stopt");
         updateMediaSession();
         if (listener != null) listener.gestart(next.startedAt, via);
     }
@@ -465,7 +661,7 @@ public class WandelingService extends Service {
         );
 
         if (text == null) {
-            text = config != null ? "Volumeknop: inspreken met het scherm uit" : "Tik om Fluistervink te openen";
+            text = config != null ? "Volumeknop of oortjes: inspreken met het scherm uit" : "Tik om Fluistervink te openen";
         }
         return new NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_vink)

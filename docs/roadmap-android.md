@@ -71,8 +71,28 @@ Tweede stap (17 nov, na de eerste proef): **een opname met de knop in de app loo
 Nog uit te zoeken in het veld (en daarna de nette uitwerking):
 
 - Of de volumeknop met het scherm uit echt bij de mediasessie aankomt, ook met een podcast aan (Android geeft de volumeknop aan de sessie die "speelt"; een podcast speelt dan ook) en op een Samsung (die vangt de volumeknop soms zelf).
-- **Knop op de oortjes:** de mediasessie logt alleen welke mediaknop binnenkomt (`screen_off_mediaknop`), en doet er niets mee. Android stuurt de mediaknop naar de app die het laatst echt geluid afspeelde; onze sessie speelt niets, dus waarschijnlijk komt hij niet aan zolang er een podcast of muziek-app is geweest. Uitzoeken in de volgende PR (eventueel een kort stil geluid afspelen om de knop te krijgen, maar dat neemt de knop van de podcast af).
+- ~~**Knop op de oortjes:** alleen loggen~~: gebouwd op 18 nov, zie hieronder.
 - **Microfoonkeuze:** nu altijd `MIC` (die van de telefoon, zonder echo-onderdrukking). Voor de oortjes: `AudioRecord.setPreferredDevice` met een Bluetooth-SCO-apparaat, en de SCO-verbinding aanzetten (`AudioManager.setCommunicationDevice`, Android 12+); dat zet de oortjes in belmodus (smalbandig, podcast pauzeert). Volgende PR, met de testset erbij.
+
+**Knop op de oortjes (18 nov, PR #284): werkt half, bewust niet verder.** Met de ontwikkeloptie aan, de hele sessie (niet in een trektelling): een druk op de knop van de oortjes, een bedrade headset of een Bluetooth-afstandsbediening die mediatoetsen stuurt, start of stopt een opname, net als de volumeknop met het scherm uit (`via: "oortjes"`, zelfde trillen). **Maar alleen als de druk bij ons aankomt, en dat is lang niet altijd zo.**
+
+Hoe het nu werkt:
+
+- **Toetsen:** `HEADSETHOOK`, `MEDIA_PLAY_PAUSE`, `MEDIA_PLAY`, `MEDIA_PAUSE` (en "afspelen"/"pauzeren" zonder toets, `transport_play`/`_pause`). Een dubbele druk (binnen 0,5 s), vasthouden, lang indrukken (≥ 0,8 s) en andere toetsen doen niets; alles staat in `screen_off_mediaknop` met `actie`.
+- **De knop krijgen:** Android (8+) geeft de mediaknop aan de app die het laatst *begon* met geluid afspelen en een mediasessie heeft. De service speelt daarom 0,3 s stilte (media, zonder audiofocus) bij het begin van de sessie en als het scherm uitgaat (niet opnieuw binnen 15 s), log `screen_off_knop_claim`. De mediasessie bestaat de hele sessie (actief maken, voor de volumeknop, alleen met het scherm uit of tijdens een opname).
+- **Buiten de sessie of met de optie uit:** geen mediasessie; de knop doet wat hij altijd doet.
+- Geen nieuwe toestemming; de stabiele build verandert niet.
+
+Wat de proeven lieten zien (18 nov, Sony WH-1000XM5, Pocket Casts, Fairphone 5 met Android 15; logcat via draadloze foutopsporing):
+
+1. **Speelt er een podcast, dan houdt die de knop.** Zodra onze korte stilte stopt, zet Android de app die nog speelt weer vooraan; de druk pauzeerde de podcast (0.877).
+2. **Stilte laten doorlopen zolang de podcast speelt (0.878) gaf ons de knop wel**, maar dan kwam maar de helft van de drukken aan. Oorzaak (logcat): de XM5 stuurt om en om "pauzeren" en "afspelen", en Android (Bluetooth AVRCP) gooit zelf weg wat niet past: "afspelen" als er muziek speelt (`Ignore passthrough play during voice communication or music playing`), "pauzeren" als er niets speelt (`Ignore passthrough pause during music not playing`). Geen app kan dat veranderen.
+3. **Na elke druk even "gepauzeerd" melden (0.883: 0,3 s, 0.885: 1,5 s), zodat de oortjes weer "pauzeren" sturen:** hielp niet. Bluetooth gaf de melding niet eens door, en de XM5 wisselt toch zelf af.
+4. Een langere stop-tril (400 ms) loste niets op; terug naar 200 ms.
+
+**Besloten (18 nov):** niet verder. Het doorlopende stille geluid, het uitlezen van spelers van andere apps (niet in de openbare API) en het melden van "gepauzeerd" zijn er weer uit; wat blijft is de eenvoudige versie hierboven. Dat werkt met oortjes die steeds dezelfde toets sturen (bedrade headset, sommige oortjes) als er geen podcast speelt; met de XM5 maar om en om. Andere oortjes zijn alleen met logcat uit te zoeken. **Voor een knop op het stuur (Maarten): een Bluetooth-sluiterknopje**, dat een volumetoets stuurt en dus via de volumeknop met het scherm uit gaat, waar dit filter niet speelt. Eerst zelf proberen met het scherm uit.
+
+Logcat met draadloze foutopsporing: verbinding valt weg zodra het scherm uitgaat; het log daarna ophalen met `adb logcat -b all -d`, en vooraf de buffer vergroten (`adb logcat -G 16M`), want Bluetooth vult de gewone in ±1,5 minuut.
 
 ## Stap 4: de microfoon delen
 
