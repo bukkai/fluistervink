@@ -4,10 +4,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FakeLockManager, HOUTDUIF, KEEP, REE, VINK, VOS, toolResponse } from '../test-helpers';
 import { db, storeAudio, type Observation, type PositionLookup, type Utterance } from './db';
 import { interpret } from './interpret';
-import { fillMissingAreas } from './area';
+import { fillMissingAreas, nameFromSession } from './area';
 import { isAccidental, isBareNo } from './applyActions';
 import {
   HAND_ACCURACY,
+  changedFields,
   chooseCandidate,
   confirmObservation,
   copyObservation,
@@ -24,6 +25,7 @@ import {
   onAudioLimit,
   LONG_WAIT_MS,
   onLongWait,
+  onSaveFailed,
   positionLater,
   processQueue,
   retry,
@@ -78,6 +80,7 @@ vi.mock('./location.svelte', async (importOriginal) => ({
 vi.mock('./area', () => ({
   attachArea: async () => false,
   fillMissingAreas: vi.fn(async () => {}),
+  nameFromSession: vi.fn(async () => {}),
 }));
 
 // Aanmelden als installatie: standaard het echte, per test na te bootsen
@@ -609,6 +612,172 @@ describe('ongedaan maken', () => {
     await say('ongedaan maken', ['undo', {}]);
     await say('ongedaan maken', ['undo', {}]);
     expect(await db.observations.count()).toBe(0);
+  });
+});
+
+describe('rare aantallen en niets om te doen', () => {
+  it('"nog vijf eraf" bij drie: 1, maar onzeker met de reden', async () => {
+    await say('drie vinken', ['add_observation', { species_id: VINK, count: 3 }]);
+    const u = await say('nog vijf eraf', ['update_observation', { ref: 1, add_count: -5 }]);
+    const [obs] = await listObservations(SESSION);
+    expect(obs).toMatchObject({
+      count: 1,
+      uncertain: true,
+      uncertainReason: '3 − 5 kan niet: op 1 gezet',
+    });
+    expect(u.result).toBe('uncertain');
+  });
+
+  it('"nog twee eraf" bij vijf: gewoon drie, zeker', async () => {
+    await say('vijf vinken', ['add_observation', { species_id: VINK, count: 5 }]);
+    await say('twee eraf', ['update_observation', { ref: 1, add_count: -2 }]);
+    const [obs] = await listObservations(SESSION);
+    expect(obs).toMatchObject({ count: 3, uncertain: false });
+  });
+
+  it('ongedaan maken zonder iets om terug te draaien: niet begrepen', async () => {
+    const u = await say('ongedaan maken', ['undo', {}]);
+    expect(u.result).toBe('ignored');
+    expect(u.undid).toBeUndefined();
+  });
+
+  it('opnieuw doen zonder eerdere undo: niet begrepen', async () => {
+    await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    const u = await say('toch niet ongedaan maken', ['redo', {}]);
+    expect(u.result).toBe('ignored');
+    expect(await db.observations.count()).toBe(1);
+  });
+
+  it('"die laatste weg" in een lege sessie: niet begrepen', async () => {
+    const u = await say('die laatste weg', ['delete_observation', { ref: 1 }]);
+    expect(u.result).toBe('ignored');
+  });
+
+  it('een waarneming die intussen weg is aanpassen: niet begrepen', async () => {
+    await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    const [obs] = await listObservations(SESSION);
+    // Het model kreeg de vink nog in de context; daarna met de hand verwijderd
+    model.respond = () => toolResponse(['update_observation', { ref: 1, species_id: KEEP }]);
+    const id = await queue('nee, keep');
+    vi.mocked(interpret).mockImplementationOnce(async (_t, recent) => {
+      const response = model.respond(recent);
+      const { parseResponse } = await vi.importActual<typeof import('./interpret')>('./interpret');
+      const parsed = parseResponse(response, recent);
+      await db.observations.delete(obs.id);
+      return { ...parsed, response, context: '', contextIds: [], timing: { requestMs: 0 } };
+    });
+    await processQueue();
+    expect((await db.utterances.get(id))?.result).toBe('ignored');
+  });
+
+  it('een groot geschat aantal komt er gewoon in', async () => {
+    await say("zo'n tweeënhalfduizend kolganzen", [
+      'add_observation',
+      { species_id: VINK, count: 2500 },
+    ]);
+    const [obs] = await listObservations(SESSION);
+    expect(obs.count).toBe(2500);
+  });
+});
+
+describe('met de hand bewerken terwijl de stem corrigeert', () => {
+  it('Opslaan overschrijft een stemcorrectie niet, alleen wat je zelf aanpaste', async () => {
+    await say('twee vinken', ['add_observation', { species_id: VINK, count: 2 }]);
+    // Formulier open: een kopie van de waarneming
+    const [opened] = await listObservations(SESSION);
+    // Intussen met de stem: "nee, keep"
+    await say('nee, die laatste was een keep', [
+      'update_observation',
+      { ref: 1, species_id: KEEP },
+    ]);
+    // In het formulier alleen het aantal aangepast, dan Opslaan
+    await editObservation(
+      opened.id,
+      changedFields(opened, { speciesId: opened.speciesId, count: 3, remarks: undefined }),
+    );
+    const [obs] = await listObservations(SESSION);
+    expect(obs).toMatchObject({ speciesId: KEEP, count: 3, status: 'reviewed' });
+  });
+
+  it('changedFields vergelijkt ook plekken en lijsten op inhoud', () => {
+    const position = { lat: 52, lon: 5, accuracy: 8, fixedAt: 0 };
+    const original: Observation = {
+      id: 'w',
+      sessionId: SESSION,
+      utteranceId: 'u',
+      speciesId: VINK,
+      count: 1,
+      observedAt: 0,
+      createdAt: 0,
+      uncertain: true,
+      candidates: [VINK, KEEP],
+      position,
+      status: 'draft',
+    };
+    expect(
+      changedFields(original, {
+        speciesId: VINK,
+        position: { ...position },
+        candidates: [VINK, KEEP],
+        uncertain: false,
+      }),
+    ).toEqual({ uncertain: false });
+  });
+});
+
+describe('telefoon vol', () => {
+  it('opslaan mislukt: geen fout naar boven, wel "mislukt" en het sessiescherm hoort het', async () => {
+    const vibrations: unknown[] = [];
+    vi.stubGlobal('navigator', {
+      ...navigator,
+      vibrate: (pattern: number[]) => (vibrations.push(pattern), true),
+    });
+    const full = new DOMException('Quota exceeded', 'QuotaExceededError');
+    const spy = vi.spyOn(db.utterances, 'add').mockRejectedValueOnce(full);
+    const heard = vi.fn();
+    const off = onSaveFailed(heard);
+    try {
+      await expect(submitText(SESSION, 'roepje vink')).resolves.toBeUndefined();
+    } finally {
+      off();
+      spy.mockRestore();
+      vi.unstubAllGlobals();
+    }
+    expect(heard).toHaveBeenCalledWith(true);
+    expect(vibrations).toEqual([[120, 150, 120, 150, 120]]);
+    const [event] = (await db.events.toArray()).filter((e) => e.type === 'save_failed');
+    expect(event.data).toMatchObject({ full: true, trektel: false });
+    expect(await db.utterances.count()).toBe(0);
+  });
+
+  it('een andere fout bij het opslaan is niet "vol"', async () => {
+    const spy = vi.spyOn(db.utterances, 'add').mockRejectedValueOnce(new Error('kapot'));
+    const heard = vi.fn();
+    const off = onSaveFailed(heard);
+    try {
+      await submitText(SESSION, 'roepje vink');
+    } finally {
+      off();
+      spy.mockRestore();
+    }
+    expect(heard).toHaveBeenCalledWith(false);
+  });
+});
+
+describe('Stop terwijl de wachtrij nog bezig is', () => {
+  it('de laatste uitspraak telt mee voor de naam van de gestopte sessie', async () => {
+    await db.sessions.add({ id: SESSION, startedAt: clock, status: 'ended', endedAt: clock + 1 });
+    vi.mocked(nameFromSession).mockClear();
+    await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    expect(await db.observations.count()).toBe(1);
+    expect(nameFromSession).toHaveBeenCalledWith(SESSION);
+  });
+
+  it('een lopende sessie krijgt geen nieuwe naam per uitspraak', async () => {
+    await db.sessions.add({ id: SESSION, startedAt: clock, status: 'active' });
+    vi.mocked(nameFromSession).mockClear();
+    await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    expect(nameFromSession).not.toHaveBeenCalled();
   });
 });
 

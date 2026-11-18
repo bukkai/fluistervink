@@ -19,7 +19,7 @@ import {
 } from './trektel';
 
 /** `limit`: de proxy verwerkt vandaag niets meer (plafond per dag) */
-type StopReason = 'max' | 'hidden' | 'limit';
+type StopReason = 'max' | 'hidden' | 'limit' | 'storage';
 
 export interface TrektelHandlers {
   /** Bij het begin van elk stuk: de positie van dat moment opvragen. */

@@ -10,7 +10,7 @@ import {
 } from './db';
 import { ApiError } from './api';
 import { applyActions } from './applyActions';
-import { attachArea, fillMissingAreas } from './area';
+import { attachArea, fillMissingAreas, nameFromSession } from './area';
 import { devNoteText } from './devNotePrefix';
 import { isEmptyTrektelChunk, utteranceFeedback, vibrate } from './feedback';
 import { INSTANCE_ID } from './instance.svelte';
@@ -50,16 +50,57 @@ export async function submitRecording(
   lookup: Promise<PositionLookup>,
   options: { trektel?: boolean } = {},
 ): Promise<void> {
+  let audio;
+  try {
+    audio = await storeAudio(recording.audio);
+  } catch (error) {
+    saveFailed(error, sessionId, options.trektel);
+    return;
+  }
   await submit(
     {
       sessionId,
       recordedAt: recording.startedAt,
-      audio: await storeAudio(recording.audio),
+      audio,
       audioDurationMs: recording.durationMs,
       ...(options.trektel && { trektel: true }),
     },
     lookup,
   );
+}
+
+const saveFailedListeners = new Set<(full: boolean) => void>();
+
+/**
+ * Een uitspraak kon niet bewaard worden, meestal omdat de telefoon vol is
+ * (`QuotaExceededError`). Het sessiescherm zegt het dan en stopt een lopende
+ * trektelling. `full`: de opslag is vol. Geeft een functie om af te melden.
+ */
+export function onSaveFailed(listener: (full: boolean) => void): () => void {
+  saveFailedListeners.add(listener);
+  return () => saveFailedListeners.delete(listener);
+}
+
+/** Opslag vol? Dexie geeft de naam van de fout van IndexedDB door. */
+export function isStorageFull(error: unknown): boolean {
+  const names = [(error as Error)?.name, (error as { inner?: Error })?.inner?.name];
+  return names.some((name) => name === 'QuotaExceededError');
+}
+
+/**
+ * Niet stil kwijtraken: "mislukt"-tril (ook in een trektelling, want daar is
+ * dit het einde van de telling), in het log (dat zelf ook kan mislukken) en
+ * naar het sessiescherm.
+ */
+function saveFailed(error: unknown, sessionId: string, trektel?: boolean): void {
+  const full = isStorageFull(error);
+  logEvent(
+    'save_failed',
+    { full, trektel: !!trektel, message: error instanceof Error ? error.message : String(error) },
+    { sessionId },
+  );
+  vibrate('failed');
+  for (const listener of saveFailedListeners) listener(full);
 }
 
 async function submit(
@@ -70,7 +111,12 @@ async function submit(
   lookup: Promise<PositionLookup>,
 ): Promise<void> {
   const id = crypto.randomUUID();
-  await db.utterances.add({ id, ...fields, savedAt: Date.now(), status: 'pending' });
+  try {
+    await db.utterances.add({ id, ...fields, savedAt: Date.now(), status: 'pending' });
+  } catch (error) {
+    saveFailed(error, fields.sessionId, fields.trektel);
+    return;
+  }
   // Wacht de wachtrij op bereik, dan komt er voorlopig geen antwoord: meteen
   // "bewaard, wacht op bereik". Niet bij een trektelstuk (dat knipt de app
   // zelf, elke minuut).
@@ -289,6 +335,9 @@ async function runQueue(): Promise<void> {
   // Sessies waarvan na het wachten uitspraken verwerkt zijn: gebieden en naam
   // alsnog (ook van een sessie die intussen gestopt is)
   const resumed = new Set<string>();
+  // Alle sessies met een verwerkte uitspraak: is er een intussen gestopt
+  // (Stop vlak na de laatste uitspraak), dan de naam opnieuw bepalen
+  const touched = new Set<string>();
   while (true) {
     const pending = await db.utterances.where('status').equals('pending').sortBy('recordedAt');
     const next = pending.find((u) => !skipped.has(u.id));
@@ -309,6 +358,7 @@ async function runQueue(): Promise<void> {
       continue;
     }
     const processed = await db.utterances.get(next.id);
+    touched.add(next.sessionId);
     if (next.waitingSince && processed?.status !== 'pending') {
       const waitedMs = Date.now() - next.waitingSince;
       logEvent(
@@ -340,6 +390,11 @@ async function runQueue(): Promise<void> {
     confirmCatchUp(catchUp.done, catchUp.failed).catch(() => {});
   }
   for (const sessionId of resumed) fillMissingAreas(sessionId).catch(() => {});
+  for (const sessionId of touched) {
+    if (resumed.has(sessionId)) continue;
+    const session = await db.sessions.get(sessionId).catch(() => undefined);
+    if (session?.status === 'ended') nameFromSession(sessionId).catch(() => {});
+  }
 }
 
 /**
@@ -655,7 +710,7 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
       logEvent('stale_result', { attempt: attempts }, ids);
       return;
     }
-    const changes = await applyActions(latest, interpretation.actions);
+    const { changes, acted } = await applyActions(latest, interpretation.actions);
     const touched = await db.observations.bulkGet(
       changes.flatMap((c) => (c.type === 'delete' ? [] : [c.observationId])),
     );
@@ -693,8 +748,9 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
       ...(devNote
         ? { kind: 'dev_note' as const, result: 'note' as const }
         : {
-            result:
-              interpretation.actions.length === 0 ? 'ignored' : uncertain ? 'uncertain' : 'saved',
+            // Niets gedaan ("ongedaan maken" zonder iets om terug te draaien,
+            // een waarneming die al weg was): "niet begrepen", geen "opgeslagen"
+            result: !acted ? 'ignored' : uncertain ? 'uncertain' : 'saved',
           }),
       error: interpretation.rejected.length ? interpretation.rejected.join('; ') : undefined,
     });

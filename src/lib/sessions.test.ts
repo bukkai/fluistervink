@@ -45,6 +45,12 @@ describe('checkStaleSession', () => {
     expect(await checkStaleSession(now)).toBeUndefined();
   });
 
+  it('een klok die terugspringt (uitspraak "in de toekomst"): niet vragen en niet stoppen', async () => {
+    await activeSession(2, -3);
+    expect(await checkStaleSession(now)).toBeUndefined();
+    expect((await db.sessions.get('sessie'))?.status).toBe('active');
+  });
+
   it('vraagt na een uur zonder uitspraken, vanaf de laatste uitspraak', async () => {
     await activeSession(3, 2);
     expect(await checkStaleSession(now)).toEqual({
