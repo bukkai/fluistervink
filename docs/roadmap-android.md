@@ -102,7 +102,7 @@ Zodra de microfoon lang open staat (trektelmodus nu al, het wake word straks), b
 
 **Stand (11 nov):** het deel dat nu al kan, zit achter een ontwikkeloptie: een trektelling pauzeert bij een andere app in plaats van te stoppen, en gaat verder als je terugkomt (binnen 15 minuten). De native `AudioRecordingCallback` voegt pas iets toe als de app ook op de achtergrond opneemt (stap 3): zolang Fluistervink alleen op het scherm opneemt, geeft Android de microfoon vanzelf aan de app op het scherm.
 
-**Stand (18 nov):** de trektelling in de service (stap 3) gebruikt hem: wil een andere app de microfoon, dan zet Android ons op stilte (`isClientSilenced`, Android 10+; als terugval een seconde lang alleen nullen). De telling pauzeert dan met de bestaande lange tril en gaat vanzelf verder als het geluid terug is, ook zonder terug te gaan naar Fluistervink. De microfoon zelf houdt de service vast: Android deelt hem vanaf versie 10, en zo hoeft hij niet vanaf de achtergrond opnieuw aan (dat staat Android niet toe). Log `trektel_microfoon` (stil of niet, aantal opnames).
+**Stand (18 nov):** de trektelling in de service (stap 3) gebruikt hem: wil een andere app de microfoon, dan zet Android ons op stilte (`isClientSilenced`, Android 10+; als terugval een seconde lang alleen nullen). De telling pauzeert dan met de bestaande lange tril en gaat vanzelf verder als het geluid terug is, ook zonder terug te gaan naar Fluistervink. De microfoon zelf houdt de service vast: Android deelt hem vanaf versie 10, en zo hoeft hij niet vanaf de achtergrond opnieuw aan (dat staat Android niet toe). Log `screen_off_trektel_microfoon` (stil of niet, aantal opnames).
 
 ## Stap 5: het wake word "Fluistervink"
 

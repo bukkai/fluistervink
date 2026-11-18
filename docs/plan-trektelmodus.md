@@ -61,7 +61,7 @@ De microfoon blijft in deze modus continu bezet. Merlin kan er dan niet tussendo
 - **Microfoon delen:** belt iemand of open je Merlin, dan geeft Android die app het geluid en ons stilte. De service ziet dat (`AudioRecordingCallback`, of een seconde lang alleen nullen), pauzeert met dezelfde lange tril, en gaat vanzelf verder als het geluid terug is, ook met het scherm uit. Na een kwartier stopt de telling, zoals nu. Op Android 8 en 9 deelt Android de microfoon niet; daar kan Merlin er tijdens zo'n telling niet bij.
 - **Grenzen blijven:** 4 uur (de service stopt zelf), 5 uur spraak per dag (`429 audio_limit`), telefoon vol: de telling stopt met uitleg en twee lange trillen.
 - **Lukt starten in de service niet** (geen type microfoon, microfoon bezet), dan start de gewone trektelling van de webcode, met het scherm aan.
-- **Meten** in het log: per stuk `trektel_stuk` (duur, spraak, hoe lang het scherm uit was, vertraging tot de webcode), stilte in `trektel_stilte`, pauzes in `trektel_native_paused`, en bij het stoppen `trektel_native_end` met de accu aan begin en eind.
+- **Meten** in het log: per stuk `trektel_stuk` (duur, spraak, hoe lang het scherm uit was, vertraging tot de webcode), stilte in `screen_off_trektel_stilte`, pauzes in `trektel_native_paused`, en bij het stoppen `trektel_native_end` met de accu aan begin en eind.
 
 ### 5. Plafond in de proxy
 
