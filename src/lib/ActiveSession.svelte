@@ -332,6 +332,8 @@
     <span class="dot"></span>
     {#if gps.status === 'ok' && gps.latest}
       Locatie ±{Math.round(gps.latest.accuracy)} m
+    {:else if gps.status === 'searching' && gps.slow}
+      Nog geen locatie, inspreken kan gewoon
     {:else}
       {gpsLabels[gps.status]}
     {/if}

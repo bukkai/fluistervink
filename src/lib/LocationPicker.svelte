@@ -23,6 +23,8 @@
 
   let locating = $state(false);
   let hereError = $state<string>();
+  /** Kaarttegels laden niet (meestal geen bereik) */
+  let tilesFailed = $state(false);
 
   let container = $state<HTMLDivElement>();
   let map: LeafletMap | undefined;
@@ -45,7 +47,10 @@
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      }).addTo(created);
+      })
+        .on('tileerror', () => (tilesFailed = true))
+        .on('load', () => (tilesFailed = false))
+        .addTo(created);
 
       if (position) {
         created.setView([position.lat, position.lon], 17);
@@ -134,7 +139,14 @@
 </script>
 
 <div class="map" bind:this={container}></div>
-<p class="hint">Tik op de kaart of sleep de stip naar de plek van de vogel.</p>
+{#if tilesFailed}
+  <p class="hint" role="status">
+    De kaart laadt niet{navigator.onLine ? '' : ': geen bereik'}. "Huidige locatie" werkt wel; op de
+    kaart tikken kan later, als je weer bereik hebt.
+  </p>
+{:else}
+  <p class="hint">Tik op de kaart of sleep de stip naar de plek van de vogel.</p>
+{/if}
 <button type="button" class="btn secondary here" onclick={here} disabled={locating}>
   <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
     <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
