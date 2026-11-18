@@ -20,12 +20,13 @@ Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/ro
 
 Elk punt na het proberen hier weghalen.
 
-- **Trektelling met het scherm uit** (#289, nog niet gemerged): debug-APK `apk/fluistervink-0.906-trektel-scherm-uit.apk` laadt de preview van de branch (eigen opslag: toegangscode opnieuw invullen, ontwikkeloptie "Opnemen met het scherm uit" aan; eerst de Play-versie weg, dus eerst een JSON-export). Trektelling starten (melding: "Trektelling loopt · het scherm mag uit"), dan:
+- **Trektelling met het scherm uit** (#289, nog niet gemerged): debug-APK `apk/fluistervink-0.907-trektel-scherm-uit.apk` laadt de preview van de branch (eigen opslag: toegangscode opnieuw invullen, ontwikkeloptie "Opnemen met het scherm uit" aan; eerst de Play-versie weg, dus eerst een JSON-export). Trektelling starten (melding: "Trektelling loopt · het scherm mag uit"), dan:
   1. Een kwartier tellen met het scherm uit, af en toe iets inspreken: komen alle stukken door, met plek, en klopt het knippen?
   2. Scherm tussendoor aan en de app openen: lampje en tellers lopen gewoon, geen dubbele stukken, niets weggevallen op de grens.
   3. Gebeld worden: één lange tril (pauze), na het ophangen vanzelf een tril en verder.
   4. Merlin openen en laten luisteren: Fluistervink pauzeert (lange tril), Merlin hoort de vogels; Merlin dicht, Fluistervink gaat vanzelf verder.
-  5. Stoppen en sessie delen. In het log: `trektel_stuk` (`screenOffMs`, `transferMs`), `screen_off_trektel_microfoon`, `trektel_native_paused`, `trektel_native_end` met de accu aan begin en eind.
+  5. Stoppen en sessie delen.
+  6. Gedaan met 0.906 (18 nov): alles opgenomen zonder gat, maar met het scherm uit kwamen de stukken pas bij ontgrendelen binnen (webcode bevroren). In 0.907 opgelost: komt elk stuk nu binnen een seconde aan (`bridgeMs` in `trektel_stuk`), en tril je met het scherm uit na elk verwerkt stuk? In het log: `trektel_stuk` (`screenOffMs`, `transferMs`), `screen_off_trektel_microfoon`, `trektel_native_paused`, `trektel_native_end` met de accu aan begin en eind.
 
 - **Zeldzaam dier inspreken** (na 9737137, beta): "een wolf", "twee knoflookpadden", "drie korenwolven" → die soort, onzeker ("Dwaalgast, niet in de vaste lijst"), niet "Zoogdier onbekend".
 - **Sluiterknopje met het scherm uit** (na #284, besteld 18 nov): een Bluetooth-sluiterknopje (één knop, of de iOS-knop) stuurt volume omhoog en zou dus via de volumeknop met het scherm uit moeten werken, ook met een podcast aan. Proberen met het scherm aan, uit, en met een podcast; daarna sessie delen (log: `talk_volume_key`, `screen_off_started` met `via: volume_up`). Bevalt het, dan Maarten aanraden voor op het stuur. Debug-APK `apk/fluistervink-0.886-oortjesknop.apk` (preview van #284) of gewoon de beta.
