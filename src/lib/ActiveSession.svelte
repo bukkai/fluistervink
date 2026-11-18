@@ -244,9 +244,12 @@
 
   // Opnemen met het scherm uit (ontwikkeloptie, screenOff.svelte.ts): de
   // volumeknop met het scherm uit neemt op in de service. Niet tijdens een
-  // trektelling: die heeft de microfoon al.
+  // trektelling van de webcode: die heeft de microfoon al. Wel tijdens een
+  // trektelling in de service: die heeft juist het type microfoon nodig
+  // (loslaten en opnieuw aanzetten kan niet vanaf de achtergrond).
+  const webTrektel = $derived(trektel.status !== 'idle' && !trektel.native);
   $effect(() => {
-    if (trektel.status !== 'idle') return;
+    if (webTrektel) return;
     return startScreenOff(
       untrack(() => session.id),
       MAX_RECORDING_MS,
@@ -297,14 +300,20 @@
     if (recorder.status !== 'idle') return;
     syncSessionService(session.id);
     const sessionId = session.id;
-    const started = await startTrektel({
-      onChunkStart: () => currentPosition(),
-      onChunk: (recording, chunkLookup) =>
-        submitRecording(sessionId, recording, chunkLookup, { trektel: true }),
-      onStopped: () => vibrate('trektelStopped'),
-      onPaused: () => vibrate('trektelPaused'),
-      onResumed: () => vibrate('recording'),
-    });
+    const started = await startTrektel(
+      {
+        onChunkStart: () => currentPosition(),
+        onChunk: (recording, chunkLookup) =>
+          submitRecording(sessionId, recording, chunkLookup, { trektel: true }),
+        onStopped: () => vibrate('trektelStopped'),
+        onPaused: () => vibrate('trektelPaused'),
+        onResumed: () => vibrate('recording'),
+      },
+      // Proef scherm uit: de service neemt de telling op, het scherm mag uit.
+      // Altijd proberen met de optie aan: de service zegt zelf of het kan
+      // (anders de gewone trektelling, `trektel_native_failed` in het log)
+      { native: screenOffEnabled() },
+    );
     if (started) vibrate('recording');
   }
 
@@ -479,11 +488,13 @@
     <p class="mic listening">
       <span class="ear" class:speaking={trektel.speaking}></span>
       <span class="hearing"
-        >{trektel.status !== 'running'
-          ? 'Microfoon aanzetten'
-          : trektel.speaking
-            ? 'Hoort spraak'
-            : 'Luistert'}</span
+        >{trektel.status === 'paused'
+          ? 'Gepauzeerd'
+          : trektel.status !== 'running'
+            ? 'Microfoon aanzetten'
+            : trektel.speaking
+              ? 'Hoort spraak'
+              : 'Luistert'}</span
       >
       <!-- Pas na het eerste stuk: "eerste stuk na 1 minuut" was onduidelijk (feedback 12 nov) -->
       {#if trektel.sent > 0}

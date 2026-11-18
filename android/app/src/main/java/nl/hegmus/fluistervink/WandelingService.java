@@ -18,6 +18,7 @@ import android.media.AudioManager;
 import android.media.AudioPlaybackConfiguration;
 import android.media.AudioTrack;
 import android.media.VolumeProvider;
+import android.os.BatteryManager;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
 import android.os.Build;
@@ -36,6 +37,7 @@ import com.getcapacitor.JSObject;
 import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Foreground service tijdens een sessie (fase 2, docs/plan-capacitor.md),
@@ -51,6 +53,11 @@ import java.util.concurrent.Executors;
  * gaat als bestand naar de webcode, die hem bewaart en verwerkt. De knop op
  * de oortjes (of een Bluetooth-afstandsbediening die mediatoetsen stuurt)
  * doet hetzelfde als de volumeknop, via dezelfde mediasessie.
+ *
+ * Trektelling met het scherm uit (zelfde proef, docs/plan-trektelmodus.md):
+ * dan neemt de service de hele trektelling op en knipt hij zelf in stukken
+ * (TrektelOpname). Elk stuk gaat als opname naar de webcode, net als een
+ * opname met de volumeknop.
  */
 public class WandelingService extends Service {
 
@@ -108,6 +115,14 @@ public class WandelingService extends Service {
         void log(String type, JSObject data);
         /** Volumeknop met het scherm uit terwijl de webcode zelf opneemt: die stopt hem */
         void druk(String via);
+        /** Nieuws over de trektelling: stuk_begint, spreekt, gepauzeerd, hervat, gestopt */
+        void trektel(String soort, JSObject data);
+    }
+
+    /** Instellingen van een trektelling (SchermUitPlugin.trektelStart) */
+    static final class TrektelConfig {
+        Knipper.Opties opties = new Knipper.Opties();
+        long maxMs;
     }
 
     /** Gezet zolang de webcode het wil (ontwikkeloptie, sessie loopt, geen trektelling) */
@@ -138,6 +153,11 @@ public class WandelingService extends Service {
     private long claimedAt = 0;
     private Opname opname;
     private String opnameVia;
+    /** Loopt er een trektelling in de service (alleen met `config`) */
+    private volatile TrektelOpname trektel;
+    private int trektelStukken = 0;
+    private int trektelStil = 0;
+    private Integer accuBegin;
 
     @Override
     public void onCreate() {
@@ -162,6 +182,14 @@ public class WandelingService extends Service {
         handler.removeCallbacks(stopAfterMax);
         handler.postDelayed(stopAfterMax, MAX_DURATION_MS);
         updateScreenOff();
+        if (config != null) {
+            // De webcode zette de proef misschien aan vóór de service draaide
+            // (`aan` gaf dan "service draait niet"): zeggen dat het nu kan
+            JSObject data = new JSObject();
+            data.put("microfoon", microphoneReady());
+            if (microphoneError != null) data.put("fout", microphoneError);
+            log("service_klaar", data);
+        }
         // Sluit Android de app toch, dan niet vanzelf herstarten: de webcode
         // start de service weer bij het openen als de sessie nog loopt
         return START_NOT_STICKY;
@@ -170,6 +198,7 @@ public class WandelingService extends Service {
     @Override
     public void onDestroy() {
         handler.removeCallbacks(stopAfterMax);
+        stopTrektel("service_gestopt");
         finish("service_gestopt");
         releaseScreenOff();
         worker.shutdown(); // maakt een opname die net stopte nog af
@@ -244,6 +273,7 @@ public class WandelingService extends Service {
 
     /** Uitzetten: een lopende opname afmaken en doorgeven, volumeknop terug naar Android. */
     void disarm() {
+        stopTrektel("uitgezet");
         finish("uitgezet");
         config = null;
         arm();
@@ -530,6 +560,13 @@ public class WandelingService extends Service {
         boolean bounce = now - lastKeyAt < KEY_DEBOUNCE_MS;
         lastKeyAt = now;
         if (bounce || config == null) return;
+        if (trektel != null) {
+            // De trektelling heeft de microfoon al; de knop doet dan niets
+            JSObject data = new JSObject();
+            data.put("via", via);
+            log("druk_trektel", data);
+            return;
+        }
         if (opname == null && webRecording) {
             if (listener != null) listener.druk(via);
             return;
@@ -549,7 +586,7 @@ public class WandelingService extends Service {
 
     private void startRecording(String via) {
         Config settings = config;
-        if (settings == null) return;
+        if (settings == null || trektel != null) return;
         if (!microphoneReady()) {
             // Zonder type microfoon geeft Android met het scherm uit alleen stilte
             JSObject data = new JSObject();
@@ -619,6 +656,212 @@ public class WandelingService extends Service {
                 if (listener != null) listener.opname(delivered, info);
             });
         });
+    }
+
+    // --- Trektelling met het scherm uit ---
+
+    static boolean isTrektelling() {
+        return instance != null && instance.trektel != null;
+    }
+
+    /** Begint een trektelling in de service. Geeft null, of waarom het niet kan. */
+    synchronized String startTrektel(TrektelConfig settings) {
+        Config session = config;
+        if (session == null) return "niet aangezet";
+        if (trektel != null) return "loopt al";
+        if (opname != null) return "opname loopt";
+        if (!microphoneReady()) return microphoneError != null ? microphoneError : "geen type microfoon";
+        TrektelOpname next = new TrektelOpname(
+            this,
+            directory(this),
+            settings.opties,
+            settings.maxMs,
+            () -> screenOff,
+            handler,
+            new TrektelUitvoer(session.sessionId)
+        );
+        try {
+            next.start();
+        } catch (Exception e) {
+            return e.getClass().getSimpleName() + ": " + e.getMessage();
+        }
+        trektel = next;
+        trektelStukken = 0;
+        trektelStil = 0;
+        accuBegin = accu();
+        handler.post(() -> {
+            updateNotification("Trektelling loopt · het scherm mag uit");
+            updateMediaSession();
+        });
+        return null;
+    }
+
+    /**
+     * Stopt de trektelling; het laatste stuk gaat nog naar de webcode.
+     * Geeft wat de telling deed (accu, stukken), of null als er geen liep.
+     */
+    synchronized JSObject stopTrektel(String reden) {
+        TrektelOpname current = trektel;
+        if (current == null) return null;
+        trektel = null;
+        current.stop();
+        JSObject data = trektelStand(current, reden);
+        handler.post(() -> {
+            updateNotification(null);
+            updateMediaSession();
+        });
+        return data;
+    }
+
+    private JSObject trektelStand(TrektelOpname current, String reden) {
+        JSObject data = new JSObject();
+        data.put("reden", reden);
+        data.put("durationMs", System.currentTimeMillis() - current.begonAt);
+        data.put("stukken", trektelStukken);
+        data.put("stil", trektelStil);
+        if (accuBegin != null) data.put("accuBegin", accuBegin);
+        Integer eind = accu();
+        if (eind != null) data.put("accuEind", eind);
+        return data;
+    }
+
+    /** Wacht tot alle stukken en opnames af zijn (bestand staat klaar) */
+    void flush() {
+        try {
+            worker.submit(() -> {}).get(5, TimeUnit.SECONDS);
+        } catch (Exception ignored) {
+            // Te laat of al gestopt: `wachtend` vindt ze later
+        }
+    }
+
+    /** Accu in procenten, als Android het zegt */
+    private Integer accu() {
+        BatteryManager battery = getSystemService(BatteryManager.class);
+        if (battery == null) return null;
+        int level = battery.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
+        return level > 0 && level <= 100 ? level : null;
+    }
+
+    /** Wat de opnamethread van de trektelling meldt; alles naar de hoofdthread of de worker */
+    private final class TrektelUitvoer implements TrektelOpname.Uitvoer {
+
+        private final String sessionId;
+
+        TrektelUitvoer(String sessionId) {
+            this.sessionId = sessionId;
+        }
+
+        @Override
+        public void stukBegint(long startedAt) {
+            JSObject data = new JSObject();
+            data.put("startedAt", startedAt);
+            handler.post(() -> trektelNieuws("stuk_begint", data));
+        }
+
+        @Override
+        public void stuk(AacBestand bestand, Knipper.Stuk stuk, long schermUitMs) {
+            long gestoptAt = System.currentTimeMillis();
+            worker.execute(() -> {
+                JSObject info = new JSObject();
+                info.put("startedAt", bestand.startedAt);
+                info.put("trektel", true);
+                info.put("spraakMs", stuk.spraakMs);
+                info.put("piekDb", stuk.piekDb);
+                info.put("achtergrondDb", stuk.achtergrondDb);
+                info.put("schermUitMs", schermUitMs);
+                info.put("gestoptAt", gestoptAt);
+                if (!stuk.heeftSpraak) {
+                    // Stilte: niet bewaren, wel loggen (zoals trektel_silence in de webcode)
+                    bestand.weg();
+                    info.put("durationMs", stuk.duurMs);
+                    trektelStil++;
+                    handler.post(() -> {
+                        log("trektel_stilte", info);
+                        trektelNieuws("stuk", stukTelling());
+                    });
+                    return;
+                }
+                long durationMs;
+                try {
+                    durationMs = bestand.klaar();
+                } catch (RuntimeException e) {
+                    durationMs = 0;
+                    info.put("fout", e.getClass().getSimpleName() + ": " + e.getMessage());
+                }
+                info.put("durationMs", durationMs);
+                info.put("klaarAt", System.currentTimeMillis());
+                if (bestand.leeg() || durationMs == 0) {
+                    //noinspection ResultOfMethodCallIgnored
+                    bestand.file.delete();
+                    handler.post(() -> log("trektel_weggegooid", info));
+                    return;
+                }
+                File done = new File(
+                    bestand.file.getParentFile(),
+                    sessionId + "_" + bestand.startedAt + "_" + durationMs + "_trektel.m4a"
+                );
+                File delivered = bestand.file.renameTo(done) ? done : bestand.file;
+                trektelStukken++;
+                handler.post(() -> {
+                    trektelNieuws("stuk", stukTelling());
+                    if (listener != null) listener.opname(delivered, info);
+                });
+            });
+        }
+
+        @Override
+        public void spreekt(boolean ja) {
+            JSObject data = new JSObject();
+            data.put("ja", ja);
+            handler.post(() -> trektelNieuws("spreekt", data));
+        }
+
+        @Override
+        public void gepauzeerd(String waarom) {
+            JSObject data = new JSObject();
+            data.put("waarom", waarom);
+            data.put("schermUit", screenOff);
+            handler.post(() -> {
+                updateNotification("Trektelling gepauzeerd · een andere app heeft de microfoon");
+                trektelNieuws("gepauzeerd", data);
+            });
+        }
+
+        @Override
+        public void hervat(long gepauzeerdMs) {
+            JSObject data = new JSObject();
+            data.put("pausedMs", gepauzeerdMs);
+            data.put("schermUit", screenOff);
+            handler.post(() -> {
+                updateNotification("Trektelling loopt · het scherm mag uit");
+                trektelNieuws("hervat", data);
+            });
+        }
+
+        @Override
+        public void gestopt(String reden) {
+            // Vanzelf (maximum, microfoon weg): de webcode stopt de telling met uitleg
+            handler.post(() -> {
+                JSObject data = stopTrektel(reden);
+                if (data != null) trektelNieuws("gestopt", data);
+            });
+        }
+
+        @Override
+        public void log(String type, JSObject data) {
+            handler.post(() -> WandelingService.this.log(type, data));
+        }
+    }
+
+    private JSObject stukTelling() {
+        JSObject data = new JSObject();
+        data.put("stukken", trektelStukken);
+        data.put("stil", trektelStil);
+        return data;
+    }
+
+    private void trektelNieuws(String soort, JSObject data) {
+        if (listener != null) listener.trektel(soort, data);
     }
 
     private void log(String type, JSObject data) {

@@ -49,9 +49,20 @@ Stukken van een paar minuten lossen dit allemaal op. Daarom geen langere limiet,
 
 ### 4. Scherm aan
 
-Een opname stopt nu als het scherm op slot gaat (bewust zo gelaten, zie `docs/plan-capacitor.md`, fase 2). In de trektelmodus houdt de app het scherm daarom aan met de Wake Lock API, met een gedimd scherm als dat kan. Dat kost accu. Opnemen met het scherm uit kan pas met de native opname uit fase 3 van het Capacitor-plan, en hoort niet bij dit plan.
+Een opname stopt nu als het scherm op slot gaat (bewust zo gelaten, zie `docs/plan-capacitor.md`, fase 2). In de trektelmodus houdt de app het scherm daarom aan (behalve in de proef met het scherm uit, hieronder) met de Wake Lock API, met een gedimd scherm als dat kan. Dat kost accu. Opnemen met het scherm uit kan pas met de native opname uit fase 3 van het Capacitor-plan, en hoort niet bij dit plan.
 
 De microfoon blijft in deze modus continu bezet. Merlin kan er dan niet tussendoor bij (nu gaat de microfoon na elke opname uit). Dat moet in de uitleg bij de instelling staan.
+
+**Proef met het scherm uit (18 nov, beta-build, ontwikkeloptie "Opnemen met het scherm uit").** Sinds v0.4 kan de service zelf opnemen (`docs/roadmap-android.md` stap 3). Heeft hij het type microfoon, dan neemt hij nu ook de trektelling over: het scherm mag uit, er is geen Wake Lock, en vergrendelen pauzeert niet meer.
+
+- **Knippen in de service, niet in de webcode.** Met het scherm uit vertraagt de WebView zijn klokjes, en de webcode meet het geluid elke 100 ms met `setInterval`. Dat is met het scherm uit niet te vertrouwen. De service leest de microfoon (`AudioRecord`) op een eigen thread en knipt met dezelfde regels (`Knipper.java`, de getallen komen van de webcode). Zolang de microfoon opneemt, houdt Android de telefoon wakker; een eigen wakelock (een nieuwe toestemming) is niet nodig.
+- **De hele telling in de service, ook met het scherm aan.** Zo is er nooit een overdracht tussen webcode en service: geen dubbele opname, geen gat. Het volgende stuk begint met het eerstvolgende blokje samples. Op het scherm verandert niets (lampje, tellers, stopknop).
+- **Elk stuk** staat eerst als bestand op de telefoon (`files/scherm-uit/…_trektel.m4a`), gaat naar de webcode, die het in IndexedDB zet en dan pas laat weghalen. Tijd en plek van het begin van het stuk: de service meldt het begin, de webcode vraagt dan de positie op.
+- **Microfoon delen:** belt iemand of open je Merlin, dan geeft Android die app het geluid en ons stilte. De service ziet dat (`AudioRecordingCallback`, of een seconde lang alleen nullen), pauzeert met dezelfde lange tril, en gaat vanzelf verder als het geluid terug is, ook met het scherm uit. Na een kwartier stopt de telling, zoals nu. Op Android 8 en 9 deelt Android de microfoon niet; daar kan Merlin er tijdens zo'n telling niet bij.
+- **Grenzen blijven:** 4 uur (de service stopt zelf), 5 uur spraak per dag (`429 audio_limit`), telefoon vol: de telling stopt met uitleg en twee lange trillen.
+- **Lukt starten in de service niet** (geen type microfoon, microfoon bezet), dan start de gewone trektelling van de webcode, met het scherm aan.
+- **Met het scherm uit verwerkt de webcode na een minuut niets meer** (proeven 18 nov, met het systeemlog). De service neemt alles op zonder gat, maar Chromium (de browser in de app) zet de pagina 60 s na het vergrendelen stil (Page Lifecycle "freeze"), tot je ontgrendelt. Dan komt alles in een paar seconden binnen; er gaat niets verloren, alleen de tril na het verwerken blijft met het scherm uit weg. Geen oorzaak in Android: het proces van de webcode werd niet bevroren en stond op de voorrang van de service (`setRendererPriorityPolicy` in `SchermUitPlugin`, blijft staan tegen het bevriezen door Android na langere tijd). Een vastgehouden Web Lock hield Chromium niet tegen. Gemeten met `page_frozen` (wanneer en hoe lang). Echte oplossing: de service verwerkt zelf (spraakherkenning en model) als de pagina stilstaat; dat is een eigen plan.
+- **Meten** in het log: per stuk `trektel_stuk` (duur, spraak, hoe lang het scherm uit was, vertraging tot de webcode), stilte in `screen_off_trektel_stilte`, pauzes in `trektel_native_paused`, en bij het stoppen `trektel_native_end` met de accu aan begin en eind.
 
 ### 5. Plafond in de proxy
 

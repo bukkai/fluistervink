@@ -3,13 +3,30 @@
 // een los, afspeelbaar bestand is. Het nieuwe stuk start vóórdat het vorige
 // stopt, zodat er tussen twee stukken niets wegvalt. Een AnalyserNode meet
 // het geluidsniveau; de rekenregels voor het knippen staan in trektel.ts.
+//
+// Proef scherm uit (ontwikkeloptie `schermUit`, alleen de beta-build): heeft
+// de service het type microfoon, dan neemt de service de hele telling op en
+// knipt hij zelf (TrektelOpname.java, met dezelfde regels). De webcode houdt
+// dan alleen de stand bij; de stukken komen binnen als opname met het scherm
+// uit (screenOff.svelte.ts), met de positie die hier bij het begin van elk
+// stuk is opgevraagd (`takeChunkLookup`). Het scherm mag dan uit, en een
+// andere app die de microfoon wil, pauzeert de telling (Android geeft ons
+// dan stilte).
 
 import type { PositionLookup } from './db';
 import { logEvent } from './log';
 import { openMicrophone } from './microphone';
+import {
+  listenNativeTrektel,
+  startNativeTrektel,
+  stopNativeTrektel,
+  type NativeTrektelEvent,
+  type NativeTrektelSummary,
+} from './native';
 import { noteMicrophone } from './microphoneStatus.svelte';
 import { AUDIO_BITS_PER_SECOND, MIME_TYPES, type Recording } from './recorder.svelte';
 import {
+  CHUNK_OPTIONS,
   createChunker,
   FRAME_MS,
   levelDb,
@@ -48,7 +65,9 @@ export const trektel = $state<{
   /** Aantal verstuurde en overgeslagen (stille) stukken */
   sent: number;
   skipped: number;
-}>({ status: 'idle', speaking: false, sent: 0, skipped: 0 });
+  /** De service neemt op (proef scherm uit): het scherm mag uit */
+  native: boolean;
+}>({ status: 'idle', speaking: false, sent: 0, skipped: 0, native: false });
 
 interface Chunk {
   recorder: MediaRecorder;
@@ -78,6 +97,24 @@ let pausedMs = 0;
  * stoppen zodra hij aan is. Anders liep de telling door zonder stopknop.
  */
 let stopWhenStarted = false;
+
+/** Niet meer luisteren naar de service */
+let nativeOff: (() => void) | undefined;
+
+/**
+ * Positie per stuk van de service, op het begin van het stuk opgevraagd.
+ * Blijft staan na het stoppen: het laatste stuk komt pas daarna binnen.
+ */
+const chunkLookups = new Map<number, Promise<PositionLookup>>();
+/** Ouder dan dit: dat stuk komt niet meer (stilte, weggegooid) */
+const LOOKUP_KEEP_MS = 10 * 60_000;
+
+/** De positie van het stuk dat op `startedAt` begon (eenmalig), als de service het meldde */
+export function takeChunkLookup(startedAt: number): Promise<PositionLookup> | undefined {
+  const lookup = chunkLookups.get(startedAt);
+  chunkLookups.delete(startedAt);
+  return lookup;
+}
 
 export function trektelSupported(): boolean {
   return 'MediaRecorder' in window && !!navigator.mediaDevices && 'AudioContext' in window;
@@ -156,6 +193,7 @@ async function keepScreenOn() {
 }
 
 function onVisibility() {
+  if (trektel.native) return;
   if (document.hidden && trektel.status === 'running') {
     // Naar een andere app of scherm op slot: de microfoon niet onopgemerkt aan
     // laten, maar pauzeren tot je terugkomt
@@ -209,7 +247,7 @@ function closeMic(): void {
 }
 
 function pauseTrektel(): void {
-  closeMic();
+  if (!trektel.native) closeMic();
   trektel.status = 'paused';
   pausedAt = Date.now();
   pauses++;
@@ -252,13 +290,115 @@ async function resumeTrektel(): Promise<void> {
   if (document.hidden) pauseTrektel();
 }
 
+/** Nieuws van de service (alleen met `trektel.native`) */
+function onNativeEvent(event: NativeTrektelEvent): void {
+  if (!trektel.native) return;
+  switch (event.soort) {
+    case 'stuk_begint': {
+      const now = Date.now();
+      for (const at of chunkLookups.keys()) if (now - at > LOOKUP_KEEP_MS) chunkLookups.delete(at);
+      if (handlers) chunkLookups.set(event.data.startedAt, handlers.onChunkStart());
+      break;
+    }
+    case 'spreekt':
+      trektel.speaking = event.data.ja;
+      break;
+    case 'stuk':
+      trektel.sent = event.data.stukken;
+      trektel.skipped = event.data.stil;
+      break;
+    case 'gepauzeerd':
+      // Een andere app (Merlin, een gesprek) heeft de microfoon
+      if (trektel.status !== 'running') return;
+      trektel.speaking = false;
+      logEvent('trektel_native_paused', event.data);
+      pauseTrektel();
+      break;
+    case 'hervat': {
+      if (trektel.status !== 'paused') return;
+      clearTimeout(pauseTimer);
+      const away = Date.now() - (pausedAt ?? Date.now());
+      if (away > TREKTEL_PAUSE_MAX_MS) {
+        stopTrektel('hidden');
+        return;
+      }
+      pausedMs += away;
+      pausedAt = undefined;
+      trektel.status = 'running';
+      logEvent('trektel_resumed', {
+        pausedMs: away,
+        native: true,
+        schermUit: event.data.schermUit,
+      });
+      handlers?.onResumed?.();
+      break;
+    }
+    case 'gestopt': {
+      // Vanzelf: het maximum, of de microfoon viel weg
+      const reason: StopReason = event.data.reden === 'max' ? 'max' : 'mic';
+      logNativeSummary(event.data);
+      stopTrektel(reason);
+      if (reason === 'mic') {
+        trektel.error =
+          'Trektelling gestopt: de microfoon viel weg. Start de telling opnieuw; wat al ingesproken was, is bewaard.';
+      }
+      break;
+    }
+  }
+}
+
+function logNativeSummary(summary: NativeTrektelSummary): void {
+  if (summary.reden === undefined) return; // Er liep niets meer
+  logEvent('trektel_native_end', { ...summary });
+}
+
+/** Start de telling in de service. Geeft false als dat niet lukt (dan de webcode). */
+async function startNative(): Promise<boolean> {
+  nativeOff = listenNativeTrektel(onNativeEvent);
+  const result = await startNativeTrektel({
+    doelMs: CHUNK_OPTIONS.targetMs,
+    pauzeMs: CHUNK_OPTIONS.pauseMs,
+    maxStukMs: CHUNK_OPTIONS.maxMs,
+    minSpraakMs: CHUNK_OPTIONS.minSpeechMs,
+    margeDb: CHUNK_OPTIONS.marginDb,
+    vloerDb: CHUNK_OPTIONS.absoluteFloorDb,
+    maxMs: TREKTEL_MAX_MS,
+  });
+  if (!result.ok) {
+    nativeOff();
+    nativeOff = undefined;
+    logEvent('trektel_native_failed', { reden: result.reden });
+  }
+  return result.ok;
+}
+
+export interface TrektelStartOptions {
+  /** De service neemt op (proef scherm uit); lukt dat niet, dan de webcode */
+  native?: boolean;
+}
+
 /** Geeft true terug als de trektelling loopt. */
-export async function startTrektel(next: TrektelHandlers): Promise<boolean> {
+export async function startTrektel(
+  next: TrektelHandlers,
+  options: TrektelStartOptions = {},
+): Promise<boolean> {
   if (trektel.status !== 'idle') return false;
-  trektel.status = 'starting';
-  trektel.error = undefined;
+  // Tegelijk zetten: het sessiescherm laat de service alleen los bij een
+  // trektelling van de webcode (status en native samen)
+  Object.assign(trektel, { status: 'starting', native: !!options.native, error: undefined });
   stopWhenStarted = false;
   handlers = next;
+  if (options.native) {
+    if (await startNative()) {
+      startRunning(true);
+      if (stopWhenStarted) {
+        stopTrektel();
+        return false;
+      }
+      return true;
+    }
+    trektel.native = false;
+  }
   try {
     await openMic();
   } catch (error) {
@@ -272,18 +412,22 @@ export async function startTrektel(next: TrektelHandlers): Promise<boolean> {
     return false;
   }
 
-  maxTimer = setTimeout(() => stopTrektel('max'), TREKTEL_MAX_MS);
-  document.addEventListener('visibilitychange', onVisibility);
-  pauses = 0;
-  pausedMs = 0;
-
-  Object.assign(trektel, { status: 'running', startedAt: Date.now(), sent: 0, skipped: 0 });
-  logEvent('trektel_started');
+  startRunning(false);
   if (stopWhenStarted) {
     stopTrektel();
     return false;
   }
   return true;
+}
+
+function startRunning(native: boolean): void {
+  // Ook in de service: de service stopt zelf na 4 uur, dit is het vangnet
+  maxTimer = setTimeout(() => stopTrektel('max'), TREKTEL_MAX_MS);
+  if (!native) document.addEventListener('visibilitychange', onVisibility);
+  pauses = 0;
+  pausedMs = 0;
+  Object.assign(trektel, { status: 'running', startedAt: Date.now(), sent: 0, skipped: 0 });
+  logEvent('trektel_started', native ? { native: true, hidden: document.hidden } : undefined);
 }
 
 /** Stopt de trektelling; het laatste stuk wordt nog verwerkt. */
@@ -293,7 +437,15 @@ export function stopTrektel(reason?: StopReason): void {
   clearTimeout(maxTimer);
   clearTimeout(pauseTimer);
   document.removeEventListener('visibilitychange', onVisibility);
-  closeMic();
+  const native = trektel.native;
+  if (native) {
+    nativeOff?.();
+    nativeOff = undefined;
+    // Het laatste stuk komt daarna nog binnen (screenOff.svelte.ts)
+    void stopNativeTrektel().then(logNativeSummary);
+  } else {
+    closeMic();
+  }
   if (pausedAt !== undefined) pausedMs += Date.now() - pausedAt;
   pausedAt = undefined;
 
@@ -303,8 +455,9 @@ export function stopTrektel(reason?: StopReason): void {
     sent: trektel.sent,
     skipped: trektel.skipped,
     ...(pauses > 0 ? { pauses, pausedMs } : {}),
+    ...(native && { native: true }),
   });
   if (reason) handlers?.onStopped(reason);
   handlers = undefined;
-  Object.assign(trektel, { status: 'idle', startedAt: undefined, speaking: false });
+  Object.assign(trektel, { status: 'idle', startedAt: undefined, speaking: false, native: false });
 }
