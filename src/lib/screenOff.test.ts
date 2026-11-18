@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ScreenOffHandlers, ScreenOffRecording } from './native';
+import { FakeLockManager } from '../test-helpers';
 
 // Opnemen met het scherm uit (proef): de service geeft een opname af, de
 // webcode bewaart hem zoals een opname van de knop, en pas daarna mag het
@@ -30,7 +31,8 @@ vi.mock('./devOptions', () => ({ devOptionOn }));
 const takeChunkLookup = vi.hoisted(() => vi.fn());
 vi.mock('./trektelRecorder.svelte', () => ({ takeChunkLookup }));
 
-const { receiveScreenOffRecording, screenOff, startScreenOff } = await import('./screenOff.svelte');
+const { AWAKE_LOCK, receiveScreenOffRecording, screenOff, startScreenOff } =
+  await import('./screenOff.svelte');
 
 let nextId = 0;
 function recording(fields: Partial<ScreenOffRecording> = {}): ScreenOffRecording {
@@ -254,6 +256,30 @@ describe('opnemen met het scherm uit', () => {
     expect(submitRecording).toHaveBeenCalledTimes(1);
     expect(submitRecording.mock.calls[0][3]).toEqual({ trektel: true });
     expect(native.doneScreenOffRecording).toHaveBeenCalledWith(last.id);
+  });
+
+  it('houdt tijdens de sessie een slot vast, zodat Chromium de pagina niet stilzet', async () => {
+    const locks = new FakeLockManager();
+    vi.stubGlobal('navigator', { ...navigator, locks });
+    const off = startScreenOff('s1', 180_000, onPress);
+    await settle();
+    expect((await locks.query()).held?.map((lock) => lock.name)).toEqual([AWAKE_LOCK]);
+    off();
+    await settle();
+    expect((await locks.query()).held).toEqual([]);
+    vi.unstubAllGlobals();
+  });
+
+  it('meet hoe lang Chromium de pagina stilzette', () => {
+    const off = startScreenOff('s1', 180_000, onPress);
+    document.dispatchEvent(new Event('freeze'));
+    document.dispatchEvent(new Event('resume'));
+    expect(logEvent).toHaveBeenCalledWith(
+      'page_frozen',
+      expect.objectContaining({ frozenMs: expect.any(Number) }),
+      { sessionId: 's1' },
+    );
+    off();
   });
 
   describe('trektelling in de service', () => {
