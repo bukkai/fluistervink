@@ -9,7 +9,14 @@
   import { recordFix } from './effort';
   import { watchKeyboard } from './keyboard';
   import { currentPosition, gps, startTracking, stopTracking } from './location.svelte';
-  import { onAudioLimit, onLongWait, positionLater, submitRecording, submitText } from './queue';
+  import {
+    onAudioLimit,
+    onLongWait,
+    onSaveFailed,
+    positionLater,
+    submitRecording,
+    submitText,
+  } from './queue';
   import { recorder, startRecording, stopRecording } from './recorder.svelte';
   import SessionLog from './SessionLog.svelte';
   import { syncSessionService } from './sessionService';
@@ -198,6 +205,8 @@
     if (!recording || !lookup) return;
     // Niet als de opname stopte omdat de app naar de achtergrond ging
     if (!document.hidden) vibrate('recorded');
+    // Een vorige melding "niet bewaard" geldt niet meer; mislukt het weer, dan komt hij terug
+    saveError = undefined;
     await submitRecording(session.id, recording, lookup);
   }
 
@@ -253,6 +262,23 @@
       stopTrektel('limit');
       trektel.error =
         'Trektelling gestopt: vandaag is er al 5 uur ingesproken, het maximum per dag. De stukken blijven bewaard; tik morgen op Opnieuw om ze te laten verwerken.';
+    }),
+  );
+
+  // Uitspraak niet bewaard, meestal omdat de telefoon vol is: zeggen, en een
+  // trektelling stoppen (elk volgend stuk zou ook verloren gaan)
+  let saveError = $state<string>();
+  $effect(() =>
+    onSaveFailed((full) => {
+      const why = full
+        ? 'De telefoon is vol: de laatste opname kon niet bewaard worden. Maak ruimte vrij (bijvoorbeeld foto’s of oude opnames wissen) en probeer het opnieuw.'
+        : 'De laatste opname kon niet bewaard worden. Probeer het opnieuw.';
+      if (trektel.status === 'idle') {
+        saveError = why;
+        return;
+      }
+      stopTrektel('storage');
+      trektel.error = `Trektelling gestopt. ${why}`;
     }),
   );
 
@@ -441,7 +467,9 @@
       </svg>
       <span>{talkLabel}</span>
     </button>
-    {#if micMessage}
+    {#if saveError}
+      <p class="mic denied">{saveError}</p>
+    {:else if micMessage}
       <p class="mic denied">{micMessage}</p>
     {:else if micLine}
       <p class="mic source">{micLine}</p>

@@ -40,6 +40,22 @@ export async function editObservation(id: string, patch: Partial<Observation>): 
 }
 
 /**
+ * Alleen de velden die in het formulier echt anders zijn dan bij het openen.
+ * Zo overschrijft Opslaan geen correctie met de stem die binnenkwam terwijl
+ * het formulier openstond ("nee, keep" terwijl je het aantal aanpaste): wat
+ * je zelf veranderde wint, de rest blijft zoals de stem het zette.
+ */
+export function changedFields(
+  original: Observation,
+  form: Partial<Observation>,
+): Partial<Observation> {
+  const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+  return Object.fromEntries(
+    Object.entries(form).filter(([key, value]) => !same(value, original[key as keyof Observation])),
+  ) as Partial<Observation>;
+}
+
+/**
  * Wordt een waarneming een soort van een andere groep ("nee, een vos"), dan
  * moeten gedrag, methode en kleed mee naar de codes van die groep. Alleen de
  * velden die de wijziging zelf niet zet: die zijn al van de nieuwe groep.

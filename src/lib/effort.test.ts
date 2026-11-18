@@ -3,6 +3,7 @@ import { db, type Position } from './db';
 import {
   distanceStep,
   ebirdProtocol,
+  newEffort,
   recordFix,
   resumedEffort,
   sessionDurationMs,
@@ -50,6 +51,11 @@ describe('distanceStep', () => {
 });
 
 describe('duur', () => {
+  it('een klok die terugspringt maakt de duur niet korter of negatief', () => {
+    const effort = { ...newEffort(10_000), activeMs: 5_000 };
+    expect(stoppedEffort(effort, 4_000).activeMs).toBe(5_000);
+  });
+
   const effort = { activeMs: 0, activeSince: 1000, distanceM: 0 };
 
   it('telt het lopende stuk op bij het stoppen, zonder ankerpunt', () => {

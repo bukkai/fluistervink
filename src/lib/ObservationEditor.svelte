@@ -7,6 +7,7 @@
   import {
     copyObservation,
     deleteObservation,
+    changedFields,
     editObservation,
     placeByHand,
     recordedPlace,
@@ -141,24 +142,29 @@
   async function save(event: SubmitEvent) {
     event.preventDefault();
     if (!selectedSpecies) return;
-    await editObservation(original.id, {
-      speciesId: selectedSpecies.id,
-      count,
-      countingMethodId,
-      activityId,
-      methodId,
-      lifeStageId,
-      sex,
-      remarks: remarks.trim() || undefined,
-      privateNote: privateNote.trim() || undefined,
-      uncertain,
-      uncertainReason: uncertain ? original.uncertainReason : undefined,
-      candidates:
-        uncertain && selectedSpecies.id === original.speciesId ? original.candidates : undefined,
-      position: place.position,
-      recordedPosition: place.recordedPosition,
-      placedByVoice: place.placedByVoice,
-    });
+    // Alleen wat hier veranderde: een correctie met de stem terwijl het
+    // formulier openstond, blijft staan
+    await editObservation(
+      original.id,
+      changedFields(original, {
+        speciesId: selectedSpecies.id,
+        count,
+        countingMethodId,
+        activityId,
+        methodId,
+        lifeStageId,
+        sex,
+        remarks: remarks.trim() || undefined,
+        privateNote: privateNote.trim() || undefined,
+        uncertain,
+        uncertainReason: uncertain ? original.uncertainReason : undefined,
+        candidates:
+          uncertain && selectedSpecies.id === original.speciesId ? original.candidates : undefined,
+        position: place.position,
+        recordedPosition: place.recordedPosition,
+        placedByVoice: place.placedByVoice,
+      }),
+    );
     onclose(true);
   }
 
