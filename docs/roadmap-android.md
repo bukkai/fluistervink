@@ -94,7 +94,7 @@ Wat de proeven lieten zien (18 nov, Sony WH-1000XM5, Pocket Casts, Fairphone 5 m
 
 Logcat met draadloze foutopsporing: verbinding valt weg zodra het scherm uitgaat; het log daarna ophalen met `adb logcat -b all -d`, en vooraf de buffer vergroten (`adb logcat -G 16M`), want Bluetooth vult de gewone in ±1,5 minuut.
 
-**Trektelling met het scherm uit (18 nov, proef in de beta):** met de ontwikkeloptie aan en de service met het type microfoon neemt de service de hele trektelling op en knipt hij zelf, ook met het scherm aan (geen overdracht, dus geen gat of dubbele opname). Geen Wake Lock meer, vergrendelen pauzeert niet. Waarom knippen in Java en hoe het werkt: `docs/plan-trektelmodus.md`, punt 4. Nog in het veld na te gaan: een kwartier met het scherm uit (komen alle stukken door, wat kost het aan accu), scherm tussendoor aan, gebeld worden, Merlin openen.
+**Trektelling met het scherm uit (18 nov, proef in de beta):** met de ontwikkeloptie aan en de service met het type microfoon neemt de service de hele trektelling op en knipt hij zelf, ook met het scherm aan (geen overdracht, dus geen gat of dubbele opname). Geen Wake Lock meer, vergrendelen pauzeert niet. Waarom knippen in Java en hoe het werkt: `docs/plan-trektelmodus.md`, punt 4. Gemeten op 18 nov: de opname is in orde, maar Chromium zet de webcode 60 s na het vergrendelen stil, zodat de stukken pas bij het ontgrendelen verwerkt worden (niets verloren, wel geen tril). Nog in het veld na te gaan: een kwartier met het scherm uit (komen alle stukken door, wat kost het aan accu), scherm tussendoor aan, gebeld worden, Merlin openen.
 
 ## Stap 4: de microfoon delen
 

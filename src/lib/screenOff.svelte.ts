@@ -144,30 +144,15 @@ export async function receiveScreenOffRecording(
   }
 }
 
-/** Naam van het slot dat de pagina wakker houdt (`keepPageAwake`) */
-export const AWAKE_LOCK = 'fluistervink-wakker';
-
 /**
- * Chromium zet een pagina die niet in beeld is en geen netwerkverkeer heeft
- * na een minuut stil (Page Lifecycle "freeze"). Gemeten met het systeemlog
- * (18 nov, 23:04): precies 61 s na het vergrendelen verwerkte de webcode
- * niets meer, terwijl de service doorging en Android niets bevroor. Een
- * pagina die een Web Lock vasthoudt, zet Chromium niet stil (proef: nagaan
- * met `page_frozen` in het log). Zolang de proef aan staat (een sessie
- * loopt), houden we daarom een slot vast dat verder niets doet. Geeft een
- * functie terug die het loslaat.
+ * Chromium zet een pagina die niet in beeld is na een minuut stil (Page
+ * Lifecycle "freeze"), ook met de service en een vastgehouden Web Lock
+ * (gemeten 18 nov: stilgezet 60 s na het vergrendelen, tot het ontgrendelen).
+ * De stukken van de service wachten dan; bij het ontgrendelen komt alles
+ * binnen. Hier alleen meten hoe vaak en hoe lang (`page_frozen`). Geeft een
+ * functie terug die stopt met meten.
  */
-export function keepPageAwake(context: { sessionId: string }): () => void {
-  const controller = new AbortController();
-  let release: (() => void) | undefined;
-  navigator.locks
-    ?.request(
-      AWAKE_LOCK,
-      { signal: controller.signal },
-      () => new Promise<void>((resolve) => (release = resolve)),
-    )
-    .catch(() => {});
-
+export function watchPageFreeze(context: { sessionId: string }): () => void {
   // Meten: stilgezet en weer verder (Chromium vuurt `freeze` en `resume`)
   let frozenAt: number | undefined;
   const onFreeze = () => (frozenAt = Date.now());
@@ -178,7 +163,6 @@ export function keepPageAwake(context: { sessionId: string }): () => void {
         frozenAt,
         frozenMs: frozenAt === undefined ? undefined : Date.now() - frozenAt,
         hidden: document.hidden,
-        lock: !!navigator.locks,
       },
       context,
     );
@@ -188,8 +172,6 @@ export function keepPageAwake(context: { sessionId: string }): () => void {
   document.addEventListener('resume', onResume);
 
   return () => {
-    controller.abort();
-    release?.();
     document.removeEventListener('freeze', onFreeze);
     document.removeEventListener('resume', onResume);
   };
@@ -254,7 +236,7 @@ export function startScreenOff(
     },
   );
 
-  const releaseAwake = keepPageAwake(context);
+  const stopWatching = watchPageFreeze(context);
   done.then((result) => {
     if (result.ok) screenOff.ready = true;
     logEvent('screen_off_on', result, context);
@@ -265,7 +247,7 @@ export function startScreenOff(
   );
 
   return () => {
-    releaseAwake();
+    stopWatching();
     // Na het uitzetten: wat de service nog afmaakte (het laatste stuk van een
     // trektelling, een opname die liep) meteen ophalen, niet pas bij de
     // volgende sessie
