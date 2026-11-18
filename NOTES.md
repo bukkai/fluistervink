@@ -18,7 +18,7 @@ Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/ro
 
 Elk punt na het proberen hier weghalen.
 
-- **Robuustheid** (#274, `docs/plan-robuustheid.md`): gebeld worden midden in een opname en in een trektelling; oortjes uit tijdens een trektelling; telefoon vol. Als het zich voordoet: wifi met inlogpagina (#268), en of "Geen bereik, … wachten" nog blijft staan na weer verbinding (nu met Probeer opnieuw, #260).
+- **Robuustheid** (#274, `docs/plan-robuustheid.md`): gebeld worden in een trektelling; oortjes uit tijdens een trektelling; telefoon vol. Als het zich voordoet: wifi met inlogpagina (#268), en of "Geen bereik, … wachten" nog blijft staan na weer verbinding (nu met Probeer opnieuw, #260). Gedaan op 18 nov: offline plek (eerste GPS na 49 s, wachtende uitspraken kregen hun plek alsnog) en gebeld worden midden in een opname (opname netjes bewaard; na het ophangen nog ~1,5 min geen mobiel internet, de wachtrij ving het op).
 - **Trektelling: eerst vragen** (#263): naar een ander scherm → "Toch weggaan?"; Annuleren houdt de telling aan, OK stopt hem.
 - **Plek in een trektelstuk** (#248): "buizerd, 500 m zuid" in een trektelling: alle soorten van het stuk komen binnen, met de plek.
 - **Soortveld** (#233): "noordse" typen: suggesties onder het veld, één tik kiest, Inspreken weg tijdens het typen.
@@ -34,6 +34,9 @@ Na de eerstvolgende gedeelde sessie (`npm run testset`; moet sinds #265 vanzelf 
 
 - **Prompt veranderd:** trektelling zonder gedrag is overvliegend, "roepje vink" en "zit" blijven, een ree ter plaatse (#261); "groepje merel" zonder aantal is roepend, "groepje van twintig vinken" een groep (#259); opmerking zonder het woord "feedback" wordt niets, met het woord (ook in een trektelstuk) feedback (#242); altijd met kandidaten (#235); "goudborstje" wordt roodborst (#264).
 - **Opnames inspreken:** iemand anders die een vogel noemt, radio, wind zonder iets te zeggen, "die buizerd van een kwartier geleden" na veel waarnemingen (robuustheid #6, #7); een paar Latijnse namen (#157: het model kan het, de spraakherkenning nog niet gemeten).
+- **Oortjes na een gesprek** (18 nov): de microfoon ging pas na 0,65 s open en het begin van "vijf overvliegende mussen waarvan twee mannetjes" viel weg; het model hing "van twee mannetjes" aan de kwartels. Wachten op het starttikje helpt; komt het vaker voor, dan nagaan of de oortjesmicrofoon sneller of warm kan.
+- **Gemist:** "Uiteraard van de blauwe reiger. Twee roepende kwartels. En een appelvink." leverde geen blauwe reiger op (18 nov, met oortjes).
+- **Idee uit feedback** (18 nov): "die houtduiven" zonder eerdere waarneming is waarschijnlijk "drie houtduiven". Promptregel alleen als de testset het vaker laat zien.
 - **Opletten:** bereik als schatting ("tussen de vijftig en honderd", #215); preciezere leeftijd ("juveniel, ik denk derde kalenderjaar" werd juveniel; promptregel alleen als het vaker voorkomt).
 
 ## Steeds
