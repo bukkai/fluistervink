@@ -175,6 +175,42 @@ describe('opnemen met het scherm uit', () => {
     expect(onPress).toHaveBeenCalledWith('volume_up');
   });
 
+  it('de knop op de oortjes: opname met `oortjes` als bron, toetsen in het log', async () => {
+    startScreenOff('s1', 180_000, onPress);
+    handlers.onLog('knop_claim', { waarom: 'sessie', ok: true, anderGeluid: true, audiofocus: false });
+    handlers.onLog('mediaknop', { toets: 'KEYCODE_MEDIA_PLAY_PAUSE', actie: 'druk' });
+    handlers.onStart(1000, 'oortjes');
+    expect(screenOff.startedAt).toBe(1000);
+    handlers.onLog('mediaknop', { toets: 'KEYCODE_MEDIA_PLAY_PAUSE', actie: 'dubbel' });
+    handlers.onRecording(recording({ start: 'oortjes', stop: 'oortjes' }));
+    await settle();
+
+    const types = logEvent.mock.calls.map(([type]) => type);
+    expect(types).toEqual(
+      expect.arrayContaining([
+        'screen_off_knop_claim',
+        'screen_off_mediaknop',
+        'screen_off_started',
+        'screen_off_recording',
+      ]),
+    );
+    expect(logEvent).toHaveBeenCalledWith(
+      'screen_off_started',
+      expect.objectContaining({ via: 'oortjes' }),
+      { sessionId: 's1' },
+    );
+    const logged = logEvent.mock.calls.find(([type]) => type === 'screen_off_recording');
+    expect(logged?.[1]).toMatchObject({ start: 'oortjes', stop: 'oortjes' });
+    // Een dubbele druk stopt niets in de webcode
+    expect(onPress).not.toHaveBeenCalled();
+  });
+
+  it('de knop op de oortjes stopt een opname van de webcode', () => {
+    startScreenOff('s1', 180_000, onPress);
+    handlers.onPress('oortjes');
+    expect(onPress).toHaveBeenCalledWith('oortjes');
+  });
+
   it('uitzetten stopt de service-kant', () => {
     const off = startScreenOff('s1', 180_000, onPress);
     handlers.onStart(1000, 'volume_up');
