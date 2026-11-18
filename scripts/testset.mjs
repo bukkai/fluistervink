@@ -144,8 +144,8 @@ const loader = await createServer({
   optimizeDeps: { noDiscovery: true },
   server: { middlewareMode: true, hmr: false, ws: false },
 });
-const { MODEL, interpret, parseResponse, promptVersionFor } =
-  await loader.ssrLoadModule('/src/lib/interpret.ts');
+const { MODEL, interpret, parseResponse } = await loader.ssrLoadModule('/src/lib/interpret.ts');
+const { promptVersionFor } = await loader.ssrLoadModule('/src/lib/prompt.ts');
 const { transcribe } = await loader.ssrLoadModule('/src/lib/transcribe.ts');
 const { devNoteText } = await loader.ssrLoadModule('/src/lib/devNotePrefix.ts');
 const vocab = await loader.ssrLoadModule('/src/lib/vocab.ts');
