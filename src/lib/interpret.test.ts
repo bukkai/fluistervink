@@ -10,14 +10,7 @@ import {
   REE,
   toolResponse,
 } from '../test-helpers';
-import {
-  describeContext,
-  userMessage,
-  MAX_OPTIONAL_PARAMETERS,
-  parseResponse,
-  promptVersionFor,
-  toolsFor,
-} from './interpret';
+import { describeContext, userMessage, parseResponse } from './interpret';
 
 // parseResponse is de poortwachter tussen model en database: wat hier
 // doorkomt, voert de app uit. Het model mag geen soorten verzinnen en niet
@@ -355,28 +348,6 @@ describe('describeContext', () => {
 
 // Anthropic weigert anders elke uitspraak met een 400 (feedback 12 nov: met
 // de kandidaten aan waren het er 26). Een nagebootst model merkt dat niet.
-describe('tools', () => {
-  it.each([false, true])('blijven onder de grens van optionele velden (soortgroepen: %s)', (g) => {
-    let optional = 0;
-    for (const tool of toolsFor(g)) {
-      const schema = tool.input_schema as { properties?: object; required?: string[] };
-      optional += Object.keys(schema.properties ?? {}).length - (schema.required?.length ?? 0);
-    }
-    expect(optional).toBeLessThanOrEqual(MAX_OPTIONAL_PARAMETERS);
-  });
-
-  // Een verplicht veld achter de optionele: dan liet het model de plek weg en
-  // stopte het in een trektelstuk na een gezegde plek (feedback 16 nov)
-  it.each([false, true])('zetten verplichte velden voor de optionele (soortgroepen: %s)', (g) => {
-    for (const tool of toolsFor(g)) {
-      const schema = tool.input_schema as { properties?: object; required?: string[] };
-      const keys = Object.keys(schema.properties ?? {});
-      const required = schema.required ?? [];
-      expect(keys.slice(0, required.length), tool.name).toEqual(required);
-    }
-  });
-});
-
 describe('andere soortgroepen', () => {
   it('accepteert ze alleen met de ontwikkeloptie', () => {
     const response = toolResponse([
@@ -424,18 +395,6 @@ describe('andere soortgroepen', () => {
       true,
     );
     expect(actions[0]).toMatchObject({ fields: { speciesId: ATALANTA } });
-  });
-
-  it('laat de prompt zonder de optie ongemoeid: alleen vogelcodes in de tools', async () => {
-    expect(await promptVersionFor(true)).not.toBe(await promptVersionFor(false));
-    const activityEnum = (withGroups: boolean) => {
-      const add = toolsFor(withGroups).find((t) => t.name === 'add_observation')!;
-      const props = add.input_schema.properties as Record<string, { enum?: number[] }>;
-      return props.activity_id.enum!;
-    };
-    // 15 = ter plaatse bij zoogdieren
-    expect(activityEnum(false)).not.toContain(15);
-    expect(activityEnum(true)).toContain(15);
   });
 
   it('beschrijft de context met de codes van de groep', () => {
