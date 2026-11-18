@@ -65,7 +65,7 @@ Daaruit maken we: Android-pictogram (`android/app/src/main/res/mipmap-*`, adapti
 
 - [ ] Productietoegang aanvragen in de Play Console (na 14 dagen, als het dashboard het toestaat).
 - [ ] Na goedkeuring: de stabiele AAB naar **Productie**. De beta blijft in de interne test.
-- [ ] `#uitleg` en `#privacy` nalopen op "test"-taal; `CLAUDE.md` en `NOTES.md` bijwerken.
+- [ ] `#uitleg` en `#privacy` nalopen op "test"-taal; `CLAUDE.md` en `NOTES.md` bijwerken. Nagelopen op 18 nov: beide schoon (alleen de gesproken bevestiging heet er een proef, en dat is hij nog). Bij productie nog kiezen: "(proef)" bij Trektelmodus en de gesproken bevestiging (Instellingen), "nog in ontwikkeling" in de vraag om te delen (welkom en startscherm).
 - [ ] De eerste weken Statistieken en Kosten op Developer volgen.
 
 Later, niet nodig voor de lancering: automatisch uploaden vanuit de workflow.
