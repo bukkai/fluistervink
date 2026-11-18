@@ -95,7 +95,7 @@ Video (niet-openbaar op YouTube), zo'n 45–60 seconden. Met het scherm uit toon
 
 1. App openen, "Begin met vogelen": de melding "Aan het vogelen" verschijnt.
 2. Scherm uit (aan/uit-knop), telefoon even laten zien met zwart scherm.
-3. Volumeknop indrukken (zeg erbij: "volume key"), dan de aan/uit-knop: op het vergrendelscherm staat de melding "Opname loopt · volumeknop stopt". Scherm weer uit.
+3. Volumeknop indrukken (zeg erbij: "volume key"). Laat zien dat de opname loopt: scherm aan en ontgrendelen (de opname loopt door). De app staat op de knop "Stop · 4 s" die meetelt, en de meldingenbalk omlaag toont "Opname loopt · volumeknop stopt". Scherm weer uit. (Op het vergrendelscherm zelf staat de melding niet: het is een stille melding, kanaal met laag belang, en die verbergt Android daar standaard. Wil je hem daar toch zien, zet dan in de instellingen van de telefoon bij Meldingen → Vergrendelscherm "stille meldingen tonen" aan.)
 4. Een waarneming inspreken ("twee scholeksters, overvliegend naar het zuiden"), dan nog eens de volumeknop.
 5. Scherm aan, ontgrendelen: de waarneming staat in de lijst. Op "Stop": de melding verdwijnt.
 
