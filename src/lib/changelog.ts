@@ -29,6 +29,9 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     date: '2026-11-18',
     topics: {
+      Export: [
+        'Voor eBird telt de afgelegde afstand alleen nog lopen en fietsen. Een stuk met de auto of de boot (sneller dan 30 km/u) telt niet meer mee.',
+      ],
       'Back-up': [
         'Zet je een back-up terug, dan komt ook het logboek van die sessies mee. Deel je sessies met de ontwikkelaar, dan ging dat logboek eerst verloren.',
       ],
