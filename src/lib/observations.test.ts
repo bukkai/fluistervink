@@ -1355,8 +1355,8 @@ describe('netwerk weg', () => {
       const [resumed] = await events('queue_resumed');
       expect(resumed?.data).toMatchObject({ count: 2, waitedMs: expect.any(Number) });
       expect(resumed?.utteranceId).toBe(first);
-      // Gebieden en de naam van de sessie alsnog opzoeken
-      expect(fillMissingAreas).toHaveBeenCalledWith(SESSION);
+      // Gebieden en de naam van de sessie alsnog opzoeken, meteen (niet de pauze na een mislukte poging)
+      expect(fillMissingAreas).toHaveBeenCalledWith(SESSION, { force: true });
     });
 
     it('probeert het vanzelf opnieuw na 15 s, 30 s, 1 min en daarna elke 2 min', async () => {
