@@ -44,7 +44,7 @@ Tijdens een sessie kun je ook zoogdieren, dagvlinders en libellen inspreken ("tw
 - In het tool-schema worden `activity_id`, `method_id` en `life_stage_id` de vereniging van de korte lijsten van alle groepen. Het aantal optionele velden blijft gelijk, dus de grens van 24 (`MAX_OPTIONAL_PARAMETERS`) komt niet in gevaar.
 - **De app valideert per groep.** Geeft het model een code die niet bij de groep van de soort hoort (bijvoorbeeld een vogelcode bij een ree), dan zet de app hem op naam om, anders op de standaard. Dat komt in `warnings`, net als nu bij een verkeerd soort-ID.
 - **Namen die op een vogel lijken**, met een vaste regel in de prompt: "koevinkje" (vlinder) is geen vink, "kleine vos" en "grote vos" zijn vlinders en "vos" alleen het zoogdier, en "groentje", "atalanta" en "dagpauwoog" zijn vlinders. Korte zoogdiernamen ("das", "ree", "haas") zijn ook gewone woorden. Is de context onduidelijk, dan wordt de waarneming onzeker in plaats van overgeslagen.
-- **Dwaalgasten** (`findVagrant`) blijven voorlopig alleen voor vogels. Een onbekend zoogdier wordt "Zoogdier onbekend" met de gezegde naam in de twijfelreden, net als "Vogel onbekend" nu.
+- **Dwaalgasten** (`findVagrant`): sinds 18 nov ook zeldzame andere dieren (wolf, knoflookpad, korenwolf), alleen met de andere diergroepen aan. Een dier dat ook daar niet bij staat, wordt de verzamelsoort van zijn groep ("Zoogdier onbekend") met de gezegde naam in de twijfelreden.
 - "Zeldzame soort wordt onzeker" werkt per groep met de zeldzaamheid uit de eigen lijst.
 
 ### 4. Spraakherkenning
