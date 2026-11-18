@@ -66,6 +66,9 @@ export function tryErrorText(error: unknown): string {
   if (error instanceof ApiError && error.code === 'audio_limit') {
     return 'Voor vandaag is het maximum aan spraak bereikt. Morgen kan het weer.';
   }
+  if (error instanceof ApiError && error.code === 'message_limit') {
+    return 'Voor vandaag is het maximum aantal uitspraken bereikt. Morgen kan het weer.';
+  }
   return navigator.onLine
     ? 'Dat lukte even niet. Probeer het nog eens.'
     : 'Je hebt nu geen verbinding. Probeer het als je weer online bent.';

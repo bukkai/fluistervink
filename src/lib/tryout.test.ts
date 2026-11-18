@@ -90,5 +90,6 @@ describe('tryUtterance', () => {
 describe('tryErrorText', () => {
   it('legt het plafond per dag uit', () => {
     expect(tryErrorText(new ApiError('te veel', 429, 'audio_limit'))).toMatch(/maximum/);
+    expect(tryErrorText(new ApiError('te veel', 429, 'message_limit'))).toMatch(/uitspraken/);
   });
 });

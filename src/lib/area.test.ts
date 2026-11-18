@@ -59,4 +59,18 @@ describe('fillMissingAreas', () => {
     expect(fetchArea).toHaveBeenCalledTimes(2);
     expect((await db.utterances.get('u'))?.area).toEqual(area);
   });
+
+  it('valt niet weg als er al een poging loopt: daarna alsnog', async () => {
+    // De eerste poging (scherm) hangt nog aan het netwerk als de wachtrij vraagt
+    let answer!: (value: unknown) => void;
+    fetchArea.mockReturnValueOnce(new Promise((resolve) => (answer = resolve)));
+    const first = fillMissingAreas('s', { now: later() });
+    await vi.waitFor(() => expect(fetchArea).toHaveBeenCalledTimes(1));
+    await db.utterances.add({ id: 'u2', sessionId: 's', recordedAt: 1, status: 'done', position });
+    fetchArea.mockResolvedValue(area);
+    await fillMissingAreas('s', { force: true });
+    answer(area);
+    await first;
+    expect((await db.utterances.get('u2'))?.area).toEqual(area);
+  });
 });

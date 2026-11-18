@@ -12,6 +12,7 @@ import {
   opslagVol,
   toolResponse,
 } from '../test-helpers';
+import { ApiError } from './api';
 import { db, storeAudio, type Observation, type PositionLookup, type Utterance } from './db';
 import { interpret } from './interpret';
 import { fillMissingAreas, nameFromSession } from './area';
@@ -32,7 +33,7 @@ import {
 import {
   STEAL_AFTER_MS,
   migrateAudio,
-  onAudioLimit,
+  onDailyLimit,
   LONG_WAIT_MS,
   onLongWait,
   onSaveFailed,
@@ -525,10 +526,18 @@ describe('plek die later komt (GPS zonder fix)', () => {
     const tooOld = await unplaced(20);
     // Nog aan het zoeken: die krijgt zijn eigen meting
     const searching = await unplaced(1, { positionLookup: undefined });
+    // Vorige sessie, vlak daarvoor gestopt: kan kilometers verderop zijn
+    const otherSession = await unplaced(4, { sessionId: 'vorige-sessie' });
 
-    await positionLater(FIX);
+    await positionLater(FIX, SESSION);
 
-    const [t, w, old, busy] = await db.utterances.bulkGet([trektel, walking, tooOld, searching]);
+    const [t, w, old, busy, other] = await db.utterances.bulkGet([
+      trektel,
+      walking,
+      tooOld,
+      searching,
+      otherSession,
+    ]);
     // Trektelling: je stond stil, de plek klopt
     expect(t?.position).toEqual(FIX);
     expect(t?.positionLookup).toMatchObject({ source: 'later', waitMs: 3 * 60_000 });
@@ -536,6 +545,7 @@ describe('plek die later komt (GPS zonder fix)', () => {
     expect(w?.position?.accuracy).toBe(7 + 168);
     expect(old?.position).toBeUndefined();
     expect(busy?.position).toBeUndefined();
+    expect(other?.position).toBeUndefined();
     expect((await db.observations.get('obs-' + trektel))?.position).toEqual(FIX);
   });
 
@@ -1102,11 +1112,11 @@ describe('netwerk weg', () => {
       ),
     );
     const reached = vi.fn();
-    const off = onAudioLimit(reached);
+    const off = onDailyLimit(reached);
     const id = await record();
     await processQueue();
     off();
-    expect(reached).toHaveBeenCalledTimes(1);
+    expect(reached).toHaveBeenCalledExactlyOnceWith('audio');
     const u = await db.utterances.get(id);
     expect(u).toMatchObject({ status: 'failed', error: expect.stringMatching(/Daglimiet/) });
     expect(u?.audio).toBeDefined();
@@ -1119,11 +1129,25 @@ describe('netwerk weg', () => {
       vi.fn(async () => Response.json({ error: 'Te veel verzoeken' }, { status: 429 })),
     );
     const reached = vi.fn();
-    const off = onAudioLimit(reached);
+    const off = onDailyLimit(reached);
     await record();
     await processQueue();
     off();
     expect(reached).not.toHaveBeenCalled();
+  });
+
+  it('plafond van het model per dag: het sessiescherm hoort het ook', async () => {
+    network(true);
+    model.respond = () => {
+      throw new ApiError('Daglimiet bereikt', 429, 'message_limit');
+    };
+    const reached = vi.fn();
+    const off = onDailyLimit(reached);
+    const id = await record();
+    await processQueue();
+    off();
+    expect(reached).toHaveBeenCalledExactlyOnceWith('messages');
+    expect((await db.utterances.get(id))?.status).toBe('failed');
   });
 
   it('token werkt niet meer (401): opnieuw aanmelden en het verzoek herhalen', async () => {
