@@ -177,7 +177,12 @@ describe('opnemen met het scherm uit', () => {
 
   it('de knop op de oortjes: opname met `oortjes` als bron, toetsen in het log', async () => {
     startScreenOff('s1', 180_000, onPress);
-    handlers.onLog('knop_claim', { waarom: 'sessie', ok: true, anderGeluid: true, audiofocus: false });
+    handlers.onLog('knop_claim', {
+      waarom: 'sessie',
+      ok: true,
+      anderGeluid: true,
+      audiofocus: false,
+    });
     handlers.onLog('mediaknop', { toets: 'KEYCODE_MEDIA_PLAY_PAUSE', actie: 'druk' });
     handlers.onStart(1000, 'oortjes');
     expect(screenOff.startedAt).toBe(1000);
