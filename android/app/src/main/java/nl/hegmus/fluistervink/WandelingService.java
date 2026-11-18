@@ -79,8 +79,12 @@ public class WandelingService extends Service {
      */
     private static final long MEDIA_DOUBLE_MS = 500;
 
-    /** Na een mediatoets zo lang "gepauzeerd" melden (reportPaused) */
-    private static final long PLAYING_AGAIN_MS = 300;
+    /**
+     * Na een mediatoets zo lang "gepauzeerd" melden (reportPaused). Met 300 ms
+     * gaf Bluetooth (AVRCP) de pauze niet door aan de oortjes, alleen het
+     * "speelt" erna, als geen verandering (logcat 18 nov).
+     */
+    private static final long PLAYING_AGAIN_MS = 1_500;
 
     /** Langer ingedrukt dan dit: lang indrukken (alleen loggen) */
     private static final long MEDIA_LONG_MS = 800;
