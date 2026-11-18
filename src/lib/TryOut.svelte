@@ -7,7 +7,12 @@
   import { vibrate } from './feedback';
   import { logEvent } from './log';
   import { preferenceOn } from './preferences';
-  import { recorder, startRecording, stopRecording } from './recorder.svelte';
+  import {
+    onRecordingInterrupted,
+    recorder,
+    startRecording,
+    stopRecording,
+  } from './recorder.svelte';
   import { createTalkButton } from './talkButton';
   import { tryErrorText, tryUtterance, type TryResult } from './tryout';
   import { permissionSettingsPath } from './welcome';
@@ -62,6 +67,9 @@
       busy = false;
     }
   }
+
+  // Opname vanzelf gestopt (gebeld, oortjes weg): toch laten zien wat er was
+  $effect(() => onRecordingInterrupted(() => void finish()));
 
   // Weg uit deze stap tijdens een opname: microfoon uit, niets verwerken
   onDestroy(() => {

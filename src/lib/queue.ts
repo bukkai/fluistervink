@@ -139,7 +139,7 @@ async function attachPosition(utteranceId: string, pending: Promise<PositionLook
     await db.utterances.update(utteranceId, { positionLookup });
     // Kwam de eerste meting net binnen terwijl deze opvraag opgaf: meteen gebruiken
     const latest = gps.latest && { ...gps.latest };
-    if (latest) await positionLater(latest);
+    if (latest && saved) await positionLater(latest, saved.sessionId);
     return;
   }
   await setPosition(utteranceId, position, positionLookup);
@@ -156,12 +156,14 @@ const WALKING_SPEED = 1.4;
  * minuten kan duren. Die uitspraken (tot `LATER_MAX_MS` terug) krijgen deze
  * plek alsnog. In een trektelling sta je stil, dus dan klopt hij; anders
  * groeit de nauwkeurigheid met hoe ver je in die tijd gelopen kunt hebben.
+ * Alleen uitspraken van deze sessie: een vorige sessie kan vlak daarvoor
+ * gestopt zijn, kilometers verderop (met de auto naar de volgende plek).
  */
-export async function positionLater(fix: Position): Promise<void> {
+export async function positionLater(fix: Position, sessionId: string): Promise<void> {
   const unplaced = await db.utterances
     .where('recordedAt')
     .between(fix.fixedAt - LATER_MAX_MS, fix.fixedAt, true, true)
-    .filter((u) => !u.position && u.positionLookup?.source === 'none')
+    .filter((u) => u.sessionId === sessionId && !u.position && u.positionLookup?.source === 'none')
     .toArray();
   for (const u of unplaced) {
     const laterMs = fix.fixedAt - u.recordedAt;
@@ -202,16 +204,20 @@ async function setPosition(
   await attachArea(utteranceId, position);
 }
 
-const audioLimitListeners = new Set<() => void>();
+/** Welk plafond per dag van de proxy: spraak (`audio_limit`) of het model (`message_limit`) */
+export type DailyLimit = 'audio' | 'messages';
+
+const dailyLimitListeners = new Set<(limit: DailyLimit) => void>();
 
 /**
- * Het plafond per dag is bereikt (proxy, `audio_limit`): het sessiescherm
- * stopt dan een lopende trektelling, die anders stukken blijft opnemen die
- * toch niet verwerkt worden. Geeft een functie om af te melden.
+ * Een plafond per dag is bereikt (proxy): het sessiescherm stopt dan een
+ * lopende trektelling, die anders stukken blijft opnemen die toch niet
+ * verwerkt worden (en bij het plafond van het model nog wel spraakherkenning
+ * kosten). Geeft een functie om af te melden.
  */
-export function onAudioLimit(listener: () => void): () => void {
-  audioLimitListeners.add(listener);
-  return () => audioLimitListeners.delete(listener);
+export function onDailyLimit(listener: (limit: DailyLimit) => void): () => void {
+  dailyLimitListeners.add(listener);
+  return () => dailyLimitListeners.delete(listener);
 }
 
 export async function retry(utteranceId: string): Promise<void> {
@@ -680,9 +686,10 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
         });
     });
     // De opname blijft bewaard: morgen met "Opnieuw" alsnog verwerken
-    if (error instanceof ApiError && error.code === 'audio_limit') {
-      for (const listener of audioLimitListeners) listener();
-    }
+    const code = error instanceof ApiError ? error.code : undefined;
+    const limit: DailyLimit | undefined =
+      code === 'audio_limit' ? 'audio' : code === 'message_limit' ? 'messages' : undefined;
+    if (limit) for (const listener of dailyLimitListeners) listener(limit);
     return;
   }
 

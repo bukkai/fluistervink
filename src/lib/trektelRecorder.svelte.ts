@@ -19,7 +19,7 @@ import {
 } from './trektel';
 
 /** `limit`: de proxy verwerkt vandaag niets meer (plafond per dag) */
-type StopReason = 'max' | 'hidden' | 'limit' | 'storage';
+type StopReason = 'max' | 'hidden' | 'limit' | 'storage' | 'mic';
 
 export interface TrektelHandlers {
   /** Bij het begin van elk stuk: de positie van dat moment opvragen. */
@@ -233,7 +233,10 @@ async function resumeTrektel(): Promise<void> {
     await openMic();
   } catch {
     trektel.status = 'paused';
-    stopTrektel('hidden');
+    stopTrektel('mic');
+    // Niet stil stoppen: wie later kijkt, moet weten waarom
+    trektel.error =
+      'Trektelling gestopt: de microfoon ging niet meer aan. Start de telling opnieuw; wat al ingesproken was, is bewaard.';
     return;
   }
   pausedMs += away;

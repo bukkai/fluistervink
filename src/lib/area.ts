@@ -68,6 +68,8 @@ let filling = false;
 /** Na een mislukte poging (geen verbinding) zo lang niet vanzelf opnieuw. */
 export const AREA_RETRY_MS = 60_000;
 let failedAt = -Infinity;
+/** Sessies waarvoor de wachtrij opzoeken vroeg terwijl er al een liep */
+const forcedLater = new Set<string>();
 
 /**
  * Zoekt alsnog de gebieden op die nog ontbreken, bv. na een uitspraak zonder
@@ -80,7 +82,11 @@ export async function fillMissingAreas(
   sessionId: string,
   { force = false, now = Date.now() }: { force?: boolean; now?: number } = {},
 ): Promise<void> {
-  if (filling) return;
+  if (filling) {
+    // De wachtrij heeft net weer verbinding: niet laten vallen, maar straks doen
+    if (force) forcedLater.add(sessionId);
+    return;
+  }
   if (!force && now - failedAt < AREA_RETRY_MS) return;
   filling = true;
   try {
@@ -101,6 +107,10 @@ export async function fillMissingAreas(
     if (session?.status === 'ended') await nameFromSession(sessionId);
   } finally {
     filling = false;
+  }
+  for (const next of forcedLater) {
+    forcedLater.delete(next);
+    await fillMissingAreas(next, { force: true });
   }
 }
 

@@ -10,7 +10,7 @@
   import { watchKeyboard } from './keyboard';
   import { currentPosition, gps, startTracking, stopTracking } from './location.svelte';
   import {
-    onAudioLimit,
+    onDailyLimit,
     onLongWait,
     onSaveFailed,
     positionLater,
@@ -109,7 +109,11 @@
   let hadFix = false;
   $effect(() => {
     const fix = gps.status === 'ok' ? gps.latest : undefined;
-    if (fix && !hadFix) positionLater($state.snapshot(fix));
+    if (fix && !hadFix)
+      positionLater(
+        $state.snapshot(fix),
+        untrack(() => session.id),
+      );
     hadFix = fix !== undefined;
   });
 
@@ -267,14 +271,17 @@
     if (started) vibrate('recording');
   }
 
-  // Plafond per dag bereikt (5 uur spraak, proxy): de trektelling stoppen in
+  // Plafond per dag bereikt (5 uur spraak of 1500 keer het model, proxy): de trektelling stoppen in
   // plaats van stukken op te nemen die vandaag niet meer verwerkt worden
   $effect(() =>
-    onAudioLimit(() => {
+    onDailyLimit((limit) => {
       if (trektel.status === 'idle') return;
       stopTrektel('limit');
-      trektel.error =
-        'Trektelling gestopt: vandaag is er al 5 uur ingesproken, het maximum per dag. De stukken blijven bewaard; tik morgen op Opnieuw om ze te laten verwerken.';
+      const why =
+        limit === 'audio'
+          ? 'vandaag is er al 5 uur ingesproken, het maximum per dag'
+          : 'vandaag zijn er al heel veel uitspraken verwerkt, het maximum per dag';
+      trektel.error = `Trektelling gestopt: ${why}. De stukken blijven bewaard; tik morgen op Opnieuw om ze te laten verwerken.`;
     }),
   );
 

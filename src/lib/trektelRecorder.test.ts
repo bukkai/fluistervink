@@ -245,7 +245,9 @@ describe('microfoonspoor valt weg tijdens de trektelling', () => {
     track.dispatchEvent(new Event('ended'));
     await vi.advanceTimersByTimeAsync(TRACK_RETRY_MS);
     expect(trektel.status).toBe('idle');
-    expect(h.onStopped).toHaveBeenCalled();
+    expect(h.onStopped).toHaveBeenCalledWith('mic');
+    // Niet stil: het scherm zegt waarom
+    expect(trektel.error).toMatch(/microfoon/);
   });
 
   it('een spoor dat de app zelf uitzet, telt niet als weggevallen', async () => {
