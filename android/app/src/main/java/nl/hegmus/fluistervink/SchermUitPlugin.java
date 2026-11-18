@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.util.Base64;
+import android.webkit.WebView;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -97,6 +98,8 @@ public class SchermUitPlugin extends Plugin implements WandelingService.Listener
             return;
         }
         WandelingService.config = config;
+        // Ook als de service nog moet starten: die start zo (WandelingPlugin)
+        houdWebcodeWakker(true);
         WandelingService service = WandelingService.instance;
         if (service == null) {
             // De service start bij de sessie (WandelingPlugin); dan neemt hij dit mee
@@ -120,7 +123,25 @@ public class SchermUitPlugin extends Plugin implements WandelingService.Listener
             service.flush();
         } else WandelingService.config = null;
         WandelingService.webRecording = false;
+        houdWebcodeWakker(false);
         call.resolve();
+    }
+
+    /**
+     * De webcode draait in een eigen proces (de renderer van de WebView).
+     * Standaard zakt dat naar de laagste voorrang zodra de app niet in beeld
+     * is, ook als onze service loopt, en na een minuut of zo bevriest Android
+     * het. Gemeten in de eerste trektelling met het scherm uit (18 nov): het
+     * eerste stuk kwam meteen aan, de volgende pas bij het ontgrendelen
+     * (bridgeMs 79 s en 19 s), en de wachtrij hing. Zolang de proef aan staat
+     * (een sessie loopt) houdt de renderer dezelfde voorrang als de app.
+     */
+    private void houdWebcodeWakker(boolean wakker) {
+        if (getBridge() == null) return;
+        getBridge().executeOnMainThread(() -> {
+            WebView webView = getBridge().getWebView();
+            if (webView != null) webView.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT, !wakker);
+        });
     }
 
     /**
