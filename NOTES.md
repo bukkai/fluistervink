@@ -18,7 +18,7 @@ Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/ro
 
 Elk punt na het proberen hier weghalen.
 
-- **Sluiterknopje met het scherm uit** (na #284): een Bluetooth-sluiterknopje stuurt een volumetoets en zou dus via de volumeknop met het scherm uit moeten werken, ook met een podcast aan. Proberen, dan Maarten aanraden voor op het stuur. Debug-APK `apk/fluistervink-0.886-oortjesknop.apk` (preview van #284) of gewoon de beta.
+- **Sluiterknopje met het scherm uit** (na #284, besteld 18 nov): een Bluetooth-sluiterknopje (één knop, of de iOS-knop) stuurt volume omhoog en zou dus via de volumeknop met het scherm uit moeten werken, ook met een podcast aan. Proberen met het scherm aan, uit, en met een podcast; daarna sessie delen (log: `talk_volume_key`, `screen_off_started` met `via: volume_up`). Bevalt het, dan Maarten aanraden voor op het stuur. Debug-APK `apk/fluistervink-0.886-oortjesknop.apk` (preview van #284) of gewoon de beta.
 
 - **Robuustheid** (#274, `docs/plan-robuustheid.md`): gebeld worden in een trektelling; oortjes uit tijdens een trektelling; telefoon vol. Als het zich voordoet: wifi met inlogpagina (#268), en of "Geen bereik, … wachten" nog blijft staan na weer verbinding (nu met Probeer opnieuw, #260). Gedaan op 18 nov: offline plek (eerste GPS na 49 s, wachtende uitspraken kregen hun plek alsnog) en gebeld worden midden in een opname (opname netjes bewaard; na het ophangen nog ~1,5 min geen mobiel internet, de wachtrij ving het op).
 - **Trektelling: eerst vragen** (#263): naar een ander scherm → "Toch weggaan?"; Annuleren houdt de telling aan, OK stopt hem.
