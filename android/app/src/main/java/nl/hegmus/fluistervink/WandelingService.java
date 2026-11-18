@@ -34,11 +34,6 @@ import androidx.core.app.ServiceCompat;
 import androidx.core.content.ContextCompat;
 import com.getcapacitor.JSObject;
 import java.io.File;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -79,21 +74,14 @@ public class WandelingService extends Service {
      */
     private static final long MEDIA_DOUBLE_MS = 500;
 
-    /**
-     * Na een mediatoets zo lang "gepauzeerd" melden (reportPaused). Met 300 ms
-     * gaf Bluetooth (AVRCP) de pauze niet door aan de oortjes, alleen het
-     * "speelt" erna, als geen verandering (logcat 18 nov).
-     */
-    private static final long PLAYING_AGAIN_MS = 1_500;
-
     /** Langer ingedrukt dan dit: lang indrukken (alleen loggen) */
     private static final long MEDIA_LONG_MS = 800;
 
-    /** Lengte van het stille stuk dat in een lus speelt (holdMediaButton) */
-    private static final int SILENCE_LOOP_MS = 100;
+    /** Stil geluid om de mediaknop te krijgen (claimMediaButton) */
+    private static final int SILENCE_MS = 300;
 
-    /** Speelt er niets anders, dan stopt de stilte na minstens zo lang */
-    private static final long SILENCE_MIN_MS = 500;
+    /** Niet opnieuw claimen als het scherm binnen deze tijd weer uitgaat (even kijken) */
+    private static final long CLAIM_AGAIN_MS = 15_000;
 
     /** Zoals "failed" in src/lib/feedback.ts: drie korte */
     private static final long[] TRIL_MISLUKT = { 0, 120, 150, 120, 150, 120 };
@@ -148,14 +136,6 @@ public class WandelingService extends Service {
     private long lastMediaKeyAt = 0;
     /** Wanneer we de mediaknop het laatst probeerden te krijgen (uptime), 0 = nooit */
     private long claimedAt = 0;
-    /** Stilte die speelt om de mediaknop te houden, of null */
-    private AudioTrack silence;
-    private long silenceStartedAt = 0;
-    /** Spelers van anderen die nu spelen (id's, laatste melding van Android) */
-    private Set<String> othersPlaying = new HashSet<>();
-    /** Kon Android ons zeggen of een speler speelt (zie playersOf)? */
-    private boolean stateKnown = true;
-    private boolean playbackCallbackRegistered = false;
     private Opname opname;
     private String opnameVia;
 
@@ -280,6 +260,11 @@ public class WandelingService extends Service {
         public void onReceive(Context context, Intent intent) {
             screenOff = Intent.ACTION_SCREEN_OFF.equals(intent.getAction());
             updateMediaSession();
+            // Scherm uit: misschien is er intussen een podcast begonnen; de
+            // knop op de oortjes weer naar ons. Niet na even kijken.
+            if (screenOff && SystemClock.uptimeMillis() - claimedAt > CLAIM_AGAIN_MS) {
+                claimMediaButton("scherm_uit");
+            }
         }
     };
 
@@ -301,7 +286,7 @@ public class WandelingService extends Service {
         updateMediaSession();
         // Begin van de sessie (of de optie net aangezet): de knop op de
         // oortjes naar ons, ook als er net een podcast speelde
-        holdMediaButton();
+        if (claimedAt == 0) claimMediaButton("sessie");
     }
 
     private void releaseScreenOff() {
@@ -309,7 +294,6 @@ public class WandelingService extends Service {
             unregisterReceiver(screenReceiver);
             receiverRegistered = false;
         }
-        releaseMediaButton();
         if (mediaSession != null) {
             mediaSession.setActive(false);
             mediaSession.release();
@@ -328,7 +312,7 @@ public class WandelingService extends Service {
     private void updateMediaSession() {
         if (config == null) return;
         // De sessie bestaat de hele sessie lang, ook met het scherm aan: dan
-        // kan Android hem de knop op de oortjes geven (holdMediaButton)
+        // kan Android hem de knop op de oortjes geven (claimMediaButton)
         if (mediaSession == null) mediaSession = createMediaSession();
         boolean wanted = screenOff || opname != null;
         if (!wanted) {
@@ -362,10 +346,15 @@ public class WandelingService extends Service {
                 }
             }
         );
-        session.setPlaybackState(playbackState(PlaybackState.STATE_PLAYING));
+        session.setPlaybackState(
+            new PlaybackState.Builder()
+                .setState(PlaybackState.STATE_PLAYING, 0, 1f)
+                .setActions(PlaybackState.ACTION_PLAY | PlaybackState.ACTION_PAUSE | PlaybackState.ACTION_PLAY_PAUSE)
+                .build()
+        );
         // De knop op de oortjes of een afstandsbediening: een mediatoets.
         // Komt ook binnen als de sessie niet actief is (scherm aan), zolang
-        // Android ons de mediaknop geeft (holdMediaButton). Niet doorgeven
+        // Android ons de mediaknop geeft (claimMediaButton). Niet doorgeven
         // aan Android (super): dat zou bij een dubbele druk "volgende" doen.
         session.setCallback(
             new MediaSession.Callback() {
@@ -442,35 +431,7 @@ public class WandelingService extends Service {
         mediaPress(key, event.getDownTime());
     }
 
-    private static PlaybackState playbackState(int state) {
-        return new PlaybackState.Builder()
-            .setState(state, 0, 1f)
-            .setActions(PlaybackState.ACTION_PLAY | PlaybackState.ACTION_PAUSE | PlaybackState.ACTION_PLAY_PAUSE)
-            .build();
-    }
-
-    /**
-     * Na elke mediatoets: even "gepauzeerd" en dan weer "speelt" melden. Oortjes
-     * als de Sony WH-1000XM5 sturen om en om pauzeren en afspelen, en Android
-     * gooit "afspelen" weg zolang er muziek speelt (logcat 18 nov:
-     * "AvrcpTargetService: Ignore passthrough play during voice communication
-     * or music playing"); met een podcast aan kwam dus maar de helft aan.
-     * Horen de oortjes na het pauzeren weer "speelt", dan sturen ze de
-     * volgende keer weer pauzeren.
-     */
-    private final Runnable reportPlayingAgain = () -> {
-        if (mediaSession != null) mediaSession.setPlaybackState(playbackState(PlaybackState.STATE_PLAYING));
-    };
-
-    private void reportPaused() {
-        if (mediaSession == null) return;
-        mediaSession.setPlaybackState(playbackState(PlaybackState.STATE_PAUSED));
-        handler.removeCallbacks(reportPlayingAgain);
-        handler.postDelayed(reportPlayingAgain, PLAYING_AGAIN_MS);
-    }
-
     private void mediaPress(String key, long at) {
-        reportPaused();
         boolean twice = lastMediaKeyAt > 0 && at - lastMediaKeyAt < MEDIA_DOUBLE_MS;
         lastMediaKeyAt = at;
         JSObject data = mediaLog(key);
@@ -489,115 +450,47 @@ public class WandelingService extends Service {
     }
 
     /**
-     * De mediaknop (oortjes, afstandsbediening) houden. Android geeft hem aan
-     * de app die het laatst begon met geluid afspelen en een mediasessie
-     * heeft; speelt die app niet meer, maar een andere wel, dan schuift de
-     * spelende weer naar voren (AudioPlayerStateMonitor). Onze sessie speelt
-     * niets. Daarom spelen we stilte (gebruik "media"): kort als er verder
-     * niets speelt (dan blijven wij vooraan), en doorlopend zolang een
-     * andere app speelt, opnieuw gestart als die een nieuwe speler begint
-     * (nieuwe aflevering, afspelen op de telefoon).
+     * Android geeft de mediaknop (oortjes, afstandsbediening) aan de app die
+     * het laatst geluid begon af te spelen en een mediasessie heeft. Onze
+     * sessie speelt niets, dus na een podcast krijgt de podcast de knop.
+     * Daarom spelen we kort stilte af (gebruik "media", zonder audiofocus):
+     * dan zijn wij de laatste. Dat helpt alleen als er verder niets speelt;
+     * speelt een podcast nog, dan zet Android die weer vooraan zodra onze
+     * stilte stopt.
      *
-     * Zonder audiofocus: een podcast speelt gewoon door, maar de knop op de
-     * oortjes pauzeert hem niet meer zolang de sessie loopt.
-     * Eerste proef (18 nov) met alleen 0,3 s stilte: de podcast hield de knop.
+     * Bewust niet verder (proeven 18 nov, docs/roadmap-android.md): stilte
+     * blijven afspelen zolang een podcast speelt gaf ons de knop wel, maar
+     * Android (Bluetooth AVRCP) gooit "afspelen" weg als er muziek speelt en
+     * "pauzeren" als er niets speelt. Oortjes die die twee zelf afwisselen
+     * (Sony WH-1000XM5) kwamen dus maar half door, ook als we tussendoor
+     * "gepauzeerd" meldden. Voor een knop op het stuur: een sluiterknopje,
+     * dat een volumetoets stuurt.
      */
-    private void holdMediaButton() {
-        if (config == null || mediaSession == null || playbackCallbackRegistered) return;
-        AudioManager audio = getSystemService(AudioManager.class);
-        if (audio == null) return;
-        audio.registerAudioPlaybackCallback(playbackCallback, handler);
-        playbackCallbackRegistered = true;
-        othersPlaying = playersOf(audio.getActivePlaybackConfigurations());
-        startSilence("sessie");
-    }
-
-    private void releaseMediaButton() {
-        if (playbackCallbackRegistered) {
-            AudioManager audio = getSystemService(AudioManager.class);
-            if (audio != null) audio.unregisterAudioPlaybackCallback(playbackCallback);
-            playbackCallbackRegistered = false;
-        }
-        stopSilence("sessie_klaar");
-        othersPlaying = new HashSet<>();
-    }
-
-    private final AudioManager.AudioPlaybackCallback playbackCallback = new AudioManager.AudioPlaybackCallback() {
-        @Override
-        public void onPlaybackConfigChanged(List<AudioPlaybackConfiguration> configs) {
-            if (config == null || mediaSession == null) return;
-            Set<String> now = playersOf(configs);
-            Set<String> started = new HashSet<>(now);
-            started.removeAll(othersPlaying);
-            othersPlaying = now;
-            if (!started.isEmpty()) {
-                // Een andere app begon te spelen: die staat nu vooraan
-                startSilence(silence != null ? "herstart" : "ander_geluid");
-            } else if (now.isEmpty() && silence != null) {
-                stopSilenceSoon();
-            }
-        }
-    };
-
-    /** Onze stilte herkennen we aan deze combinatie (Android zegt niet van welke app een speler is) */
-    private static boolean isOurSilence(AudioAttributes attributes) {
-        return (
-            attributes.getUsage() == AudioAttributes.USAGE_MEDIA &&
-            attributes.getContentType() == AudioAttributes.CONTENT_TYPE_SONIFICATION
-        );
-    }
-
-    private static final Pattern PIID = Pattern.compile("piid:(\\d+)");
-    private static final Pattern STATE = Pattern.compile("state:(\\w+)");
-
-    /**
-     * Spelende mediaspelers van anderen (of de WebView), zonder onze stilte,
-     * als id. Of een speler speelt of gepauzeerd is, zit niet in de openbare
-     * API, wel in toString ("state:started"); staat dat er niet, dan tellen
-     * alle spelers mee (stateKnown = false, in het log).
-     */
-    private Set<String> playersOf(List<AudioPlaybackConfiguration> configs) {
-        Set<String> playing = new HashSet<>();
-        for (AudioPlaybackConfiguration playback : configs) {
-            AudioAttributes attributes = playback.getAudioAttributes();
-            int usage = attributes.getUsage();
-            boolean media =
-                usage == AudioAttributes.USAGE_MEDIA ||
-                usage == AudioAttributes.USAGE_GAME ||
-                usage == AudioAttributes.USAGE_UNKNOWN;
-            if (!media || isOurSilence(attributes)) continue;
-            String text = playback.toString();
-            Matcher state = STATE.matcher(text);
-            if (state.find()) {
-                if (!"started".equals(state.group(1))) continue;
-            } else {
-                stateKnown = false;
-            }
-            Matcher id = PIID.matcher(text);
-            playing.add(id.find() ? id.group(1) : String.valueOf(System.identityHashCode(playback)));
-        }
-        return playing;
-    }
-
-    /** Een nieuwe speler met stilte in een lus (een nieuwe, zodat Android hem als nieuw ziet) */
-    private void startSilence(String why) {
-        stopSilence(null);
+    private void claimMediaButton(String why) {
+        if (config == null || mediaSession == null) return;
         claimedAt = SystemClock.uptimeMillis();
         JSObject data = new JSObject();
         data.put("waarom", why);
         data.put("audiofocus", false);
-        data.put("anderGeluid", !othersPlaying.isEmpty());
-        data.put("mediaSpelers", othersPlaying.size());
-        if (!stateKnown) data.put("staatOnbekend", true);
+        AudioManager audio = getSystemService(AudioManager.class);
+        if (audio != null) {
+            // Wie de knop had, mag Android ons niet vertellen; wel of er iets speelt
+            data.put("anderGeluid", audio.isMusicActive());
+            int players = 0;
+            for (AudioPlaybackConfiguration playback : audio.getActivePlaybackConfigurations()) {
+                int usage = playback.getAudioAttributes().getUsage();
+                if (usage == AudioAttributes.USAGE_MEDIA || usage == AudioAttributes.USAGE_UNKNOWN) players++;
+            }
+            data.put("mediaSpelers", players);
+        }
         try {
             int rate = 16_000;
-            int samples = (rate * SILENCE_LOOP_MS) / 1000;
+            int samples = (rate * SILENCE_MS) / 1000;
             AudioTrack track = new AudioTrack.Builder()
                 .setAudioAttributes(
                     new AudioAttributes.Builder()
                         .setUsage(AudioAttributes.USAGE_MEDIA)
-                        // Zo herkennen we hem terug (isOurSilence)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                         .build()
                 )
                 .setAudioFormat(
@@ -611,48 +504,24 @@ public class WandelingService extends Service {
                 .setBufferSizeInBytes(samples * 2)
                 .build();
             track.write(new short[samples], 0, samples);
-            track.setLoopPoints(0, samples, -1);
             track.play();
-            silence = track;
-            silenceStartedAt = claimedAt;
+            handler.postDelayed(
+                () -> {
+                    try {
+                        track.stop();
+                    } catch (IllegalStateException ignored) {
+                        // Al gestopt
+                    }
+                    track.release();
+                },
+                SILENCE_MS + 500
+            );
             data.put("ok", true);
         } catch (RuntimeException e) {
             data.put("ok", false);
             data.put("fout", e.getClass().getSimpleName() + ": " + e.getMessage());
         }
         log("knop_claim", data);
-        if (othersPlaying.isEmpty()) stopSilenceSoon();
-    }
-
-    private final Runnable stopSilenceIfAlone = () -> {
-        if (othersPlaying.isEmpty()) stopSilence("alleen");
-    };
-
-    /** Speelt er niets anders: de stilte mag stoppen (na minstens SILENCE_MIN_MS) */
-    private void stopSilenceSoon() {
-        handler.removeCallbacks(stopSilenceIfAlone);
-        long wait = Math.max(0, silenceStartedAt + SILENCE_MIN_MS - SystemClock.uptimeMillis());
-        handler.postDelayed(stopSilenceIfAlone, wait);
-    }
-
-    /** @param why voor het log, of null (meteen opnieuw starten: niet loggen) */
-    private void stopSilence(String why) {
-        handler.removeCallbacks(stopSilenceIfAlone);
-        AudioTrack track = silence;
-        if (track == null) return;
-        silence = null;
-        try {
-            track.stop();
-        } catch (IllegalStateException ignored) {
-            // Al gestopt
-        }
-        track.release();
-        if (why != null) {
-            JSObject data = new JSObject();
-            data.put("waarom", why);
-            data.put("duurMs", SystemClock.uptimeMillis() - silenceStartedAt);
-            log("knop_claim_stop", data);
-        }
     }
 
     /** Een druk op de volumeknop of de oortjes (mediasessie of MainActivity): starten of stoppen */

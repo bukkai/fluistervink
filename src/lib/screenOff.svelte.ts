@@ -18,9 +18,9 @@ import { MIN_DURATION_MS } from './recorder.svelte';
 // ontwikkeloptie `schermUit`). Met het scherm uit start en stopt de
 // volumeknop een opname in de service van de Android-app
 // (WandelingService.java), en de hele sessie lang ook de knop op de oortjes
-// of een Bluetooth-afstandsbediening (`via` is dan `oortjes`; welke toets,
-// een dubbele druk en wie de knop kreeg staan in `screen_off_mediaknop` en
-// `screen_off_knop_claim`). De service geeft de opname hier af, en vanaf dan gaat
+// of een Bluetooth-afstandsbediening, als die bij ons aankomt (`via` is dan
+// `oortjes`; welke toets en een dubbele druk staan in `screen_off_mediaknop`,
+// de pogingen om de knop te krijgen in `screen_off_knop_claim`). De service geeft de opname hier af, en vanaf dan gaat
 // alles zoals bij de knop in de app: eerst bewaren in IndexedDB
 // (submitRecording), dan verwerken. Het bestand op de telefoon gaat pas weg
 // als het hier bewaard is.

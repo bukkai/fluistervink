@@ -21,7 +21,7 @@
     {
       option: 'schermUit',
       label: 'Opnemen met het scherm uit',
-      hint: 'Proef: tijdens een sessie start en stopt de volumeknop een opname, ook met het scherm uit. De knop op de oortjes doet dat ook, de hele sessie; een podcast speelt door, maar pauzeren met de oortjes gaat dan niet. Werkt vanaf de volgende sessie (of open de sessie opnieuw).',
+      hint: 'Proef: tijdens een sessie start en stopt de volumeknop een opname, ook met het scherm uit. De knop op de oortjes doet dat ook, als hij bij Fluistervink aankomt: niet als er een podcast speelt, en bij sommige oortjes maar om en om. Werkt vanaf de volgende sessie (of open de sessie opnieuw).',
       available: screenOffSupported,
     },
   ];
