@@ -178,8 +178,9 @@ export const LEAVE_TREKTEL_TEXT = t('trektel.leave');
 /**
  * Trektelstukken die samen op verwerking wachten, bv. na het ontgrendelen in
  * de proef met het scherm uit: de webcode lag stil, de service nam door, en nu
- * komt alles tegelijk binnen. Dan zegt de app hoeveel en uit hoeveel minuten,
- * zodat duidelijk is dat er al die tijd is opgenomen. Alleen bij minstens twee
+ * komt alles tegelijk binnen. Dan zegt de app uit hoeveel minuten, zodat
+ * duidelijk is dat er al die tijd is opgenomen. Niet hoeveel uitspraken: de app
+ * knipt per minuut, en dat aantal klopt niet met wat je gezegd hebt (19 nov). Alleen bij minstens twee
  * stukken van samen minstens twee minuten (anders de gewone regel).
  */
 export function trektelBacklog(
