@@ -1,7 +1,8 @@
 # Elke maandag de soortenlijst opnieuw ophalen bij waarneming.nl. Hernoemt
 # waarneming.nl een soort (Winterkoning werd Nannus troglodytes), dan herkent
 # de import onze export niet meer; deze workflow opent dan een pull request
-# met de nieuwe lijst en wat er veranderd is.
+# met de nieuwe lijst en wat er veranderd is. Ook de Engelse namen
+# (data/namen-en.json) en de namen van eBird (data/ebird-namen.json) gaan mee.
 #
 # Nodig: Settings → Actions → General → "Allow GitHub Actions to create and
 # approve pull requests". Een PR van deze workflow start de Check niet vanzelf
@@ -33,7 +34,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           CHANGES: ${{ runner.temp }}/changes.md
         run: |
-          if git diff --quiet data/; then
+          if [ -z "$(git status --porcelain data/)" ]; then
             echo "Geen wijzigingen"
             exit 0
           fi
@@ -45,7 +46,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "$branch"
-          git commit -am "Soortenlijst bijgewerkt van waarneming.nl"
+          git add data/
+          git commit -m "Soortenlijst bijgewerkt van waarneming.nl"
           git push -u origin "$branch"
           {
             echo "De soortenlijst van waarneming.nl is veranderd. Een nieuwe wetenschappelijke naam is het belangrijkst: de import herkent een soort alleen daaraan."

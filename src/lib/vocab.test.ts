@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  activityNameIn,
   aliases,
   aliasesOf,
   allSpecies,
   codesFor,
   convertCodes,
+  countingMethodNameIn,
   editDistance,
   findVagrant,
   getSpecies,
@@ -14,9 +16,12 @@ import {
   heardNames,
   isPromptSpecies,
   isVagrant,
+  lifeStageNameIn,
+  methodNameIn,
   promptSpeciesOf,
   searchSpecies,
   species,
+  speciesNameIn,
 } from './vocab';
 
 describe('getSpecies', () => {
@@ -265,5 +270,59 @@ describe('soortenlijst', () => {
   it('heeft de Chileense Flamingo, een exoot die hier geregeld voorkomt', () => {
     expect(isPromptSpecies(238)).toBe(true);
     expect(isVagrant(238)).toBe(false);
+  });
+});
+
+describe('namen in een andere taal', () => {
+  it('geeft de Engelse naam van een soort, op ID', () => {
+    expect(speciesNameIn('en', 136)).toBe('Mute Swan');
+    expect(speciesNameIn('nl', 136)).toBe('Knobbelzwaan');
+  });
+
+  it('volgt een vervangen ID', () => {
+    // Bonte Kraai was soort 67
+    expect(speciesNameIn('en', 67)).toBe('Hooded Crow');
+  });
+
+  it('valt terug op de wetenschappelijke naam, en op het ID als de soort onbekend is', () => {
+    expect(speciesNameIn('en', 999_999_999)).toBe('species 999999999');
+    expect(speciesNameIn('nl', 999_999_999)).toBe('soort 999999999');
+  });
+
+  it('heeft een Engelse naam voor elke soort die het model kan kiezen, in elke groep', () => {
+    // Verzamelsoorten ("Accipiter spec.") hebben in de bron vaak geen Engelse naam
+    for (const group of groups)
+      for (const s of promptSpeciesOf(group.id).filter((s) => s.type === 'S'))
+        expect(speciesNameIn('en', s.id), s.name).not.toBe(s.scientific);
+  });
+
+  it('geeft gedrag, methode en kleed in de codes van de groep van de soort', () => {
+    const merel = 150;
+    const ree = 418;
+    expect(activityNameIn('en', merel, 6)).toBe('flying over');
+    expect(activityNameIn('nl', merel, 6)).toBe('overvliegend');
+    expect(methodNameIn('en', merel, 49)).toBe('heard');
+    expect(lifeStageNameIn('en', merel, 5)).toBe('juvenile');
+    // Bij zoogdieren is "ter plaatse" 15 en "gezien" 123
+    expect(activityNameIn('en', ree, 15)).toBe('present');
+    expect(methodNameIn('en', ree, 123)).toBe('seen');
+    expect(activityNameIn('en', merel, undefined)).toBeUndefined();
+  });
+
+  it('heeft een Engelse naam voor elke code van elke groep', () => {
+    for (const group of groups) {
+      const s = promptSpeciesOf(group.id)[0];
+      const { allActivities, allMethods, allLifeStages } = codesFor(s.id);
+      for (const c of allActivities) expect(activityNameIn('en', s.id, c.id), c.name).toBeTruthy();
+      for (const c of allMethods) expect(methodNameIn('en', s.id, c.id), c.name).toBeTruthy();
+      for (const c of allLifeStages) expect(lifeStageNameIn('en', s.id, c.id), c.name).toBeTruthy();
+    }
+  });
+
+  it('geeft de telmethode', () => {
+    expect(countingMethodNameIn('en', 6)).toBe('estimated');
+    expect(countingMethodNameIn('en', 2)).toBe('real count');
+    expect(countingMethodNameIn('nl', 6)).toBe('schatting');
+    expect(countingMethodNameIn('en', undefined)).toBeUndefined();
   });
 });

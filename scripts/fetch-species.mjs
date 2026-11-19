@@ -3,6 +3,10 @@
 // vogels; daarnaast zoogdieren, reptielen en amfibieën, dagvlinders en
 // libellen (docs/plan-soortgroepen.md).
 //
+// Daarnaast de Engelse namen van dezelfde soorten en codes (data/namen-en.json,
+// docs/plan-engels.md) en de namen van eBird voor de eBird-export
+// (data/ebird-namen.json, docs/plan-ebird.md).
+//
 // Gebruik: node scripts/fetch-species.mjs
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -92,6 +96,34 @@ const GROUPS = [
   { id: 5, file: 'libellen', exotics: [], extraIds: [], names: {} },
 ];
 
+/**
+ * Engelse namen die in de bron ontbreken of onhandig zijn, per soort-ID (zoals
+ * `names` per groep, maar dan voor data/namen-en.json).
+ */
+const NAMES_EN = {
+  1003144: 'Passerine unknown',
+  255102: 'Hooded Crow',
+  719494: 'White butterfly unknown',
+};
+
+/**
+ * eBird-namen die niet op naam te koppelen zijn (docs/plan-ebird.md, punt 5),
+ * per soort-ID van waarneming.nl.
+ */
+const EBIRD_EXCEPTIONS = {
+  80199: 'Rock Pigeon (Feral Pigeon)', // Stadsduif, zoals eBird het voorschrijft
+  240802: 'duck sp.', // Eend onbekend
+  18653: 'goose sp.', // Gans (Anser/Branta) onbekend
+  682007: 'Eurasian Sparrowhawk/Eurasian Goshawk', // Havik of Sperwer onbekend
+  1967: 'large alcid sp.', // Alk of Zeekoet
+  1969: 'jaeger sp.', // Jager onbekend
+  20645: 'storm-petrel sp.', // Stormvogeltje onbekend
+  20707: 'parrot sp.', // Papegaai onbekend
+  643350: 'treecreeper sp.', // Boomkruiper onbekend
+  643328: 'Goldcrest/Common Firecrest', // Goudhaan onbekend
+  87883: 'large falcon sp.', // Grote Valk onbekend of hybride
+};
+
 async function get(path, language = 'nl') {
   const res = await fetch(`${API}${path}`, {
     headers: { Accept: 'application/json', 'Accept-Language': language },
@@ -120,6 +152,8 @@ const toSpecies = (group, list) =>
 // De bulkimport van waarneming.nl herkent gedrag, methode en kleed alleen aan
 // de tekst in de taal van de site; de app exporteert deze Nederlandse namen
 // (zie docs/waarneming-nl.md).
+const byId = (codes) => Object.fromEntries(codes.map((c) => [c.id, c.name]));
+
 const pick = (list) =>
   list
     .filter((x) => x.is_active !== false)
@@ -128,8 +162,15 @@ const pick = (list) =>
 const species = [];
 const allSpecies = [];
 const attributes = {};
+// Engels: per ID de naam. Lijst (welke soorten, zeldzaamheid) en namen apart,
+// zodat er later een taal bij kan zonder de lijst te herhalen
+// (docs/plan-andere-landen.md, keuze 1).
+const englishSpecies = new Map();
+const englishAttributes = {};
 for (const group of GROUPS) {
   const all = await get(`/region-lists/${5000 + group.id}/species/`);
+  for (const s of await get(`/region-lists/${5000 + group.id}/species/`, 'en'))
+    englishSpecies.set(s.species, s.name);
   const missing = group.exotics.filter((name) => !all.some((s) => s.name === name));
   if (missing.length) console.warn(`${group.file}: niet gevonden: ${missing.join(', ')}`);
   const missingIds = group.extraIds.filter((id) => !all.some((s) => s.species === id));
@@ -157,6 +198,28 @@ for (const group of GROUPS) {
     method: pick(attrs.method),
     life_stage: pick(attrs.life_stage),
   };
+  const attrsEn = await get(`/species-groups/${group.id}/attributes/`, 'en');
+  englishAttributes[group.file] = {
+    activity: byId(pick(attrsEn.activity)),
+    method: byId(pick(attrsEn.method)),
+    life_stage: byId(pick(attrsEn.life_stage)),
+  };
+}
+
+// Telmethode staat niet bij de attributen maar in /lookups/; de Nederlandse
+// namen staan vast in src/lib/vocab.ts.
+const lookupsEn = await get('/lookups/', 'en');
+const englishCountingMethods = byId(pick(lookupsEn.counting_method));
+
+// Per ID van de volledige lijst (alle groepen). Zonder Engelse naam geeft de
+// bron de wetenschappelijke naam ("Accipiter spec."); die laten we weg, de app
+// valt er toch op terug (speciesNameIn in vocab.ts).
+const namesEn = {};
+const withoutEnglish = [];
+for (const s of allSpecies) {
+  const name = (NAMES_EN[s.id] ?? englishSpecies.get(s.id) ?? '').trim();
+  if (name && name !== s.scientific) namesEn[s.id] = name;
+  else if (s.type === 'S') withoutEnglish.push(s);
 }
 
 // Wat er veranderd is ten opzichte van de vorige lijst, voor de beschrijving
@@ -196,8 +259,37 @@ await writeFile(
 for (const [file, attrs] of Object.entries(attributes))
   await writeFile(`data/attributen-${file}.json`, JSON.stringify(attrs, null, 1) + '\n');
 
+// Compact (één soort per regel), net als soorten-nl-alle.json
+const entries = (obj) =>
+  Object.entries(obj).map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)}`);
+await writeFile(
+  'data/namen-en.json',
+  '{\n "species": {\n' +
+    entries(namesEn).join(',\n') +
+    '\n },\n "attributes": ' +
+    JSON.stringify(englishAttributes, null, 1).replace(/\n/g, '\n ') +
+    ',\n "counting_method": ' +
+    JSON.stringify(englishCountingMethods) +
+    '\n}\n',
+);
+
+const ebird = await ebirdNames(
+  allSpecies.filter((s) => s.group === 1),
+  namesEn,
+);
+await writeFile('data/ebird-namen.json', '{\n' + entries(ebird.names).join(',\n') + '\n}\n');
+
 if (process.env.CHANGES_FILE) await writeFile(process.env.CHANGES_FILE, changes.join('\n') + '\n');
 if (changes.length) console.log(changes.join('\n'));
+if (withoutEnglish.length)
+  console.log(
+    `Soorten (type S) zonder Engelse naam (${withoutEnglish.length}): ` +
+      withoutEnglish.map((s) => `${s.name} (${s.id})`).join(', '),
+  );
+console.log(
+  `eBird: ${Object.keys(ebird.names).length} soorten gekoppeld; ` +
+    `niet gekoppeld (zeldzaamheid 1–3): ${ebird.missing.map((s) => s.name).join(', ') || 'geen'}`,
+);
 for (const group of GROUPS) {
   const a = attributes[group.file];
   const count = (list) => list.filter((s) => s.group === group.id).length;
@@ -205,4 +297,60 @@ for (const group of GROUPS) {
     `${group.file}: ${count(species)} soorten (alle: ${count(allSpecies)}), ` +
       `${a.activity.length} activiteiten, ${a.method.length} methodes, ${a.life_stage.length} kleden`,
   );
+}
+
+/**
+ * eBird-namen (Clements-taxonomie, Amerikaans Engels) per soort-ID van
+ * waarneming.nl, voor de kolom "Common Name" van de eBird-export en later als
+ * bijnamen voor wie in het Engels inspreekt. De taxonomie is openbaar, zonder
+ * sleutel. Koppelen op wetenschappelijke naam; anders op de Engelse naam van
+ * waarneming.nl, als precies één eBird-soort zo heet (bij een ander geslacht:
+ * Winterkoning is bij waarneming.nl Nannus troglodytes, bij eBird Troglodytes
+ * troglodytes). Wat niet te koppelen is, kiest de gebruiker bij de import van
+ * eBird zelf ("Fix Species").
+ */
+async function ebirdNames(birds, namesEn) {
+  const res = await fetch('https://api.ebird.org/v2/ref/taxonomy/ebird?fmt=json&locale=en');
+  if (!res.ok) throw new Error(`eBird-taxonomie: HTTP ${res.status}`);
+  const taxonomy = await res.json();
+  const bySci = new Map(taxonomy.map((t) => [sciKey(t.sciName), t.comName]));
+  const byCommon = new Map();
+  for (const t of taxonomy) {
+    const key = t.comName.toLowerCase();
+    byCommon.set(key, byCommon.has(key) ? null : t.comName);
+  }
+  const names = {};
+  const missing = [];
+  for (const s of birds) {
+    const name =
+      EBIRD_EXCEPTIONS[s.id] ??
+      bySci.get(sciKey(s.scientific)) ??
+      (namesEn[s.id] && byCommon.get(namesEn[s.id].toLowerCase()));
+    if (name) names[s.id] = name;
+    else if (s.rarity >= 1 && s.rarity <= 3 && s.type === 'S') missing.push(s);
+  }
+  return { names, missing };
+}
+
+/**
+ * Wetenschappelijke naam zoals beide bronnen hem vergelijkbaar schrijven:
+ * "Larus spec." en "Anatidae indet." worden "larus sp." en "anatidae sp."
+ * (eBird: "gull sp.", "waterfowl sp."), "Anser anser f. domesticus" wordt
+ * "anser anser (domestic type)", en "Cygnus cygnus / columbianus" wordt
+ * "cygnus columbianus/cygnus cygnus" (elk deel met geslacht, op volgorde).
+ */
+function sciKey(name) {
+  const key = name
+    .toLowerCase()
+    .replace(/\s+(spec|indet)\.$/, ' sp.')
+    .replace(/\s+f\. domestic(a|us)$/, ' (domestic type)')
+    .trim();
+  if (!key.includes('/')) return key;
+  let genus = '';
+  const parts = key.split('/').map((part) => {
+    const words = part.trim().split(/\s+/);
+    if (words.length > 1) genus = words[0];
+    return words.length > 1 ? words.join(' ') : `${genus} ${words[0]}`;
+  });
+  return parts.sort().join('/');
 }

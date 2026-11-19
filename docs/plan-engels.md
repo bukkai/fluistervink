@@ -38,8 +38,8 @@ Een tweede app is pas zinnig als het merk in het buitenland echt niet werkt. Dat
 
 - **Spraakherkenning:** de proxy zet nu vast `languages[]=nl` (`worker/index.ts`). Wordt: de taal komt mee in het verzoek, de proxy laat alleen `nl` en `en` door (zelfde aanpak als de modellen). De prompt in `src/lib/transcribe.ts` krijgt een Engelse variant: voorbeeldzinnen, de Engelse soortnamen, Engelse bijnamen, en de Engelse leeftijdscodes (1cy, 2cy, juv, ad, imm, 1w, 1s).
 - **Model:** een Engelse systeemprompt met eigen promptversie, Engelse voorbeelden en Engelse soortnamen in de lijst (de ID's blijven dezelfde). De Nederlandse prompt blijft ongewijzigd, zodat de Nederlandse testset niets verandert. De tools (`add_observation` enzovoort) zijn al Engels.
-- **Engelse soortnamen:** de API van waarneming.nl geeft ze al, met `Accept-Language: en` ("Mute Swan" voor ID 136, nagegaan 19 nov). Gedrag, methode en kleed ook ("present", "calling", "Foraging / Eating"). `scripts/fetch-species.mjs` haalt ze erbij op. Let op: `docs/ideeen.md` zei dat de Engelse namen al in `data/attributen-vogels.json` stonden; dat klopt niet, ze moeten nog opgehaald worden.
-- **Brits en Amerikaans:** observation.org gebruikt Britse namen (Lapwing, Black-throated Diver), eBird de Amerikaanse (Northern Lapwing, Arctic Loon). Een Amerikaan zegt "loon". Oplossing: de namen van eBird als bijnamen erbij, gekoppeld op wetenschappelijke naam (de eBird-taxonomie, `/v2/ref/taxonomy/ebird`; het script daarvoor stond al in `docs/plan-ebird.md` maar is nooit gebouwd, de export laat "Common Name" nu leeg). Dan kan de eBird-export meteen ook de eBird-naam invullen. Verder de gangbare korte vormen ("Robin", "Wren", "Blackcap"). Engelse bijnamen en jargon ("BoP", "LBJ", "sprawk", "GBB Gull") in `data/bijnamen-en.json`, net als nu: pas toevoegen als de testset ze laat zien.
+- **Engelse soortnamen** (opgehaald in stap 2, zie Stappen): de API van waarneming.nl geeft ze al, met `Accept-Language: en` ("Mute Swan" voor ID 136, nagegaan 19 nov). Gedrag, methode en kleed ook ("present", "calling", "Foraging / Eating"). `scripts/fetch-species.mjs` haalt ze erbij op, in `data/namen-en.json`. (`docs/ideeen.md` zei dat de Engelse namen al in `data/attributen-vogels.json` stonden; dat klopte niet.)
+- **Brits en Amerikaans:** observation.org gebruikt Britse namen (Lapwing, Black-throated Diver), eBird de Amerikaanse (Northern Lapwing, Arctic Loon). Een Amerikaan zegt "loon". Oplossing: de namen van eBird als bijnamen erbij, gekoppeld op wetenschappelijke naam (de eBird-taxonomie, `/v2/ref/taxonomy/ebird`, zonder sleutel; sinds stap 2 in `data/ebird-namen.json`). Dan kan de eBird-export meteen ook de eBird-naam invullen. Verder de gangbare korte vormen ("Robin", "Wren", "Blackcap"). Engelse bijnamen en jargon ("BoP", "LBJ", "sprawk", "GBB Gull") in `data/bijnamen-en.json`, net als nu: pas toevoegen als de testset ze laat zien.
 - **Code die Nederlands leest**, buiten het model om (nalopen met `grep` op Nederlandse woorden; ongeveer twintig bestanden noemen getallen of richtingen in het Nederlands):
   - `src/lib/spokenPlace.ts`: "500 meter ten zuiden", "honderd meter". In het Engels "500 metres south", maar ook yards en miles.
   - "feedback" aan het begin van een uitspraak (`interpret.ts`): in het Engels hetzelfde woord, dus dat werkt toevallig; de rest van die code nalopen.
@@ -50,7 +50,7 @@ Een tweede app is pas zinnig als het merk in het buitenland echt niet werkt. Dat
 ### 3. Exporteren
 
 - **observation.org:** dezelfde database als waarneming.nl (`docs/waarneming-nl.md`). De tekstkolommen (activity, life stage, method, counting method) moeten in de taal van de site; bij een Engelse app een Engelse CSV. Nog nagaan, ingelogd: of het voorbeeldbestand van observation.org dezelfde kolommen heeft en of de import ook ID's aanneemt.
-- **eBird:** bestaat al (`src/lib/ebirdExport.ts`); alleen de meldingen en de kolom "Common Name" in het Engels.
+- **eBird:** bestaat al (`src/lib/ebirdExport.ts`), met de eBird-naam in "Common Name" (stap 2); alleen de meldingen nog in het Engels.
 - De bestandsnamen en sessienamen ("Sessie", de naam van het gebied) volgen de taal.
 
 ### 4. Testset
@@ -97,7 +97,7 @@ In volgorde, omdat elke stap de vorige nodig heeft:
 ## Stappen
 
 1. ~~**Teksten naar sleutels**~~ (gedaan 19 nov, in zes PR's, #292–#297; niets vertaald): woordenboek, `t()`, `Intl` voor datum en meervoud. Wat er bewust buiten bleef, staat in `docs/ontwerp.md` (Vormgeving, Teksten).
-2. **Engelse soortnamen en attributen ophalen** in `scripts/fetch-species.mjs` (`Accept-Language: en`), en de eBird-namen als bijnamen (ook voor de kolom "Common Name" in de eBird-export).
+2. **Engelse soortnamen en attributen ophalen** in `scripts/fetch-species.mjs` (`Accept-Language: en`), en de eBird-namen als bijnamen (ook voor de kolom "Common Name" in de eBird-export). **Gedaan 19 nov** (eerder dan de roadmap, op verzoek van de eigenaar): `data/namen-en.json` (soorten, gedrag, methode, kleed, telmethode; los van de lijst, zoals keuze 1 van `docs/plan-andere-landen.md`), `speciesNameIn('en', id)` en verwanten in `src/lib/vocab.ts`, en `data/ebird-namen.json`, waarmee de eBird-export nu "Common Name" invult. De eBird-namen als bijnamen in de Engelse prompt horen bij stap 3. Details in `docs/waarneming-nl.md`, sectie 2.
 3. **Ontwikkeloptie "English":** de schermen vertaald, de proxy laat `en` door, Engelse prompts voor spraakherkenning en model, `Utterance.language`.
 4. **Engelse testset** met drie à vier sprekers; prompt bijstellen tot de drempel gehaald is.
 5. **Lange pagina's en Play:** `#uitleg`, `#privacy`, welkom, Play-vermelding en schermafbeeldingen in het Engels; export naar observation.org in het Engels (eerst de import nagaan).

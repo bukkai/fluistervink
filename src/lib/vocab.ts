@@ -5,6 +5,7 @@ import attributes from '../../data/attributen-vogels.json';
 import mammalAttributes from '../../data/attributen-zoogdieren.json';
 import aliasList from '../../data/bijnamen.json';
 import allSpeciesList from '../../data/soorten-nl-alle.json';
+import namesEn from '../../data/namen-en.json';
 import speciesList from '../../data/soorten-nl.json';
 
 // Vaste lijsten met waarneming.nl-ID's: soorten, gedrag, methode, kleed en
@@ -473,6 +474,96 @@ export function methodName(speciesId: number, id: number | undefined): string | 
 /** Naam van kleed of leeftijd, in de codes van de groep van de soort */
 export function lifeStageName(speciesId: number, id: number | undefined): string | undefined {
   return codeName(codesFor(speciesId).allLifeStages, id);
+}
+
+// ---------------------------------------------------------------------------
+// Namen in een andere taal (docs/plan-engels.md, stap 2). De ID's blijven die
+// van waarneming.nl; de taal is alleen weergave. De namen per taal staan apart
+// van de soortenlijst (data/namen-en.json, docs/plan-andere-landen.md, keuze 1).
+// Nog nergens op het scherm gebruikt: de app is Nederlands.
+
+export type Language = 'nl' | 'en';
+
+interface Names {
+  species: Record<string, string>;
+  attributes: Record<string, Record<'activity' | 'method' | 'life_stage', Record<string, string>>>;
+  counting_method: Record<string, string>;
+}
+
+const NAMES: Record<Exclude<Language, 'nl'>, Names> = { en: namesEn };
+
+/** Bestand met de attributen van een groep: data/attributen-<naam>.json */
+const ATTRIBUTE_FILES: Record<GroupId, string> = {
+  1: 'vogels',
+  2: 'zoogdieren',
+  3: 'reptielen-amfibieen',
+  4: 'dagvlinders',
+  5: 'libellen',
+};
+
+/**
+ * Naam van een soort in een taal. Zonder naam in die taal de wetenschappelijke
+ * naam (begrijpt elke vogelaar), en "soort 123" als het ID onbekend is.
+ */
+export function speciesNameIn(language: Language, id: number): string {
+  if (language === 'nl') return speciesName(id);
+  const s = getSpecies(id);
+  if (!s) return `species ${id}`;
+  return NAMES[language].species[s.id] ?? s.scientific;
+}
+
+type AttributeField = 'activity' | 'method' | 'life_stage';
+
+function attributeNameIn(
+  language: Exclude<Language, 'nl'>,
+  field: AttributeField,
+  speciesId: number,
+  id: number | undefined,
+): string | undefined {
+  if (id === undefined) return undefined;
+  return NAMES[language].attributes[ATTRIBUTE_FILES[groupOf(speciesId)]]?.[field][id];
+}
+
+/** Naam van het gedrag in een taal ("flying over"), in de codes van de groep van de soort */
+export function activityNameIn(
+  language: Language,
+  speciesId: number,
+  id: number | undefined,
+): string | undefined {
+  return language === 'nl'
+    ? activityName(speciesId, id)
+    : attributeNameIn(language, 'activity', speciesId, id);
+}
+
+/** Naam van de methode in een taal ("heard") */
+export function methodNameIn(
+  language: Language,
+  speciesId: number,
+  id: number | undefined,
+): string | undefined {
+  return language === 'nl'
+    ? methodName(speciesId, id)
+    : attributeNameIn(language, 'method', speciesId, id);
+}
+
+/** Naam van kleed of leeftijd in een taal ("juvenile") */
+export function lifeStageNameIn(
+  language: Language,
+  speciesId: number,
+  id: number | undefined,
+): string | undefined {
+  return language === 'nl'
+    ? lifeStageName(speciesId, id)
+    : attributeNameIn(language, 'life_stage', speciesId, id);
+}
+
+/** Naam van de telmethode in een taal ("estimated"); dezelfde codes voor elke groep */
+export function countingMethodNameIn(
+  language: Language,
+  id: number | undefined,
+): string | undefined {
+  if (language === 'nl') return codeName(countingMethods, id);
+  return id === undefined ? undefined : NAMES[language].counting_method[id];
 }
 
 /** Groep van een soort, voor een label: "Ree (zoogdieren)"; leeg bij vogels */

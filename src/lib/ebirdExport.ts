@@ -1,7 +1,8 @@
-import { t } from './i18n';
+import ebirdNames from '../../data/ebird-namen.json';
 import { db, type Checklist, type EbirdProtocol, type Observation, type Session } from './db';
 import { ebirdProtocol, sessionDurationMs } from './effort';
 import { saveFile } from './export';
+import { t } from './i18n';
 import { logEvent } from './log';
 import { listObservations, listUtterances } from './observations';
 import { activityName, BIRDS, getSpecies, groupOf, methodName } from './vocab';
@@ -12,8 +13,10 @@ import { fileTimestamp, isoDate, pad } from './waarnemingExport';
 // Eén sessie = één checklist, één regel per soort. Het formaat: CSV zonder
 // kopregel en zonder aanhalingstekens, 19 kolommen in een vaste volgorde
 // (bijlage A van de importhandleiding van eBird, nagekeken op 12 nov 2026
-// tegen het voorbeeldbestand). Soorten gaan met hun wetenschappelijke naam;
-// wat eBird niet kent, kiest de gebruiker bij de import zelf ("Fix Species").
+// tegen het voorbeeldbestand). Soorten gaan met hun eBird-naam en hun
+// wetenschappelijke naam (data/ebird-namen.json, gekoppeld door
+// scripts/fetch-species.mjs); wat eBird niet kent, kiest de gebruiker bij de
+// import zelf ("Fix Species").
 
 export const EBIRD_IMPORT_URL = 'https://ebird.org/import/upload.form';
 
@@ -285,6 +288,15 @@ async function checklistLocation(session: Session, observations: Observation[]):
   return { name: session.place?.name ?? 'Fluistervink', lat: position?.lat, lon: position?.lon };
 }
 
+/**
+ * Naam van de soort bij eBird ("Northern Lapwing", "duck sp."), of leeg als
+ * die niet te koppelen was
+ */
+export function ebirdName(speciesId: number): string {
+  const s = getSpecies(speciesId);
+  return (s && (ebirdNames as Record<string, string>)[s.id]) ?? '';
+}
+
 /** Waarnemingen per soort, in de volgorde waarin de soort voor het eerst gezien is */
 function bySpecies(observations: Observation[]): Observation[][] {
   const groups = new Map<string, Observation[]>();
@@ -307,7 +319,7 @@ function toRow(
   const incidental = checklist.protocol === 'Incidental';
   const traveling = checklist.protocol === 'Traveling';
   return {
-    'Common Name': '',
+    'Common Name': clean(ebirdName(group[0].speciesId)),
     Genus: genus,
     Species: species.join(' '),
     Number: String(Math.min(MAX_COUNT, count)),

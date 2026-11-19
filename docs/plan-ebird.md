@@ -56,6 +56,7 @@ Oude sessies hebben geen `effort`. Daarvoor rekent de app de duur uit begin- en 
 ### 5. Soortnamen van waarneming.nl naar eBird
 
 - eBird gebruikt een eigen indeling (eBird/Clements), die elk jaar verandert. De import herkent een soort aan de Engelse of de wetenschappelijke naam. Wat hij niet herkent, kiest de gebruiker in de stap "Fix Species" bij eBird zelf.
+- **Gedaan 19 nov, anders dan hieronder:** geen apart script maar een stap in `scripts/fetch-species.mjs` (de taxonomie vraagt geen sleutel), uitzonderingen in dat script (`EBIRD_EXCEPTIONS`), resultaat in `data/ebird-namen.json`; zie `docs/waarneming-nl.md`, sectie 2. Het oorspronkelijke voorstel:
 - Nieuw script `scripts/fetch-ebird-taxonomy.mjs`: haalt de taxonomie op via de eBird API (`/v2/ref/taxonomy/ebird?fmt=csv`; misschien is een gratis API-sleutel nodig, dan als geheim in GitHub) en zet per soort-ID van waarneming.nl de eBird-naam in `data/ebird-soorten.json`. Koppelen op wetenschappelijke naam, plus een lijstje uitzonderingen met de hand in `data/ebird-uitzonderingen.json`:
   - verzamelsoorten: "Eend onbekend" → "duck sp.", "Wilde of Kleine Zwaan" → "Whooper/Tundra Swan";
   - verschillen in indeling (soorten die de een splitst en de ander niet);
