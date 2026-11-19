@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { LOCALE, t } from './i18n';
   import { dateYearTimeFormat } from './format';
   // Een sessie als eBird-checklist: inspanning nakijken, aanvullen wat de app
   // niet kan weten, en exporteren (instelling "Ik gebruik eBird",
@@ -11,11 +12,9 @@
   let { session }: { session: Session } = $props();
 
   const METERS_PER_MILE = 1609.344;
-  const PROTOCOLS: { value: EbirdProtocol; label: string }[] = [
-    { value: 'Stationary', label: 'Op één plek (Stationary)' },
-    { value: 'Traveling', label: 'Onderweg (Traveling)' },
-    { value: 'Incidental', label: 'Losse waarnemingen (Incidental)' },
-  ];
+  const PROTOCOLS: { value: EbirdProtocol; label: string }[] = (
+    ['Stationary', 'Traveling', 'Incidental'] as const
+  ).map((value) => ({ value, label: t(`ebird.protocol.${value}`) }));
 
   let checklist = $derived(resolveChecklist(session));
   let measuredM = $derived(session.effort?.distanceM);
@@ -24,7 +23,7 @@
     session.effort ? ebirdProtocol(session.effort) : ('Incidental' as EbirdProtocol),
   );
 
-  const kmFormat = new Intl.NumberFormat('nl-NL', { maximumFractionDigits: 2 });
+  const kmFormat = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 2 });
 
   function km(meters: number): string {
     return kmFormat.format(meters / 1000);
@@ -62,19 +61,29 @@
 
 <section class="card">
   <div class="card-head">
-    <h2>eBird</h2>
-    {#if session.ebirdExportedAt && !exportResult}<span class="badge">geëxporteerd</span>{/if}
+    <h2>{t('ebird.title')}</h2>
+    {#if session.ebirdExportedAt && !exportResult}<span class="badge"
+        >{t('sessions.badgeExported')}</span
+      >{/if}
   </div>
   <div class="card-body">
     <dl>
-      <dt>Duur</dt>
-      <dd>{checklist.protocol === 'Incidental' ? '–' : `${checklist.durationMin} min`}</dd>
+      <dt>{t('ebird.duration')}</dt>
+      <dd>
+        {checklist.protocol === 'Incidental'
+          ? '–'
+          : t('ebird.minutes', { n: checklist.durationMin })}
+      </dd>
     </dl>
 
     <div class="field">
-      <label class="label" for="ebird-protocol">Soort telling</label>
+      <label class="label" for="ebird-protocol">{t('ebird.protocol')}</label>
       <select id="ebird-protocol" value={session.checklist?.protocol ?? ''} onchange={setProtocol}>
-        <option value="">Automatisch: {PROTOCOLS.find((p) => p.value === automatic)?.label}</option>
+        <option value=""
+          >{t('ebird.protocolAutomatic', {
+            protocol: PROTOCOLS.find((p) => p.value === automatic)?.label ?? '',
+          })}</option
+        >
         {#each PROTOCOLS as protocol (protocol.value)}
           <option value={protocol.value}>{protocol.label}</option>
         {/each}
@@ -83,26 +92,26 @@
 
     {#if checklist.protocol === 'Traveling'}
       <div class="field">
-        <label class="label" for="ebird-distance">Afstand in km</label>
+        <label class="label" for="ebird-distance">{t('ebird.distance')}</label>
         <input
           id="ebird-distance"
           type="text"
           inputmode="decimal"
           value={checklist.distanceM === undefined ? '' : km(checklist.distanceM)}
-          placeholder="bv. 3,5"
+          placeholder={t('ebird.distancePlaceholder')}
           onchange={setDistance}
         />
         <span class="muted small">
           {#if checklist.distanceM !== undefined}
-            {(checklist.distanceM / METERS_PER_MILE).toFixed(2)} mijl voor eBird.
+            {t('ebird.miles', { miles: (checklist.distanceM / METERS_PER_MILE).toFixed(2) })}
           {/if}
           {#if ownDistance && measuredM !== undefined}
-            Gemeten: {km(measuredM)} km.
+            {t('ebird.measured', { km: km(measuredM) })}
             <button class="link" onclick={() => setChecklist(session.id, { distanceM: undefined })}
-              >Terug naar gemeten</button
+              >{t('ebird.backToMeasured')}</button
             >
           {:else if measuredM === undefined}
-            Niet gemeten (sessie van vóór 11 november).
+            {t('ebird.notMeasured')}
           {/if}
         </span>
       </div>
@@ -117,30 +126,31 @@
         onchange={(event) =>
           setChecklist(session.id, { skipEbird: event.currentTarget.checked || undefined })}
       />
-      Deze sessie hoeft niet naar eBird
+      {t('ebird.skip')}
     </label>
     <p class="muted small">
-      Hij telt dan niet mee bij "Exporteren voor eBird" op het scherm Sessies.
+      {t('ebird.skipHint')}
     </p>
 
     {#if exportResult}
       <p role="status">{exportResult}</p>
     {:else if session.ebirdExportedAt}
-      <p class="muted">Geëxporteerd op {dateYearTimeFormat.format(session.ebirdExportedAt)}.</p>
+      <p class="muted">
+        {t('ebird.exportedOn', { date: dateYearTimeFormat.format(session.ebirdExportedAt) })}
+      </p>
     {/if}
     <button
       class="btn block"
       disabled={busy || checklist.complete === undefined}
-      onclick={exportThis}>Exporteren voor eBird</button
+      onclick={exportThis}>{t('sessions.exportEbird')}</button
     >
     <p class="muted small">
       {#if checklist.complete === undefined}
-        Beantwoord eerst de vraag hierboven.
+        {t('ebird.answerFirst')}
       {/if}
-      Importeer het bestand bij
-      <a href={EBIRD_IMPORT_URL} target="_blank" rel="noopener">eBird</a> en kies daar bij Format "eBird
-      Record Format (Extended)": eBird zet zelf het andere formaat aan, en dan mislukt de import met "Missing
-      location name". Soorten die eBird niet herkent, kies je daar zelf.
+      {t('ebird.importHintVoor')}
+      <a href={EBIRD_IMPORT_URL} target="_blank" rel="noopener">eBird</a>
+      {t('ebird.importHintNa')}
     </p>
   </div>
 </section>

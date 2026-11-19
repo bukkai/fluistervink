@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import {
   audioBlob,
   audioSize,
@@ -209,11 +210,9 @@ async function eventsToRestore(
 /** Uitkomst van een import in een zin, voor op het scherm */
 export function describeImport({ added, skipped, feedback }: ImportResult): string {
   return [
-    added === 0
-      ? 'Geen nieuwe sessies gevonden.'
-      : `${added === 1 ? '1 sessie' : `${added} sessies`} teruggezet, te vinden bij Vorige sessies.`,
-    skipped > 0 && `${skipped} stond${skipped === 1 ? '' : 'en'} er al.`,
-    feedback > 0 && `${feedback}× losse feedback teruggezet.`,
+    added === 0 ? t('import.none') : t('import.added', { n: added }),
+    skipped > 0 && t('import.skipped', { n: skipped }),
+    feedback > 0 && t('import.feedback', { n: feedback }),
   ]
     .filter(Boolean)
     .join(' ');
@@ -232,10 +231,10 @@ function checkImport(data: {
   events?: unknown;
 }): void {
   if (!Array.isArray(data?.sessions) || !Array.isArray(data?.utterances)) {
-    throw new Error('Dit is geen export van Fluistervink.');
+    throw new Error(t('import.notOurs'));
   }
   const fail = (what: string): never => {
-    throw new Error(`Ongeldige export: ${what}`);
+    throw new Error(t('import.invalid', { what }));
   };
   const isNumber = (value: unknown) => typeof value === 'number' && Number.isFinite(value);
   const isId = (value: unknown) => typeof value === 'string' && value.length > 0;
