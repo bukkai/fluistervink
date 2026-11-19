@@ -57,8 +57,8 @@ Daaruit maken we: Android-pictogram (`android/app/src/main/res/mipmap-*`, adapti
 
 ## 4. Vóór de aanvraag voor productie
 
-- [ ] **Kwaliteitsronde** (`docs/kwaliteitsronde.md`): vóór een nieuwe groep en vóór de productierelease. Na Terschelling, op de beta, dan release naar stable.
-- [ ] Feedback van de testers ophalen en verwerken (`npm run feedback -- pull` en `notes`), zodat er iets te vertellen is bij de aanvraag.
+- [x] **Kwaliteitsronde** (`docs/kwaliteitsronde.md`): gedaan na de release van 18 nov (#279), plus de architectuurronde (#280–#283).
+- [x] Feedback van de testers ophalen en verwerken (`npm run feedback -- pull` en `notes`), zodat er iets te vertellen is bij de aanvraag: verwerkt t/m 19 nov. Vlak voor de aanvraag nog één keer.
 - [ ] Laatste release in de gesloten test minstens een paar dagen vóór de aanvraag (beoordeling).
 
 ## 5. Productie
