@@ -29,6 +29,9 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     date: '2026-11-19',
     topics: {
+      Inspreken: [
+        'Een correctie met de stem, zoals "die kraanvogel van twintig minuten geleden was een blauwe reiger", vindt de bedoelde waarneming beter terug: de app kijkt verder terug, en weet bij een onzekere waarneming wat je toen zei.',
+      ],
       Export: [
         'Het bestand voor eBird heeft nu ook de Engelse naam van elke soort, zoals eBird hem schrijft. Daardoor herkent eBird bij het importeren meer soorten meteen, ook de soorten waarvan de wetenschappelijke naam bij eBird anders is (zoals de Winterkoning).',
       ],
