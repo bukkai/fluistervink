@@ -5,12 +5,18 @@ import {
   COLUMNS,
   buildEbirdExport,
   clean,
+  ebirdName,
   exportForEbird,
   lastObservers,
   pendingForEbird,
   resolveChecklist,
   setChecklist,
 } from './ebirdExport';
+
+const KIEVIT = 129;
+const WINTERKONING = 199;
+const STADSDUIF = 80199;
+const EEND_ONBEKEND = 240802;
 
 // Het opslaan zelf (download of het venster van Android) nagebootst
 const saveFile = vi.hoisted(() => vi.fn());
@@ -81,7 +87,7 @@ describe('buildEbirdExport', () => {
     const result = await lines();
     expect(result).toHaveLength(2);
     expect(result[0]).toEqual([
-      '',
+      'Common Chaffinch',
       'Fringilla',
       'coelebs',
       '5',
@@ -101,6 +107,7 @@ describe('buildEbirdExport', () => {
       '',
       'Ingesproken met Fluistervink',
     ]);
+    expect(column(result[1], 'Common Name')).toBe('Common Wood-Pigeon');
     expect(column(result[1], 'Genus')).toBe('Columba');
     expect(column(result[1], 'Number')).toBe('6');
     expect(column(result[1], 'Species Comments')).toBe('6 ter plaatse');
@@ -304,5 +311,24 @@ describe('pendingForEbird', () => {
     expect(ids([old, answered])).toEqual(['beantwoord']);
     // Niet bekend sinds wanneer: dan alleen de beantwoorde
     expect(pendingForEbird([ready, answered], undefined)).toEqual([answered]);
+  });
+});
+
+describe('ebirdName', () => {
+  it('geeft de naam van eBird, ook als die anders is dan bij waarneming.nl', () => {
+    // Kievit: observation.org zegt "Lapwing", eBird "Northern Lapwing"
+    expect(ebirdName(KIEVIT)).toBe('Northern Lapwing');
+    // Winterkoning: een ander geslacht (Nannus), gekoppeld op de Engelse naam
+    expect(ebirdName(WINTERKONING)).toBe('Eurasian Wren');
+    // Stadsduif zoals eBird het voorschrijft, en een verzamelsoort
+    expect(ebirdName(STADSDUIF)).toBe('Rock Pigeon (Feral Pigeon)');
+    expect(ebirdName(EEND_ONBEKEND)).toBe('duck sp.');
+    // Bonte Kraai was soort 67
+    expect(ebirdName(67)).toBe('Hooded Crow');
+  });
+
+  it('is leeg als de soort niet te koppelen is', () => {
+    expect(ebirdName(999_999_999)).toBe('');
+    expect(ebirdName(REE)).toBe('');
   });
 });

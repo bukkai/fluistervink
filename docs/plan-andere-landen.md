@@ -80,7 +80,7 @@ Een tussenvorm is goedkoop: **soortnamen in een andere taal, de rest in het Enge
 
 ## Stappen
 
-1. **Lijst en namen apart** in `fetch-species.mjs` en `vocab.ts`, met Nederland en Nederlands; verder niets zichtbaars. Tests voor de samenvoeging.
+1. **Lijst en namen apart** in `fetch-species.mjs` en `vocab.ts`, met Nederland en Nederlands; verder niets zichtbaars. Tests voor de samenvoeging. Begonnen 19 nov met het Engels (`data/namen-en.json`, `speciesNameIn` in `vocab.ts`, stap 2 van `docs/plan-engels.md`); de Nederlandse namen staan nog in `soorten-nl.json`.
 2. **Engelse namen** (hoort bij stap 2 van `docs/plan-engels.md`).
 3. **België** als tweede land, gebundeld: de keuze bij Instellingen en de vraag bij het starten, als ontwikkeloptie.
 4. **Downloadbare lijsten** van de eigen site, met de opslag in IndexedDB, voor de eerste reeks vakantielanden.
