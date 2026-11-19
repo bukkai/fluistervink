@@ -32,6 +32,9 @@ export const CHANGELOG: ChangelogEntry[] = [
       Export: [
         'Het bestand voor eBird heeft nu ook de Engelse naam van elke soort, zoals eBird hem schrijft. Daardoor herkent eBird bij het importeren meer soorten meteen, ook de soorten waarvan de wetenschappelijke naam bij eBird anders is (zoals de Winterkoning).',
       ],
+      'Over de app': [
+        'Instellingen heeft een logischere volgorde: eerst wat de app verstaat, dan de bediening in het veld, tellen, nalopen en export, en onderaan je gegevens. Je naam staat nu bij Delen met de ontwikkelaar.',
+      ],
     },
   },
   {

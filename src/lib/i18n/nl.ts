@@ -86,7 +86,6 @@ export const nl = {
 
   // Instellingen (Settings.svelte)
   'settings.title': 'Instellingen',
-  'settings.nameTitle': 'Je naam',
   'settings.nameLabel': 'Naam (niet verplicht)',
   'settings.nameHint':
     'Alleen voor de ontwikkelaar, zodat die weet van wie gebruik en feedback komen. Leeg laten en opslaan haalt je naam weg.',
@@ -107,7 +106,9 @@ export const nl = {
   'settings.proxyUnreachable': 'Proxy niet bereikbaar.',
 
   // Keuzes (PreferenceSettings.svelte)
-  'prefs.groupSpeaking': 'Inspreken',
+  'prefs.groupUnderstanding': 'Wat de app verstaat',
+  'prefs.groupField': 'Bediening in het veld',
+  'prefs.groupCounting': 'Tellen',
   'prefs.groupReview': 'Nalopen en export',
   'prefs.soortgroepen': 'Ook andere dieren inspreken',
   'prefs.soortgroepenHint':
@@ -185,7 +186,6 @@ export const nl = {
   },
 
   // Trektelmodus (TrektelSettings.svelte)
-  'trektel.title': 'Trektelmodus',
   'trektel.label': 'Trektelmodus (proef)',
   'trektel.hint1':
     'Voor als je op één plek telt en de telefoon naast je legt. Tijdens een sessie verschijnt dan de knop "Trektelling starten": de app luistert daarna door en verwerkt alles wat je zegt, zonder dat je steeds hoeft te drukken. Stilte wordt niet verstuurd.',
