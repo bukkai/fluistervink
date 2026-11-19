@@ -21,6 +21,7 @@
     spokenAt,
   } from './observations';
   import { LONG_WAIT_MS, retry, retryNow } from './queue';
+  import { trektelBacklog } from './trektel';
   import {
     DEFAULT_COUNTING_METHOD,
     activityLabel,
@@ -85,6 +86,9 @@
   // Al lang (trektelling: de stukken stapelen zich op). Opnieuw bekeken bij
   // elke nieuwe uitspraak, dus bij een trektelling elke minuut.
   let longWait = $derived(waiting && Date.now() - waitingSince >= LONG_WAIT_MS);
+
+  // Trektelling met het scherm uit: alles komt bij het ontgrendelen tegelijk binnen
+  let backlog = $derived(trektelBacklog($utterances ?? [], Date.now()));
 
   let failed = $derived($utterances?.filter((u) => u.status === 'failed').length ?? 0);
 
@@ -254,7 +258,7 @@
   </div>
 {:else if queued}
   <p class="queue">
-    {t('log.queued', { n: queued })}
+    {backlog ? t('log.trektelBacklog', backlog) : t('log.queued', { n: queued })}
   </p>
 {/if}
 

@@ -6,6 +6,7 @@ import {
   FRAME_MS,
   levelDb,
   setTrektelEnabled,
+  trektelBacklog,
   trektelEnabled,
   type Cut,
 } from './trektel';
@@ -141,5 +142,30 @@ describe('leavesSessionScreen', () => {
     expect(leavesSessionScreen('#')).toBe(false);
     expect(leavesSessionScreen('https://waarneming.nl')).toBe(false);
     expect(leavesSessionScreen(null)).toBe(false);
+  });
+});
+
+describe('trektelBacklog', () => {
+  const now = 1_800_000_000_000;
+  const min = 60_000;
+  const stuk = (agoMin: number, status: 'pending' | 'processing' | 'done' = 'pending') => ({
+    status,
+    trektel: true as const,
+    recordedAt: now - agoMin * min,
+  });
+
+  it('telt de wachtende stukken en de minuten sinds het oudste', () => {
+    const utterances = [stuk(12, 'done'), stuk(8, 'processing'), stuk(6), stuk(3), stuk(1)];
+    expect(trektelBacklog(utterances, now)).toEqual({ n: 4, minutes: 8 });
+  });
+
+  it('niets bij één wachtend stuk of minder dan twee minuten', () => {
+    expect(trektelBacklog([stuk(8)], now)).toBeUndefined();
+    expect(trektelBacklog([stuk(1.2), stuk(0.5)], now)).toBeUndefined();
+  });
+
+  it('niets als er ook een ingesproken uitspraak wacht', () => {
+    const knop = { status: 'pending' as const, recordedAt: now - 5 * min };
+    expect(trektelBacklog([stuk(8), stuk(4), knop], now)).toBeUndefined();
   });
 });

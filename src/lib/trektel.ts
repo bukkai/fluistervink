@@ -7,6 +7,7 @@
 // browser-API's, zodat ze te testen zijn. De opname zelf staat in
 // trektelRecorder.svelte.ts.
 
+import type { Utterance } from './db';
 import { t } from './i18n';
 
 /** Zo vaak meet de opname het geluidsniveau. */
@@ -173,3 +174,20 @@ export function leavesSessionScreen(href: string | null): boolean {
 }
 
 export const LEAVE_TREKTEL_TEXT = t('trektel.leave');
+
+/**
+ * Trektelstukken die samen op verwerking wachten, bv. na het ontgrendelen in
+ * de proef met het scherm uit: de webcode lag stil, de service nam door, en nu
+ * komt alles tegelijk binnen. Dan zegt de app hoeveel en uit hoeveel minuten,
+ * zodat duidelijk is dat er al die tijd is opgenomen. Alleen bij minstens twee
+ * stukken van samen minstens twee minuten (anders de gewone regel).
+ */
+export function trektelBacklog(
+  utterances: readonly Pick<Utterance, 'status' | 'trektel' | 'recordedAt'>[],
+  now: number,
+): { n: number; minutes: number } | undefined {
+  const queued = utterances.filter((u) => u.status === 'pending' || u.status === 'processing');
+  if (queued.length < 2 || queued.some((u) => !u.trektel)) return undefined;
+  const minutes = Math.round((now - Math.min(...queued.map((u) => u.recordedAt))) / 60_000);
+  return minutes >= 2 ? { n: queued.length, minutes } : undefined;
+}
