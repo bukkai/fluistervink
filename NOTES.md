@@ -21,7 +21,7 @@ Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/ro
 
 Elk punt na het proberen hier weghalen.
 
-- **Trektelling met het scherm uit** (#289, gemerged, achter `schermUit` in de beta; APK `apk/fluistervink-0.907-trektel-scherm-uit.apk` laadt de preview van de branch). Gedaan op 18 nov: opnemen met het scherm uit werkt (alle stukken, geen gat, accu 94 → 94% in 3 min), maar Chromium zet de webcode 60 s na het vergrendelen stil: de stukken worden pas bij het ontgrendelen verwerkt (niets verloren, wel geen tril). Besloten: zo laten; de service zelf laten verwerken is een plan voor later (`docs/ideeen.md`). Nog proberen:
+- **Trektelling met het scherm uit** (#289, gemerged, achter `schermUit` in de beta; v0.5-beta, 19 nov getagd voor de interne test; de APK 0.907 laadde de preview van de verwijderde branch en gaf een 404). Gedaan op 18 nov: opnemen met het scherm uit werkt (alle stukken, geen gat, accu 94 → 94% in 3 min), maar Chromium zet de webcode 60 s na het vergrendelen stil: de stukken worden pas bij het ontgrendelen verwerkt (niets verloren, wel geen tril). Besloten: zo laten; de service zelf laten verwerken is een plan voor later (`docs/ideeen.md`). Nog proberen:
   1. Gebeld worden: één lange tril (pauze), na het ophangen vanzelf een tril en verder.
   2. Merlin openen en laten luisteren: Fluistervink pauzeert (lange tril), Merlin hoort de vogels; Merlin dicht, Fluistervink gaat vanzelf verder.
   3. Een langere telling (kwartier of meer) met het scherm uit: accu (`trektel_native_end`) en of alles bij ontgrendelen binnenkomt.
