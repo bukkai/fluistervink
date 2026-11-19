@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import { audioBlob, type StoredAudio } from './db';
 
 /**
@@ -28,7 +29,7 @@ export const player = {
 
   /** Tekst voor schermlezers bij de knop */
   label(utteranceId: string | undefined): string {
-    return player.isPlaying(utteranceId) ? 'Opname pauzeren' : 'Opname afspelen';
+    return player.isPlaying(utteranceId) ? t('player.pause') : t('player.play');
   },
 
   /** Afspelen; nog eens tikken pauzeert, een andere opname stopt deze. */

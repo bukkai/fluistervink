@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import { db, type Change, type Observation, type Utterance } from './db';
 import type { Action } from './interpret';
 import { codesForNewSpecies, listUtterances, moveToBin } from './observations';
@@ -124,7 +125,7 @@ function rareReason(speciesId: number): string | undefined {
   if (!preferenceOn('zeldzaamOnzeker') || rarityOf(speciesId) < RARE) return undefined;
   // Een dwaalgast is al onzeker, met zijn eigen reden (interpret.ts)
   if (isVagrant(speciesId)) return undefined;
-  return `Zeldzame soort (${speciesName(speciesId)}): klopt het?`;
+  return t('reason.rare', { species: speciesName(speciesId) });
 }
 
 /**
@@ -144,7 +145,10 @@ export async function applyActions(
   const accidental: Partial<Observation> = isAccidental(utterance)
     ? {
         uncertain: true,
-        uncertainReason: `Per ongeluk opgenomen? ${Math.round(utterance.audioDurationMs! / 1000)} s opname, verstaan: "${utterance.transcript}"`,
+        uncertainReason: t('reason.accidental', {
+          s: Math.round(utterance.audioDurationMs! / 1000),
+          transcript: utterance.transcript ?? '',
+        }),
       }
     : {};
 
@@ -191,7 +195,7 @@ export async function applyActions(
           const base = patch.count ?? current.count;
           patch.count = Math.max(1, base + action.addCount);
           if (base + action.addCount < 1)
-            belowOne = `${base} − ${-action.addCount} kan niet: op 1 gezet`;
+            belowOne = t('reason.belowOne', { base, minus: -action.addCount });
         }
         // Een correctie zonder twijfel maakt een eerder onzekere waarneming
         // zeker; alleen een opmerking of notitie toevoegen niet
@@ -207,7 +211,11 @@ export async function applyActions(
           action.fields.speciesId !== current.speciesId &&
           isBareNo(utterance.transcript)
         ) {
-          const reason = `Alleen "${utterance.transcript!.trim()}" verstaan; misschien "een …" (nieuwe waarneming). Was ${current.count} × ${speciesName(current.speciesId)}`;
+          const reason = t('reason.onlyNumber', {
+            transcript: utterance.transcript!.trim(),
+            count: current.count,
+            species: speciesName(current.speciesId),
+          });
           patch.uncertain = true;
           patch.uncertainReason = patch.uncertainReason
             ? `${patch.uncertainReason}; ${reason}`

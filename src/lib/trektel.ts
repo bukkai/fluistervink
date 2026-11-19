@@ -7,6 +7,8 @@
 // browser-API's, zodat ze te testen zijn. De opname zelf staat in
 // trektelRecorder.svelte.ts.
 
+import { t } from './i18n';
+
 /** Zo vaak meet de opname het geluidsniveau. */
 export const FRAME_MS = 100;
 
@@ -170,4 +172,4 @@ export function leavesSessionScreen(href: string | null): boolean {
   return href.replace(/^#\/?/, '') !== '';
 }
 
-export const LEAVE_TREKTEL_TEXT = 'Op een ander scherm stopt de trektelling. Toch weggaan?';
+export const LEAVE_TREKTEL_TEXT = t('trektel.leave');

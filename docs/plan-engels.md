@@ -1,6 +1,6 @@
 # Plan: Fluistervink in het Engels
 
-Voorstel van 19 nov 2026, nog niet goedgekeurd. Punt 8 van "Na v1.0" in `docs/roadmap.md`; komt na de betaalde laag (punt 6), want een tweede taal maakt het publiek veel groter. Het vervolg, vogels van andere landen en namen in andere talen, staat in `docs/plan-andere-landen.md`. Dit plan vervangt het idee "App in het Engels" uit `docs/ideeen.md`.
+Voorstel van 19 nov 2026; stap 1 gedaan op 19 nov (#292–#297). Punt 8 van "Na v1.0" in `docs/roadmap.md`; komt na de betaalde laag (punt 6), want een tweede taal maakt het publiek veel groter. Het vervolg, vogels van andere landen en namen in andere talen, staat in `docs/plan-andere-landen.md`. Dit plan vervangt het idee "App in het Engels" uit `docs/ideeen.md`.
 
 ## Doel
 
@@ -96,7 +96,7 @@ In volgorde, omdat elke stap de vorige nodig heeft:
 
 ## Stappen
 
-1. **Teksten naar sleutels** (één PR, niets vertaald): woordenboek, `t()`, `Intl` voor datum en meervoud. De app ziet er precies hetzelfde uit.
+1. ~~**Teksten naar sleutels**~~ (gedaan 19 nov, in zes PR's, #292–#297; niets vertaald): woordenboek, `t()`, `Intl` voor datum en meervoud. Wat er bewust buiten bleef, staat in `docs/ontwerp.md` (Vormgeving, Teksten).
 2. **Engelse soortnamen en attributen ophalen** in `scripts/fetch-species.mjs` (`Accept-Language: en`), en de eBird-namen als bijnamen (ook voor de kolom "Common Name" in de eBird-export).
 3. **Ontwikkeloptie "English":** de schermen vertaald, de proxy laat `en` door, Engelse prompts voor spraakherkenning en model, `Utterance.language`.
 4. **Engelse testset** met drie à vier sprekers; prompt bijstellen tot de drempel gehaald is.

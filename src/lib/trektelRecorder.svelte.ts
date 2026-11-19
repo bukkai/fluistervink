@@ -13,6 +13,7 @@
 // andere app die de microfoon wil, pauzeert de telling (Android geeft ons
 // dan stilte).
 
+import { t } from './i18n';
 import type { PositionLookup } from './db';
 import { logEvent } from './log';
 import { openMicrophone } from './microphone';
@@ -273,8 +274,7 @@ async function resumeTrektel(): Promise<void> {
     trektel.status = 'paused';
     stopTrektel('mic');
     // Niet stil stoppen: wie later kijkt, moet weten waarom
-    trektel.error =
-      'Trektelling gestopt: de microfoon ging niet meer aan. Start de telling opnieuw; wat al ingesproken was, is bewaard.';
+    trektel.error = t('trektel.micNotBack');
     return;
   }
   pausedMs += away;
@@ -339,8 +339,7 @@ function onNativeEvent(event: NativeTrektelEvent): void {
       logNativeSummary(event.data);
       stopTrektel(reason);
       if (reason === 'mic') {
-        trektel.error =
-          'Trektelling gestopt: de microfoon viel weg. Start de telling opnieuw; wat al ingesproken was, is bewaard.';
+        trektel.error = t('trektel.micLost');
       }
       break;
     }
@@ -407,8 +406,8 @@ export async function startTrektel(
     trektel.status = 'idle';
     trektel.error =
       error instanceof DOMException && error.name === 'NotAllowedError'
-        ? 'Geen toegang tot de microfoon. Sta dit toe in de browserinstellingen.'
-        : 'De microfoon gaat niet aan.';
+        ? t('session.micDenied')
+        : t('trektel.micFailed');
     return false;
   }
 

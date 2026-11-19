@@ -73,6 +73,7 @@ De richting staat in `docs/roadmap.md`, ideeën die nog geen plan zijn in `docs/
 
 - Werk in kleine stappen: één feature per branch en pull request, met een duidelijke beschrijving.
 - **Licentie:** AGPL-3.0-only. De eigenaar wil de enige auteur blijven (dubbele licentie), dus nooit code van anderen overnemen: geen pull requests van anderen mergen, en een bijdrage alleen opnieuw bouwen vanuit de beschrijving, zonder hun code te kopiëren (`CONTRIBUTING.md`). Updates van Dependabot mogen wel.
+- Teksten op het scherm in het woordenboek (`src/lib/i18n/nl.ts`, `t()`), als hele zinnen; zie `docs/ontwerp.md`, Vormgeving.
 - Changelog: elke PR die voor gebruikers iets zichtbaars verandert, zet in `src/lib/changelog.ts` een regel in gewone taal, onder de datum van de merge, bij het passende onderwerp. Geen ontwikkelopties of schermen van de eigenaar.
 - De eigenaar programmeert zelf weinig maar heeft een front-end-achtergrond (JavaScript): leg keuzes kort uit in de PR-beschrijving.
 - Houd dit bestand en `docs/ontwerp.md` actueel wanneer ontwerpkeuzes veranderen.

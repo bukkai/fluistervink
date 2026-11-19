@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n';
   import gullUrl from '../assets/zeemeeuw.png';
   import { zeemeeuw } from './zeemeeuw.svelte';
 
@@ -90,7 +91,7 @@
     class="overlay"
     class:leaving
     role="alertdialog"
-    aria-label="Zeemeeuwen bestaan niet"
+    aria-label={t('gulls.label')}
     tabindex="-1"
     onclick={close}
   >

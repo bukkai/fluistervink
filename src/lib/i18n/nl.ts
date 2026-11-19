@@ -572,4 +572,95 @@ export const nl = {
   'import.feedback': '{n}× losse feedback teruggezet.',
   'import.notOurs': 'Dit is geen export van Fluistervink.',
   'import.invalid': 'Ongeldige export: {what}',
+  // Feedback (DevNotes.svelte)
+  'notes.title': 'Feedback',
+  'notes.copy': 'Kopieer als Markdown',
+  'notes.copied': 'Gekopieerd ✓',
+  'notes.introVoor': 'Wat viel je op aan de app? Typ het hieronder.',
+  'notes.introSharing':
+    'Feedback gaat meteen naar de ontwikkelaar, of tijdens een sessie na het stoppen.',
+  'notes.introNotSharingVoor': 'Feedback gaat naar de ontwikkelaar als je delen aanzet (',
+  'notes.introNotSharingNa': ').',
+  'notes.introNa': 'Verstuurde feedback blijft hier staan; weghalen kan altijd.',
+  'notes.placeholder': 'Wat viel je op? Bijvoorbeeld: hij herkende blako niet',
+  'notes.label': 'Nieuwe feedback',
+  'notes.add': 'Toevoegen',
+  'notes.location': 'locatie',
+  'notes.sent': 'verstuurd ✓',
+  'notes.afterSession': 'gaat mee na de sessie',
+  'notes.notSent': 'nog niet verstuurd',
+  'notes.none': 'Nog geen feedback.',
+  'notes.allSent': 'Alle feedback is verstuurd.',
+  'notes.earlier': 'Eerder verstuurd ({n})',
+  'notes.confirmDelete': 'Deze feedback weghalen?\n\n"{text}"',
+
+  // Fouten bij verbinding en aanmelden (api.ts, install.ts, queue.ts)
+  'error.proxyUnreachable': 'Proxy niet bereikbaar',
+  'error.offline': 'Geen internetverbinding',
+  'error.captivePortal': 'Geen antwoord van de proxy (inlogpagina van een wifi?)',
+  'error.noCodeSignIn': 'Aanmelden zonder code staat uit; vul een code in',
+  'error.turnstileLoad': 'Controle van Cloudflare niet te laden',
+  'error.turnstileSlow': 'Controle van Cloudflare duurde te lang',
+  'error.turnstileFailed': 'Controle van Cloudflare mislukt ({code})',
+  'error.transcribePrefix': 'Spraakherkenning: {message}',
+
+  // Locatie (location.svelte.ts)
+  'location.unsupported': 'Deze telefoon of browser geeft geen locatie.',
+  'location.denied':
+    'De app mag je locatie niet gebruiken. Zet dat aan bij de instellingen van je telefoon.',
+  'location.notFound': 'Je plek is niet gevonden. Probeer het buiten nog eens, of tik op de kaart.',
+  'location.notFoundOffline':
+    'Je plek is niet gevonden: zonder bereik doet de GPS er soms minuten over. Tik op de kaart, of probeer het later nog eens.',
+
+  // Afspelen (player.svelte.ts)
+  'player.pause': 'Opname pauzeren',
+  'player.play': 'Opname afspelen',
+
+  // Trektelling (trektel.ts, trektelRecorder.svelte.ts)
+  'trektel.leave': 'Op een ander scherm stopt de trektelling. Toch weggaan?',
+  'trektel.micNotBack':
+    'Trektelling gestopt: de microfoon ging niet meer aan. Start de telling opnieuw; wat al ingesproken was, is bewaard.',
+  'trektel.micLost':
+    'Trektelling gestopt: de microfoon viel weg. Start de telling opnieuw; wat al ingesproken was, is bewaard.',
+  'trektel.micFailed': 'De microfoon gaat niet aan.',
+
+  // Waarom de app een waarneming onzeker maakt (applyActions.ts, interpret.ts, spokenPlace.ts)
+  'reason.rare': 'Zeldzame soort ({species}): klopt het?',
+  'reason.accidental': 'Per ongeluk opgenomen? {s} s opname, verstaan: "{transcript}"',
+  'reason.belowOne': '{base} − {minus} kan niet: op 1 gezet',
+  'reason.onlyNumber':
+    'Alleen "{transcript}" verstaan; misschien "een …" (nieuwe waarneming). Was {count} × {species}',
+  'reason.vagrant': 'Dwaalgast, niet in de vaste lijst (gezegd: "{named}")',
+  'reason.place': 'Plek gezegd: "{text}"; zet hem op de kaart',
+
+  // Gesproken bevestiging (spoken.ts)
+  'spoken.failed': 'Niet gelukt',
+  'spoken.ignored': 'Niet begrepen',
+  'spoken.note': 'Feedback bewaard',
+  'spoken.undone': 'Ongedaan gemaakt',
+  'spoken.saved': 'Opgeslagen',
+  'spoken.savedUncertain': 'Opgeslagen, onzeker',
+  'spoken.deleted': 'weg: {species}',
+  'spoken.updated': 'aangepast: {what}',
+  'spoken.many': '{n} waarnemingen',
+  'spoken.manyFlagged': '{n} waarnemingen. Onzeker',
+  'spoken.manyUncertain': '{n} waarnemingen, {uncertain} onzeker',
+  'spoken.flagged': '{sentence}. Onzeker',
+  'spoken.uncertain': 'onzeker',
+  'spoken.or': ' of ',
+  'spoken.meters': '{m} meter',
+  'spoken.kilometers': '{km} kilometer',
+  'spoken.direction.N': 'noord',
+  'spoken.direction.NO': 'noordoost',
+  'spoken.direction.O': 'oost',
+  'spoken.direction.ZO': 'zuidoost',
+  'spoken.direction.Z': 'zuid',
+  'spoken.direction.ZW': 'zuidwest',
+  'spoken.direction.W': 'west',
+  'spoken.direction.NW': 'noordwest',
+  'spoken.caughtUp': { one: 'een uitspraak verwerkt', other: '{n} uitspraken verwerkt' },
+  'spoken.caughtUpFailed': '{n} niet gelukt',
+
+  // Zeemeeuwen (Zeemeeuwen.svelte)
+  'gulls.label': 'Zeemeeuwen bestaan niet',
 } satisfies Record<string, Entry>;
