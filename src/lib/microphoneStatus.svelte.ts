@@ -2,6 +2,7 @@
 // "hoe weet ik of de microfoon van de telefoon of van mijn headset wordt
 // gebruikt?"). Alleen iets te zeggen als er oortjes met microfoon zijn.
 
+import { t } from './i18n';
 import { devOptionOn } from './devOptions';
 import { logEvent } from './log';
 import { headsetInList, micKind, type MicKind } from './microphone';
@@ -52,7 +53,5 @@ export function noteMicrophone(stream: MediaStream, mode: 'opname' | 'trektel'):
 export function microphoneLine(): string | undefined {
   if (!microphone.headset && microphone.using !== 'oortjes') return undefined;
   const expected = microphone.using ?? (devOptionOn('oortjesMicrofoon') ? 'oortjes' : 'telefoon');
-  return expected === 'oortjes'
-    ? 'Luistert met je oortjes'
-    : 'Luistert met de telefoon, niet je oortjes';
+  return expected === 'oortjes' ? t('mic.headset') : t('mic.phone');
 }
