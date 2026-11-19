@@ -24,6 +24,11 @@
       hint: 'Proef: tijdens een sessie start en stopt de volumeknop een opname, ook met het scherm uit. De knop op de oortjes doet dat ook, als hij bij Fluistervink aankomt: niet als er een podcast speelt, en bij sommige oortjes maar om en om. Werkt vanaf de volgende sessie (of open de sessie opnieuw).',
       available: screenOffSupported,
     },
+    {
+      option: 'english',
+      label: 'English',
+      hint: 'De app in het Engels: schermen, namen van soorten en gedrag, en inspreken. Uitleg, privacy, welkom, de changelog en deze schermen blijven Nederlands (docs/plan-engels.md, stap 3). Aan- of uitzetten laadt de app opnieuw.',
+    },
   ];
 
   const shown = items.filter((item) => item.available !== false);
@@ -37,6 +42,8 @@
     if (item.option === 'oortjesMicrofoon' && checked[item.option]) {
       void requestBluetoothMicrophone();
     }
+    // De taal staat vast zolang de app draait (i18n/index.ts)
+    if (item.option === 'english') location.reload();
   }
 </script>
 

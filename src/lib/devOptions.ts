@@ -6,8 +6,10 @@
  * - `oortjesMicrofoon`: de microfoon van Bluetooth-oortjes (microphone.ts)
  * - `schermUit`: opnemen met het scherm uit, met de volumeknop of de knop op
  *   de oortjes (proef, docs/roadmap-android.md stap 3)
+ * - `english`: de app in het Engels, scherm én inspreken (docs/plan-engels.md,
+ *   stap 3); aan- of uitzetten laadt de app opnieuw (i18n/index.ts)
  */
-export type DevOption = 'oortjesMicrofoon' | 'schermUit';
+export type DevOption = 'oortjesMicrofoon' | 'schermUit' | 'english';
 
 const PREFIX = 'fluistervink.dev.';
 

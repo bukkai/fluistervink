@@ -19,7 +19,7 @@
   import { listObservations } from './observations';
   import PlaceUnplaced from './PlaceUnplaced.svelte';
   import { hasRarity, rarityLabels, rarityOf, raritySvg } from './rarity';
-  import { speciesName } from './vocab';
+  import { speciesLabel } from './vocab';
 
   // Kaart met waar elke waarneming van een sessie is gedaan. Alleen
   // bekijken; de plek verzetten kan per waarneming in het bewerkformulier
@@ -71,7 +71,7 @@
    * database (ook uit een import) komen zo nooit als HTML in de pagina.
    */
   function obsButton(obs: Observation, withTime: boolean): HTMLElement {
-    const label = `${obs.count}× ${speciesName(obs.speciesId)}`;
+    const label = `${obs.count}× ${speciesLabel(obs.speciesId)}`;
     const button = el(
       'button',
       'obs',
@@ -143,7 +143,7 @@
 
   /** Naam van de stip voor schermlezers (Leaflet maakt er een knop van) */
   function pinTitle(group: Observation[], rarity: number, uncertain: boolean): string {
-    const parts = [group.map((obs) => speciesName(obs.speciesId)).join(', ')];
+    const parts = [group.map((obs) => speciesLabel(obs.speciesId)).join(', ')];
     if (hasRarity(rarity)) parts.push(rarityLabels[rarity]);
     if (uncertain) parts.push(t('map.uncertainTitle'));
     return parts.join(' · ');

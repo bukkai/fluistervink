@@ -3,7 +3,8 @@
 // app is er niet om soorten te verzamelen, dat doet waarneming.nl.
 
 import { db, type Observation, type Session } from './db';
-import { BIRDS, getGroup, groupOf, speciesName, type GroupId } from './vocab';
+import { LOCALE } from './i18n';
+import { BIRDS, groupName, groupOf, speciesLabel, type GroupId } from './vocab';
 
 export interface SummaryLine {
   speciesId: number;
@@ -29,7 +30,7 @@ export function byGroup(lines: SummaryLine[]): SummaryGroup[] {
   return [...groups.entries()]
     .sort(([a], [b]) => a - b)
     .map(([group, lines]) => ({
-      ...(group !== BIRDS && { title: getGroup(group).name }),
+      ...(group !== BIRDS && { title: groupName(group) }),
       lines,
     }));
 }
@@ -42,13 +43,13 @@ export function summarize(observations: Observation[]): SummaryLine[] {
     else
       lines.set(obs.speciesId, {
         speciesId: obs.speciesId,
-        name: speciesName(obs.speciesId),
+        name: speciesLabel(obs.speciesId),
         count: obs.count,
       });
   }
   // Meeste exemplaren eerst; bij gelijk op naam
   return [...lines.values()].sort(
-    (a, b) => b.count - a.count || a.name.localeCompare(b.name, 'nl'),
+    (a, b) => b.count - a.count || a.name.localeCompare(b.name, LOCALE),
   );
 }
 

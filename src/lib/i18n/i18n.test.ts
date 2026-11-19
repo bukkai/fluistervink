@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { t } from './index';
+import { t, translate } from './index';
+import { en } from './en';
 import { nl } from './nl';
 
 describe('t', () => {
@@ -23,9 +24,36 @@ describe('t', () => {
   });
 
   it('heeft geen lege teksten', () => {
-    for (const [key, entry] of Object.entries(nl)) {
-      const texts = typeof entry === 'string' ? [entry] : [entry.one, entry.other];
-      for (const text of texts) expect(text.trim(), key).not.toBe('');
+    for (const dictionary of [nl, en]) {
+      for (const [key, entry] of Object.entries(dictionary)) {
+        const texts = typeof entry === 'string' ? [entry] : [entry.one, entry.other];
+        for (const text of texts) expect(text.trim(), key).not.toBe('');
+      }
+    }
+  });
+});
+
+describe('Engels', () => {
+  it('vertaalt met dezelfde parameters en meervoud', () => {
+    expect(translate('en', 'home.title')).toBe('Ready to go birding?');
+    expect(translate('en', 'common.sessions', { n: 1 })).toBe('1 session');
+    expect(translate('en', 'common.sessions', { n: 0 })).toBe('0 sessions');
+  });
+
+  it('gebruikt in elke tekst dezelfde parameters als het Nederlands', () => {
+    const params = (entry: string | { one: string; other: string }) =>
+      [...(typeof entry === 'string' ? entry : entry.one + entry.other).matchAll(/\{(\w+)\}/g)]
+        .map((m) => m[1])
+        .filter((name, i, all) => all.indexOf(name) === i && name !== 'n')
+        .sort();
+    for (const key of Object.keys(nl) as (keyof typeof nl)[]) {
+      expect(params(en[key]), key).toEqual(params(nl[key]));
+    }
+  });
+
+  it('heeft het meervoud waar het Nederlands het heeft', () => {
+    for (const key of Object.keys(nl) as (keyof typeof nl)[]) {
+      expect(typeof en[key], key).toBe(typeof nl[key]);
     }
   });
 });

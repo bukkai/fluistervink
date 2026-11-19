@@ -3,6 +3,10 @@ import './app.css';
 import App from './App.svelte';
 import { logEvent, startLogging } from './lib/log';
 import './lib/update';
+import { language } from './lib/i18n';
+
+// Taal van de pagina (index.html zegt nl), voor schermlezers en afbreken
+document.documentElement.lang = language;
 
 startLogging();
 // De app-code laadde eerst niet en public/herstel.js heeft de cache gewist:

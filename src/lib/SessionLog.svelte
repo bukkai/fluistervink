@@ -23,12 +23,12 @@
   import { LONG_WAIT_MS, retry, retryNow } from './queue';
   import {
     DEFAULT_COUNTING_METHOD,
-    activityName,
-    codeName,
-    countingMethods,
+    activityLabel,
+    countingMethodLabel,
     getSpecies,
-    lifeStageName,
-    methodName,
+    lifeStageLabel,
+    methodLabel,
+    speciesLabel,
   } from './vocab';
 
   // Waarnemingen en uitspraken van één sessie; gebruikt voor de lopende
@@ -160,11 +160,11 @@
   function behaviour(obs: Observation) {
     return [
       obs.countingMethodId !== DEFAULT_COUNTING_METHOD
-        ? codeName(countingMethods, obs.countingMethodId)
+        ? countingMethodLabel(obs.countingMethodId)
         : undefined,
-      activityName(obs.speciesId, obs.activityId),
-      methodName(obs.speciesId, obs.methodId),
-      lifeStageName(obs.speciesId, obs.lifeStageId),
+      activityLabel(obs.speciesId, obs.activityId),
+      methodLabel(obs.speciesId, obs.methodId),
+      lifeStageLabel(obs.speciesId, obs.lifeStageId),
       obs.sex === 'male' ? t('log.male') : obs.sex === 'female' ? t('log.female') : undefined,
     ].filter(Boolean);
   }
@@ -303,7 +303,7 @@
               <RarityMark rarity={species?.rarity ?? 0} />
               <span class="main">
                 <span class="name">
-                  {species?.name}
+                  {speciesLabel(obs.speciesId)}
                   {#if obs.status === 'reviewed'}
                     <span class="reviewed" title={t('log.reviewed')}>✓</span>
                   {/if}
@@ -397,7 +397,7 @@
       {#each $deleted as obs (obs.id)}
         <li class="deleted">
           <div>
-            <strong>{obs.count} × {getSpecies(obs.speciesId)?.name}</strong>
+            <strong>{obs.count} × {speciesLabel(obs.speciesId)}</strong>
             <span class="muted">{timeFormat.format(obs.observedAt)}</span>
             <div class="muted">{details(obs)}</div>
             <div class="muted">{t(`log.deletedBy.${obs.deletedBy}`)}</div>

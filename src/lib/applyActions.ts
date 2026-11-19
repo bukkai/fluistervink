@@ -5,7 +5,7 @@ import { codesForNewSpecies, listUtterances, moveToBin } from './observations';
 import { preferenceOn } from './preferences';
 import { rarityOf } from './rarity';
 import { placeFromSpeech, placeReason } from './spokenPlace';
-import { codesFor, DEFAULT_COUNTING_METHOD, isVagrant, speciesName } from './vocab';
+import { codesFor, DEFAULT_COUNTING_METHOD, isVagrant, speciesLabel } from './vocab';
 
 // Voert de acties van het model uit (toevoegen, aanpassen, verwijderen,
 // ongedaan maken) en beslist daarbij wat onzeker wordt. Aangeroepen vanuit de
@@ -125,7 +125,7 @@ function rareReason(speciesId: number): string | undefined {
   if (!preferenceOn('zeldzaamOnzeker') || rarityOf(speciesId) < RARE) return undefined;
   // Een dwaalgast is al onzeker, met zijn eigen reden (interpret.ts)
   if (isVagrant(speciesId)) return undefined;
-  return t('reason.rare', { species: speciesName(speciesId) });
+  return t('reason.rare', { species: speciesLabel(speciesId) });
 }
 
 /**
@@ -214,7 +214,7 @@ export async function applyActions(
           const reason = t('reason.onlyNumber', {
             transcript: utterance.transcript!.trim(),
             count: current.count,
-            species: speciesName(current.speciesId),
+            species: speciesLabel(current.speciesId),
           });
           patch.uncertain = true;
           patch.uncertainReason = patch.uncertainReason
