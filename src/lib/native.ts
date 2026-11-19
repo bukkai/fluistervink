@@ -1,4 +1,5 @@
 import { Capacitor, registerPlugin, type PluginListenerHandle } from '@capacitor/core';
+import { language } from './i18n';
 
 // Het enige bestand dat weet of de app in de Android-app draait (Capacitor) of
 // in de browser. Elke native functie heeft een terugval op de web-API, zodat
@@ -212,7 +213,12 @@ export function listenShortcut(onAction: (action: string) => void): void {
 }
 
 interface SprekenPlugin {
-  zeg(options: { tekst: string }): Promise<{ gesproken: boolean; reden?: string }>;
+  /**
+   * `taal`: de taal van de tekst. SprekenPlugin.java kiest nu nog altijd een
+   * Nederlandse stem (nl-NL) en negeert dit veld; een volgende app-versie kan
+   * het gebruiken voor een Engelse stem (ontwikkeloptie "English").
+   */
+  zeg(options: { tekst: string; taal: string }): Promise<{ gesproken: boolean; reden?: string }>;
 }
 
 const Spreken = registerPlugin<SprekenPlugin>('Spreken');
@@ -227,7 +233,7 @@ export const speechSupported = isNativeApp && Capacitor.isPluginAvailable('Sprek
 export async function speakNative(text: string): Promise<{ gesproken: boolean; reden?: string }> {
   if (!speechSupported) return { gesproken: false, reden: 'web' };
   try {
-    return await Spreken.zeg({ tekst: text });
+    return await Spreken.zeg({ tekst: text, taal: language });
   } catch (error) {
     return { gesproken: false, reden: String(error) };
   }

@@ -5,6 +5,7 @@ import attributes from '../../data/attributen-vogels.json';
 import mammalAttributes from '../../data/attributen-zoogdieren.json';
 import aliasList from '../../data/bijnamen.json';
 import allSpeciesList from '../../data/soorten-nl-alle.json';
+import ebirdNames from '../../data/ebird-namen.json';
 import namesEn from '../../data/namen-en.json';
 import speciesList from '../../data/soorten-nl.json';
 import { language as appLanguage, LOCALE, t, type Language } from './i18n';
@@ -93,13 +94,46 @@ const promptSpeciesByName = byName(species);
 const promptSpeciesAllGroupsByName = byName(promptSpeciesAllGroups);
 const promptSpeciesAllGroupsIds = new Set(promptSpeciesAllGroups.map((s) => s.id));
 
+const englishNames: Record<string, string> = namesEn.species;
+
+/**
+ * Engelse namen van een soort: die van waarneming.nl (data/namen-en.json, in
+ * de Engelse prompt) en die van eBird (data/ebird-namen.json, Amerikaans:
+ * "Northern Lapwing", "Arctic Loon"), zodat het model en de gebruiker allebei
+ * goed zitten.
+ */
+export function englishNamesOf(s: Species): string[] {
+  // eBird eerst: bij het opzoeken wint de laatste, de naam van waarneming.nl
+  const names = [(ebirdNames as Record<string, string>)[s.id], englishNames[s.id]];
+  return names.filter((n): n is string => Boolean(n));
+}
+
+/** Ook op Engelse naam; de naam van waarneming.nl wint (die staat in de prompt) */
+const byEnglishName = (list: Species[]) =>
+  new Map([
+    ...byName(list),
+    ...list.flatMap((s) => englishNamesOf(s).map((n) => [n.toLowerCase(), s] as const)),
+  ]);
+let englishMaps: { birds: Map<string, Species>; all: Map<string, Species> } | undefined;
+
 /**
  * Soort uit de lijst in de prompt, op Nederlandse of wetenschappelijke naam
- * (hoofdletters maken niet uit). `withGroups`: ook de andere soortgroepen
- * (keuze 'soortgroepen' bij Instellingen).
+ * (hoofdletters maken niet uit), en bij `language` 'en' ook op Engelse naam.
+ * `withGroups`: ook de andere soortgroepen (keuze 'soortgroepen' bij Instellingen).
  */
-export function findPromptSpecies(name: string, withGroups = false): Species | undefined {
+export function findPromptSpecies(
+  name: string,
+  withGroups = false,
+  language: Language = 'nl',
+): Species | undefined {
   const key = name.trim().toLowerCase();
+  if (language === 'en') {
+    englishMaps ??= {
+      birds: byEnglishName(species),
+      all: byEnglishName(promptSpeciesAllGroups),
+    };
+    return (withGroups ? englishMaps.all : englishMaps.birds).get(key);
+  }
   return (withGroups ? promptSpeciesAllGroupsByName : promptSpeciesByName).get(key);
 }
 
@@ -135,15 +169,30 @@ const vagrantIds = new Set(vagrants.map((s) => s.id));
  */
 const vagrantAliases = (aliasList as Alias[]).filter((a) => vagrantIds.has(a.soort));
 
-const keysOf = (s: Species) => [normalizeName(s.name), normalizeName(s.scientific)];
-const vagrantKeys = [
-  ...vagrants.flatMap((s) => keysOf(s).map((key) => ({ key, s }))),
-  ...vagrantAliases.flatMap((a) =>
-    a.bijnamen.map((name) => ({ key: normalizeName(name), s: speciesById.get(a.soort)! })),
-  ),
-];
-const promptKeys = species.flatMap(keysOf);
-const promptKeysAllGroups = promptSpeciesAllGroups.flatMap(keysOf);
+interface VagrantIndex {
+  vagrantKeys: { key: string; s: Species }[];
+  promptKeys: string[];
+  promptKeysAllGroups: string[];
+}
+
+/** Namen om op te zoeken: Nederlands en wetenschappelijk, of Engels (twee namen) en wetenschappelijk */
+function vagrantIndex(language: Language): VagrantIndex {
+  const keysOf = (s: Species) =>
+    [...(language === 'en' ? englishNamesOf(s) : [s.name]), s.scientific].map(normalizeName);
+  return {
+    vagrantKeys: [
+      ...vagrants.flatMap((s) => keysOf(s).map((key) => ({ key, s }))),
+      // De bijnamen zijn Nederlands ("korenwolf")
+      ...(language === 'nl' ? vagrantAliases : []).flatMap((a) =>
+        a.bijnamen.map((name) => ({ key: normalizeName(name), s: speciesById.get(a.soort)! })),
+      ),
+    ],
+    promptKeys: species.flatMap(keysOf),
+    promptKeysAllGroups: promptSpeciesAllGroups.flatMap(keysOf),
+  };
+}
+
+const vagrantIndexes = new Map<Language, VagrantIndex>();
 
 /** Is dit een dwaalgast (zeer zeldzaam, niet in de prompt)? */
 export function isVagrant(id: number): boolean {
@@ -175,21 +224,41 @@ export function editDistance(a: string, b: string, max = Infinity): number {
 }
 
 /**
- * Dwaalgast bij een gezegde naam (Nederlands of wetenschappelijk), met een
- * paar letters speling. Liever geen soort dan een verkeerde: niets als twee
- * dwaalgasten even goed passen, of als een soort uit de prompt minstens zo
- * goed past ("roodborsttapuit" is geen Roodkeeltapuit). `withGroups`: ook
- * andere dieren (keuze 'soortgroepen' bij Instellingen), anders alleen vogels.
+ * Dwaalgast bij een gezegde naam (Nederlands of wetenschappelijk; bij
+ * `language` 'en' Engels of wetenschappelijk), met een paar letters speling.
+ * Liever geen soort dan een verkeerde: niets als twee dwaalgasten even goed
+ * passen, of als een soort uit de prompt minstens zo goed past
+ * ("roodborsttapuit" is geen Roodkeeltapuit). `withGroups`: ook andere dieren
+ * (keuze 'soortgroepen' bij Instellingen), anders alleen vogels.
  */
-export function findVagrant(name: string, withGroups = false): Species | undefined {
+export function findVagrant(
+  name: string,
+  withGroups = false,
+  language: Language = 'nl',
+): Species | undefined {
   const said = normalizeName(name);
   if (!said) return undefined;
+  let index = vagrantIndexes.get(language);
+  if (!index) vagrantIndexes.set(language, (index = vagrantIndex(language)));
   // Ook in het enkelvoud: het model geeft de naam soms zoals gezegd ("korenwolven")
-  for (const form of new Set([said, ...singulars(said)])) {
-    const found = findVagrantKey(form, withGroups);
+  const forms = language === 'en' ? englishSingulars(said) : singulars(said);
+  for (const form of new Set([said, ...forms])) {
+    const found = findVagrantKey(form, withGroups, index);
     if (found) return found;
   }
   return undefined;
+}
+
+/** Mogelijke Engelse enkelvouden: wolves, geese, mice, buntings, finches, ibises */
+function englishSingulars(said: string): string[] {
+  return [
+    said.replace(/geese$/, 'goose'),
+    said.replace(/mice$/, 'mouse'),
+    said.replace(/ves$/, 'f'),
+    said.replace(/ies$/, 'y'),
+    said.replace(/es$/, ''),
+    said.replace(/s$/, ''),
+  ].filter((form) => form !== said && form.length >= 3);
 }
 
 /** Mogelijke enkelvouden van een genormaliseerde naam: korenwolven, knoflookpadden, rietgorzen */
@@ -203,7 +272,11 @@ function singulars(said: string): string[] {
   ].filter((form) => form !== said && form.length >= 3);
 }
 
-function findVagrantKey(said: string, withGroups: boolean): Species | undefined {
+function findVagrantKey(
+  said: string,
+  withGroups: boolean,
+  { vagrantKeys, promptKeys, promptKeysAllGroups }: VagrantIndex,
+): Species | undefined {
   const max = allowedTypos(said.length);
   let best: Species | undefined;
   let bestDistance = max + 1;
@@ -524,6 +597,16 @@ function attributeNameIn(
 ): string | undefined {
   if (id === undefined) return undefined;
   return NAMES[language].attributes[ATTRIBUTE_FILES[groupOf(speciesId)]]?.[field][id];
+}
+
+/** Naam van een code van een groep in een taal, voor de Engelse prompt */
+export function groupCodeNameIn(
+  language: Exclude<Language, 'nl'>,
+  group: GroupId,
+  field: AttributeField,
+  id: number,
+): string | undefined {
+  return NAMES[language].attributes[ATTRIBUTE_FILES[group]]?.[field][id];
 }
 
 /** Naam van het gedrag in een taal ("flying over"), in de codes van de groep van de soort */

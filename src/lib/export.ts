@@ -300,6 +300,8 @@ function checkImport(data: {
       isNumber(u.recordedAt) &&
       optional(u.position, isPosition) &&
       optional(u.area, isArea) &&
+      // De taal kiest de prompt: alleen bekende talen (ontwikkeloptie "English")
+      optional(u.language, (l) => l === 'nl' || l === 'en') &&
       optional(u.audioData, (a) => typeof a === 'string' && a.startsWith('data:audio/'));
     if (!ok) fail('uitspraak');
   }

@@ -1,4 +1,4 @@
-import { t } from './i18n';
+import { t, type Language } from './i18n';
 import type { Observation, Position, SpokenPlace } from './db';
 
 // Plek van de vogel zoals de gebruiker hem noemt: "buizerd overvliegend, 500 m
@@ -126,8 +126,13 @@ export function parseNumber(word: string): number | undefined {
  * Afstand en windrichting uit de omschrijving zelf ("honderd meter ten
  * zuidwesten van hier"). Het model vult place_distance_m soms niet in, ook als
  * de afstand er letterlijk staat; dan haalt de app hem hier alsnog uit.
+ * `language`: de taal van de uitspraak ("two hundred yards south-west").
  */
-export function parsePlaceText(text: string): Pick<SpokenPlace, 'distanceM' | 'direction'> {
+export function parsePlaceText(
+  text: string,
+  language: Language = 'nl',
+): Pick<SpokenPlace, 'distanceM' | 'direction'> {
+  if (language === 'en') return parseEnglishPlaceText(text);
   const result: Pick<SpokenPlace, 'distanceM' | 'direction'> = {};
   const distance =
     /(?:^|\s)(?:([\d.,]+)\s*|([a-zéë]+(?:\s+[a-zéë]+)?)\s+)(km|kilometer|m|meter)(?![a-z])/i.exec(
@@ -152,13 +157,112 @@ export function parsePlaceText(text: string): Pick<SpokenPlace, 'distanceM' | 'd
   return result;
 }
 
-/** Korte omschrijving als het model alleen afstand en richting gaf: "500 m Z" */
-export function describePlace(distanceM?: number, direction?: Direction): string {
+/** Windrichting in het Engels: de codes zijn Nederlands (O is oost) */
+const ENGLISH_DIRECTIONS: Record<Direction, string> = {
+  N: 'N',
+  NO: 'NE',
+  O: 'E',
+  ZO: 'SE',
+  Z: 'S',
+  ZW: 'SW',
+  W: 'W',
+  NW: 'NW',
+};
+
+/** Korte omschrijving als het model alleen afstand en richting gaf: "500 m Z", in het Engels "500 m S" */
+export function describePlace(
+  distanceM?: number,
+  direction?: Direction,
+  language: Language = 'nl',
+): string {
+  const km = distanceM === undefined ? '' : (distanceM / 1000).toString();
   const distance =
     distanceM === undefined
       ? undefined
       : distanceM < 1000
         ? `${distanceM} m`
-        : `${(distanceM / 1000).toString().replace('.', ',')} km`;
-  return [distance, direction].filter(Boolean).join(' ');
+        : `${language === 'en' ? km : km.replace('.', ',')} km`;
+  const shown = direction && language === 'en' ? ENGLISH_DIRECTIONS[direction] : direction;
+  return [distance, shown].filter(Boolean).join(' ');
+}
+
+// ---------------------------------------------------------------------------
+// Engels (ontwikkeloptie "English", docs/plan-engels.md): "200 metres south",
+// "half a mile north-east", "three hundred yards to the west"
+
+const ENGLISH_UNITS: Record<string, number> = {
+  one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+  eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17,
+  eighteen: 18, nineteen: 19, twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60,
+  seventy: 70, eighty: 80, ninety: 90,
+}; // prettier-ignore
+
+/** Meters per eenheid; yards en miles, want zo schat een Brit of Amerikaan */
+const ENGLISH_LENGTHS: [RegExp, number][] = [
+  [/^(km|kilomet(er|re)s?)$/, 1000],
+  [/^(mi|miles?)$/, 1609.344],
+  [/^(yd|yds|yards?)$/, 0.9144],
+  [/^(m|met(er|re)s?)$/, 1],
+];
+
+/**
+ * Engels getal in cijfers of woorden: "200", "1.5", "two hundred and fifty",
+ * "a hundred", "half a", "one and a half", "twenty-five". Undefined als er een
+ * woord tussen staat dat geen getal is.
+ */
+export function parseEnglishNumber(words: string[]): number | undefined {
+  const tokens = words.flatMap((w) => w.toLowerCase().split('-')).filter((w) => w && w !== 'and');
+  if (!tokens.length) return undefined;
+  if (tokens.length === 1 && /^\d+(\.\d+)?$/.test(tokens[0].replace(/,/g, ''))) {
+    return Number(tokens[0].replace(/,/g, ''));
+  }
+  let total = 0;
+  let current = 0;
+  let half = false;
+  for (const [i, token] of tokens.entries()) {
+    if (token === 'half') half = true;
+    else if (token === 'a' || token === 'an') {
+      // "a hundred", "a mile"; "half a" en "one and a half" tellen bij half
+      if (tokens[i + 1] !== 'half' && tokens[i - 1] !== 'half') current += 1;
+    } else if (Object.hasOwn(ENGLISH_UNITS, token)) current += ENGLISH_UNITS[token];
+    else if (token === 'hundred') current = (current || 1) * 100;
+    else if (token === 'thousand') {
+      total += (current || 1) * 1000;
+      current = 0;
+    } else return undefined;
+  }
+  const value = total + current + (half ? 0.5 : 0);
+  // "half a mile": de "a" telt niet als 1
+  return value > 0 ? value : undefined;
+}
+
+function parseEnglishPlaceText(text: string): Pick<SpokenPlace, 'distanceM' | 'direction'> {
+  const result: Pick<SpokenPlace, 'distanceM' | 'direction'> = {};
+  const distance =
+    /(?:^|\s)(?:([\d.,]+)\s*|((?:[a-z-]+\s+){0,4}))(km|kilomet(?:er|re)s?|mi|miles?|yds?|yards?|m|met(?:er|re)s?)(?![a-z])/i.exec(
+      text,
+    );
+  if (distance) {
+    const words = distance[1] ? [distance[1]] : distance[2].trim().split(/\s+/);
+    // Het langste stuk vóór de eenheid dat een getal is: "about two hundred" → 200
+    let value: number | undefined;
+    for (let start = 0; start < words.length && value === undefined; start++) {
+      value = parseEnglishNumber(words.slice(start));
+    }
+    const unit = distance[3].toLowerCase();
+    const factor = ENGLISH_LENGTHS.find(([pattern]) => pattern.test(unit))?.[1] ?? 1;
+    const meters = value === undefined ? undefined : Math.round(value * factor);
+    if (meters !== undefined && meters >= 1 && meters <= MAX_DISTANCE_M) result.distanceM = meters;
+  }
+  const direction =
+    /(?:^|[^a-z])(?:(north|south)(?:[- ]?(east|west))?|(east|west))(?:ern|erly|wards?)?(?![a-z])/i.exec(
+      text,
+    );
+  if (direction) {
+    const letter: Record<string, string> = { north: 'N', south: 'Z', east: 'O', west: 'W' };
+    const part = (word?: string) => (word ? letter[word.toLowerCase()] : '');
+    const code = (part(direction[1]) + part(direction[2] ?? direction[3])) as Direction;
+    if (Object.hasOwn(DIRECTIONS, code)) result.direction = code;
+  }
+  return result;
 }

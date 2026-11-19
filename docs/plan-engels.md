@@ -1,6 +1,6 @@
 # Plan: Fluistervink in het Engels
 
-Voorstel van 19 nov 2026; stap 1 gedaan op 19 nov (#292–#297). Punt 8 van "Na v1.0" in `docs/roadmap.md`; komt na de betaalde laag (punt 6), want een tweede taal maakt het publiek veel groter. Het vervolg, vogels van andere landen en namen in andere talen, staat in `docs/plan-andere-landen.md`. Dit plan vervangt het idee "App in het Engels" uit `docs/ideeen.md`.
+Voorstel van 19 nov 2026; stap 1 gedaan op 19 nov (#292–#297), stap 2 (#298) en 3 (ontwikkeloptie "English") ook. Punt 8 van "Na v1.0" in `docs/roadmap.md`; komt na de betaalde laag (punt 6), want een tweede taal maakt het publiek veel groter. Het vervolg, vogels van andere landen en namen in andere talen, staat in `docs/plan-andere-landen.md`. Dit plan vervangt het idee "App in het Engels" uit `docs/ideeen.md`.
 
 ## Doel
 
@@ -98,7 +98,7 @@ In volgorde, omdat elke stap de vorige nodig heeft:
 
 1. ~~**Teksten naar sleutels**~~ (gedaan 19 nov, in zes PR's, #292–#297; niets vertaald): woordenboek, `t()`, `Intl` voor datum en meervoud. Wat er bewust buiten bleef, staat in `docs/ontwerp.md` (Vormgeving, Teksten).
 2. **Engelse soortnamen en attributen ophalen** in `scripts/fetch-species.mjs` (`Accept-Language: en`), en de eBird-namen als bijnamen (ook voor de kolom "Common Name" in de eBird-export). **Gedaan 19 nov** (eerder dan de roadmap, op verzoek van de eigenaar): `data/namen-en.json` (soorten, gedrag, methode, kleed, telmethode; los van de lijst, zoals keuze 1 van `docs/plan-andere-landen.md`), `speciesNameIn('en', id)` en verwanten in `src/lib/vocab.ts`, en `data/ebird-namen.json`, waarmee de eBird-export nu "Common Name" invult. De eBird-namen als bijnamen in de Engelse prompt horen bij stap 3. Details in `docs/waarneming-nl.md`, sectie 2.
-3. **Ontwikkeloptie "English":** de schermen vertaald, de proxy laat `en` door, Engelse prompts voor spraakherkenning en model, `Utterance.language`.
+3. **Ontwikkeloptie "English":** de schermen vertaald, de proxy laat `en` door, Engelse prompts voor spraakherkenning en model, `Utterance.language`. **Gedaan 19 nov** in twee PR's: de schermen (`en.ts`, namen via de `…Label`-functies in `vocab.ts`) en het inspreken (`promptEn.ts`, Engelse prompt in `transcribe.ts`, taal per uitspraak, proxy, Engelse namen, meervouden en afstanden). Details in `docs/ontwerp.md` (Teksten; Spraak en interpretatie). Bewust nog niet: de Engelse stem van de gesproken bevestiging (native, nieuwe app-versie: `SprekenPlugin.java` moet `taal` lezen, de app stuurt hem al mee), `isBareNo` (alleen Nederlands "nee"), Engelse bijnamen (`data/bijnamen-en.json`, pas met de testset), `npm run testset -- --lang en` (stap 4; de testset geeft de taal van een uitspraak al mee).
 4. **Engelse testset** met drie à vier sprekers; prompt bijstellen tot de drempel gehaald is.
 5. **Lange pagina's en Play:** `#uitleg`, `#privacy`, welkom, Play-vermelding en schermafbeeldingen in het Engels; export naar observation.org in het Engels (eerst de import nagaan).
 6. **Gesloten groep Engelstaligen** in de interne test; daarna de taalkeuze voor iedereen bij Instellingen.

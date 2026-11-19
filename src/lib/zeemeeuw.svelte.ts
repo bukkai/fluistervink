@@ -8,8 +8,11 @@ import { logEvent } from './log';
 
 export const zeemeeuw = $state({ visible: false });
 
-/** "zeemeeuw", "zeemeeuwen", "zee-meeuw", "Zee meeuw" */
-const ZEEMEEUW = /zee[\s-]*meeuw/i;
+/**
+ * "zeemeeuw", "zeemeeuwen", "zee-meeuw", "Zee meeuw", en in het Engels
+ * "seagull" (ontwikkeloptie "English"): ook daar bestaat hij niet
+ */
+const ZEEMEEUW = /zee[\s-]*meeuw|sea[\s-]*gull/i;
 
 export function mentionsZeemeeuw(text: string): boolean {
   return ZEEMEEUW.test(text);

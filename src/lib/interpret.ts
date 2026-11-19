@@ -1,4 +1,4 @@
-import { t } from './i18n';
+import { t, type Language } from './i18n';
 import type Anthropic from '@anthropic-ai/sdk';
 import { timeFormat } from './format';
 import { distanceMeters } from './geo';
@@ -24,6 +24,10 @@ import {
   lifeStageName,
   methodName,
   speciesName,
+  speciesNameIn,
+  activityNameIn,
+  methodNameIn,
+  lifeStageNameIn,
   findPromptSpecies,
   findVagrant,
   isPromptSpecies,
@@ -93,41 +97,103 @@ export interface Interpretation {
 /** Vanaf deze afstand staat de afstand in de context (zie "nog een X" in de prompt) */
 const FAR_AWAY_M = 250;
 
-/** De systeemprompt verwijst naar deze woorden ("… m hiervandaan"); houd ze gelijk */
-function farAway(obs: Observation, here: Position | undefined): string | undefined {
+/**
+ * Woorden in de context en het bericht voor het model, per taal. De
+ * systeemprompt verwijst naar sommige ("… m hiervandaan", "… m away"); houd
+ * ze gelijk. Het Nederlands staat hier precies zoals het altijd was.
+ */
+const WORDS = {
+  nl: {
+    away: 'hiervandaan',
+    decimal: ',',
+    none: '(nog geen waarnemingen)',
+    male: 'man',
+    female: 'vrouw',
+    uncertain: 'onzeker',
+    candidates: 'twijfel tussen',
+    remarks: 'opmerking',
+    note: 'notitie',
+    place: 'plek',
+    or: ' of ',
+    trektel: 'Dit is een stuk uit een trektelling.',
+    recent: 'Recente waarnemingen in deze sessie (#1 = meest recent):',
+    said: 'Uitspraak',
+  },
+  en: {
+    away: 'away',
+    decimal: '.',
+    none: '(no observations yet)',
+    male: 'male',
+    female: 'female',
+    uncertain: 'uncertain',
+    candidates: 'torn between',
+    remarks: 'remark',
+    note: 'note',
+    place: 'place',
+    or: ' or ',
+    trektel: 'This is a chunk from a migration count.',
+    recent: 'Recent observations in this session (#1 = most recent):',
+    said: 'Voice note',
+  },
+} satisfies Record<Language, Record<string, string>>;
+
+function farAway(
+  obs: Observation,
+  here: Position | undefined,
+  language: Language,
+): string | undefined {
   if (!here || !obs.position) return undefined;
   const meters = distanceMeters(obs.position, here);
   if (meters < FAR_AWAY_M) return undefined;
+  const { away, decimal } = WORDS[language];
   return meters < 1000
-    ? `${Math.round(meters / 50) * 50} m hiervandaan`
-    : `${(meters / 1000).toFixed(1).replace('.', ',')} km hiervandaan`;
+    ? `${Math.round(meters / 50) * 50} m ${away}`
+    : `${(meters / 1000).toFixed(1).replace('.', decimal)} km ${away}`;
 }
 
 /**
  * De recente waarnemingen zoals het model ze krijgt, #1 = nieuwste.
  * @param here Positie van de uitspraak, als die er al is
+ * @param language Taal van de uitspraak en dus van de prompt
  */
-export function describeContext(context: Observation[], here?: Position): string {
+export function describeContext(
+  context: Observation[],
+  here?: Position,
+  language: Language = 'nl',
+): string {
   return context.length
-    ? context.map((obs, i) => `#${i + 1} ${describe(obs, here)}`).join('\n')
-    : '(nog geen waarnemingen)';
+    ? context.map((obs, i) => `#${i + 1} ${describe(obs, here, language)}`).join('\n')
+    : WORDS[language].none;
 }
 
-function describe(obs: Observation, here?: Position): string {
+/** Namen in de taal van de prompt; voor het Nederlands precies zoals altijd */
+const namesIn = (language: Language) =>
+  language === 'nl'
+    ? { species: speciesName, activity: activityName, method: methodName, lifeStage: lifeStageName }
+    : {
+        species: (id: number) => speciesNameIn(language, id),
+        activity: (speciesId: number, id?: number) => activityNameIn(language, speciesId, id),
+        method: (speciesId: number, id?: number) => methodNameIn(language, speciesId, id),
+        lifeStage: (speciesId: number, id?: number) => lifeStageNameIn(language, speciesId, id),
+      };
+
+function describe(obs: Observation, here: Position | undefined, language: Language): string {
+  const words = WORDS[language];
+  const names = namesIn(language);
   const parts = [
-    `${obs.count} × ${speciesName(obs.speciesId)}`,
-    activityName(obs.speciesId, obs.activityId),
-    methodName(obs.speciesId, obs.methodId),
-    lifeStageName(obs.speciesId, obs.lifeStageId),
-    obs.sex === 'male' ? 'man' : obs.sex === 'female' ? 'vrouw' : undefined,
-    obs.uncertain ? 'onzeker' : undefined,
+    `${obs.count} × ${names.species(obs.speciesId)}`,
+    names.activity(obs.speciesId, obs.activityId),
+    names.method(obs.speciesId, obs.methodId),
+    names.lifeStage(obs.speciesId, obs.lifeStageId),
+    obs.sex === 'male' ? words.male : obs.sex === 'female' ? words.female : undefined,
+    obs.uncertain ? words.uncertain : undefined,
     obs.candidates?.length
-      ? `twijfel tussen: ${obs.candidates.map(speciesName).join(', ')}`
+      ? `${words.candidates}: ${obs.candidates.map((id) => names.species(id)).join(', ')}`
       : undefined,
-    obs.remarks ? `opmerking: "${obs.remarks}"` : undefined,
-    obs.privateNote ? `notitie: "${obs.privateNote}"` : undefined,
-    obs.spokenPlace ? `plek: "${obs.spokenPlace.text}"` : undefined,
-    farAway(obs, here),
+    obs.remarks ? `${words.remarks}: "${obs.remarks}"` : undefined,
+    obs.privateNote ? `${words.note}: "${obs.privateNote}"` : undefined,
+    obs.spokenPlace ? `${words.place}: "${obs.spokenPlace.text}"` : undefined,
+    farAway(obs, here, language),
   ];
   return `${timeFormat.format(obs.observedAt)} ${parts.filter(Boolean).join(', ')}`;
 }
@@ -144,20 +210,24 @@ function describe(obs: Observation, here?: Position): string {
 function saidInReason(speciesId: number | undefined, reason: unknown): string | undefined {
   if (speciesId === undefined || !/onbekend/i.test(speciesName(speciesId))) return undefined;
   if (typeof reason !== 'string') return undefined;
-  return reason.match(/gezegd:\s*"?([^"(;,]+?)"?\s*\(niet in de lijst/i)?.[1];
+  return (
+    reason.match(/gezegd:\s*"?([^"(;,]+?)"?\s*\(niet in de lijst/i)?.[1] ??
+    reason.match(/said:\s*"?([^"(;,]+?)"?\s*\(not (?:in|on) the list/i)?.[1]
+  );
 }
 
 export function parseResponse(
   response: Anthropic.Message,
   context: Observation[],
   withGroups = false,
+  language: Language = 'nl',
 ): { actions: Action[]; rejected: string[]; warnings: string[] } {
   const actions: Action[] = [];
   const rejected: string[] = [];
   const warnings: string[] = [];
   for (const block of response.content) {
     if (block.type !== 'tool_use') continue;
-    const result = toAction(block, context, warnings, withGroups);
+    const result = toAction(block, context, warnings, withGroups, language);
     if (typeof result === 'string') rejected.push(result);
     else actions.push(result);
   }
@@ -169,9 +239,15 @@ export function parseResponse(
  * krijgt er een regel bij, zodat het model weet dat een vogel zonder gedrag
  * overvliegend is (de regel zelf staat in de systeemprompt, die gecachet blijft).
  */
-export function userMessage(contextText: string, transcript: string, trektel: boolean): string {
-  const kind = trektel ? 'Dit is een stuk uit een trektelling.\n\n' : '';
-  return `${kind}Recente waarnemingen in deze sessie (#1 = meest recent):\n${contextText}\n\nUitspraak: "${transcript}"`;
+export function userMessage(
+  contextText: string,
+  transcript: string,
+  trektel: boolean,
+  language: Language = 'nl',
+): string {
+  const words = WORDS[language];
+  const kind = trektel ? `${words.trektel}\n\n` : '';
+  return `${kind}${words.recent}\n${contextText}\n\n${words.said}: "${transcript}"`;
 }
 
 /**
@@ -193,12 +269,14 @@ export async function interpret(
     sessionId?: string;
     groups?: boolean;
     trektel?: boolean;
+    language?: Language;
   } = {},
 ): Promise<Interpretation> {
   const withGroups = options.groups ?? false;
-  const { system, tools } = variant(withGroups);
+  const language = options.language ?? 'nl';
+  const { system, tools } = variant(withGroups, language);
   const context = recent.slice(0, CONTEXT_SIZE);
-  const contextText = options.contextText ?? describeContext(context, options.here);
+  const contextText = options.contextText ?? describeContext(context, options.here, language);
 
   const { data: response, timing } = await createMessage<Anthropic.Message>(
     {
@@ -213,7 +291,7 @@ export async function interpret(
       messages: [
         {
           role: 'user',
-          content: userMessage(contextText, transcript, options.trektel ?? false),
+          content: userMessage(contextText, transcript, options.trektel ?? false, language),
         },
       ],
     } satisfies Anthropic.MessageCreateParamsNonStreaming,
@@ -224,7 +302,7 @@ export async function interpret(
     throw new Error('Het model weigerde de uitspraak te verwerken');
   }
 
-  const { actions, rejected, warnings } = parseResponse(response, context, withGroups);
+  const { actions, rejected, warnings } = parseResponse(response, context, withGroups, language);
   return {
     actions,
     rejected,
@@ -283,6 +361,7 @@ function toSpokenPlace(
   tool: string,
   input: RawFields,
   warnings: string[],
+  language: Language,
 ): SpokenPlace | undefined {
   let distanceM = input.place_distance_m ?? undefined;
   if (
@@ -298,11 +377,12 @@ function toSpokenPlace(
     direction = undefined;
   }
   const text =
-    modelText(input.place_description) || describePlace(distanceM, direction as Direction);
+    modelText(input.place_description) ||
+    describePlace(distanceM, direction as Direction, language);
   if (!text) return undefined;
   // Het model laat de afstand soms weg terwijl die in de omschrijving staat
   // ("300 meter ten westen" → alleen W); dan haalt de app hem er zelf uit
-  const fromText = parsePlaceText(text);
+  const fromText = parsePlaceText(text, language);
   distanceM ??= fromText.distanceM;
   direction ??= fromText.direction;
   return {
@@ -321,11 +401,13 @@ function toCandidates(
   names: unknown,
   warnings: string[],
   withGroups: boolean,
+  language: Language,
 ): number[] | undefined {
   if (!Array.isArray(names) || names.length === 0) return undefined;
   const ids: number[] = [];
   for (const name of names) {
-    const found = typeof name === 'string' ? findPromptSpecies(name, withGroups) : undefined;
+    const found =
+      typeof name === 'string' ? findPromptSpecies(name, withGroups, language) : undefined;
     if (!found) warnings.push(`${tool}: kandidaat "${String(name)}" staat niet in de lijst`);
     else if (!ids.includes(found.id)) ids.push(found.id);
   }
@@ -385,6 +467,7 @@ function toAction(
   context: Observation[],
   warnings: string[],
   withGroups: boolean,
+  language: Language,
 ): Action | string {
   const input = block.input as RawFields;
 
@@ -407,7 +490,7 @@ function toAction(
     uncertainReason: input.uncertain ? input.uncertain_reason : undefined,
     remarks: modelText(input.remarks),
     privateNote: modelText(input.private_note),
-    spokenPlace: toSpokenPlace(block.name, input, warnings),
+    spokenPlace: toSpokenPlace(block.name, input, warnings, language),
   };
   // Weglaten wat het model niet meegaf, zodat een update alleen wijzigt wat bedoeld is
   for (const key of Object.keys(fields) as (keyof ObservationFields)[]) {
@@ -417,7 +500,7 @@ function toAction(
   // Naam en ID horen bij elkaar; zo niet, dan geldt de naam (het model kiest
   // soms het ID van een soort die erop lijkt)
   if (input.species_name) {
-    const named = findPromptSpecies(input.species_name, withGroups);
+    const named = findPromptSpecies(input.species_name, withGroups, language);
     if (!named) {
       warnings.push(
         `${block.name}: naam "${input.species_name}" staat niet in de lijst; ID ${fields.speciesId} aangehouden`,
@@ -439,7 +522,7 @@ function toAction(
   // twijfelreden ("Gezegd: wolf (niet in de lijst)", testset 18 nov): dan die.
   const said = modelText(input.unlisted_species);
   const named = said ?? saidInReason(fields.speciesId, input.uncertain_reason);
-  const vagrant = named ? findVagrant(named, withGroups) : undefined;
+  const vagrant = named ? findVagrant(named, withGroups, language) : undefined;
   if (vagrant) {
     fields.speciesId = vagrant.id;
     fields.uncertain = true;
@@ -448,11 +531,18 @@ function toAction(
     warnings.push(`${block.name}: "${said}" niet gevonden bij de dwaalgasten`);
   }
 
-  const candidates = toCandidates(block.name, input.candidate_species, warnings, withGroups);
+  const candidates = toCandidates(
+    block.name,
+    input.candidate_species,
+    warnings,
+    withGroups,
+    language,
+  );
   if (candidates) {
     fields.candidates = candidates;
     fields.uncertain = true;
-    fields.uncertainReason ??= `${candidates.map(speciesName).join(' of ')}?`;
+    const names = namesIn(language);
+    fields.uncertainReason ??= `${candidates.map((id) => names.species(id)).join(WORDS[language].or)}?`;
   }
 
   if (

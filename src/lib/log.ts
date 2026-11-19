@@ -1,4 +1,5 @@
 import { db } from './db';
+import { language } from './i18n';
 import { INSTANCE_ID, claimInstance } from './instance.svelte';
 import { nativeAppVersion } from './native';
 
@@ -51,6 +52,8 @@ export function startLogging(): void {
   logEvent('app_start', {
     version: APP_VERSION,
     channel: CHANNEL,
+    // Taal van de app (ontwikkeloptie "English"); elke uitspraak bewaart ook de zijne
+    language,
     userAgent: navigator.userAgent,
     online: navigator.onLine,
     standalone: matchMedia('(display-mode: standalone)').matches,

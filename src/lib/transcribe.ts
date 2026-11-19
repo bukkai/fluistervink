@@ -1,5 +1,15 @@
 import { transcribe as transcribeAudio, type Timing } from './api';
-import { aliases, aliasesOf, BIRDS, groups, promptSpeciesOf, species } from './vocab';
+import { translate, type Language } from './i18n';
+import {
+  aliases,
+  aliasesOf,
+  BIRDS,
+  groups,
+  promptSpeciesOf,
+  species,
+  speciesNameIn,
+  type Species,
+} from './vocab';
 
 // Spraak naar tekst via de proxy (OpenAI). De prompt stuurt de herkenning:
 // een paar voorbeeldzinnen voor de stijl, en de soortnamen en bijnamen, zodat
@@ -58,12 +68,57 @@ ${otherGroups
   })
   .join('\n')}`;
 
-const promptFor = (withGroups: boolean) => (withGroups ? PROMPT_WITH_GROUPS : PROMPT);
+// ---------------------------------------------------------------------------
+// Engels (ontwikkeloptie "English", docs/plan-engels.md, stap 3): dezelfde
+// opzet, met Engelse voorbeeldzinnen, de Engelse namen van dezelfde selectie
+// soorten en de Engelse leeftijdscodes. Nog geen Engelse bijnamen: die komen
+// pas als de Engelse testset ze laat zien (data/bijnamen-en.json, stap 4).
+
+/** Gewone soorten zonder verzamelsoorten, zoals hierboven */
+const commonSpecies = (list: Species[]) => list.filter((s) => s.type === 'S' && s.rarity <= 2);
+const englishNames = (list: Species[]) => commonSpecies(list).map((s) => speciesNameIn('en', s.id));
+
+const PROMPT_EXAMPLES_EN = [
+  'Fluistervink, six Woodpigeons flying over.',
+  'Chaffinch calling.',
+  'Two Chiffchaffs singing.',
+  'No, Brambling instead of Chaffinch.',
+  'Three more.',
+  'Scratch that last one.',
+  'Feedback: the button is slow to respond.',
+];
+
+const PROMPT_EN = `Bird observations, spoken while birding. For example: ${PROMPT_EXAMPLES_EN.map((e) => `"${e}"`).join(' ')}
+
+Bird names: ${englishNames(species).join(', ')}.
+
+Age and plumage: 1cy, 2cy, 3cy, 1w, 2w, 1s, juv, ad, subad, imm, pullus, eclipse, summer plumage, winter plumage. Nocmig.`;
+
+const PROMPT_EN_WITH_GROUPS = `${PROMPT_EN}
+
+${otherGroups
+  .map(
+    (g) =>
+      `${translate('en', `group.${g.id}`)}: ${englishNames(promptSpeciesOf(g.id)).join(', ')}.`,
+  )
+  .join('\n')}`;
+
+const promptFor = (withGroups: boolean, language: Language = 'nl') =>
+  language === 'en'
+    ? withGroups
+      ? PROMPT_EN_WITH_GROUPS
+      : PROMPT_EN
+    : withGroups
+      ? PROMPT_WITH_GROUPS
+      : PROMPT;
 
 /** Korte hash van model en prompt, zoals bij de interpretatie. */
-export function transcribePromptVersionFor(withGroups = false): Promise<string> {
+export function transcribePromptVersionFor(
+  withGroups = false,
+  language: Language = 'nl',
+): Promise<string> {
   return crypto.subtle
-    .digest('SHA-256', new TextEncoder().encode(TRANSCRIBE_MODEL + promptFor(withGroups)))
+    .digest('SHA-256', new TextEncoder().encode(TRANSCRIBE_MODEL + promptFor(withGroups, language)))
     .then((hash) =>
       [...new Uint8Array(hash).slice(0, 4)].map((b) => b.toString(16).padStart(2, '0')).join(''),
     );
@@ -72,6 +127,7 @@ export function transcribePromptVersionFor(withGroups = false): Promise<string> 
 /**
  * `model`: alleen anders voor de testset (scripts/testset.mjs). `sessionId`:
  * voor het verbruik per sessie. `groups`: ook namen van andere dieren.
+ * `language`: de taal waarin is ingesproken (prompt en spraakherkenning).
  */
 export async function transcribe(
   audio: Blob,
@@ -79,12 +135,14 @@ export async function transcribe(
     model = TRANSCRIBE_MODEL,
     sessionId,
     groups = false,
-  }: { model?: string; sessionId?: string; groups?: boolean } = {},
+    language = 'nl',
+  }: { model?: string; sessionId?: string; groups?: boolean; language?: Language } = {},
 ): Promise<{ text: string; confidence?: number; timing: Timing }> {
   const { data, timing } = await transcribeAudio(audio, {
     model,
-    prompt: promptFor(groups),
+    prompt: promptFor(groups, language),
     sessionId,
+    language,
   });
   return { text: data.text.trim(), confidence: data.confidence, timing };
 }
