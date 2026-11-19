@@ -21,6 +21,26 @@ Nagegaan op 19 nov met de openbare API, zonder sleutel:
 
 Dus: geen tweede bron nodig, en de export naar waarneming.nl en observation.org werkt overal (dezelfde database, die neemt waarnemingen van over de hele wereld aan).
 
+## Proef Spanje (19 nov): zeldzaamheid uit aantallen
+
+**Probleem:** de zeldzaamheid in de regiolijsten is buiten Nederland en België grotendeels leeg. In Spanje hebben 316 van de ~1000 soorten zeldzaamheid 0 (onbekend), waaronder bijeneter, blauwe ekster, rode patrijs, flamingo, monniksgier en zwarte ibis; maar 67 soorten staan op algemeen. Portugal en Frankrijk zijn net zo; België is wel goed ingevuld. Het filter van Nederland (zeldzaamheid 1–3) zou in Spanje dus juist de typische soorten weglaten.
+
+**Oplossing:** de API geeft per soort en land het aantal waarnemingen, zonder sleutel: `GET /api/v1/species/<id>/observations/?country=ES&limit=1` → `count` (ook met `date_after`). Eén aanroep per soort: voor Spanje 1119 aanroepen, 3 minuten met 4 tegelijk; voor Nederland 5 minuten. Prima voor de wekelijkse workflow.
+
+**Regel** (als aandeel van alle waarnemingen in dat land, zodat een land met weinig waarnemers dezelfde maat krijgt):
+
+- In de prompt: inheems en ≥ 2 per 100.000 waarnemingen; niet-inheems ≥ 10 per 100.000 (gevestigde exoten zoals monniksparkiet, Sint-Helenafazantje en halsbandparkiet komen er dan vanzelf in, ontsnapte enkelingen niet); verzamelsoorten (type M) ook ≥ 2 per 100.000.
+- Zeldzaamheid: ≥ 150 per 100.000 algemeen, ≥ 30 vrij algemeen, ≥ 5 zeldzaam, daaronder zeer zeldzaam. Geijkt op Nederland: alle 110 algemene soorten van de bron komen er als algemeen uit, de zeldzame grotendeels als zeldzaam.
+
+**Uitkomst Spanje:** 373 soorten en 34 verzamelsoorten in de prompt (Nederland nu ongeveer 350). Bijeneter, blauwe ekster, rode patrijs, Iberische tjiftjaf, Spaanse keizerarend, grote en kleine trap, witkopeend, zandhoenders, Audouins meeuw: allemaal erin, de meeste als algemeen. Dupont's leeuwerik (78 waarnemingen) valt er net onder en gaat dan via `findVagrant`.
+
+**Kanttekeningen:**
+
+- **Twitchers tellen mee:** een zeldzame vogel die door honderd mensen gemeld wordt, telt honderd keer. In Nederland komen zo bv. sneeuwuil, roze pelikaan en Ross' gans boven de drempel. Voor een vakantieland niet erg: de prompt wordt er iets groter van, het model kiest ze alleen als je ze noemt, en "zeldzaam" maakt ze onzeker. Voor Nederland houden we de bron.
+- **Waar Nederlanders gaan, wordt meer geteld:** Extremadura en de kust tellen zwaarder dan Galicië. Algemene soorten zitten er toch ruim in; het verschil zit in de staart.
+- **Canarische Eilanden** horen bij het land ES: Atlantische kanarie, Berthelots pieper en Canarische tjiftjaf staan dus ook in de lijst voor het vasteland (klein nadeel). De Canarische Eilanden (regio 110, lijst 244), de Azoren (lijst 361) en de Balearen zijn aparte regio's met een eigen lijst; later eventueel als eigen keuze. Het filter `region=` bij de aantallen is nog niet goed nagegaan.
+- Getallen van Nederland en Spanje staan niet in git; het script maakt ze opnieuw.
+
 ## Keuzes
 
 ### 1. Lijst en namen apart bewaren
@@ -72,7 +92,7 @@ Een tussenvorm is goedkoop: **soortnamen in een andere taal, de rest in het Enge
 
 - **Taxonomie** is overal dezelfde (AviList, van waarneming.nl), dus geen probleem binnen de app. eBird gebruikt Clements; die vertaaltabel is nodig zodra eBird-gebruikers buiten Europa komen (zie `docs/plan-ebird.md`).
 - **Grootte van de prompt:** voor Nederland staan er zo'n 350 vogels in de prompt (`docs/waarneming-nl.md`). Een tropisch land heeft er al gauw 800. Dan scherper filteren (alleen de algemene en vrij algemene, de rest via `findVagrant`) of de lijst per streek nemen. Eerst meten bij een groot land.
-- **Kwaliteit van de lijsten:** zeldzaamheid in landen met weinig waarnemers bij observation.org kan vreemd zijn. Steekproef per land vóór het openzetten.
+- **Kwaliteit van de lijsten:** de zeldzaamheid uit de bron is buiten Nederland en België vaak leeg; daarom de aantallen (zie Proef Spanje). Steekproef per land vóór het openzetten, zeker in landen met weinig waarnemers.
 - **Exoten en gevestigde soorten:** het script heeft een eigen lijst voor Nederland (Nijlgans, Halsbandparkiet). Per land nalopen, of het filter "inheems" van de API vertrouwen.
 - **Testset:** opnames uit het buitenland zijn er nog niet. De eigenaar en testers op vakantie leveren ze; tot die tijd met synthetische uitspraken (de testset kan dat al).
 - **Landen in Play:** pas meer landen openzetten als hun lijst er is; anders werkt de zeldzaamheid verkeerd.
@@ -83,7 +103,7 @@ Een tussenvorm is goedkoop: **soortnamen in een andere taal, de rest in het Enge
 1. **Lijst en namen apart** in `fetch-species.mjs` en `vocab.ts`, met Nederland en Nederlands; verder niets zichtbaars. Tests voor de samenvoeging. Begonnen 19 nov met het Engels (`data/namen-en.json`, `speciesNameIn` in `vocab.ts`, stap 2 van `docs/plan-engels.md`); de Nederlandse namen staan nog in `soorten-nl.json`.
 2. **Engelse namen** (hoort bij stap 2 van `docs/plan-engels.md`).
 3. **België** als tweede land, gebundeld: de keuze bij Instellingen en de vraag bij het starten, als ontwikkeloptie.
-4. **Downloadbare lijsten** van de eigen site, met de opslag in IndexedDB, voor de eerste reeks vakantielanden.
+4. **Downloadbare lijsten** van de eigen site, met de opslag in IndexedDB, voor de eerste reeks vakantielanden. Lijst en zeldzaamheid uit de aantallen (Proef Spanje), behalve voor Nederland en België.
 5. **Proef op vakantie** (eigenaar of testers), testset aanvullen, dan voor iedereen.
 6. **Soortnamen in een andere taal** (Duits of Frans) met Engelse schermen, als iemand erom vraagt.
 
@@ -92,3 +112,4 @@ Een tussenvorm is goedkoop: **soortnamen in een andere taal, de rest in het Enge
 - Welke talen kent de API van waarneming.nl, en zijn de namen in elke taal compleet?
 - Een gebied binnen een land (een Spaanse provincie): heeft waarneming.nl regiolijsten op dat niveau, en is dat nuttig?
 - Hoe groot is een landenlijst als bestand, en hoe lang duurt de download met slecht bereik?
+- Aantallen over alle jaren (nu) of de laatste tien jaar (`date_after`)? Alle jaren is stabieler; tien jaar volgt verschuivingen. Eerst alle jaren.
