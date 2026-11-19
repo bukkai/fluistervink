@@ -1,6 +1,13 @@
+import { t } from './i18n';
 import { db, type DeletedObservation, type Observation, type Utterance } from './db';
 import { placeFromSpeech, type Place } from './spokenPlace';
-import { convertCodes, getSpecies } from './vocab';
+import {
+  codesFor,
+  convertCodes,
+  DEFAULT_COUNTING_METHOD,
+  findPromptSpecies,
+  getSpecies,
+} from './vocab';
 
 // Waarnemingen en uitspraken ophalen, en bewerken met de hand (review). De
 // wachtrij staat in queue.ts, het uitvoeren van de acties van het model in
@@ -16,6 +23,77 @@ export async function listObservations(sessionId: string): Promise<Observation[]
 export async function listUtterances(sessionId: string): Promise<Utterance[]> {
   const all = await db.utterances.where('sessionId').equals(sessionId).sortBy('recordedAt');
   return all.reverse();
+}
+
+/**
+ * Uitspraken waarin het model geen waarneming vond en die nog niet nagelopen
+ * zijn, voor de kaart "Niet begrepen" bij het nalopen: een half verstane soort
+ * is zo nog te redden. Zonder lege trektelstukken (daar zei niemand iets),
+ * feedback en wat al afgehandeld is. Zelfde volgorde als `utterances`.
+ */
+export function notUnderstood(utterances: Utterance[]): Utterance[] {
+  return utterances.filter(
+    (u) =>
+      u.status === 'done' &&
+      u.result === 'ignored' &&
+      u.kind !== 'dev_note' &&
+      !u.handled &&
+      !!u.transcript?.trim(),
+  );
+}
+
+/**
+ * Van een niet begrepen uitspraak toch een waarneming maken: Vogel onbekend,
+ * onzeker met het transcript als reden, op de tijd en plek van de uitspraak.
+ * De gebruiker kiest daarna de soort in het formulier (`forgetRescue` als hij
+ * annuleert). Geeft het id van de nieuwe waarneming terug.
+ */
+export async function rescueUtterance(utteranceId: string): Promise<string | undefined> {
+  const utterance = await db.utterances.get(utteranceId);
+  const bird = findPromptSpecies('Vogel onbekend');
+  if (!utterance || !bird) return undefined;
+  const codes = codesFor(bird.id);
+  const observation: Observation = {
+    id: crypto.randomUUID(),
+    sessionId: utterance.sessionId,
+    utteranceId: utterance.id,
+    speciesId: bird.id,
+    count: 1,
+    countingMethodId: DEFAULT_COUNTING_METHOD,
+    activityId: codes.defaultActivity,
+    methodId: codes.defaultMethod,
+    uncertain: true,
+    uncertainReason: t('reason.notUnderstood', { transcript: utterance.transcript ?? '' }),
+    observedAt: utterance.recordedAt,
+    createdAt: Date.now(),
+    position: utterance.position,
+    area: utterance.area,
+    status: 'draft',
+  };
+  await db.transaction('rw', db.observations, db.utterances, async () => {
+    await db.observations.add(observation);
+    await db.utterances.update(utterance.id, { handled: 'observation' });
+  });
+  return observation.id;
+}
+
+/**
+ * Formulier geannuleerd na `rescueUtterance`: de waarneming weer weg (niet in
+ * de prullenbak, hij was er nooit echt) en de uitspraak terug op de kaart.
+ * Niet als hij intussen opgeslagen is.
+ */
+export async function forgetRescue(observationId: string): Promise<void> {
+  await db.transaction('rw', db.observations, db.utterances, async () => {
+    const obs = await db.observations.get(observationId);
+    if (!obs || obs.editedAt !== undefined) return;
+    await db.observations.delete(observationId);
+    await db.utterances.update(obs.utteranceId, { handled: undefined });
+  });
+}
+
+/** Niet begrepen uitspraak nagelopen: er zat geen waarneming in */
+export async function dismissUtterance(utteranceId: string): Promise<void> {
+  await db.utterances.update(utteranceId, { handled: 'none' });
 }
 
 /** Einde van de uitspraak: bij een opname het einde van de opname. */

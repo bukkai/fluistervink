@@ -179,6 +179,12 @@ export interface Utterance {
    * `note`: opgeslagen als dev note.
    */
   result?: 'saved' | 'uncertain' | 'ignored' | 'note';
+  /**
+   * Bij een niet begrepen uitspraak: afgehandeld bij het nalopen (kaart "Niet
+   * begrepen", `notUnderstood`). `observation`: er is met de hand een
+   * waarneming van gemaakt; `none`: er zat geen waarneming in.
+   */
+  handled?: 'observation' | 'none';
   /** Foutmelding bij status `failed`, of acties die niet uitgevoerd konden worden */
   error?: string;
   /** Wat deze uitspraak in de database veranderde, zodat `undo` het kan terugdraaien */
