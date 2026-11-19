@@ -3,6 +3,7 @@
 // keer ingevuld bij Instellingen en daarna in localStorage bewaard, samen met
 // de naam die de proxy erbij teruggeeft.
 
+import { t } from './i18n';
 import type { Billing, UsageRow } from './costs';
 import { forgetInstallToken, getInstallToken, register } from './install';
 import type { ActivityRow } from './stats';
@@ -111,14 +112,14 @@ async function timedRequest<T>(
     if (error instanceof DOMException && error.name === 'TimeoutError') {
       throw new ApiError(`Time-out: geen antwoord binnen ${timeoutMs / 1000} s`, 0);
     }
-    throw new ApiError(navigator.onLine ? 'Proxy niet bereikbaar' : 'Geen internetverbinding', 0);
+    throw new ApiError(navigator.onLine ? t('error.proxyUnreachable') : t('error.offline'), 0);
   }
   const body = parseBody(await response.text().catch(() => ''));
   // De proxy antwoordt altijd met JSON. Geen JSON bij een geslaagd antwoord
   // (of 511) komt van iets onderweg, meestal de inlogpagina van een wifi
   // (trein, camping): dan is er geen echt bereik, en wacht de wachtrij.
   if (body === undefined && (response.ok || response.status === 511)) {
-    throw new ApiError('Geen antwoord van de proxy (inlogpagina van een wifi?)', 0);
+    throw new ApiError(t('error.captivePortal'), 0);
   }
   const timing: Timing = {
     requestMs: Math.round(performance.now() - start),

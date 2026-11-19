@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import type { Position, PositionLookup } from './db';
 import { logEvent } from './log';
 
@@ -120,7 +121,7 @@ export function positionNow(): Promise<Position> {
     return Promise.resolve($state.snapshot(gps.latest));
   return new Promise((resolve, reject) => {
     if (!('geolocation' in navigator)) {
-      reject(new Error('Deze telefoon of browser geeft geen locatie.'));
+      reject(new Error(t('location.unsupported')));
       return;
     }
     navigator.geolocation.getCurrentPosition(
@@ -141,11 +142,8 @@ export function positionNow(): Promise<Position> {
 
 /** Zin op het scherm als "Huidige locatie" niet lukt. */
 export function hereMessage(denied: boolean, online = navigator.onLine): string {
-  if (denied)
-    return 'De app mag je locatie niet gebruiken. Zet dat aan bij de instellingen van je telefoon.';
-  return online
-    ? 'Je plek is niet gevonden. Probeer het buiten nog eens, of tik op de kaart.'
-    : 'Je plek is niet gevonden: zonder bereik doet de GPS er soms minuten over. Tik op de kaart, of probeer het later nog eens.';
+  if (denied) return t('location.denied');
+  return online ? t('location.notFound') : t('location.notFoundOffline');
 }
 
 function toPosition(fix: GeolocationPosition): Position {

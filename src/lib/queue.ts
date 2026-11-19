@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import {
   db,
   audioBlob,
@@ -520,13 +521,13 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
       },
       ids,
     );
-    const prefix = step === 'transcribe' ? 'Spraakherkenning: ' : '';
+
     await db.transaction('rw', db.utterances, async () => {
       const latest = await db.utterances.get(utterance.id);
       if (isCurrentAttempt(latest, attempts))
         await db.utterances.update(utterance.id, {
           status: 'failed',
-          error: prefix + message,
+          error: step === 'transcribe' ? t('error.transcribePrefix', { message }) : message,
           waitingSince: undefined,
         });
     });

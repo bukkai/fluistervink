@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n';
   import { dateTimeFormat } from './format';
   import { liveQuery } from 'dexie';
   import {
@@ -50,7 +51,7 @@
   async function remove(note: Utterance) {
     const preview = noteText(note);
     const short = preview.length > 60 ? `${preview.slice(0, 60)}…` : preview;
-    if (confirm(`Deze feedback weghalen?\n\n"${short}"`)) await deleteNote(note.id);
+    if (confirm(t('notes.confirmDelete', { text: short }))) await deleteNote(note.id);
   }
 
   let copied = $state(false);
@@ -63,30 +64,31 @@
   }
 </script>
 
-<a class="back" href="#/">Terug</a>
+<a class="back" href="#/">{t('common.back')}</a>
 <div class="title">
-  <h2 class="page-title">Feedback</h2>
+  <h2 class="page-title">{t('notes.title')}</h2>
   {#if $notes?.length}
     <button class="btn secondary" onclick={copy}
-      >{copied ? 'Gekopieerd ✓' : 'Kopieer als Markdown'}</button
+      >{copied ? t('notes.copied') : t('notes.copy')}</button
     >
   {/if}
 </div>
 
 <p class="intro">
-  Wat viel je op aan de app? Typ het hieronder. {#if sharing}Feedback gaat meteen naar de
-    ontwikkelaar, of tijdens een sessie na het stoppen.{:else}Feedback gaat naar de ontwikkelaar als
-    je delen aanzet (<a href="#instellingen">Instellingen</a>).{/if} Verstuurde feedback blijft hier staan;
-  weghalen kan altijd.
+  {t('notes.introVoor')}
+  {#if sharing}{t('notes.introSharing')}{:else}{t('notes.introNotSharingVoor')}<a
+      href="#instellingen">{t('menu.settings')}</a
+    >{t('notes.introNotSharingNa')}{/if}
+  {t('notes.introNa')}
 </p>
 
 <form class="card add" onsubmit={add}>
   <textarea
     bind:value={text}
     rows="3"
-    placeholder="Wat viel je op? Bijvoorbeeld: hij herkende blako niet"
-    aria-label="Nieuwe feedback"></textarea>
-  <button class="btn" disabled={!text.trim()}>Toevoegen</button>
+    placeholder={t('notes.placeholder')}
+    aria-label={t('notes.label')}></textarea>
+  <button class="btn" disabled={!text.trim()}>{t('notes.add')}</button>
 </form>
 
 {#snippet list(items: Utterance[])}
@@ -104,21 +106,21 @@
                 target="_blank"
                 rel="noopener"
               >
-                locatie
+                {t('notes.location')}
               </a>
             {/if}
             {#if sharing}
               ·
               {#if sent.has(note.id)}
-                verstuurd ✓
+                {t('notes.sent')}
               {:else if note.sessionId && note.sessionId === $active?.id}
-                gaat mee na de sessie
+                {t('notes.afterSession')}
               {:else}
-                nog niet verstuurd
+                {t('notes.notSent')}
               {/if}
             {/if}
           </span>
-          <button class="link danger" onclick={() => remove(note)}>Weg</button>
+          <button class="link danger" onclick={() => remove(note)}>{t('log.discard')}</button>
         </div>
       </li>
     {/each}
@@ -128,14 +130,14 @@
 {#if fresh.length}
   {@render list(fresh)}
 {:else if $notes && !earlier.length}
-  <p class="muted">Nog geen feedback.</p>
+  <p class="muted">{t('notes.none')}</p>
 {:else if $notes}
-  <p class="muted">Alle feedback is verstuurd.</p>
+  <p class="muted">{t('notes.allSent')}</p>
 {/if}
 
 {#if earlier.length}
   <details class="earlier">
-    <summary>Eerder verstuurd ({earlier.length})</summary>
+    <summary>{t('notes.earlier', { n: earlier.length })}</summary>
     {@render list(earlier)}
   </details>
 {/if}

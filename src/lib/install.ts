@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import { logEvent } from './log';
 import { isNativeApp, playIntegrityToken } from './native';
 
@@ -92,7 +93,7 @@ async function registerOnce(): Promise<{ token: string; tester: string }> {
   }
 
   if (!config.turnstileSiteKey) {
-    throw new InstallError('Aanmelden zonder code staat uit; vul een code in', 503);
+    throw new InstallError(t('error.noCodeSignIn'), 503);
   }
   const turnstile = await turnstileToken(config.turnstileSiteKey);
   return stored(await call('POST', { id, turnstile }));
@@ -115,10 +116,7 @@ async function call(method: 'GET' | 'POST', body?: object): Promise<unknown> {
       signal: AbortSignal.timeout(30_000),
     });
   } catch {
-    throw new InstallError(
-      navigator.onLine ? 'Proxy niet bereikbaar' : 'Geen internetverbinding',
-      0,
-    );
+    throw new InstallError(navigator.onLine ? t('error.proxyUnreachable') : t('error.offline'), 0);
   }
   const result = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -150,7 +148,7 @@ function loadTurnstile(): Promise<Turnstile> {
     element.onerror = () => {
       script = undefined;
       element.remove();
-      reject(new InstallError('Controle van Cloudflare niet te laden', 0));
+      reject(new InstallError(t('error.turnstileLoad'), 0));
     };
     document.head.append(element);
   });
@@ -171,7 +169,7 @@ async function turnstileToken(sitekey: string): Promise<string> {
   try {
     return await new Promise<string>((resolve, reject) => {
       const timer = setTimeout(
-        () => reject(new InstallError('Controle van Cloudflare duurde te lang', 0)),
+        () => reject(new InstallError(t('error.turnstileSlow'), 0)),
         TURNSTILE_TIMEOUT_MS,
       );
       widget = turnstile.render(container, {
@@ -185,7 +183,7 @@ async function turnstileToken(sitekey: string): Promise<string> {
         },
         'error-callback': (code: string) => {
           clearTimeout(timer);
-          reject(new InstallError(`Controle van Cloudflare mislukt (${code})`, 0));
+          reject(new InstallError(t('error.turnstileFailed', { code }), 0));
           // Zelf afhandelen, anders probeert Turnstile het eindeloos opnieuw
           return true;
         },

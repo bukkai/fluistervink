@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import type Anthropic from '@anthropic-ai/sdk';
 import { timeFormat } from './format';
 import { distanceMeters } from './geo';
@@ -442,7 +443,7 @@ function toAction(
   if (vagrant) {
     fields.speciesId = vagrant.id;
     fields.uncertain = true;
-    fields.uncertainReason = `Dwaalgast, niet in de vaste lijst (gezegd: "${named}")`;
+    fields.uncertainReason = t('reason.vagrant', { named: named ?? '' });
   } else if (said) {
     warnings.push(`${block.name}: "${said}" niet gevonden bij de dwaalgasten`);
   }

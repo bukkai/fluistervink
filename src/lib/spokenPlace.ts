@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import type { Observation, Position, SpokenPlace } from './db';
 
 // Plek van de vogel zoals de gebruiker hem noemt: "buizerd overvliegend, 500 m
@@ -73,7 +74,7 @@ export function placeFromSpeech(gps: Position, spoken: SpokenPlace): Place {
 /** Waarom de waarneming onzeker wordt, als de plek niet uit te rekenen is */
 export function placeReason(spoken: SpokenPlace): string | undefined {
   if (isComputable(spoken)) return undefined;
-  return `Plek gezegd: "${spoken.text}"; zet hem op de kaart`;
+  return t('reason.place', { text: spoken.text });
 }
 
 const UNITS: Record<string, number> = {
