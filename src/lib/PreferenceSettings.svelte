@@ -3,12 +3,22 @@
   // Keuzes voor iedereen (preferences.ts); eBird en de gesproken bevestiging
   // staan standaard uit
   import { speechSupported, volumeKeySupported } from './native';
-  import { preferenceOn, setPreference, type Preference } from './preferences';
+  import {
+    preferenceOn,
+    setPreference,
+    type Preference,
+    type SettingsGroup as Group,
+  } from './preferences';
+  import DevOptions, { devOptionsIn } from './DevOptions.svelte';
 
-  type Group = 'speaking' | 'review';
-  const GROUPS: Group[] = ['speaking', 'review'];
+  // Eén kaart per groep; Settings.svelte zet de kaarten in volgorde, met de
+  // trektelmodus en de gegevenskaarten ertussen. De eigenaar ziet in elke
+  // groep ook de ontwikkelopties die erbij horen (DevOptions.svelte).
+  let { group, isOwner = false }: { group: Group; isOwner?: boolean } = $props();
+
   const GROUP_TITLES: Record<Group, Key> = {
-    speaking: 'prefs.groupSpeaking',
+    understanding: 'prefs.groupUnderstanding',
+    field: 'prefs.groupField',
     review: 'prefs.groupReview',
   };
 
@@ -21,25 +31,28 @@
 
   // Tekst en uitleg staan in het woordenboek als `prefs.<keuze>` en `prefs.<keuze>Hint`
   const items: Item[] = [
-    { preference: 'soortgroepen', group: 'speaking' },
-    { preference: 'volumeknop', group: 'speaking', available: volumeKeySupported },
-    { preference: 'gesproken', group: 'speaking', available: speechSupported },
-    { preference: 'zeldzaamOnzeker', group: 'speaking' },
+    { preference: 'soortgroepen', group: 'understanding' },
+    { preference: 'zeldzaamOnzeker', group: 'understanding' },
+    { preference: 'volumeknop', group: 'field', available: volumeKeySupported },
+    { preference: 'gesproken', group: 'field', available: speechSupported },
     { preference: 'exportHerinnering', group: 'review' },
     { preference: 'ebird', group: 'review' },
   ];
 
-  const shown = items.filter((item) => item.available !== false);
+  const shown = items.filter((item) => item.group === group && item.available !== false);
+  let hasDevOptions = $derived(isOwner && devOptionsIn(group).length > 0);
+
   let checked = $state(
     Object.fromEntries(items.map((item) => [item.preference, preferenceOn(item.preference)])),
   );
 </script>
 
-{#each GROUPS as group (group)}
+<!-- In de PWA heeft "Bediening in het veld" niets: dan geen lege kaart -->
+{#if shown.length || hasDevOptions}
   <section class="card">
     <div class="card-head"><h2>{t(GROUP_TITLES[group])}</h2></div>
     <div class="card-body stack">
-      {#each shown.filter((item) => item.group === group) as item (item.preference)}
+      {#each shown as item (item.preference)}
         <label class="check">
           <input
             type="checkbox"
@@ -50,6 +63,9 @@
         </label>
         <p class="hint">{t(`prefs.${item.preference}Hint`)}</p>
       {/each}
+      {#if hasDevOptions}
+        <DevOptions {group} />
+      {/if}
     </div>
   </section>
-{/each}
+{/if}

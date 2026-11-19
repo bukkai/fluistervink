@@ -1,15 +1,6 @@
 <script lang="ts">
   import { t } from './i18n';
-  import {
-    ApiError,
-    getAccessCode,
-    getDisplayName,
-    getTester,
-    OWNER,
-    ping,
-    setAccessCode,
-    setDisplayName,
-  } from './api';
+  import { ApiError, getAccessCode, getTester, OWNER, ping, setAccessCode } from './api';
   import { APP_VERSION, CHANNEL } from './log';
   import { nativeAppVersion } from './native';
   import BackupSettings from './BackupSettings.svelte';
@@ -17,7 +8,6 @@
   import ShareSettings from './ShareSettings.svelte';
   import PreferenceSettings from './PreferenceSettings.svelte';
   import TrektelSettings from './TrektelSettings.svelte';
-  import DevSettings from './DevSettings.svelte';
 
   let code = $state(getAccessCode());
   let status = $state<'idle' | 'busy' | 'ok' | 'error'>('idle');
@@ -25,27 +15,6 @@
 
   let tester = $state(getTester());
   let isOwner = $derived(tester === OWNER);
-
-  // Eigen naam, zodat de ontwikkelaar weet wie een installatie is
-  let displayName = $state(getDisplayName());
-  let nameStatus = $state<'idle' | 'busy' | 'ok' | 'error'>('idle');
-  let nameMessage = $state('');
-
-  async function saveName(event: SubmitEvent) {
-    event.preventDefault();
-    nameStatus = 'busy';
-    try {
-      await setDisplayName(displayName);
-      displayName = getDisplayName();
-      nameStatus = 'ok';
-      nameMessage = displayName ? t('settings.nameSaved') : t('settings.nameRemoved');
-    } catch (error) {
-      nameStatus = 'error';
-      nameMessage = t('settings.saveFailed', {
-        error: String(error instanceof Error ? error.message : error),
-      });
-    }
-  }
 
   let appVersion = $state<string>();
   nativeAppVersion().then((versie) => (appVersion = versie));
@@ -80,38 +49,21 @@
 <a class="back" href="#/">{t('common.back')}</a>
 <h2 class="page-title">{t('settings.title')}</h2>
 
-{#if !isOwner}
-  <section class="card">
-    <div class="card-head"><h2>{t('settings.nameTitle')}</h2></div>
-    <form class="card-body" onsubmit={saveName}>
-      <label>
-        {t('settings.nameLabel')}
-        <input bind:value={displayName} maxlength="40" autocomplete="name" />
-      </label>
-      <p class="hint">
-        {t('settings.nameHint')}
-      </p>
-      <button class="btn" disabled={nameStatus === 'busy'}>{t('common.save')}</button>
-      {#if nameMessage}
-        <p class="message {nameStatus}">{nameMessage}</p>
-      {/if}
-    </form>
-  </section>
-{/if}
+<!-- Volgorde van het veld naar thuis: wat de app verstaat, de bediening, tellen,
+     nalopen en export, en dan je gegevens (docs/ontwerp.md, Instellingen) -->
+<PreferenceSettings group="understanding" {isOwner} />
 
-<PreferenceSettings />
-
-<BackupSettings />
-
-<ShareSettings />
-
-<RecordingSettings />
+<PreferenceSettings group="field" {isOwner} />
 
 <TrektelSettings />
 
-{#if isOwner}
-  <DevSettings />
-{/if}
+<PreferenceSettings group="review" {isOwner} />
+
+<BackupSettings />
+
+<RecordingSettings />
+
+<ShareSettings showName={!isOwner} />
 
 <p class="version">
   Fluistervink{CHANNEL === 'beta' ? ' beta' : ''} · {t('settings.version', {

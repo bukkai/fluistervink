@@ -86,7 +86,6 @@ export const nl = {
 
   // Instellingen (Settings.svelte)
   'settings.title': 'Instellingen',
-  'settings.nameTitle': 'Je naam',
   'settings.nameLabel': 'Naam (niet verplicht)',
   'settings.nameHint':
     'Alleen voor de ontwikkelaar, zodat die weet van wie gebruik en feedback komen. Leeg laten en opslaan haalt je naam weg.',
@@ -107,7 +106,9 @@ export const nl = {
   'settings.proxyUnreachable': 'Proxy niet bereikbaar.',
 
   // Keuzes (PreferenceSettings.svelte)
-  'prefs.groupSpeaking': 'Inspreken',
+  'prefs.groupUnderstanding': 'Wat de app verstaat',
+  'prefs.groupField': 'Bediening in het veld',
+  'prefs.groupCounting': 'Tellen',
   'prefs.groupReview': 'Nalopen en export',
   'prefs.soortgroepen': 'Ook andere dieren inspreken',
   'prefs.soortgroepenHint':
@@ -185,7 +186,6 @@ export const nl = {
   },
 
   // Trektelmodus (TrektelSettings.svelte)
-  'trektel.title': 'Trektelmodus',
   'trektel.label': 'Trektelmodus (proef)',
   'trektel.hint1':
     'Voor als je op één plek telt en de telefoon naast je legt. Tijdens een sessie verschijnt dan de knop "Trektelling starten": de app luistert daarna door en verwerkt alles wat je zegt, zonder dat je steeds hoeft te drukken. Stilte wordt niet verstuurd.',
@@ -244,7 +244,7 @@ export const nl = {
     other: '{n} uitspraken in de wachtrij (zie Uitspraken)',
   },
   'log.trektelBacklog':
-    'Je trektelling liep door: {n} uitspraken uit de afgelopen {minutes} minuten zijn binnen en worden nu op volgorde verwerkt.',
+    'Je trektelling liep door: alles uit de afgelopen {minutes} minuten is binnen en wordt nu verwerkt.',
   'log.observations': 'Waarnemingen',
   'log.speciesCount': { one: '1 soort', other: '{n} soorten' },
   'log.observationCount': { one: '1 waarneming', other: '{n} waarnemingen' },
@@ -651,6 +651,8 @@ export const nl = {
   'spoken.savedUncertain': 'Opgeslagen, onzeker',
   'spoken.deleted': 'weg: {species}',
   'spoken.updated': 'aangepast: {what}',
+  'spoken.replaced': '{before} wordt {after}',
+  'spoken.changed': '{species}, {before} wordt {after}',
   'spoken.many': '{n} waarnemingen',
   'spoken.manyFlagged': '{n} waarnemingen. Onzeker',
   'spoken.manyUncertain': '{n} waarnemingen, {uncertain} onzeker',

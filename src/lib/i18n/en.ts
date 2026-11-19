@@ -91,7 +91,6 @@ export const en: Dictionary = {
 
   // Instellingen
   'settings.title': 'Settings',
-  'settings.nameTitle': 'Your name',
   'settings.nameLabel': 'Name (optional)',
   'settings.nameHint':
     'Only for the developer, so they know who usage and feedback come from. Leave it empty and save to remove your name.',
@@ -112,7 +111,9 @@ export const en: Dictionary = {
   'settings.proxyUnreachable': 'Can’t reach the proxy.',
 
   // Keuzes
-  'prefs.groupSpeaking': 'Speaking',
+  'prefs.groupUnderstanding': 'What the app understands',
+  'prefs.groupField': 'Controls in the field',
+  'prefs.groupCounting': 'Counting',
   'prefs.groupReview': 'Review and export',
   'prefs.soortgroepen': 'Other wildlife too',
   'prefs.soortgroepenHint':
@@ -190,7 +191,6 @@ export const en: Dictionary = {
   },
 
   // Trektelmodus
-  'trektel.title': 'Migration count mode',
   'trektel.label': 'Migration count mode (trial)',
   'trektel.hint1':
     'For when you count from one spot with the phone beside you. During a session you get a "Start migration count" button: the app then keeps listening and processes everything you say, without you having to press each time. Silence isn’t sent.',
@@ -251,7 +251,7 @@ export const en: Dictionary = {
     other: '{n} voice notes in the queue (see Voice notes)',
   },
   'log.trektelBacklog':
-    'Your migration count kept going: {n} voice notes from the last {minutes} minutes are in and are now being processed in order.',
+    'Your migration count kept going: everything from the last {minutes} minutes is in and is now being processed.',
   'log.observations': 'Observations',
   'log.speciesCount': { one: '1 species', other: '{n} species' },
   'log.observationCount': { one: '1 observation', other: '{n} observations' },
@@ -658,6 +658,8 @@ export const en: Dictionary = {
   'spoken.savedUncertain': 'Saved, uncertain',
   'spoken.deleted': 'removed: {species}',
   'spoken.updated': 'changed: {what}',
+  'spoken.replaced': '{before} is now {after}',
+  'spoken.changed': '{species}, {before} is now {after}',
   'spoken.many': '{n} observations',
   'spoken.manyFlagged': '{n} observations. Uncertain',
   'spoken.manyUncertain': '{n} observations, {uncertain} uncertain',

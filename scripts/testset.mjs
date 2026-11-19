@@ -15,6 +15,8 @@
 //   --max <n>         alleen de eerste n uitspraken
 //   --parallel <n>    zoveel tegelijk (standaard 4)
 //   --stil            alleen de samenvatting, niet elke fout
+//   --context-nieuw   de context niet zoals destijds, maar nagebouwd zoals de
+//                     app hem nu maakt (aantal en opmaak, `describeContext`)
 //   --no-soortgroepen alleen vogels, zonder zoogdieren, reptielen en
 //                     amfibieën, dagvlinders en libellen (in de app standaard
 //                     aan, uit te zetten bij Instellingen): andere prompt
@@ -69,6 +71,7 @@ const { values: opts, positionals } = parseArgs({
     max: { type: 'string' },
     parallel: { type: 'string', default: '4' },
     stil: { type: 'boolean', default: false },
+    'context-nieuw': { type: 'boolean', default: false },
     laadtest: { type: 'boolean', default: false },
     soortgroepen: { type: 'boolean', default: true },
     land: { type: 'string', default: 'nl' },
@@ -162,7 +165,8 @@ const loader = await createServer({
   optimizeDeps: { noDiscovery: true },
   server: { middlewareMode: true, hmr: false, ws: false },
 });
-const { MODEL, interpret, parseResponse } = await loader.ssrLoadModule('/src/lib/interpret.ts');
+const { MODEL, CONTEXT_SIZE, interpret, parseResponse } =
+  await loader.ssrLoadModule('/src/lib/interpret.ts');
 const { promptVersionFor } = await loader.ssrLoadModule('/src/lib/prompt.ts');
 const { transcribe } = await loader.ssrLoadModule('/src/lib/transcribe.ts');
 const { devNoteText } = await loader.ssrLoadModule('/src/lib/devNotePrefix.ts');
@@ -234,12 +238,13 @@ function stateBefore(obs, u) {
  */
 function contextFor(u) {
   const at = u.metrics?.startedAt ?? u.savedAt ?? u.recordedAt + (u.audioDurationMs ?? 0);
-  const list = u.metrics?.contextIds
-    ? u.metrics.contextIds.map((id) => obsById.get(id)).filter(Boolean)
-    : allObservations
-        .filter((o) => o.sessionId === u.sessionId && o.createdAt < at && !(o.deletedAt < at))
-        .sort((a, b) => b.observedAt - a.observedAt || b.createdAt - a.createdAt)
-        .slice(0, 10);
+  const list =
+    u.metrics?.contextIds && !opts['context-nieuw']
+      ? u.metrics.contextIds.map((id) => obsById.get(id)).filter(Boolean)
+      : allObservations
+          .filter((o) => o.sessionId === u.sessionId && o.createdAt < at && !(o.deletedAt < at))
+          .sort((a, b) => b.observedAt - a.observedAt || b.createdAt - a.createdAt)
+          .slice(0, CONTEXT_SIZE);
   return list.map((o) => stateBefore(o, u));
 }
 
@@ -383,7 +388,8 @@ async function run(item) {
     return { ...result, ...parseResponse(u.llmOutput, context, opts.soortgroepen, language) };
   }
   // Stond de context van destijds erbij, dan precies die; anders nagebouwd
-  const contextText = u.metrics?.contextIds ? u.metrics.context : undefined;
+  const contextText =
+    u.metrics?.contextIds && !opts['context-nieuw'] ? u.metrics.context : undefined;
   const r = await interpret(result.transcript, context, {
     model,
     contextText,

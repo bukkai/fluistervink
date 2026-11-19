@@ -41,15 +41,46 @@ type Described = Pick<
  * het eind van alles.
  */
 function describe(obs: Described): string {
-  const parts = [speciesLabel(obs.speciesId).toLowerCase(), String(obs.count)];
+  return [speciesName(obs), ...details(obs).values()].join(', ');
+}
+
+function speciesName(obs: Pick<Observation, 'speciesId'>): string {
+  return speciesLabel(obs.speciesId).toLowerCase();
+}
+
+/** Alles behalve de soort, per veld, zodat een wijziging alleen het veranderde noemt */
+function details(obs: Described): Map<string, string> {
+  const parts = new Map([['count', String(obs.count)]]);
   if (obs.activityId !== undefined && obs.activityId !== codesFor(obs.speciesId).defaultActivity) {
     const activity = activityLabel(obs.speciesId, obs.activityId);
     // "baltsend / zingend": geen schuine streep voorlezen
-    if (activity) parts.push(activity.toLowerCase().replaceAll(' / ', t('spoken.or')));
+    if (activity) parts.set('activity', activity.toLowerCase().replaceAll(' / ', t('spoken.or')));
   }
-  if (obs.spokenPlace) parts.push(describePlace(obs.spokenPlace));
-  if (obs.uncertain) parts.push(t('spoken.uncertain'));
-  return parts.join(', ');
+  if (obs.spokenPlace) parts.set('place', describePlace(obs.spokenPlace));
+  if (obs.uncertain) parts.set('uncertain', t('spoken.uncertain'));
+  return parts;
+}
+
+/**
+ * Een correctie met wat hij was en wat hij werd, zodat je in het veld hoort
+ * op wélke waarneming hij landde: "holenduif wordt wulp, 3", "houtduif, 3
+ * wordt 6". Valt er niets tegenover elkaar te zetten (alleen "onzeker" weg),
+ * dan "aangepast: …".
+ */
+function describeUpdate(obs: Observation, before: Partial<Observation>): string {
+  const old = { ...obs, ...before };
+  if (old.speciesId !== obs.speciesId) {
+    return t('spoken.replaced', { before: speciesName(old), after: describe(obs) });
+  }
+  const was = details(old);
+  const now = details(obs);
+  const keys = new Set([...was.keys(), ...now.keys()]);
+  const changed = [...keys].filter((key) => was.get(key) !== now.get(key));
+  const pick = (parts: Map<string, string>) =>
+    changed.flatMap((key) => (parts.has(key) ? [parts.get(key)!] : [])).join(', ');
+  const [from, to] = [pick(was), pick(now)];
+  if (!from || !to) return t('spoken.updated', { what: describe(obs) });
+  return t('spoken.changed', { species: speciesName(obs), before: from, after: to });
 }
 
 /**
@@ -82,9 +113,7 @@ export function confirmationText(
     if (!obs) continue;
     count++;
     if (obs.uncertain) uncertainCount++;
-    said.push(
-      change.type === 'update' ? t('spoken.updated', { what: describe(obs) }) : describe(obs),
-    );
+    said.push(change.type === 'update' ? describeUpdate(obs, change.before) : describe(obs));
   }
   const flagged = utterance.result === 'uncertain';
   if (count === 0) return flagged ? t('spoken.savedUncertain') : t('spoken.saved');

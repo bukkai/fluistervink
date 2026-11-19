@@ -33,6 +33,7 @@ De tril zegt *dat* iets is opgeslagen, niet *wat*. Met de tekst-naar-spraak van 
 - Alleen als er oortjes of een headset aan staan, of als je hem expliciet aanzet: niemand wil "vink" uit de telefoonluidspreker in een vogelhut.
 - Een podcast gaat even zachter (audiofocus "ducking") en daarna weer verder.
 - Kort houden: soort, aantal, en "onzeker" als dat zo is. Bij meer dan twee waarnemingen in één uitspraak alleen het aantal ("drie waarnemingen").
+- Een correctie met wat het was en wat het werd ("holenduif wordt wulp, 3", "houtduif, 3 wordt 6"; sinds 19 nov), zodat je hoort op wélke waarneming hij landde. Zonder iets om tegenover elkaar te zetten (alleen "onzeker" eraf) blijft het "aangepast: …".
 - Eigen plugin `Spreken`; in de PWA terugvallen op `speechSynthesis` waar dat werkt.
 
 Past al bij stap 1 (scherm aan), en wordt pas echt nuttig in stap 3.

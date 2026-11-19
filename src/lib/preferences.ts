@@ -10,6 +10,12 @@
 export type Preference =
   'soortgroepen' | 'zeldzaamOnzeker' | 'exportHerinnering' | 'ebird' | 'volumeknop' | 'gesproken';
 
+/**
+ * Groepen op Instellingen, van het veld naar thuis (PreferenceSettings.svelte;
+ * ook de ontwikkelopties staan in hun groep, DevOptions.svelte)
+ */
+export type SettingsGroup = 'understanding' | 'field' | 'review';
+
 const OFF_BY_DEFAULT: readonly Preference[] = ['ebird', 'gesproken'];
 
 const PREFIX = 'fluistervink.pref.';
