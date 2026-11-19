@@ -41,7 +41,7 @@ Afgevinkt op 18 nov: zonder deze stappen laat de Play Console een gesloten test 
 - [x] Privacybeleid: `https://fluistervink.nl/privacy`.
 - [x] Gegevensveiligheid, contentclassificatie (vragenlijst), doelgroep (13+ of 18+, niet kinderen: anders gelden de gezinsregels), advertenties: nee, app-toegang: alles zonder inloggen.
 - [x] Verklaring foreground service, met video.
-- [ ] Landen: Nederland en België (nagaan of dat voor productie ook zo staat).
+- [x] Landen: Nederland en België voor de gesloten test (19 nov). Voor productie kan het pas bij het maken van de release (zie punt 5).
 
 ## 3. Logo
 
@@ -64,7 +64,7 @@ Daaruit maken we: Android-pictogram (`android/app/src/main/res/mipmap-*`, adapti
 ## 5. Productie
 
 - [ ] Productietoegang aanvragen in de Play Console (na 14 dagen, als het dashboard het toestaat).
-- [ ] Na goedkeuring: de stabiele AAB naar **Productie**. De beta blijft in de interne test.
+- [ ] Na goedkeuring: de stabiele AAB naar **Productie**. Bij het maken van die release de landen kiezen: Nederland en België. De beta blijft in de interne test.
 - [ ] `#uitleg` en `#privacy` nalopen op "test"-taal; `CLAUDE.md` en `NOTES.md` bijwerken. Nagelopen op 18 nov: beide schoon (alleen de gesproken bevestiging heet er een proef, en dat is hij nog). Bij productie nog kiezen: "(proef)" bij Trektelmodus en de gesproken bevestiging (Instellingen), "nog in ontwikkeling" in de vraag om te delen (welkom en startscherm).
 - [ ] De eerste weken Statistieken en Kosten op Developer volgen.
 
