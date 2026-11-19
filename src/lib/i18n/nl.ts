@@ -244,7 +244,7 @@ export const nl = {
     other: '{n} uitspraken in de wachtrij (zie Uitspraken)',
   },
   'log.trektelBacklog':
-    'Je trektelling liep door: {n} uitspraken uit de afgelopen {minutes} minuten zijn binnen en worden nu op volgorde verwerkt.',
+    'Je trektelling liep door: alles uit de afgelopen {minutes} minuten is binnen en wordt nu verwerkt.',
   'log.observations': 'Waarnemingen',
   'log.speciesCount': { one: '1 soort', other: '{n} soorten' },
   'log.observationCount': { one: '1 waarneming', other: '{n} waarnemingen' },
