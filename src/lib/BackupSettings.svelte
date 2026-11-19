@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n';
   import { dateYearTimeFormat } from './format';
   // Back-up maken en terugzetten, voor een nieuwe telefoon of als de app weg
   // was. Zie backup.ts.
@@ -26,12 +27,16 @@
       const saved = await makeBackup();
       if (saved) {
         backedUpAt = lastBackupAt();
-        message = saved.folder ? `Opgeslagen in ${saved.folder}.` : 'Back-up gedownload.';
+        message = saved.folder
+          ? t('backup.savedIn', { folder: saved.folder })
+          : t('backup.downloaded');
         await refresh();
       }
     } catch (error) {
       failed = true;
-      message = `Back-up mislukt: ${error instanceof Error ? error.message : error}`;
+      message = t('backup.failed', {
+        error: String(error instanceof Error ? error.message : error),
+      });
     } finally {
       busy = false;
     }
@@ -49,44 +54,42 @@
       await refresh();
     } catch (error) {
       failed = true;
-      message = `Terugzetten mislukt: ${error instanceof Error ? error.message : error}`;
+      message = t('backup.restoreFailed', {
+        error: String(error instanceof Error ? error.message : error),
+      });
     } finally {
       busy = false;
     }
   }
 
   function sessions(n: number): string {
-    return n === 1 ? '1 sessie' : `${n} sessies`;
+    return t('common.sessions', { n });
   }
 </script>
 
 <section class="card">
-  <div class="card-head"><h2>Back-up</h2></div>
+  <div class="card-head"><h2>{t('backup.title')}</h2></div>
   <div class="card-body stack">
     <p class="hint">
-      Je sessies staan alleen op dit apparaat. Een back-up bewaart ze als bestand{isNativeApp
-        ? ' in Downloads'
-        : ''}, zodat je ze kunt terugzetten op een nieuwe telefoon of als de app verwijderd was. Zet
-      het bestand ergens anders neer (Drive, je computer) om echt veilig te zijn. Opnames gaan
-      alleen mee van sessies die je nog niet hebt nagelopen.
+      {isNativeApp ? t('backup.hintNative') : t('backup.hint')}
     </p>
     <p class="hint" class:warn={status && status.sinceBackup > 0 && status.sessions > 0}>
       {#if backedUpAt}
-        Laatste back-up: {dateYearTimeFormat.format(backedUpAt)}.
+        {t('backup.last', { date: dateYearTimeFormat.format(backedUpAt) })}
         {#if status && status.sinceBackup > 0}
-          Sindsdien {sessions(status.sinceBackup)} erbij.
+          {t('backup.since', { sessions: sessions(status.sinceBackup) })}
         {/if}
       {:else if status && status.sessions > 0}
-        Nog geen back-up gemaakt van je {sessions(status.sessions)}.
+        {t('backup.noneYetOf', { sessions: sessions(status.sessions) })}
       {:else}
-        Nog geen back-up gemaakt.
+        {t('backup.noneYet')}
       {/if}
     </p>
     <button class="btn block" disabled={busy} onclick={backUp}>
-      {busy ? 'Bezig…' : 'Back-up maken'}
+      {busy ? t('common.busy') : t('backup.make')}
     </button>
     <label class="btn secondary block file" class:disabled={busy}>
-      Back-up terugzetten
+      {t('backup.restore')}
       <input
         class="visually-hidden"
         type="file"
@@ -99,8 +102,7 @@
       <p class="message" class:error={failed} role="status">{message}</p>
     {/if}
     <p class="hint">
-      Terugzetten voegt alleen sessies toe die hier nog niet staan; wat er al is, blijft zoals het
-      is. Instellingen gaan niet mee.
+      {t('backup.restoreHint')}
     </p>
   </div>
 </section>

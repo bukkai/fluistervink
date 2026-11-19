@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './lib/i18n';
   import { timeFormat } from './lib/format';
   import StillBirding from './lib/StillBirding.svelte';
   import { liveQuery } from 'dexie';
@@ -235,7 +236,7 @@
 
   /** Na het stoppen meteen naar het nalopen van de sessie */
   async function stop() {
-    if (!active || !confirm('Sessie stoppen?')) return;
+    if (!active || !confirm(t('app.confirmStop'))) return;
     const id = active.id;
     await stopSession(id);
     justStopped = id;
@@ -253,7 +254,7 @@
     </a>
     <button
       class="menu-button"
-      aria-label="Menu"
+      aria-label={t('menu.open')}
       aria-expanded={menuOpen}
       onclick={() => (menuOpen = !menuOpen)}
     >
@@ -268,14 +269,16 @@
     </button>
     {#if menuOpen}
       <!-- Tik naast het menu = sluiten -->
-      <button class="backdrop" aria-label="Menu sluiten" onclick={() => (menuOpen = false)}
+      <button class="backdrop" aria-label={t('menu.close')} onclick={() => (menuOpen = false)}
       ></button>
       <nav>
-        <a href="#sessies">Vorige sessies</a>
-        <a href="#uitleg">Hoe werkt het?</a>
-        <a href="#feedback">Feedback{unsentNotes ? ` (${unsentNotes})` : ''}</a>
-        <a href="#instellingen">Instellingen</a>
-        <a href="#privacy">Privacy</a>
+        <a href="#sessies">{t('menu.sessions')}</a>
+        <a href="#uitleg">{t('menu.howItWorks')}</a>
+        <a href="#feedback"
+          >{unsentNotes ? t('menu.feedbackUnsent', { n: unsentNotes }) : t('menu.feedback')}</a
+        >
+        <a href="#instellingen">{t('menu.settings')}</a>
+        <a href="#privacy">{t('menu.privacy')}</a>
         {#if isOwner}
           <a href="#statistieken">Statistieken</a>
           <a href="#developer">Developer</a>
@@ -289,9 +292,9 @@
   {#if instance.dormant}
     <!-- Overgenomen door een ander exemplaar (tabblad of geïnstalleerde app) -->
     <section class="home">
-      <h1>Fluistervink is in een ander venster geopend</h1>
-      <p class="intro">Gebruik de app op één plek tegelijk, anders zitten ze elkaar in de weg.</p>
-      <button class="start" onclick={() => location.reload()}>Hier verder</button>
+      <h1>{t('app.dormantTitle')}</h1>
+      <p class="intro">{t('app.dormantText')}</p>
+      <button class="start" onclick={() => location.reload()}>{t('app.dormantContinue')}</button>
     </section>
   {:else if $sessions === undefined}
     <!-- Database wordt nog geladen -->
@@ -320,13 +323,13 @@
   {:else if active}
     <section class="session-head">
       <div class="session-info">
-        <h1>{active.place?.name ?? 'Vogelsessie'}</h1>
+        <h1>{active.place?.name ?? t('common.defaultSessionName')}</h1>
         <p class="muted">
-          Sinds {timeFormat.format(active.startedAt)} ·
+          {t('app.since', { time: timeFormat.format(active.startedAt) })} ·
           <span class="duration">{formatDuration(now - active.startedAt)}</span>
         </p>
       </div>
-      <button class="stop" onclick={stop}>Stop</button>
+      <button class="stop" onclick={stop}>{t('app.stop')}</button>
     </section>
     {#if askStillBirding}
       <StillBirding

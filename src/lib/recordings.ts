@@ -1,3 +1,4 @@
+import { LOCALE, t } from './i18n';
 import { audioSize, db, type Utterance } from './db';
 import { logEvent } from './log';
 import { sharedAudioIds } from './share';
@@ -78,21 +79,19 @@ export async function deleteRecordings(sessionId?: string, now = Date.now()): Pr
 export function describeRecordings({ count, bytes }: RecordingCount): string {
   const size =
     bytes >= 1_000_000
-      ? `${(bytes / 1_000_000).toLocaleString('nl-NL', { maximumFractionDigits: 1 })} MB`
+      ? `${(bytes / 1_000_000).toLocaleString(LOCALE, { maximumFractionDigits: 1 })} MB`
       : `${Math.max(1, Math.round(bytes / 1000))} kB`;
-  return `${count === 1 ? '1 opname' : `${count} opnames`} (${size})`;
+  return t('recordings.describe', { recordings: t('common.recordings', { n: count }), size });
 }
 
 /** Tekst voor de bevestiging vóór het wissen. */
 export function confirmDeleteText(recordings: RecordingCount, scope: string): string {
   const { count, shared: n } = recordings;
-  const who =
-    n === count ? (count === 1 ? 'Die is' : 'Ze zijn') : n === 1 ? '1 ervan is' : `${n} ervan zijn`;
-  const shared = n
-    ? `\n\n${who} al gedeeld met de ontwikkelaar; daar blijft dat staan. Wil je dat ook weg, vraag het dan als feedback.`
-    : '';
-  return (
-    `${describeRecordings(recordings)} ${scope} wissen? Wat je zei blijft als tekst staan, ` +
-    `net als de waarnemingen. Terugluisteren kan daarna niet meer.${shared}`
-  );
+  const shared = !n
+    ? ''
+    : n === count
+      ? t('recordings.sharedAll', { n: count })
+      : t('recordings.sharedSome', { n });
+  const text = t('recordings.confirmDelete', { recordings: describeRecordings(recordings), scope });
+  return shared ? `${text}\n\n${shared}` : text;
 }

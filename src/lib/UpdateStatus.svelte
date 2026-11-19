@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n';
   // Onopvallend onderin: een smal balkje terwijl een nieuwe versie binnenkomt,
   // en na het herladen even "Bijgewerkt naar versie …". Niet tijdens een
   // sessie: dan staat daar de inspreekknop.
@@ -24,12 +25,12 @@
   {:else if updateStatus.loading}
     <p class="pill">
       <span class="bar" aria-hidden="true"></span>
-      Nieuwe versie laden…
+      {t('update.loading')}
     </p>
   {:else if updateStatus.updatedTo}
     <p class="pill">
-      Bijgewerkt naar versie {updateStatus.updatedTo} ·
-      <a class="link" href="#nieuw" onclick={dismiss}>Wat is er nieuw?</a>
+      {t('update.updatedTo', { version: updateStatus.updatedTo })} ·
+      <a class="link" href="#nieuw" onclick={dismiss}>{t('update.whatsNew')}</a>
     </p>
   {/if}
 </div>

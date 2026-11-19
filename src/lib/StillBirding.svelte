@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n';
   import { formatMoment } from './format';
 
   // Vergeten te stoppen? Na een uur zonder uitspraken vraagt de app het bij
@@ -17,11 +18,11 @@
 </script>
 
 <div class="still-birding card">
-  <strong>Ben je nog aan het vogelen?</strong>
-  <p>Sinds {formatMoment(lastActivityAt)} is er niets ingesproken.</p>
+  <strong>{t('stillBirding.title')}</strong>
+  <p>{t('stillBirding.text', { moment: formatMoment(lastActivityAt) })}</p>
   <div class="buttons">
-    <button class="btn" onclick={onkeep}>Ja, ga door</button>
-    <button class="btn secondary" onclick={onstop}>Nee, stoppen</button>
+    <button class="btn" onclick={onkeep}>{t('stillBirding.keep')}</button>
+    <button class="btn secondary" onclick={onstop}>{t('stillBirding.stop')}</button>
   </div>
 </div>
 

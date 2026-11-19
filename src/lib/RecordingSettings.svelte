@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n';
   // Alle opnames op dit apparaat in één keer wissen. Per sessie kan het
   // ook, onderaan de review. Zie recordings.ts.
   import { liveQuery } from 'dexie';
@@ -14,25 +15,25 @@
 
   async function removeAll() {
     const current = await countRecordings();
-    if (!current.count || !confirm(confirmDeleteText(current, 'van alle sessies'))) return;
+    if (!current.count || !confirm(confirmDeleteText(current, t('recordings.scopeAll')))) return;
     const deleted = await deleteRecordings();
-    message = `${deleted === 1 ? '1 opname' : `${deleted} opnames`} gewist.`;
+    message = t('recordings.deleted', { recordings: t('common.recordings', { n: deleted }) });
   }
 </script>
 
 <section class="card">
-  <div class="card-head"><h2>Opnames</h2></div>
+  <div class="card-head"><h2>{t('recordings.title')}</h2></div>
   <div class="card-body stack">
     <p class="hint">
-      De app bewaart wat je inspreekt op je telefoon, zodat je het thuis kunt terugluisteren. Wis je
-      de opnames, dan blijven de sessies, wat je zei als tekst en de waarnemingen gewoon staan. Per
-      sessie kan het ook, onderaan bij die sessie.
+      {t('recordings.hint')}
     </p>
     {#if $recordings?.count}
-      <p class="hint">Op dit apparaat: {describeRecordings($recordings)}.</p>
-      <button class="btn danger block" onclick={removeAll}>Alle opnames wissen</button>
+      <p class="hint">
+        {t('recordings.onDevice', { recordings: describeRecordings($recordings) })}
+      </p>
+      <button class="btn danger block" onclick={removeAll}>{t('recordings.deleteAll')}</button>
     {:else if $recordings}
-      <p class="hint">{message || 'Er staan geen opnames op dit apparaat.'}</p>
+      <p class="hint">{message || t('recordings.none')}</p>
     {/if}
   </div>
 </section>

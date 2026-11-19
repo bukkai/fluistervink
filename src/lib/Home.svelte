@@ -4,6 +4,7 @@
 </script>
 
 <script lang="ts">
+  import { t } from './i18n';
   import { dayFormat, formatMoment } from './format';
   import type { Session } from './db';
   import { exportReminder, reminderText, snooze, snoozedAt } from './exportReminder';
@@ -65,15 +66,15 @@
 
 <section class="home">
   <img class="hero" src="/icon.svg" alt="" width="112" height="112" />
-  <h1>Klaar om te gaan vogelen?</h1>
+  <h1>{t('home.title')}</h1>
   <p class="intro">
-    Waar je ook bent: lopend, op de fiets, in de vogelhut of in de tuin. Zie of hoor je iets, druk
-    dan op de knop en zeg het, bijvoorbeeld
-    <em>"zes overvliegende houtduiven"</em> of <em>"roepje vink"</em>.
+    {t('home.introVoor')}
+    <em>{t('home.introExample1')}</em>
+    {t('home.introOf')} <em>{t('home.introExample2')}</em>.
   </p>
   {#if installProblem}
     <p class="notice">
-      De app kon zich niet aanmelden ({installProblem}). Probeer het later opnieuw.
+      {t('home.installProblem', { problem: installProblem })}
     </p>
   {/if}
   {#if askMove}
@@ -81,47 +82,43 @@
   {/if}
   {#if stale?.kind === 'stopped'}
     <p class="welcome">
-      Je sessie van {formatMoment(stale.session.startedAt)} stond nog aan. Na 8 uur zonder uitspraken
-      is hij vanzelf gestopt.
-      <a href="#sessie/{stale.session.id}">Bekijken</a> ·
-      <button class="link" onclick={ondismissstale}>Oké</button>
+      {t('home.staleStopped', { moment: formatMoment(stale.session.startedAt) })}
+      <a href="#sessie/{stale.session.id}">{t('home.view')}</a> ·
+      <button class="link" onclick={ondismissstale}>{t('common.ok')}</button>
     </p>
   {/if}
   {#if reminder}
     <p class="welcome">
       {reminderText(reminder)}
-      <a href="#sessies">Naar de sessies</a> ·
-      <button class="link" onclick={remindLater}>Later</button>
+      <a href="#sessies">{t('home.toSessions')}</a> ·
+      <button class="link" onclick={remindLater}>{t('common.later')}</button>
     </p>
   {/if}
   {#if askShare && !installProblem}
     <div class="consent card">
-      <strong>Delen met de ontwikkelaar?</strong>
+      <strong>{t('home.shareTitle')}</strong>
       <p>
-        Fluistervink is nog in ontwikkeling. Mag de app na elke sessie je uitspraken (als tekst),
-        wat de app ervan maakte, je correcties en feedback, en de locaties van je waarnemingen naar
-        de ontwikkelaar sturen? Opnames niet, tenzij je dat bij Instellingen aanzet. Alleen de
-        ontwikkelaar kan het lezen; je kunt het altijd weer uitzetten.
-        <a href="#privacy">Meer over privacy</a>
+        {t('home.shareText')}
+        <a href="#privacy">{t('home.privacyLink')}</a>
       </p>
       <div class="consent-buttons">
-        <button class="btn" onclick={() => onshare(true)}>Ja, delen</button>
-        <button class="btn secondary" onclick={() => onshare(false)}>Liever niet</button>
+        <button class="btn" onclick={() => onshare(true)}>{t('home.shareYes')}</button>
+        <button class="btn secondary" onclick={() => onshare(false)}>{t('home.shareNo')}</button>
       </div>
     </div>
   {/if}
-  <button class="start" onclick={onstart}>Begin met vogelen</button>
+  <button class="start" onclick={onstart}>{t('home.start')}</button>
   {#if firstTime}
     <p class="tip">
-      Nog nooit gedaan? Probeer het in de tuin of bij het raam: één merel is genoeg.
-      <a href="#uitleg">Hoe werkt het?</a>
+      {t('home.tip')}
+      <a href="#uitleg">{t('menu.howItWorks')}</a>
     </p>
   {/if}
   {#if last}
     <a class="last card" href="#sessie/{last.id}">
       <span>
-        <span class="muted">Laatste sessie</span><br />
-        <strong>{last.place?.name ?? 'Vogelsessie'}</strong>
+        <span class="muted">{t('home.lastSession')}</span><br />
+        <strong>{last.place?.name ?? t('common.defaultSessionName')}</strong>
         <span class="muted">· {dayFormat.format(last.startedAt)}</span>
       </span>
       <span class="chevron" aria-hidden="true">›</span>
