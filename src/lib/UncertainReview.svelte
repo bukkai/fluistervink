@@ -13,7 +13,7 @@
     listObservations,
     listUtterances,
   } from './observations';
-  import { activityName, getSpecies, methodName } from './vocab';
+  import { activityLabel, getSpecies, methodLabel, speciesLabel } from './vocab';
 
   // Snel nalopen: de onzekere waarnemingen één voor één, op volgorde van tijd,
   // met wat er gezegd werd. Per waarneming Klopt, Weg, Aanpassen of Overslaan;
@@ -97,12 +97,12 @@
         <div class="obs">
           <RarityMark rarity={species?.rarity ?? 0} />
           <div class="main">
-            <strong class="name">{current.count} × {species?.name}</strong>
+            <strong class="name">{current.count} × {speciesLabel(current.speciesId)}</strong>
             <span class="muted">
               {[
                 timeFormat.format(current.observedAt),
-                activityName(current.speciesId, current.activityId),
-                methodName(current.speciesId, current.methodId),
+                activityLabel(current.speciesId, current.activityId),
+                methodLabel(current.speciesId, current.methodId),
               ]
                 .filter(Boolean)
                 .join(' · ')}
@@ -130,7 +130,7 @@
           <div class="candidates" role="group" aria-label={t('review.whichSpecies')}>
             {#each current.candidates as candidate (candidate)}
               <button class="btn secondary" onclick={() => chooseCandidate(current.id, candidate)}
-                >{getSpecies(candidate)?.name ?? candidate}</button
+                >{speciesLabel(candidate)}</button
               >
             {/each}
           </div>

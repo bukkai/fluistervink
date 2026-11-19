@@ -7,6 +7,7 @@ import aliasList from '../../data/bijnamen.json';
 import allSpeciesList from '../../data/soorten-nl-alle.json';
 import namesEn from '../../data/namen-en.json';
 import speciesList from '../../data/soorten-nl.json';
+import { language as appLanguage, LOCALE, t, type Language } from './i18n';
 
 // Vaste lijsten met waarneming.nl-ID's: soorten, gedrag, methode, kleed en
 // telmethode. Zie docs/waarneming-nl.md. Naast vogels ook zoogdieren,
@@ -480,9 +481,10 @@ export function lifeStageName(speciesId: number, id: number | undefined): string
 // Namen in een andere taal (docs/plan-engels.md, stap 2). De ID's blijven die
 // van waarneming.nl; de taal is alleen weergave. De namen per taal staan apart
 // van de soortenlijst (data/namen-en.json, docs/plan-andere-landen.md, keuze 1).
-// Nog nergens op het scherm gebruikt: de app is Nederlands.
+// Op het scherm via de `…Label`-functies hieronder, in de taal van de app;
+// export naar waarneming.nl en de Nederlandse prompt blijven Nederlands.
 
-export type Language = 'nl' | 'en';
+export type { Language };
 
 interface Names {
   species: Record<string, string>;
@@ -566,10 +568,52 @@ export function countingMethodNameIn(
   return id === undefined ? undefined : NAMES[language].counting_method[id];
 }
 
+// Namen voor op het scherm, in de taal van de app (ontwikkeloptie "English",
+// stap 3 van docs/plan-engels.md). Niet voor de export naar waarneming.nl of de
+// prompt: die kiezen hun taal zelf.
+
+/** Naam van een soort op het scherm */
+export function speciesLabel(id: number): string {
+  return speciesNameIn(appLanguage, id);
+}
+
+/**
+ * Engelse namen van waarneming.nl hebben soms hoofdletters ("Foraging /
+ * Eating", "Oil spill victim"), de rest niet: op het scherm overal klein
+ */
+function lower(name: string | undefined): string | undefined {
+  return appLanguage === 'nl' ? name : name?.toLowerCase();
+}
+
+/** Naam van het gedrag op het scherm */
+export function activityLabel(speciesId: number, id: number | undefined): string | undefined {
+  return lower(activityNameIn(appLanguage, speciesId, id));
+}
+
+/** Naam van de methode op het scherm */
+export function methodLabel(speciesId: number, id: number | undefined): string | undefined {
+  return lower(methodNameIn(appLanguage, speciesId, id));
+}
+
+/** Naam van kleed of leeftijd op het scherm */
+export function lifeStageLabel(speciesId: number, id: number | undefined): string | undefined {
+  return lower(lifeStageNameIn(appLanguage, speciesId, id));
+}
+
+/** Naam van de telmethode op het scherm */
+export function countingMethodLabel(id: number | undefined): string | undefined {
+  return lower(countingMethodNameIn(appLanguage, id));
+}
+
+/** Naam van een soortgroep op het scherm: "Zoogdieren" */
+export function groupName(group: GroupId): string {
+  return t(`group.${group}`);
+}
+
 /** Groep van een soort, voor een label: "Ree (zoogdieren)"; leeg bij vogels */
 export function groupLabel(speciesId: number): string | undefined {
   const group = groupOf(speciesId);
-  return group === BIRDS ? undefined : GROUPS[group].name.toLowerCase();
+  return group === BIRDS ? undefined : groupName(group).toLowerCase();
 }
 
 /**
@@ -592,7 +636,7 @@ function commonness(s: Species): number {
 }
 
 /**
- * Suggesties voor het soortveld: eerst namen die met de tekst beginnen, dan
+ * Suggesties voor het soortveld, op de naam in de taal van de app: eerst namen die met de tekst beginnen, dan
  * namen met een woord dat ermee begint ("kievit" → Indische Kievit), dan de
  * wetenschappelijke naam, dan ergens in de naam ("zwaluw" → Boerenzwaluw). Binnen elke stap de
  * algemene soorten eerst (zeldzaamheid 0, onbekend, achteraan). Vervangt de
@@ -602,9 +646,10 @@ function commonness(s: Species): number {
 export function searchSpecies(choices: Species[], query: string, limit = 8): Species[] {
   const q = searchable(query);
   if (!q) return [];
-  const ranked: { s: Species; rank: number }[] = [];
+  const ranked: { s: Species; name: string; rank: number }[] = [];
   for (const s of choices) {
-    const name = searchable(s.name);
+    const label = speciesLabel(s.id);
+    const name = searchable(label);
     const rank = name.startsWith(q)
       ? 0
       : name.split(/[\s-]+/).some((word) => word.startsWith(q))
@@ -614,14 +659,14 @@ export function searchSpecies(choices: Species[], query: string, limit = 8): Spe
           : name.includes(q)
             ? 3
             : -1;
-    if (rank >= 0) ranked.push({ s, rank });
+    if (rank >= 0) ranked.push({ s, name: label, rank });
   }
   return ranked
     .sort(
       (a, b) =>
         a.rank - b.rank ||
         commonness(a.s) - commonness(b.s) ||
-        a.s.name.localeCompare(b.s.name, 'nl'),
+        a.name.localeCompare(b.name, LOCALE),
     )
     .slice(0, limit)
     .map(({ s }) => s);

@@ -1,4 +1,4 @@
-import { t } from './i18n';
+import { language, t } from './i18n';
 import { logEvent } from './log';
 import { isNativeApp, playIntegrityToken } from './native';
 
@@ -176,7 +176,7 @@ async function turnstileToken(sitekey: string): Promise<string> {
         sitekey,
         action: 'install',
         appearance: 'interaction-only',
-        language: 'nl',
+        language,
         callback: (token: string) => {
           clearTimeout(timer);
           resolve(token);

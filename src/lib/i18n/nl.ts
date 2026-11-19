@@ -478,6 +478,13 @@ export const nl = {
   },
   'map.reload': 'Kaart opnieuw laden',
 
+  // Soortgroepen (vocab.ts)
+  'group.1': 'Vogels',
+  'group.2': 'Zoogdieren',
+  'group.3': 'Reptielen en amfibieën',
+  'group.4': 'Dagvlinders',
+  'group.5': 'Libellen',
+
   // Zeldzaamheid (rarity.ts)
   'rarity.1': 'algemeen',
   'rarity.2': 'vrij algemeen',

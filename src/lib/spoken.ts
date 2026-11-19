@@ -10,7 +10,7 @@ import { logEvent } from './log';
 import { preferenceOn } from './preferences';
 import { speakNative, speechSupported } from './native';
 import { isComputable } from './spokenPlace';
-import { activityName, codesFor, speciesName } from './vocab';
+import { activityLabel, codesFor, speciesLabel } from './vocab';
 
 /** Meer dan zoveel waarnemingen: alleen het aantal noemen */
 const MAX_NAMED = 2;
@@ -41,9 +41,9 @@ type Described = Pick<
  * het eind van alles.
  */
 function describe(obs: Described): string {
-  const parts = [speciesName(obs.speciesId).toLowerCase(), String(obs.count)];
+  const parts = [speciesLabel(obs.speciesId).toLowerCase(), String(obs.count)];
   if (obs.activityId !== undefined && obs.activityId !== codesFor(obs.speciesId).defaultActivity) {
-    const activity = activityName(obs.speciesId, obs.activityId);
+    const activity = activityLabel(obs.speciesId, obs.activityId);
     // "baltsend / zingend": geen schuine streep voorlezen
     if (activity) parts.push(activity.toLowerCase().replaceAll(' / ', t('spoken.or')));
   }
@@ -72,7 +72,7 @@ export function confirmationText(
     if (change.type === 'delete') {
       said.push(
         t('spoken.deleted', {
-          species: speciesName(change.observation.speciesId).toLowerCase(),
+          species: speciesLabel(change.observation.speciesId).toLowerCase(),
         }),
       );
       count++;

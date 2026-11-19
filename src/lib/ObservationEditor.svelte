@@ -21,12 +21,17 @@
     BIRDS,
     codesFor,
     convertCodes,
+    activityLabel,
+    countingMethodLabel,
     countingMethods,
     getSpecies,
     groupLabel,
     groupOf,
+    lifeStageLabel,
+    methodLabel,
     searchSpecies,
     selectableSpecies,
+    speciesLabel,
   } from './vocab';
 
   // Formulier om één waarneming met de hand te corrigeren, in de review.
@@ -54,7 +59,8 @@
   // Kopie van de waarneming bij het openen; pas bij "Opslaan" naar de database
   // svelte-ignore state_referenced_locally
   const original = observation;
-  let speciesName = $state(getSpecies(original.speciesId)?.name ?? '');
+  // In de taal van de app; een soort die niet (meer) in de lijst staat, blijft leeg
+  let speciesName = $state(getSpecies(original.speciesId) ? speciesLabel(original.speciesId) : '');
   let count = $state(original.count);
   let countingMethodId = $state(original.countingMethodId);
   let activityId = $state(original.activityId);
@@ -79,7 +85,7 @@
   const choices = selectableSpecies(
     preferenceOn('soortgroepen') || groupOf(original.speciesId) !== BIRDS,
   );
-  const speciesByName = new Map(choices.map((s) => [s.name.toLowerCase(), s]));
+  const speciesByName = new Map(choices.map((s) => [speciesLabel(s.id).toLowerCase(), s]));
   let selectedSpecies = $derived(speciesByName.get(speciesName.trim().toLowerCase()));
 
   // Eigen suggestielijst onder het soortveld, in de pagina zelf. Een
@@ -118,7 +124,7 @@
       if (active === suggestions.length) active = -1;
     } else if (event.key === 'Enter' && active >= 0) {
       event.preventDefault();
-      choose(suggestions[active].name);
+      choose(speciesLabel(suggestions[active].id));
     }
   }
 
@@ -264,9 +270,9 @@
         role="option"
         aria-selected={i === active}
         class:active={i === active}
-        onclick={() => choose(s.name)}
+        onclick={() => choose(speciesLabel(s.id))}
       >
-        {s.name}
+        {speciesLabel(s.id)}
         {#if groupLabel(s.id)}<span class="group">{groupLabel(s.id)}</span>{/if}
       </li>
     {/each}
@@ -280,14 +286,14 @@
       {t('editor.activity')}
       <select bind:value={activityId}>
         <option value={undefined}>—</option>
-        {@render options(codes.activities, codes.allActivities)}
+        {@render options(codes.activities, codes.allActivities, activityLabel)}
       </select>
     </label>
     <label>
       {t('editor.method')}
       <select bind:value={methodId}>
         <option value={undefined}>—</option>
-        {@render options(codes.methods, codes.allMethods)}
+        {@render options(codes.methods, codes.allMethods, methodLabel)}
       </select>
     </label>
   </div>
@@ -297,7 +303,7 @@
       {t('editor.lifeStage')}
       <select bind:value={lifeStageId}>
         <option value={undefined}>—</option>
-        {@render options(codes.lifeStages, codes.allLifeStages)}
+        {@render options(codes.lifeStages, codes.allLifeStages, lifeStageLabel)}
       </select>
     </label>
     <label>
@@ -314,7 +320,7 @@
     {t('editor.countingMethod')}
     <select bind:value={countingMethodId}>
       {#each countingMethods as code (code.id)}
-        <option value={code.id}>{code.name}</option>
+        <option value={code.id}>{countingMethodLabel(code.id) ?? code.name}</option>
       {/each}
     </select>
   </label>
@@ -404,13 +410,14 @@
 </form>
 
 <!-- Wat je in het veld zegt bovenaan, de rest van waarneming.nl eronder -->
-{#snippet options(field: Code[], all: Code[])}
+<!-- Namen in de taal van de app; zonder vertaling de naam van waarneming.nl -->
+{#snippet options(field: Code[], all: Code[], label: typeof activityLabel)}
   {#each field as code (code.id)}
-    <option value={code.id}>{code.name}</option>
+    <option value={code.id}>{label(codesSpeciesId, code.id) ?? code.name}</option>
   {/each}
   <optgroup label={t('editor.more')}>
     {#each all.filter((code) => !field.includes(code)) as code (code.id)}
-      <option value={code.id}>{code.name}</option>
+      <option value={code.id}>{label(codesSpeciesId, code.id) ?? code.name}</option>
     {/each}
   </optgroup>
 {/snippet}
