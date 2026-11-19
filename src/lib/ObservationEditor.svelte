@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n';
   import { type Observation, type Utterance } from './db';
   import { player } from './player.svelte';
   import LocationPicker from './LocationPicker.svelte';
@@ -217,7 +218,7 @@
           aria-label={player.label(utterance.id)}>{player.symbol(utterance.id)}</button
         >
       {:else if utterance.audioDeletedAt}
-        <span class="muted">(opname gewist)</span>
+        <span class="muted">{t('log.audioDeleted')}</span>
       {/if}
       “{utterance.transcript}”
     </p>
@@ -225,7 +226,7 @@
 
   <div class="row">
     <label class="species">
-      Soort
+      {t('editor.species')}
       <input
         bind:this={speciesInput}
         bind:value={speciesName}
@@ -243,7 +244,7 @@
       />
     </label>
     <label class="count">
-      Aantal
+      {t('editor.count')}
       <input type="number" min="1" inputmode="numeric" bind:value={count} />
     </label>
   </div>
@@ -252,7 +253,7 @@
     id={listId}
     class="suggestions"
     role="listbox"
-    aria-label="Soorten"
+    aria-label={t('editor.speciesList')}
     hidden={!suggestions.length}
   >
     {#each suggestions as s, i (s.id)}
@@ -271,19 +272,19 @@
     {/each}
   </ul>
   {#if !selectedSpecies && !suggestions.length}
-    <p class="error">Kies een soort uit de lijst.</p>
+    <p class="error">{t('editor.chooseSpecies')}</p>
   {/if}
 
   <div class="row">
     <label>
-      Gedrag
+      {t('editor.activity')}
       <select bind:value={activityId}>
         <option value={undefined}>—</option>
         {@render options(codes.activities, codes.allActivities)}
       </select>
     </label>
     <label>
-      Methode
+      {t('editor.method')}
       <select bind:value={methodId}>
         <option value={undefined}>—</option>
         {@render options(codes.methods, codes.allMethods)}
@@ -293,24 +294,24 @@
 
   <div class="row">
     <label>
-      Kleed/leeftijd
+      {t('editor.lifeStage')}
       <select bind:value={lifeStageId}>
         <option value={undefined}>—</option>
         {@render options(codes.lifeStages, codes.allLifeStages)}
       </select>
     </label>
     <label>
-      Geslacht
+      {t('editor.sex')}
       <select bind:value={sex}>
         <option value={undefined}>—</option>
-        <option value="male">man</option>
-        <option value="female">vrouw</option>
+        <option value="male">{t('log.male')}</option>
+        <option value="female">{t('log.female')}</option>
       </select>
     </label>
   </div>
 
   <label>
-    Telmethode
+    {t('editor.countingMethod')}
     <select bind:value={countingMethodId}>
       {#each countingMethods as code (code.id)}
         <option value={code.id}>{code.name}</option>
@@ -319,17 +320,17 @@
   </label>
 
   <div class="place">
-    <span class="place-label">Locatie</span>
+    <span class="place-label">{t('editor.location')}</span>
     <span class="place-row">
       <span>
         {#if !place.position}
-          geen locatie
+          {t('log.noLocation')}
         {:else if place.placedByVoice}
-          volgens de uitspraak, ±{place.position.accuracy} m
+          {t('editor.placeByVoice', { m: place.position.accuracy })}
         {:else if moved}
-          met de hand gezet (±{place.position.accuracy} m)
+          {t('editor.placeByHand', { m: place.position.accuracy })}
         {:else}
-          GPS, ±{Math.round(place.position.accuracy)} m
+          {t('editor.placeGps', { m: Math.round(place.position.accuracy) })}
         {/if}
       </span>
       {#if !placing}
@@ -344,12 +345,12 @@
             />
             <circle cx="12" cy="9.5" r="2.6" fill="#fff" />
           </svg>
-          Locatie aanpassen
+          {t('editor.changeLocation')}
         </button>
       {/if}
     </span>
     {#if original.spokenPlace}
-      <span class="spoken">Gezegd: {original.spokenPlace.text}</span>
+      <span class="spoken">{t('editor.spoken', { text: original.spokenPlace.text })}</span>
     {/if}
     {#if placing}
       <LocationPicker position={place.position} sessionId={original.sessionId} onplace={setPlace} />
@@ -358,44 +359,47 @@
     {/if}
     {#if moved}
       <button type="button" class="link back" onclick={backToRecorded}>
-        Terug naar de opgenomen plek{place.recordedPosition ? '' : ' (geen locatie)'}
+        {place.recordedPosition ? t('editor.backToRecorded') : t('editor.backToRecordedNone')}
       </button>
     {/if}
   </div>
 
   <label>
-    Eigen notitie (gaat niet mee in de export)
+    {t('editor.privateNote')}
     <textarea bind:value={privateNote} rows="2"></textarea>
   </label>
 
   <label>
-    Opmerking voor waarneming.nl
+    {t('editor.remarks')}
     <textarea bind:value={remarks} rows="2"></textarea>
   </label>
 
   <label class="check">
     <input type="checkbox" bind:checked={uncertain} />
-    Onzeker{original.uncertainReason ? ` (${original.uncertainReason})` : ''}
+    {original.uncertainReason
+      ? t('editor.uncertainBecause', { reason: original.uncertainReason })
+      : t('editor.uncertain')}
   </label>
 
   <div class="more">
     {#if oncopy}
-      <button type="button" class="link" onclick={copy}>Kopiëren</button>
+      <button type="button" class="link" onclick={copy}>{t('editor.copy')}</button>
     {/if}
-    <button type="button" class="link danger" onclick={remove}>Verwijderen</button>
+    <button type="button" class="link danger" onclick={remove}>{t('editor.delete')}</button>
   </div>
 
   {#if gone}
     <p class="error">
-      Deze waarneming is intussen verwijderd, bijvoorbeeld met de stem. Terugzetten kan onder
-      "Verwijderd" bij de sessie.
+      {t('editor.gone')}
     </p>
   {/if}
 
   <!-- Altijd in beeld, ook bij een lang formulier (feedback 16 nov) -->
   <div class="buttons">
-    <button type="submit" class="btn" disabled={!valid}>Opslaan</button>
-    <button type="button" class="btn secondary" onclick={() => onclose()}>Annuleren</button>
+    <button type="submit" class="btn" disabled={!valid}>{t('common.save')}</button>
+    <button type="button" class="btn secondary" onclick={() => onclose()}
+      >{t('editor.cancel')}</button
+    >
   </div>
 </form>
 
@@ -404,7 +408,7 @@
   {#each field as code (code.id)}
     <option value={code.id}>{code.name}</option>
   {/each}
-  <optgroup label="Meer">
+  <optgroup label={t('editor.more')}>
     {#each all.filter((code) => !field.includes(code)) as code (code.id)}
       <option value={code.id}>{code.name}</option>
     {/each}

@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import { getSpecies } from './vocab';
 
 // Zeldzaamheid zoals waarneming.nl die toont: kleur én vorm, zodat het ook
@@ -6,7 +7,7 @@ import { getSpecies } from './vocab';
 // classes in app.css (.rarity-0 t/m .rarity-4), niet in een style-attribuut:
 // dat laat de Content-Security-Policy niet toe (public/_headers).
 
-export const rarityLabels = ['', 'algemeen', 'vrij algemeen', 'zeldzaam', 'zeer zeldzaam'];
+export const rarityLabels = ['', t('rarity.1'), t('rarity.2'), t('rarity.3'), t('rarity.4')];
 
 /** Vorm per niveau, in een viewBox van 12 × 12; onbekend (alleen op de kaart) is een kleiner stipje */
 const SHAPES = [

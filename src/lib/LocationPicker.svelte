@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n';
   import type { Map as LeafletMap, Marker } from 'leaflet';
   import 'leaflet/dist/leaflet.css';
   import type { Position } from './db';
@@ -73,7 +74,7 @@
         marker = L.marker([lat, lon], {
           draggable: true,
           autoPan: true,
-          title: 'Plek van de waarneming (te verslepen)',
+          title: t('picker.markerTitle'),
           icon: L.divIcon({
             html: '<span class="dot"></span>',
             className: 'pick',
@@ -141,11 +142,10 @@
 <div class="map" bind:this={container}></div>
 {#if tilesFailed}
   <p class="hint" role="status">
-    De kaart laadt niet{navigator.onLine ? '' : ': geen bereik'}. "Huidige locatie" werkt wel; op de
-    kaart tikken kan later, als je weer bereik hebt.
+    {navigator.onLine ? t('picker.tilesFailed') : t('picker.tilesFailedOffline')}
   </p>
 {:else}
-  <p class="hint">Tik op de kaart of sleep de stip naar de plek van de vogel.</p>
+  <p class="hint">{t('picker.hint')}</p>
 {/if}
 <button type="button" class="btn secondary here" onclick={here} disabled={locating}>
   <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
@@ -155,7 +155,7 @@
       <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
     </g>
   </svg>
-  {locating ? 'Plek zoeken…' : 'Huidige locatie'}
+  {locating ? t('picker.locating') : t('picker.here')}
 </button>
 {#if hereError}
   <p class="error" role="alert">{hereError}</p>

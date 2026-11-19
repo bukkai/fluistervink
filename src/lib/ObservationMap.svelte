@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n';
   import { timeFormat } from './format';
   import { liveQuery } from 'dexie';
   import type {
@@ -80,7 +81,7 @@
     const rarity = rarityOf(obs.speciesId);
     if (hasRarity(rarity)) button.insertAdjacentHTML('afterbegin', raritySvg(rarity, 'rarity'));
     else button.prepend(el('span', 'rarity'));
-    if (obs.uncertain) button.append(' ', el('span', 'uncertain', '(onzeker)'));
+    if (obs.uncertain) button.append(' ', el('span', 'uncertain', t('map.uncertain')));
     button.onclick = () => onselect?.([obs.id]);
     return button;
   }
@@ -92,11 +93,11 @@
     const content = el('div', '', el('strong', '', timeFormat.format(first.observedAt)));
     if (first.area?.name) content.append(` · ${first.area.name}`);
     for (const obs of group) content.append(obsButton(obs, false));
-    const link = el('a', '', 'kaarten-app') as HTMLAnchorElement;
+    const link = el('a', '', t('map.mapsApp')) as HTMLAnchorElement;
     link.href = mapsUrl(lat, lon);
     link.target = '_blank';
     link.rel = 'noopener';
-    content.append(el('div', 'accuracy', `± ${Math.round(accuracy)} m · `, link));
+    content.append(el('div', 'accuracy', t('map.accuracy', { m: Math.round(accuracy) }), link));
     return content;
   }
 
@@ -108,12 +109,12 @@
     const content = el(
       'div',
       'cluster-list',
-      el('strong', '', `${list.length} waarnemingen`),
+      el('strong', '', t('map.clusterCount', { n: list.length })),
       from === to ? ` · ${from}` : ` · ${from}–${to}`,
     );
     for (const obs of sorted) content.append(obsButton(obs, true));
     if (zoomIn) {
-      const button = el('button', 'zoom-in link', 'Inzoomen');
+      const button = el('button', 'zoom-in link', t('map.zoomIn'));
       button.onclick = zoomIn;
       content.append(button);
     }
@@ -134,7 +135,7 @@
   function clusterHtml(count: number, rarity: number, uncertain: boolean): string {
     const badge = uncertain ? '<span class="pin-uncertain">?</span>' : '';
     return (
-      `<span class="cluster-count">${count}<span class="sr-only"> waarnemingen</span></span>` +
+      `<span class="cluster-count">${count}<span class="sr-only">${t('map.clusterCountScreenReader')}</span></span>` +
       raritySvg(rarity, 'cluster-rarity') +
       badge
     );
@@ -144,7 +145,7 @@
   function pinTitle(group: Observation[], rarity: number, uncertain: boolean): string {
     const parts = [group.map((obs) => speciesName(obs.speciesId)).join(', ')];
     if (hasRarity(rarity)) parts.push(rarityLabels[rarity]);
-    if (uncertain) parts.push('onzeker');
+    if (uncertain) parts.push(t('map.uncertainTitle'));
     return parts.join(' · ');
   }
 
@@ -320,11 +321,9 @@
     <div class="map" bind:this={container}></div>
     <p class="muted">
       {#if withoutPosition > 0}
-        {withoutPosition}
-        {withoutPosition === 1 ? 'waarneming' : 'waarnemingen'} zonder locatie
-        {withoutPosition === 1 ? 'staat' : 'staan'} niet op de kaart.
+        {t('map.withoutLocation', { n: withoutPosition })}
       {/if}
-      <button type="button" class="link" onclick={reload}>Kaart opnieuw laden</button>
+      <button type="button" class="link" onclick={reload}>{t('map.reload')}</button>
     </p>
     {#if withoutPosition > 0 && !session.exportedAt}
       <PlaceUnplaced sessionId={session.id} count={withoutPosition} />
