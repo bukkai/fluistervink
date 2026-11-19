@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { LOCALE, t } from './i18n';
   import { timeFormat } from './format';
   import { liveQuery } from 'dexie';
   import { db, type Session } from './db';
@@ -51,14 +52,15 @@
   let listFocus = $state<{ ids: string[] }>();
 
   async function resume() {
-    if (!confirm('Deze sessie voortzetten?')) return;
+    if (!confirm(t('past.confirmResume'))) return;
     if (await resumeSession(session.id)) location.hash = '';
   }
 
   async function remove() {
-    const warning = session.exportedAt ? '' : '\n\nDeze sessie is nog niet geëxporteerd.';
-    if (!confirm(`Sessie voorgoed verwijderen, met alle waarnemingen en opnames?${warning}`))
-      return;
+    const message = session.exportedAt
+      ? t('past.confirmDelete')
+      : t('past.confirmDeleteNotExported');
+    if (!confirm(message)) return;
     await deleteSessions([session.id]);
     location.hash = 'sessies';
   }
@@ -68,15 +70,13 @@
 
   async function removeRecordings() {
     const current = await countRecordings(session.id);
-    if (!current.count || !confirm(confirmDeleteText(current, 'van deze sessie'))) return;
+    if (!current.count || !confirm(confirmDeleteText(current, t('recordings.scopeSession'))))
+      return;
     await deleteRecordings(session.id);
   }
 
   async function rename() {
-    const name = prompt(
-      'Naam van de sessie (leeg laten = automatisch, uit het gebied met de meeste waarnemingen):',
-      session.place?.name ?? '',
-    );
+    const name = prompt(t('past.renamePrompt'), session.place?.name ?? '');
     if (name !== null) await renameSession(session.id, name);
   }
 
@@ -107,16 +107,7 @@
 
   /** "Alles klopt": de rest geldt als nagelopen (ook de onzekere), en de sessie staat klaar */
   async function ready() {
-    if (
-      uncertainCount > 0 &&
-      !confirm(
-        `Nog ${uncertainCount === 1 ? '1 onzekere waarneming' : `${uncertainCount} onzekere waarnemingen`}. ` +
-          (uncertainCount === 1
-            ? 'Klopt die ook? Dan wordt hij zeker.'
-            : 'Kloppen die ook? Dan worden ze zeker.'),
-      )
-    )
-      return;
+    if (uncertainCount > 0 && !confirm(t('past.confirmReady', { n: uncertainCount }))) return;
     await approveSession(session.id);
     askedAtReady = true;
     dismissed = false;
@@ -127,30 +118,27 @@
     exportResult = (await exportForWaarneming([session])) ?? exportResult;
   }
 
-  const dateFormat = new Intl.DateTimeFormat('nl-NL', { dateStyle: 'full' });
+  const dateFormat = new Intl.DateTimeFormat(LOCALE, { dateStyle: 'full' });
 </script>
 
 {#snippet checklistQuestion()}
-  <section class="card question" aria-label="Vraag voor eBird">
-    <div class="card-head"><h2>Voor eBird</h2></div>
+  <section class="card question" aria-label={t('past.ebirdQuestionLabel')}>
+    <div class="card-head"><h2>{t('past.forEbird')}</h2></div>
     <div class="card-body">
       <ChecklistAnswers {session} onanswer={() => (answered = true)} />
       <button class="btn secondary block" onclick={closeQuestion}
-        >{answered ? 'Klaar' : 'Nu niet'}</button
+        >{answered ? t('past.done') : t('past.notNow')}</button
       >
     </div>
   </section>
 {/snippet}
 
-<a class="back" href="#sessies">Sessies</a>
+<a class="back" href="#sessies">{t('past.back')}</a>
 
 {#if justSaved}
   <div class="saved" role="status">
-    <strong>✓ Sessie opgeslagen</strong>
-    <p>
-      Alles staat veilig op je telefoon. Loop de waarnemingen na en zet de sessie klaar voor
-      waarneming.nl.
-    </p>
+    <strong>{t('past.savedTitle')}</strong>
+    <p>{t('past.savedText')}</p>
   </div>
 {/if}
 
@@ -160,8 +148,8 @@
 
 <header>
   <div class="title">
-    <h2 class="page-title">{session.place?.name ?? 'Vogelsessie'}</h2>
-    <button class="rename" onclick={rename} aria-label="Naam wijzigen" title="Naam wijzigen">
+    <h2 class="page-title">{session.place?.name ?? t('common.defaultSessionName')}</h2>
+    <button class="rename" onclick={rename} aria-label={t('past.rename')} title={t('past.rename')}>
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
         <path
           d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"
@@ -175,29 +163,31 @@
     </button>
   </div>
   <p class="muted">
-    {dateFormat.format(session.startedAt)},
-    {timeFormat.format(session.startedAt)}–{session.endedAt
-      ? timeFormat.format(session.endedAt)
-      : '?'}
+    {t('past.when', {
+      date: dateFormat.format(session.startedAt),
+      from: timeFormat.format(session.startedAt),
+      to: session.endedAt ? timeFormat.format(session.endedAt) : '?',
+    })}
   </p>
 </header>
 
 {#if $observations}
   <dl class="stats">
     <div>
-      <dt>Duur</dt>
+      <dt>{t('past.duration')}</dt>
       <dd>{formatDuration(sessionDurationMs(session, session.endedAt ?? session.startedAt))}</dd>
     </div>
     <div>
-      <dt>Soorten</dt>
+      <dt>{t('past.species')}</dt>
       <dd>{countSpecies($observations)}</dd>
     </div>
     <div>
       <!-- Afbreekpunt voor een heel smalle telefoon -->
-      <dt>Waarne&shy;mingen</dt>
+      <dt>{t('past.observations')}</dt>
       <dd>
         {$observations.length}
-        {#if uncertainCount > 0}<small>{uncertainCount} onzeker</small>{/if}
+        {#if uncertainCount > 0}<small>{t('past.uncertainCount', { n: uncertainCount })}</small
+          >{/if}
       </dd>
     </div>
   </dl>
@@ -215,11 +205,11 @@
 
 <section class="card export">
   <div class="card-head">
-    <h2>Klaar met nalopen?</h2>
+    <h2>{t('past.readyTitle')}</h2>
     {#if session.exportedAt && !exportResult}
-      <span class="badge">geëxporteerd</span>
+      <span class="badge">{t('sessions.badgeExported')}</span>
     {:else if session.readyAt && !exportResult}
-      <span class="badge">klaar</span>
+      <span class="badge">{t('sessions.badgeReady')}</span>
     {/if}
   </div>
   <div class="card-body">
@@ -227,51 +217,46 @@
       <p>{exportResult}</p>
     {:else if session.exportedAt}
       <p class="muted">
-        Geëxporteerd op {dateFormat.format(session.exportedAt)}
-        om {timeFormat.format(session.exportedAt)}.
+        {t('past.exportedOn', {
+          date: dateFormat.format(session.exportedAt),
+          time: timeFormat.format(session.exportedAt),
+        })}
       </p>
     {:else if session.readyAt}
       <p class="first">
-        Deze sessie staat klaar. Exporteer alle klaarstaande sessies in één keer bij Sessies.
+        {t('past.isReady')}
       </p>
       <div class="actions">
-        <a class="btn block" href="#sessies">Naar Sessies</a>
+        <a class="btn block" href="#sessies">{t('past.toSessions')}</a>
         <button class="btn secondary block" onclick={() => markReady(session.id, false)}
-          >Toch nog niet klaar</button
+          >{t('past.notReadyYet')}</button
         >
       </div>
     {:else if $unprocessed}
       <p class="first">
-        Nog {$unprocessed === 1 ? '1 uitspraak wacht' : `${$unprocessed} uitspraken wachten`} op verwerking,
-        bijvoorbeeld omdat er geen bereik was. Dat gaat vanzelf zodra er verbinding is; daarna kun je
-        de sessie klaarzetten.
+        {t('past.unprocessed', { n: $unprocessed })}
       </p>
     {:else}
       {#if uncertainCount > 0}
         <p class="warning">
-          Nog {uncertainCount === 1
-            ? '1 onzekere waarneming'
-            : `${uncertainCount} onzekere waarnemingen`}. Loop ze bovenaan na, of tik erop in de
-          lijst.
+          {t('past.uncertainLeft', { n: uncertainCount })}
         </p>
       {/if}
       <button class="btn block large" onclick={ready}
-        >Alles klopt, klaar voor {ebird ? 'export' : 'waarneming.nl'}</button
+        >{ebird ? t('past.allCorrectEbird') : t('past.allCorrect')}</button
       >
       <p class="muted">
-        De waarnemingen gelden dan als nagelopen. Klaargezette sessies exporteer je later in één
-        bestand{ebird ? ' voor waarneming.nl en een voor eBird' : ''}, bij Sessies.
+        {ebird ? t('past.readyHintEbird') : t('past.readyHint')}
       </p>
     {/if}
     <div class="actions only-this">
       <button class="btn secondary block" onclick={exportOnlyThis} disabled={!!$unprocessed}
-        >Alleen deze sessie exporteren{ebird ? ' voor waarneming.nl' : ''}</button
+        >{ebird ? t('past.exportOnlyThisEbird') : t('past.exportOnlyThis')}</button
       >
     </div>
     <p class="muted">
-      Importeer het bestand bij
-      <a href={IMPORT_URL} target="_blank" rel="noopener">waarneming.nl</a>, met de site in het
-      Nederlands.
+      {t('past.importHintVoor')}
+      <a href={IMPORT_URL} target="_blank" rel="noopener">waarneming.nl</a>{t('past.importHintNa')}
     </p>
   </div>
 </section>
@@ -288,14 +273,14 @@
 <!-- Knoppen in plaats van linkjes: ook met dikke vingers of handschoenen te raken -->
 <div class="footer actions">
   {#if resumable}
-    <button class="btn secondary block" onclick={resume}>Per ongeluk gestopt? Voortzetten</button>
+    <button class="btn secondary block" onclick={resume}>{t('past.resume')}</button>
   {/if}
   {#if $recordings?.count}
     <button class="btn secondary block danger-text" onclick={removeRecordings}
-      >Alleen de opnames wissen</button
+      >{t('past.deleteRecordings')}</button
     >
   {/if}
-  <button class="btn secondary block danger-text" onclick={remove}>Sessie verwijderen</button>
+  <button class="btn secondary block danger-text" onclick={remove}>{t('past.delete')}</button>
 </div>
 
 <style>

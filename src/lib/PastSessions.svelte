@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n';
   import { dayFormat, timeFormat } from './format';
   import { liveQuery } from 'dexie';
   import type { Session } from './db';
@@ -94,13 +95,10 @@
       0,
     );
     const message = [
-      `${n === 1 ? '1 sessie' : `${n} sessies`} voorgoed verwijderen, met alle waarnemingen en opnames?`,
-      notExported > 0 &&
-        `${notExported === 1 ? 'Eén daarvan is' : `${notExported} daarvan zijn`} nog niet geëxporteerd.`,
-      devNotes > 0 &&
-        `${devNotes === 1 ? '1 feedbackbericht gaat' : `${devNotes} feedbackberichten gaan`} ook weg.`,
-      unprocessed > 0 &&
-        `${unprocessed === 1 ? '1 uitspraak is' : `${unprocessed} uitspraken zijn`} nog niet verwerkt (bv. geen bereik) en ${unprocessed === 1 ? 'gaat' : 'gaan'} verloren.`,
+      t('sessions.confirmDelete', { n }),
+      notExported > 0 && t('sessions.confirmNotExported', { n: notExported }),
+      devNotes > 0 && t('sessions.confirmDevNotes', { n: devNotes }),
+      unprocessed > 0 && t('sessions.confirmUnprocessed', { n: unprocessed }),
     ]
       .filter(Boolean)
       .join('\n\n');
@@ -114,52 +112,50 @@
     const c = $counts?.get(session.id);
     return [
       formatDuration((session.endedAt ?? session.startedAt) - session.startedAt),
-      c && `${c.utterances} ${c.utterances === 1 ? 'uitspraak' : 'uitspraken'}`,
-      c && `${c.observations} ${c.observations === 1 ? 'waarneming' : 'waarnemingen'}`,
-      c?.devNotes && `${c.devNotes} ${c.devNotes === 1 ? 'feedbackbericht' : 'feedbackberichten'}`,
-      c?.unprocessed && `${c.unprocessed} niet verwerkt`,
+      c && t('sessions.utterances', { n: c.utterances }),
+      c && t('log.observationCount', { n: c.observations }),
+      c?.devNotes && t('sessions.devNotes', { n: c.devNotes }),
+      c?.unprocessed && t('sessions.unprocessed', { n: c.unprocessed }),
     ]
       .filter(Boolean)
       .join(' · ');
   }
 </script>
 
-<a class="back" href="#/">Terug</a>
+<a class="back" href="#/">{t('common.back')}</a>
 <div class="title">
-  <h2 class="page-title">Vorige sessies</h2>
+  <h2 class="page-title">{t('sessions.title')}</h2>
   {#if sessions.length > 0}
     {#if selecting}
-      <button class="link" onclick={stopSelecting}>Annuleren</button>
+      <button class="link" onclick={stopSelecting}>{t('sessions.cancel')}</button>
     {:else}
-      <button class="link" onclick={() => (selecting = true)}>Opruimen</button>
+      <button class="link" onclick={() => (selecting = true)}>{t('sessions.cleanUp')}</button>
     {/if}
   {/if}
 </div>
 
 {#if sessions.length === 0}
-  <p class="muted">Nog geen sessies.</p>
+  <p class="muted">{t('sessions.none')}</p>
 {:else}
   {#if !selecting && (ready.length > 0 || exportResult)}
     <section class="card export">
       <div class="card-body">
         {#if ready.length > 0}
           <p>
-            <strong
-              >{ready.length === 1 ? '1 sessie' : `${ready.length} sessies`} klaar voor waarneming.nl</strong
-            >
+            <strong>{t('sessions.readyForWaarneming', { n: ready.length })}</strong>
           </p>
           <button class="btn block large" onclick={exportReady}
-            >Exporteren voor waarneming.nl</button
+            >{t('sessions.exportWaarneming')}</button
           >
         {/if}
         {#if exportResult}
           <p>{exportResult}</p>
         {/if}
         <p class="muted">
-          Importeer het bestand bij <a href={IMPORT_URL} target="_blank" rel="noopener"
-            >waarneming.nl</a
-          >, met de site in het Nederlands (NL, rechtsboven; dat is de standaard): gedrag en methode
-          staan in het Nederlands in het bestand.
+          {t('sessions.importHintVoor')}
+          <a href={IMPORT_URL} target="_blank" rel="noopener">waarneming.nl</a>{t(
+            'sessions.importHintNa',
+          )}
         </p>
       </div>
     </section>
@@ -169,34 +165,37 @@
       <div class="card-body">
         {#if ebirdPending.length > 0}
           <p>
-            <strong
-              >{ebirdPending.length === 1 ? '1 sessie' : `${ebirdPending.length} sessies`} voor eBird</strong
-            >
+            <strong>{t('sessions.forEbird', { n: ebirdPending.length })}</strong>
           </p>
           {#if ebirdOpen.length > 0}
-            <p id="ebird-open">Heb je alles genoteerd wat je kon herkennen?</p>
+            <p id="ebird-open">{t('sessions.ebirdQuestion')}</p>
             <ul class="open" aria-labelledby="ebird-open">
               {#each ebirdOpen as session (session.id)}
                 <li>
                   <a href="#sessie/{session.id}">
-                    <strong>{session.place?.name ?? 'Vogelsessie'}</strong>
+                    <strong>{session.place?.name ?? t('common.defaultSessionName')}</strong>
                     <span class="when">
-                      {dayFormat.format(session.startedAt)}, {timeFormat.format(session.startedAt)}
+                      {t('sessions.when', {
+                        day: dayFormat.format(session.startedAt),
+                        time: timeFormat.format(session.startedAt),
+                      })}
                     </span>
                   </a>
                   <div class="answers">
                     <button
                       class="btn secondary"
-                      onclick={() => setChecklist(session.id, { complete: true })}>Ja</button
+                      onclick={() => setChecklist(session.id, { complete: true })}
+                      >{t('sessions.yes')}</button
                     >
                     <button
                       class="btn secondary"
-                      onclick={() => setChecklist(session.id, { complete: false })}>Nee</button
+                      onclick={() => setChecklist(session.id, { complete: false })}
+                      >{t('sessions.no')}</button
                     >
                     <button
                       class="btn secondary"
                       onclick={() => setChecklist(session.id, { skipEbird: true })}
-                      >Niet naar eBird</button
+                      >{t('sessions.notToEbird')}</button
                     >
                   </div>
                 </li>
@@ -206,7 +205,7 @@
           <button
             class="btn block large"
             disabled={ebirdBusy || ebirdOpen.length > 0}
-            onclick={exportEbird}>Exporteren voor eBird</button
+            onclick={exportEbird}>{t('sessions.exportEbird')}</button
           >
         {/if}
         {#if ebirdResult}
@@ -214,29 +213,29 @@
         {/if}
         <p class="muted">
           {#if ebirdOpen.length > 0}
-            Beantwoord eerst de vraag bij {ebirdOpen.length === 1
-              ? '1 sessie'
-              : `${ebirdOpen.length} sessies`}.
+            {t('sessions.answerFirst', { n: ebirdOpen.length })}
           {/if}
-          Importeer het bestand bij
-          <a href={EBIRD_IMPORT_URL} target="_blank" rel="noopener">eBird</a> en kies daar bij Format
-          "eBird Record Format (Extended)". Soorten die eBird niet herkent, kies je daar zelf.
+          {t('sessions.ebirdHintVoor')}
+          <a href={EBIRD_IMPORT_URL} target="_blank" rel="noopener">eBird</a>
+          {t('sessions.ebirdHintNa')}
         </p>
       </div>
     </section>
   {/if}
   {#if selecting}
-    <p class="muted select-hint">Vink de sessies aan die weg mogen.</p>
+    <p class="muted select-hint">{t('sessions.selectHint')}</p>
     <p class="quick">
-      <button class="link" onclick={toggleAll}>{allSelected ? 'Niets' : 'Alles'} aanvinken</button>
+      <button class="link" onclick={toggleAll}
+        >{allSelected ? t('sessions.selectNone') : t('sessions.selectAll')}</button
+      >
       {#if exportedIds.length > 0}
         <button class="link" onclick={() => (selected = new Set(exportedIds))}>
-          Alle geëxporteerde
+          {t('sessions.selectExported')}
         </button>
       {/if}
       {#if emptyIds.length > 0}
         <button class="link" onclick={() => (selected = new Set(emptyIds))}>
-          Alle lege ({emptyIds.length})
+          {t('sessions.selectEmpty', { n: emptyIds.length })}
         </button>
       {/if}
     </p>
@@ -271,8 +270,8 @@
         onclick={removeSelected}
       >
         {selected.size === 0
-          ? 'Niets aangevinkt'
-          : `Verwijder ${selected.size === 1 ? '1 sessie' : `${selected.size} sessies`}`}
+          ? t('sessions.nothingSelected')
+          : t('sessions.deleteSelected', { n: selected.size })}
       </button>
     </div>
   {/if}
@@ -281,22 +280,27 @@
 {#snippet content(session: Session)}
   <span class="text">
     <span class="top">
-      <strong>{session.place?.name ?? 'Vogelsessie'}</strong>
+      <strong>{session.place?.name ?? t('common.defaultSessionName')}</strong>
       <span class="badges">
         {#if session.exportedAt}
-          <span class="badge exported">{ebird ? 'waarneming.nl ✓' : 'geëxporteerd'}</span>
+          <span class="badge exported"
+            >{ebird ? t('sessions.badgeWaarneming') : t('sessions.badgeExported')}</span
+          >
         {:else if session.readyAt}
-          <span class="badge ready">klaar</span>
+          <span class="badge ready">{t('sessions.badgeReady')}</span>
         {:else if !session.ebirdExportedAt}
-          <span class="badge">niet geëxporteerd</span>
+          <span class="badge">{t('sessions.badgeNotExported')}</span>
         {/if}
         {#if ebird && session.ebirdExportedAt}
-          <span class="badge exported">eBird ✓</span>
+          <span class="badge exported">{t('sessions.badgeEbird')}</span>
         {/if}
       </span>
     </span>
     <span class="when">
-      {dayFormat.format(session.startedAt)}, {timeFormat.format(session.startedAt)}
+      {t('sessions.when', {
+        day: dayFormat.format(session.startedAt),
+        time: timeFormat.format(session.startedAt),
+      })}
     </span>
     <span class="muted summary">{summary(session)}</span>
   </span>
