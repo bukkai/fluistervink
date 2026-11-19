@@ -651,6 +651,8 @@ export const nl = {
   'spoken.savedUncertain': 'Opgeslagen, onzeker',
   'spoken.deleted': 'weg: {species}',
   'spoken.updated': 'aangepast: {what}',
+  'spoken.replaced': '{before} wordt {after}',
+  'spoken.changed': '{species}, {before} wordt {after}',
   'spoken.many': '{n} waarnemingen',
   'spoken.manyFlagged': '{n} waarnemingen. Onzeker',
   'spoken.manyUncertain': '{n} waarnemingen, {uncertain} onzeker',

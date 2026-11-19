@@ -30,6 +30,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-11-19',
     topics: {
       Inspreken: [
+        'Met de gesproken bevestiging aan hoor je bij een correctie nu wat het was en wat het werd: "holenduif wordt wulp, 3" of "houtduif, 3 wordt 6". Zo hoor je meteen of de correctie op de goede waarneming terechtkwam.',
         'Een correctie met de stem, zoals "die kraanvogel van twintig minuten geleden was een blauwe reiger", vindt de bedoelde waarneming beter terug: de app kijkt verder terug, en weet bij een onzekere waarneming wat je toen zei.',
       ],
       Export: [
