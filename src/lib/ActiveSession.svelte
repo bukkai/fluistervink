@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n';
   import { untrack } from 'svelte';
   import { nameFromStart } from './area';
   import type { PositionLookup, Session } from './db';
@@ -159,10 +160,10 @@
   let talkStartedAt = $derived(screenOff.startedAt ?? recorder.startedAt);
   let talkLabel = $derived(
     talkStatus === 'recording'
-      ? `Stop · ${Math.floor(elapsed / 1000)} s`
+      ? t('session.talkStop', { s: Math.floor(elapsed / 1000) })
       : recorder.status === 'starting'
-        ? 'Microfoon aanzetten…'
-        : 'Inspreken',
+        ? t('session.micStarting')
+        : t('session.talk'),
   );
 
   // Tikken of vasthouden, bestand tegen haperend contact (handschoenen)
@@ -323,11 +324,8 @@
     onDailyLimit((limit) => {
       if (trektel.status === 'idle') return;
       stopTrektel('limit');
-      const why =
-        limit === 'audio'
-          ? 'vandaag is er al 5 uur ingesproken, het maximum per dag'
-          : 'vandaag zijn er al heel veel uitspraken verwerkt, het maximum per dag';
-      trektel.error = `Trektelling gestopt: ${why}. De stukken blijven bewaard; tik morgen op Opnieuw om ze te laten verwerken.`;
+      const why = limit === 'audio' ? t('session.limitAudio') : t('session.limitModel');
+      trektel.error = t('session.trektelStoppedLimit', { why });
     }),
   );
 
@@ -336,15 +334,13 @@
   let saveError = $state<string>();
   $effect(() =>
     onSaveFailed((full) => {
-      const why = full
-        ? 'De telefoon is vol: de laatste opname kon niet bewaard worden. Maak ruimte vrij (bijvoorbeeld foto’s of oude opnames wissen) en probeer het opnieuw.'
-        : 'De laatste opname kon niet bewaard worden. Probeer het opnieuw.';
+      const why = full ? t('session.saveFailedFull') : t('session.saveFailed');
       if (trektel.status === 'idle') {
         saveError = why;
         return;
       }
       stopTrektel('storage');
-      trektel.error = `Trektelling gestopt. ${why}`;
+      trektel.error = t('session.trektelStoppedSave', { why });
     }),
   );
 
@@ -389,20 +385,20 @@
   // balk geen ruimte en springt hij niet bij elke opname.
   const micMessage = $derived(
     recorder.status === 'denied'
-      ? 'Geen toegang tot de microfoon. Sta dit toe in de browserinstellingen.'
+      ? t('session.micDenied')
       : recorder.status === 'unsupported'
-        ? 'Opnemen kan niet in deze browser.'
+        ? t('session.micUnsupported')
         : recorder.failed && recorder.status === 'idle'
-          ? 'De microfoon ging niet aan. Tik nog eens.'
+          ? t('session.micFailed')
           : undefined,
   );
 
   const gpsLabels: Record<typeof gps.status, string> = {
     off: '',
     ok: '',
-    searching: 'Locatie zoeken…',
-    denied: 'Geen toegang tot locatie. Sta dit toe in de browserinstellingen.',
-    unavailable: 'Locatie niet beschikbaar op dit apparaat.',
+    searching: t('session.gpsSearching'),
+    denied: t('session.gpsDenied'),
+    unavailable: t('session.gpsUnavailable'),
   };
 
   async function submit(event: SubmitEvent) {
@@ -423,9 +419,9 @@
   <p class="gps {gps.status}">
     <span class="dot"></span>
     {#if gps.status === 'ok' && gps.latest}
-      Locatie ±{Math.round(gps.latest.accuracy)} m
+      {t('session.gpsAccuracy', { m: Math.round(gps.latest.accuracy) })}
     {:else if gps.status === 'searching' && gps.slow}
-      Nog geen locatie, inspreken kan gewoon
+      {t('session.gpsSlow')}
     {:else}
       {gpsLabels[gps.status]}
     {/if}
@@ -436,7 +432,7 @@
       disabled={recorder.status !== 'idle' || trektel.status !== 'idle'}
       onclick={beginTrektel}
     >
-      {trektel.status === 'starting' ? 'Microfoon aanzetten…' : 'Trektelling starten'}
+      {trektel.status === 'starting' ? t('session.micStarting') : t('session.trektelStart')}
     </button>
   {/if}
 </div>
@@ -445,12 +441,12 @@
   <input
     bind:this={input}
     bind:value={text}
-    placeholder="Of typ: zes overvliegende houtduiven"
-    aria-label="Uitspraak typen"
+    placeholder={t('session.typePlaceholder')}
+    aria-label={t('session.typeLabel')}
     autocomplete="off"
     enterkeyhint="send"
   />
-  <button aria-label="Verwerk">
+  <button aria-label={t('session.submit')}>
     <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
       <path
         d="M5 12h13M13 6l6 6-6 6"
@@ -481,7 +477,7 @@
       <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true">
         <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
       </svg>
-      <span>Stop trektelling · {clock(trektelElapsed)}</span>
+      <span>{t('session.trektelStop', { clock: clock(trektelElapsed) })}</span>
     </button>
     <!-- Altijd één regel even breed: liep hij over naar twee regels zodra de
          app spraak hoorde, dan sprong de stopknop steeds op en neer (Maarten) -->
@@ -489,17 +485,17 @@
       <span class="ear" class:speaking={trektel.speaking}></span>
       <span class="hearing"
         >{trektel.status === 'paused'
-          ? 'Gepauzeerd'
+          ? t('session.trektelPaused')
           : trektel.status !== 'running'
-            ? 'Microfoon aanzetten'
+            ? t('session.trektelMicStarting')
             : trektel.speaking
-              ? 'Hoort spraak'
-              : 'Luistert'}</span
+              ? t('session.trektelHearing')
+              : t('session.trektelListening')}</span
       >
       <!-- Pas na het eerste stuk: "eerste stuk na 1 minuut" was onduidelijk (feedback 12 nov) -->
       {#if trektel.sent > 0}
         ·
-        <span class="sent">{trektel.sent} {trektel.sent === 1 ? 'stuk' : 'stukken'} verstuurd</span>
+        <span class="sent">{t('session.trektelSent', { n: trektel.sent })}</span>
       {/if}
     </p>
     {#if micLine}

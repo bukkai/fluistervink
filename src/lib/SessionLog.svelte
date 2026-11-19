@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { LOCALE, t } from './i18n';
   import { timeFormat } from './format';
   import { liveQuery } from 'dexie';
   import { tick, untrack } from 'svelte';
@@ -152,8 +153,6 @@
     return () => clearTimeout(timer);
   });
 
-  const deletedByLabel = { hand: 'met de hand', voice: 'met de stem', undo: 'ongedaan gemaakt' };
-
   function details(obs: Observation) {
     return [...behaviour(obs), obs.area?.name].filter(Boolean).join(' · ');
   }
@@ -166,7 +165,7 @@
       activityName(obs.speciesId, obs.activityId),
       methodName(obs.speciesId, obs.methodId),
       lifeStageName(obs.speciesId, obs.lifeStageId),
-      obs.sex === 'male' ? 'man' : obs.sex === 'female' ? 'vrouw' : undefined,
+      obs.sex === 'male' ? t('log.male') : obs.sex === 'female' ? t('log.female') : undefined,
     ].filter(Boolean);
   }
 
@@ -174,10 +173,10 @@
   function positionAge(obs: Observation): string | undefined {
     if (!obs.position) return undefined;
     const minutes = Math.floor((obs.observedAt - obs.position.fixedAt) / 60_000);
-    if (minutes >= 1) return `positie ${minutes} min oud`;
+    if (minutes >= 1) return t('log.positionOld', { m: minutes });
     // De GPS had nog geen plek; deze kwam later (`positionLater`)
     const later = Math.floor((obs.position.fixedAt - obs.observedAt) / 60_000);
-    return later >= 1 ? `positie ${later} min later` : undefined;
+    return later >= 1 ? t('log.positionLater', { m: later }) : undefined;
   }
 
   /**
@@ -204,22 +203,26 @@
   $effect(() => player.stop);
 
   function seconds(ms: number): string {
-    return `${(ms / 1000).toLocaleString('nl-NL', { maximumFractionDigits: 1 })} s`;
+    return t('log.seconds', {
+      s: (ms / 1000).toLocaleString(LOCALE, { maximumFractionDigits: 1 }),
+    });
   }
 
   function statusLabel(u: Utterance): string {
-    if (u.kind === 'dev_note') return 'feedback';
-    if (u.undone) return 'teruggedraaid';
+    if (u.kind === 'dev_note') return t('log.status.feedback');
+    if (u.undone) return t('log.status.undone');
     switch (u.status) {
       case 'pending':
-        return u.waitingSince ? 'wacht op bereik' : 'in wachtrij';
+        return u.waitingSince ? t('log.status.waiting') : t('log.status.queued');
       case 'processing':
-        return u.transcript === undefined && u.audio ? 'verstaan…' : 'bezig…';
+        return u.transcript === undefined && u.audio
+          ? t('log.status.transcribing')
+          : t('log.status.processing');
       case 'failed':
-        return 'fout';
+        return t('log.status.failed');
       case 'done':
-        if (u.result === 'ignored') return 'niet begrepen';
-        return u.result === 'uncertain' ? 'onzeker' : 'verwerkt';
+        if (u.result === 'ignored') return t('log.status.ignored');
+        return u.result === 'uncertain' ? t('log.status.uncertain') : t('log.status.done');
     }
   }
 </script>
@@ -227,17 +230,15 @@
 {#if waiting}
   <div class="queue waiting">
     <p role="status">
-      Geen bereik{longWait ? ', al meer dan 2 uur' : ''}: {queued === 1
-        ? '1 uitspraak wacht'
-        : `${queued} uitspraken wachten`}. Ze worden verwerkt zodra er verbinding is.
+      {t(longWait ? 'log.waitingLong' : 'log.waiting', { n: queued })}
     </p>
     <button
       class="retry"
       class:spinning={retrying}
       onclick={tryAgain}
       disabled={retrying}
-      aria-label="Probeer opnieuw"
-      title="Probeer opnieuw"
+      aria-label={t('log.retry')}
+      title={t('log.retry')}
     >
       <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
         <path
@@ -253,17 +254,17 @@
   </div>
 {:else if queued}
   <p class="queue">
-    {queued === 1 ? '1 uitspraak' : `${queued} uitspraken`} in de wachtrij (zie Uitspraken)
+    {t('log.queued', { n: queued })}
   </p>
 {/if}
 
 <section class="card">
   <div class="card-head">
-    <h2>Waarnemingen</h2>
+    <h2>{t('log.observations')}</h2>
     {#if $observations?.length}
       <span class="muted summary">
-        {speciesCount === 1 ? '1 soort' : `${speciesCount} soorten`} ·
-        {$observations.length === 1 ? '1 waarneming' : `${$observations.length} waarnemingen`}
+        {t('log.speciesCount', { n: speciesCount })} ·
+        {t('log.observationCount', { n: $observations.length })}
       </span>
     {/if}
   </div>
@@ -275,7 +276,7 @@
         aria-pressed={onlyUncertain}
         onclick={() => (onlyUncertain = !onlyUncertain)}
       >
-        Alleen onzeker ({uncertainCount})
+        {t('log.onlyUncertain', { n: uncertainCount })}
       </button>
     </div>
   {/if}
@@ -298,17 +299,13 @@
               oncopy={(id) => (editing = id)}
             />
           {:else}
-            <button
-              class="row"
-              onclick={() => openEditor(obs.id)}
-              aria-label="Waarneming aanpassen"
-            >
+            <button class="row" onclick={() => openEditor(obs.id)} aria-label={t('log.edit')}>
               <RarityMark rarity={species?.rarity ?? 0} />
               <span class="main">
                 <span class="name">
                   {species?.name}
                   {#if obs.status === 'reviewed'}
-                    <span class="reviewed" title="Nagelopen">✓</span>
+                    <span class="reviewed" title={t('log.reviewed')}>✓</span>
                   {/if}
                 </span>
                 {#if details(obs)}
@@ -316,11 +313,13 @@
                 {/if}
                 {#if obs.uncertain}
                   <span class="reason"
-                    >Onzeker{obs.uncertainReason ? `: ${obs.uncertainReason}` : ''}</span
+                    >{obs.uncertainReason
+                      ? t('log.uncertainBecause', { reason: obs.uncertainReason })
+                      : t('log.uncertain')}</span
                   >
                 {/if}
                 {#if obs.privateNote}
-                  <span class="note">Notitie: {obs.privateNote}</span>
+                  <span class="note">{t('log.note', { note: obs.privateNote })}</span>
                 {/if}
                 {#if obs.remarks}
                   <span class="remarks">“{obs.remarks}”</span>
@@ -337,8 +336,7 @@
                   <button
                     class="to-map"
                     onclick={() => onshowonmap(obs.id)}
-                    aria-label="Op de kaart laten zien"
-                    >±{Math.round(obs.position.accuracy)} m</button
+                    aria-label={t('log.showOnMap')}>±{Math.round(obs.position.accuracy)} m</button
                   >
                 {:else if obs.position}
                   <a
@@ -349,22 +347,22 @@
                 {/if}
                 {#if obs.position}
                   {#if obs.placedByVoice}
-                    <span class="muted">volgens de uitspraak</span>
+                    <span class="muted">{t('log.placedByVoice')}</span>
                   {:else if obs.recordedPosition !== undefined}
-                    <span class="muted">met de hand gezet</span>
+                    <span class="muted">{t('log.placedByHand')}</span>
                   {:else if positionAge(obs)}
                     <span class="reason">{positionAge(obs)}</span>
                   {/if}
                 {:else}
-                  <span class="reason">geen locatie</span>
+                  <span class="reason">{t('log.noLocation')}</span>
                 {/if}
                 <span class="end">
                   {#if obs.uncertain}
                     <button class="small discard" onclick={() => deleteObservation(obs.id)}
-                      >Weg</button
+                      >{t('log.discard')}</button
                     >
                     <button class="small confirm" onclick={() => confirmObservation(obs.id)}
-                      >Klopt</button
+                      >{t('log.confirm')}</button
                     >
                   {/if}
                   <!-- Exporteren kan alleen bij een afgelopen sessie -->
@@ -375,7 +373,7 @@
                         checked={!obs.skipExport}
                         onchange={(event) => setSkipExport(obs.id, !event.currentTarget.checked)}
                       />
-                      Exporteren
+                      {t('log.export')}
                     </label>
                   {/if}
                 </span>
@@ -386,15 +384,15 @@
       {/each}
     </ul>
   {:else if onlyUncertain}
-    <p class="empty">Geen onzekere waarnemingen meer.</p>
+    <p class="empty">{t('log.noUncertainLeft')}</p>
   {:else}
-    <p class="empty">Nog niets waargenomen. Druk op Inspreken en zeg wat je ziet of hoort.</p>
+    <p class="empty">{t('log.empty')}</p>
   {/if}
 </section>
 
 {#if $deleted?.length}
   <details class="card fold">
-    <summary>Verwijderd ({$deleted.length})</summary>
+    <summary>{t('log.deleted', { n: $deleted.length })}</summary>
     <ul class="plain">
       {#each $deleted as obs (obs.id)}
         <li class="deleted">
@@ -402,9 +400,11 @@
             <strong>{obs.count} × {getSpecies(obs.speciesId)?.name}</strong>
             <span class="muted">{timeFormat.format(obs.observedAt)}</span>
             <div class="muted">{details(obs)}</div>
-            <div class="muted">verwijderd {deletedByLabel[obs.deletedBy]}</div>
+            <div class="muted">{t(`log.deletedBy.${obs.deletedBy}`)}</div>
           </div>
-          <button class="small" onclick={() => restoreObservation(obs.id)}>Terugzetten</button>
+          <button class="small" onclick={() => restoreObservation(obs.id)}
+            >{t('log.restore')}</button
+          >
         </li>
       {/each}
     </ul>
@@ -414,7 +414,11 @@
 {#if $utterances?.length}
   <!-- Vooral voor de ontwikkelfase; open als er iets misging of nog wacht -->
   <details class="card fold" open={failed > 0 || queued > 0}>
-    <summary>Uitspraken ({$utterances.length}){failed ? ` · ${failed} fout` : ''}</summary>
+    <summary
+      >{failed
+        ? t('log.utterancesFailed', { n: $utterances.length, failed })
+        : t('log.utterances', { n: $utterances.length })}</summary
+    >
     <ul class="plain">
       {#each $utterances as u (u.id)}
         <li class="utterance">
@@ -427,17 +431,21 @@
               >
             {/if}
             {#if u.audioDeletedAt}
-              <span class="muted">(opname gewist)</span>
+              <span class="muted">{t('log.audioDeleted')}</span>
             {/if}
             {#if u.transcript !== undefined}
               “{u.transcript}”
             {:else}
-              <span class="muted">Opname van {seconds(u.audioDurationMs ?? 0)}</span>
+              <span class="muted"
+                >{t('log.recordingOf', { duration: seconds(u.audioDurationMs ?? 0) })}</span
+              >
             {/if}
             <span class="status {u.status} {u.result}">{statusLabel(u)}</span>
             {#if duration(u)}
               <span class="status"
-                >· {duration(u)}{u.metrics?.wasHidden ? ' (app op achtergrond)' : ''}</span
+                >· {u.metrics?.wasHidden
+                  ? t('log.inBackground', { duration: duration(u) ?? '' })
+                  : duration(u)}</span
               >
             {/if}
           </div>
@@ -445,7 +453,7 @@
             <div class="reason">{u.error}</div>
           {/if}
           {#if u.status === 'failed'}
-            <button class="small" onclick={() => retry(u.id)}>Opnieuw</button>
+            <button class="small" onclick={() => retry(u.id)}>{t('log.again')}</button>
           {/if}
         </li>
       {/each}
