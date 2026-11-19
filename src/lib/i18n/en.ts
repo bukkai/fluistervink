@@ -277,6 +277,11 @@ export const en: Dictionary = {
   'log.deletedBy.voice': 'deleted by voice',
   'log.deletedBy.undo': 'deleted by undo',
   'log.restore': 'Restore',
+  'log.notUnderstood': 'Not understood ({n})',
+  'log.notUnderstoodHint':
+    'The app found no observation in these. Listen back: if there was a bird after all, turn it into an observation.',
+  'log.rescue': 'Make it an observation',
+  'log.dismiss': 'No observation',
   'log.male': 'male',
   'log.female': 'female',
   'log.utterances': 'Voice notes ({n})',
@@ -643,6 +648,7 @@ export const en: Dictionary = {
   // Waarom de app een waarneming onzeker maakt
   'reason.rare': 'Rare species ({species}): is that right?',
   'reason.accidental': 'Recorded by accident? {s} s recording, heard: "{transcript}"',
+  'reason.notUnderstood': 'Not understood, heard: "{transcript}". Choose the species',
   'reason.belowOne': '{base} − {minus} isn’t possible: set to 1',
   'reason.onlyNumber':
     'Only heard "{transcript}"; perhaps "a …" (new observation). Was {count} × {species}',

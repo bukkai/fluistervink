@@ -13,9 +13,13 @@
     confirmObservation,
     countSpecies,
     deleteObservation,
+    dismissUtterance,
+    forgetRescue,
     listDeleted,
     listObservations,
     listUtterances,
+    notUnderstood,
+    rescueUtterance,
     restoreObservation,
     setSkipExport,
     spokenAt,
@@ -116,14 +120,42 @@
   }
 
   /** Opslaan, Annuleren of Verwijderen: de eigen stap weer uit de geschiedenis */
-  function closeEditor() {
+  function closeEditor(saved?: boolean) {
+    if (!saved) dropRescue();
+    rescuing = undefined;
     if (history.state?.editor) history.back();
     else editing = undefined;
   }
 
+  // Niet begrepen uitspraken (alleen bij het nalopen): terugluisteren, er een
+  // waarneming van maken of wegzetten. Niet meer na de export: dan is de sessie af.
+  let unclear = $derived(
+    session.status === 'ended' && !session.exportedAt ? notUnderstood($utterances ?? []) : [],
+  );
+  /** Waarneming net gemaakt van een niet begrepen uitspraak; annuleren haalt hem weg */
+  let rescuing = $state<string>();
+
+  async function rescue(utteranceId: string) {
+    const id = await rescueUtterance(utteranceId);
+    if (!id) return;
+    onlyUncertain = false;
+    rescuing = id;
+    openEditor(id);
+    await tick();
+    document.getElementById(`obs-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function dropRescue() {
+    if (rescuing) forgetRescue(rescuing);
+  }
+
   $effect(() => {
     const onPopState = () => {
-      if (!history.state?.editor) editing = undefined;
+      if (history.state?.editor) return;
+      // Terugknop: telt als Annuleren
+      dropRescue();
+      rescuing = undefined;
+      editing = undefined;
     };
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
@@ -262,6 +294,38 @@
   </p>
 {/if}
 
+{#if unclear.length}
+  <section class="card unclear">
+    <div class="card-head">
+      <h2>{t('log.notUnderstood', { n: unclear.length })}</h2>
+    </div>
+    <p class="hint">{t('log.notUnderstoodHint')}</p>
+    <ul class="plain">
+      {#each unclear as u (u.id)}
+        <li>
+          <div>
+            {#if u.audio}
+              <button
+                class="play"
+                onclick={() => player.toggle(u.id, u.audio!)}
+                aria-label={player.label(u.id)}>{player.symbol(u.id)}</button
+              >
+            {/if}
+            <span class="muted">{timeFormat.format(u.recordedAt)}</span>
+            “{u.transcript}”
+          </div>
+          <div class="unclear-actions">
+            <button class="btn" onclick={() => rescue(u.id)}>{t('log.rescue')}</button>
+            <button class="btn secondary" onclick={() => dismissUtterance(u.id)}
+              >{t('log.dismiss')}</button
+            >
+          </div>
+        </li>
+      {/each}
+    </ul>
+  </section>
+{/if}
+
 <section class="card">
   <div class="card-head">
     <h2>{t('log.observations')}</h2>
@@ -300,7 +364,11 @@
               observation={obs}
               utterance={source}
               onclose={closeEditor}
-              oncopy={(id) => (editing = id)}
+              oncopy={(id) => {
+                // Gekopieerd: het origineel blijft, ook als je de kopie annuleert
+                rescuing = undefined;
+                editing = id;
+              }}
             />
           {:else}
             <button class="row" onclick={() => openEditor(obs.id)} aria-label={t('log.edit')}>
@@ -737,6 +805,22 @@
 
   li.utterance button.small {
     margin-top: 0.4rem;
+  }
+
+  .unclear .hint {
+    margin: 0;
+    padding: 0.6rem 1rem 0;
+  }
+
+  .unclear li + li {
+    border-top: 1px solid var(--border);
+  }
+
+  .unclear-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
   }
 
   button.play {

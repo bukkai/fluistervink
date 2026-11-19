@@ -29,6 +29,9 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     date: '2026-11-19',
     topics: {
+      Nalopen: [
+        "Begreep de app een uitspraak niet, dan zie je die bij het nalopen boven de waarnemingen, met wat er verstaan is en de opname. Zat er toch een vogel in, maak er dan met één tik een waarneming van en kies de soort. Eerst stond zo'n uitspraak alleen weggestopt bij Uitspraken.",
+      ],
       Inspreken: [
         'Met de gesproken bevestiging aan hoor je bij een correctie nu wat het was en wat het werd: "holenduif wordt wulp, 3" of "houtduif, 3 wordt 6". Zo hoor je meteen of de correctie op de goede waarneming terechtkwam.',
         'Een correctie met de stem, zoals "die kraanvogel van twintig minuten geleden was een blauwe reiger", vindt de bedoelde waarneming beter terug: de app kijkt verder terug, en weet bij een onzekere waarneming wat je toen zei.',

@@ -270,6 +270,11 @@ export const nl = {
   'log.deletedBy.voice': 'verwijderd met de stem',
   'log.deletedBy.undo': 'verwijderd ongedaan gemaakt',
   'log.restore': 'Terugzetten',
+  'log.notUnderstood': 'Niet begrepen ({n})',
+  'log.notUnderstoodHint':
+    'Hierin vond de app geen waarneming. Luister ze terug: zat er toch een vogel in, maak er dan een waarneming van.',
+  'log.rescue': 'Maak er een waarneming van',
+  'log.dismiss': 'Geen waarneming',
   'log.male': 'man',
   'log.female': 'vrouw',
   'log.utterances': 'Uitspraken ({n})',
@@ -636,6 +641,7 @@ export const nl = {
   // Waarom de app een waarneming onzeker maakt (applyActions.ts, interpret.ts, spokenPlace.ts)
   'reason.rare': 'Zeldzame soort ({species}): klopt het?',
   'reason.accidental': 'Per ongeluk opgenomen? {s} s opname, verstaan: "{transcript}"',
+  'reason.notUnderstood': 'Niet begrepen, verstaan: "{transcript}". Kies de soort',
   'reason.belowOne': '{base} − {minus} kan niet: op 1 gezet',
   'reason.onlyNumber':
     'Alleen "{transcript}" verstaan; misschien "een …" (nieuwe waarneming). Was {count} × {species}',

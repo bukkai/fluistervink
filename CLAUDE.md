@@ -12,7 +12,7 @@ Dit bestand geeft de keuzes kort; de uitwerking per onderwerp, met de plekken in
 2. Iets gezien of gehoord → knop indrukken (MVP) of later het wake word "Fluistervink" zeggen, en de waarneming inspreken.
 3. Elke uitspraak wordt verwerkt en verschijnt in het overzicht. Bevestiging via trillen, zodat de gebruiker niet naar het scherm hoeft te kijken.
 4. Correcties kunnen in het veld met de stem: "nee, keep in plaats van vink", "nog drie erbij", "die laatste weg".
-5. Thuis: review van soort, aantal, gedrag en locatie, nalopen van onzekere waarnemingen (één voor één, daarna "Alles klopt"), audio terugluisteren.
+5. Thuis: review van soort, aantal, gedrag en locatie, nalopen van onzekere waarnemingen (één voor één, daarna "Alles klopt") en van wat niet begrepen is, audio terugluisteren.
 6. Een nagelopen sessie zet je "klaar voor waarneming.nl"; alle klaarstaande sessies gaan in één bestand naar de bulkimport van waarneming.nl (CSV, in de Android-app xlsx). Later via de API.
 
 ## Vastgelegde ontwerpkeuzes
