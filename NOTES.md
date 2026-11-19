@@ -30,7 +30,7 @@ Elk punt na het proberen hier weghalen.
 
 - **Robuustheid** (#274, `docs/plan-robuustheid.md`): gebeld worden in een trektelling; oortjes uit tijdens een trektelling; telefoon vol. Als het zich voordoet: wifi met inlogpagina (#268), en of "Geen bereik, … wachten" nog blijft staan na weer verbinding (nu met Probeer opnieuw, #260). Gedaan op 18 nov: offline plek (eerste GPS na 49 s, wachtende uitspraken kregen hun plek alsnog) en gebeld worden midden in een opname (opname netjes bewaard; na het ophangen nog ~1,5 min geen mobiel internet, de wachtrij ving het op).
 - **Trektelling: eerst vragen** (#263): naar een ander scherm → "Toch weggaan?"; Annuleren houdt de telling aan, OK stopt hem.
-- **Plek in een trektelstuk** (#248): "buizerd, 500 m zuid" in een trektelling: alle soorten van het stuk komen binnen, met de plek.
+- **Plek in een trektelstuk** (#248): gelukt op 19 nov, de kraanvogel met "… m …" kreeg meteen de goede plek. Wel kregen de andere soorten uit dat stuk pas na een paar minuten een plek: in het log van de gedeelde trektelling (19 nov, avond) nagaan waarom (`positionLookup` van het stuk, `position_later`).
 - **Soortveld** (#233): "noordse" typen: suggesties onder het veld, één tik kiest, Inspreken weg tijdens het typen.
 - **Opslaan in beeld** (#237): tijdens een sessie een waarneming openen: Opslaan meteen onderaan, het ronde knopje niet over Annuleren.
 - **Opname afspelen** (#222): nog eens tikken pauzeert, een tweede opname stopt de eerste.
