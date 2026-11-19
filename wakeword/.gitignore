@@ -1,0 +1,6 @@
+# Opnames van testers (persoonlijke gegevens), gegenereerde data en grote downloads
+.venv/
+data/
+voices/
+modellen/
+__pycache__/

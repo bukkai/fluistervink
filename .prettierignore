@@ -9,3 +9,6 @@ worker/worker-configuration.d.ts
 
 # Android-project (Capacitor), deels gegenereerd
 android/
+
+# Wake word: Python, met een virtualenv en opnames die niet in git staan
+wakeword/
