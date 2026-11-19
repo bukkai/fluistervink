@@ -302,6 +302,8 @@ function checkImport(data: {
       optional(u.area, isArea) &&
       // De taal kiest de prompt: alleen bekende talen (ontwikkeloptie "English")
       optional(u.language, (l) => l === 'nl' || l === 'en') &&
+      // Het land van de soortenlijst (ontwikkeloptie "Spanje")
+      optional(u.region, (r) => r === 'es') &&
       optional(u.audioData, (a) => typeof a === 'string' && a.startsWith('data:audio/'));
     if (!ok) fail('uitspraak');
   }

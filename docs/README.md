@@ -27,7 +27,7 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 | `plan-offline.md` | offline wachtrij: zonder bereik doorvogelen, vanzelf verwerken; afgerond, op stable sinds 18 nov |
 | `plan-ios.md` | iPhone-app; voorstel, na de lancering |
 | `plan-engels.md` | de app in het Engels: één app met een taalkeuze; voorstel 19 nov, na de betaalde laag; stap 1 (woordenboek), 2 (Engelse namen) en 3 (ontwikkeloptie "English") gedaan |
-| `plan-andere-landen.md` | soortenlijsten van andere landen en namen in andere talen; voorstel 19 nov, na het Engelse plan |
+| `plan-andere-landen.md` | soortenlijsten van andere landen en namen in andere talen; voorstel 19 nov; proef Spanje gebouwd (ontwikkeloptie) |
 | `plan-robuustheid.md` | edge cases die een tester zou proberen, en hoe we ze blijvend afdekken; code klaar, nog proberen op de telefoon en testset-opnames |
 
 ## Naslag

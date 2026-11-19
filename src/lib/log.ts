@@ -1,5 +1,6 @@
 import { db } from './db';
 import { language } from './i18n';
+import { region } from './region';
 import { INSTANCE_ID, claimInstance } from './instance.svelte';
 import { nativeAppVersion } from './native';
 
@@ -54,6 +55,8 @@ export function startLogging(): void {
     channel: CHANNEL,
     // Taal van de app (ontwikkeloptie "English"); elke uitspraak bewaart ook de zijne
     language,
+    // Land van de soortenlijst (ontwikkeloptie "Spanje")
+    region,
     userAgent: navigator.userAgent,
     online: navigator.onLine,
     standalone: matchMedia('(display-mode: standalone)').matches,

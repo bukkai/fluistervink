@@ -1,6 +1,6 @@
 # Plan: vogels van andere landen, in andere talen
 
-Voorstel van 19 nov 2026, nog niet goedgekeurd. Punt 7 van "Na v1.0" in `docs/roadmap.md`, en het vervolg op `docs/plan-engels.md`. Dit plan vervangt het idee "Vogels van andere landen" uit `docs/ideeen.md`.
+Voorstel van 19 nov 2026, nog niet goedgekeurd; de proef met Spanje is gebouwd (ontwikkeloptie "Spanje", zie hieronder). Punt 7 van "Na v1.0" in `docs/roadmap.md`, en het vervolg op `docs/plan-engels.md`. Dit plan vervangt het idee "Vogels van andere landen" uit `docs/ideeen.md`.
 
 ## Doel
 
@@ -32,14 +32,26 @@ Dus: geen tweede bron nodig, en de export naar waarneming.nl en observation.org 
 - In de prompt: inheems en ≥ 2 per 100.000 waarnemingen; niet-inheems ≥ 10 per 100.000 (gevestigde exoten zoals monniksparkiet, Sint-Helenafazantje en halsbandparkiet komen er dan vanzelf in, ontsnapte enkelingen niet); verzamelsoorten (type M) ook ≥ 2 per 100.000.
 - Zeldzaamheid: ≥ 150 per 100.000 algemeen, ≥ 30 vrij algemeen, ≥ 5 zeldzaam, daaronder zeer zeldzaam. Geijkt op Nederland: alle 110 algemene soorten van de bron komen er als algemeen uit, de zeldzame grotendeels als zeldzaam.
 
-**Uitkomst Spanje:** 373 soorten en 34 verzamelsoorten in de prompt (Nederland nu ongeveer 350). Bijeneter, blauwe ekster, rode patrijs, Iberische tjiftjaf, Spaanse keizerarend, grote en kleine trap, witkopeend, zandhoenders, Audouins meeuw: allemaal erin, de meeste als algemeen. Dupont's leeuwerik (78 waarnemingen) valt er net onder en gaat dan via `findVagrant`.
+**Uitkomst Spanje** (`data/soorten-es.json`): 373 soorten, 3 gedomesticeerde vormen en alle verzamelsoorten van de Nederlandse prompt plus de Spaanse (samen 411 in de prompt; Nederland nu 354). Bijeneter, blauwe ekster, rode patrijs, Iberische tjiftjaf, Spaanse keizerarend, grote en kleine trap, witkopeend, zandhoenders, Audouins meeuw: allemaal erin, de meeste als algemeen. Dupont's leeuwerik (78 waarnemingen) valt er net onder en gaat via `findVagrant`. Een verzamelsoort krijgt geen zeldzaamheid (0): "Eend onbekend" kwam anders als zeer zeldzaam uit en werd dan altijd onzeker.
 
 **Kanttekeningen:**
 
 - **Twitchers tellen mee:** een zeldzame vogel die door honderd mensen gemeld wordt, telt honderd keer. In Nederland komen zo bv. sneeuwuil, roze pelikaan en Ross' gans boven de drempel. Voor een vakantieland niet erg: de prompt wordt er iets groter van, het model kiest ze alleen als je ze noemt, en "zeldzaam" maakt ze onzeker. Voor Nederland houden we de bron.
 - **Waar Nederlanders gaan, wordt meer geteld:** Extremadura en de kust tellen zwaarder dan Galicië. Algemene soorten zitten er toch ruim in; het verschil zit in de staart.
 - **Canarische Eilanden** horen bij het land ES: Atlantische kanarie, Berthelots pieper en Canarische tjiftjaf staan dus ook in de lijst voor het vasteland (klein nadeel). De Canarische Eilanden (regio 110, lijst 244), de Azoren (lijst 361) en de Balearen zijn aparte regio's met een eigen lijst; later eventueel als eigen keuze. Het filter `region=` bij de aantallen is nog niet goed nagegaan.
-- Getallen van Nederland en Spanje staan niet in git; het script maakt ze opnieuw.
+- Getallen van Nederland en Spanje staan niet in git; het script maakt ze opnieuw. De API gaf na ruim tweeduizend aanroepen achter elkaar een 429; het script doet er twee tegelijk en wacht zo lang als de server vraagt.
+
+**De proef in de app** (19 nov, ontwikkeloptie "Spanje"): `src/lib/region.ts` kiest het land bij het laden; `speciesListsFor` in `vocab.ts` geeft de Spaanse vogels met de andere diergroepen van Nederland. Prompts, "zeldzaam wordt onzeker", dwaalgasten en de kleuren volgen vanzelf. Elke uitspraak bewaart het land (`Utterance.region`), de testset kiest het met `--land es`. Nog niet: de vraag bij het starten in het buitenland, downloaden in plaats van meebundelen (het bestand is 126 kB, gecomprimeerd 22 kB), andere diergroepen van Spanje, en `#privacy` (alleen nodig als het voor iedereen komt).
+
+**Testset, synthetisch** (40 zinnen zoals een Nederlander ze in Spanje inspreekt, `testset/spanje-synthetisch.json`, buiten git):
+
+| | Spaanse lijst | Nederlandse lijst |
+| --- | --- | --- |
+| Model alleen (transcript gegeven) | 40/40 goed, 0 onzeker | 31/40 goed, 29 onzeker |
+| Spraakherkenning + model (stem Xander van macOS) | 37/40 goed, 6 onzeker | 26/40 goed, 24 onzeker |
+| Letterlijk verstaan | 31/40 | 27/40 |
+
+Met de Nederlandse lijst werden blauwe ekster, rode patrijs en monniksparkiet "Vogel onbekend", kleine zwartkop werd zwartkop en witkopeend witoogeend. De fouten die met de Spaanse lijst overblijven, komen vooral van de stem van de Mac ("Viralijvers" voor vier ralreigers, "Peperkoek" voor purperkoet); echte opnames uit Spanje moeten het laten zien.
 
 ## Keuzes
 
@@ -102,10 +114,11 @@ Een tussenvorm is goedkoop: **soortnamen in een andere taal, de rest in het Enge
 
 1. **Lijst en namen apart** in `fetch-species.mjs` en `vocab.ts`, met Nederland en Nederlands; verder niets zichtbaars. Tests voor de samenvoeging. Begonnen 19 nov met het Engels (`data/namen-en.json`, `speciesNameIn` in `vocab.ts`, stap 2 van `docs/plan-engels.md`); de Nederlandse namen staan nog in `soorten-nl.json`.
 2. **Engelse namen** (hoort bij stap 2 van `docs/plan-engels.md`).
-3. **België** als tweede land, gebundeld: de keuze bij Instellingen en de vraag bij het starten, als ontwikkeloptie.
-4. **Downloadbare lijsten** van de eigen site, met de opslag in IndexedDB, voor de eerste reeks vakantielanden. Lijst en zeldzaamheid uit de aantallen (Proef Spanje), behalve voor Nederland en België.
-5. **Proef op vakantie** (eigenaar of testers), testset aanvullen, dan voor iedereen.
-6. **Soortnamen in een andere taal** (Duits of Frans) met Engelse schermen, als iemand erom vraagt.
+3. **Proef Spanje** (gebouwd 19 nov, ontwikkeloptie, meegebundeld): eerst proberen op de telefoon en met echte opnames, dan pas de keuze bij Instellingen en de vraag bij het starten.
+4. **België** als tweede land, gebundeld: de keuze bij Instellingen en de vraag bij het starten, als ontwikkeloptie.
+5. **Downloadbare lijsten** van de eigen site, met de opslag in IndexedDB, voor de eerste reeks vakantielanden. Lijst en zeldzaamheid uit de aantallen (Proef Spanje), behalve voor Nederland en België.
+6. **Proef op vakantie** (eigenaar of testers), testset aanvullen, dan voor iedereen.
+7. **Soortnamen in een andere taal** (Duits of Frans) met Engelse schermen, als iemand erom vraagt.
 
 ## Open vragen
 

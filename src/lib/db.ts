@@ -1,6 +1,7 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type { Area } from './api';
 import type { Language } from './i18n';
+import type { Region } from './region';
 import type { LogEvent } from './log';
 
 // Datamodel, zie CLAUDE.md. ID's zijn UUID's (crypto.randomUUID), zodat ze
@@ -161,6 +162,12 @@ export interface Utterance {
    * ontwikkeloptie "English", docs/plan-engels.md).
    */
   language?: Language;
+  /**
+   * Land van de soortenlijst toen de uitspraak bewaard werd (ontwikkeloptie
+   * "Spanje", docs/plan-andere-landen.md), voor de testset en het log. Leeg =
+   * Nederland. De verwerking gebruikt het land van de app op dat moment.
+   */
+  region?: Exclude<Region, 'nl'>;
   /**
    * Bij feedback die midden in een uitspraak met waarnemingen zat: de
    * uitspraak waar hij uit komt (die heeft de opname en het hele transcript)

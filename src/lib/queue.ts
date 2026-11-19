@@ -20,6 +20,7 @@ import { APP_VERSION, logEvent, wasHiddenSince } from './log';
 import { PLATFORM } from './native';
 import { listObservations, spokenAt } from './observations';
 import { preferenceOn } from './preferences';
+import { region } from './region';
 import { promptVersionFor } from './prompt';
 import type { Recording } from './recorder.svelte';
 import { confirmAloud, confirmCatchUp } from './spoken';
@@ -119,6 +120,7 @@ async function submit(
       id,
       ...fields,
       language: appLanguage,
+      ...(region !== 'nl' && { region }),
       savedAt: Date.now(),
       status: 'pending',
     });
