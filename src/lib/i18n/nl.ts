@@ -483,4 +483,93 @@ export const nl = {
   'rarity.2': 'vrij algemeen',
   'rarity.3': 'zeldzaam',
   'rarity.4': 'zeer zeldzaam',
+  // eBird bij een sessie (EbirdEffort.svelte, ChecklistAnswers.svelte)
+  'ebird.title': 'eBird',
+  'ebird.duration': 'Duur',
+  'ebird.minutes': '{n} min',
+  'ebird.protocol': 'Soort telling',
+  'ebird.protocolAutomatic': 'Automatisch: {protocol}',
+  'ebird.protocol.Stationary': 'Op één plek (Stationary)',
+  'ebird.protocol.Traveling': 'Onderweg (Traveling)',
+  'ebird.protocol.Incidental': 'Losse waarnemingen (Incidental)',
+  'ebird.distance': 'Afstand in km',
+  'ebird.distancePlaceholder': 'bv. 3,5',
+  'ebird.miles': '{miles} mijl voor eBird.',
+  'ebird.measured': 'Gemeten: {km} km.',
+  'ebird.backToMeasured': 'Terug naar gemeten',
+  'ebird.notMeasured': 'Niet gemeten (sessie van vóór 11 november).',
+  'ebird.skip': 'Deze sessie hoeft niet naar eBird',
+  'ebird.skipHint': 'Hij telt dan niet mee bij "Exporteren voor eBird" op het scherm Sessies.',
+  'ebird.exportedOn': 'Geëxporteerd op {date}.',
+  'ebird.answerFirst': 'Beantwoord eerst de vraag hierboven.',
+  'ebird.importHintVoor': 'Importeer het bestand bij',
+  'ebird.importHintNa':
+    'en kies daar bij Format "eBird Record Format (Extended)": eBird zet zelf het andere formaat aan, en dan mislukt de import met "Missing location name". Soorten die eBird niet herkent, kies je daar zelf.',
+  'checklist.complete': 'Heb je alles genoteerd wat je kon herkennen?',
+  'checklist.completeHint':
+    'Dat betekent niet dat je elke vogel telde, wel dat je geen soort bewust wegliet.',
+  'checklist.observers': 'Aantal waarnemers',
+  'checklist.fewer': 'Eén minder',
+  'checklist.more': 'Eén meer',
+
+  // Na een export (waarnemingExport.ts, ebirdExport.ts)
+  'export.continue': 'Toch exporteren?',
+  'export.saveFailed': 'Opslaan mislukt: {error}',
+  'export.savedIn': 'Het bestand staat in {folder}.',
+  'export.excluded': '{n} uitgevinkt en niet geëxporteerd.',
+  'export.noneWithLocation': 'Geen waarnemingen met een locatie om te exporteren.',
+  'export.uncertain': {
+    one: '1 waarneming is nog onzeker en gaat mee als "niet zeker".',
+    other: '{n} waarnemingen zijn nog onzeker en gaan mee als "niet zeker".',
+  },
+  'export.earlierThis':
+    'Deze sessie is al eerder geëxporteerd. Waarneming.nl weigert de hele import als er een waarneming in zit die al is ingevoerd.',
+  'export.earlierSome':
+    '{n} van deze sessies zijn al eerder geëxporteerd. Waarneming.nl weigert de hele import als er een waarneming in zit die al is ingevoerd.',
+  'export.done': {
+    one: '1 waarneming geëxporteerd.',
+    other: '{n} waarnemingen geëxporteerd.',
+  },
+  'export.doneFromSessions': {
+    one: '1 waarneming uit {sessions} sessies geëxporteerd.',
+    other: '{n} waarnemingen uit {sessions} sessies geëxporteerd.',
+  },
+  'export.skippedNoLocation': '{n} zonder locatie overgeslagen; voer die met de hand in.',
+  'ebirdExport.sessionPrefix': '{name}: ',
+  'ebirdExport.defaultSessionName': 'Sessie',
+  'ebirdExport.needComplete': '{prefix}vul eerst in of je alles hebt genoteerd.',
+  'ebirdExport.needDistance': '{prefix}een lopende telling heeft een afstand nodig.',
+  'ebirdExport.long':
+    '{prefix}langer dan 8 km. eBird raadt kortere lopende tellingen aan; je kunt hem bij eBird nog opsplitsen.',
+  'ebirdExport.midnight': '{prefix}loopt over middernacht en wordt één checklist op de begindatum.',
+  'ebirdExport.uncertain': {
+    one: '1 waarneming is nog onzeker. eBird kent geen "niet zeker": ze gaan mee als gewone waarneming.',
+    other:
+      '{n} waarnemingen zijn nog onzeker. eBird kent geen "niet zeker": ze gaan mee als gewone waarneming.',
+  },
+  'ebirdExport.notReady': 'Nog niet klaar voor eBird:',
+  'ebirdExport.none': 'Geen waarnemingen om te exporteren.',
+  'ebirdExport.earlierThis':
+    'Deze sessie is al eerder voor eBird geëxporteerd. Importeer hem niet twee keer.',
+  'ebirdExport.earlierSome':
+    '{n} van deze sessies zijn al eerder voor eBird geëxporteerd. Importeer hem niet twee keer.',
+  'ebirdExport.done': {
+    one: '1 soort geëxporteerd voor eBird.',
+    other: '{n} soorten geëxporteerd voor eBird.',
+  },
+  'ebirdExport.notBirds': {
+    one: '1 waarneming van andere dieren niet meegenomen: eBird is alleen voor vogels.',
+    other: '{n} waarnemingen van andere dieren niet meegenomen: eBird is alleen voor vogels.',
+  },
+
+  // Back-up terugzetten (export.ts)
+  'import.none': 'Geen nieuwe sessies gevonden.',
+  'import.added': {
+    one: '1 sessie teruggezet, te vinden bij Vorige sessies.',
+    other: '{n} sessies teruggezet, te vinden bij Vorige sessies.',
+  },
+  'import.skipped': { one: '1 stond er al.', other: '{n} stonden er al.' },
+  'import.feedback': '{n}× losse feedback teruggezet.',
+  'import.notOurs': 'Dit is geen export van Fluistervink.',
+  'import.invalid': 'Ongeldige export: {what}',
 } satisfies Record<string, Entry>;

@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import { db, type Observation, type Session } from './db';
 import { saveFile } from './export';
 import { logEvent } from './log';
@@ -149,19 +150,15 @@ export function readyForExport(sessions: Session[]): Session[] {
  */
 export async function exportForWaarneming(sessions: Session[]): Promise<string | undefined> {
   const result = await buildExport(sessions, isNativeApp ? 'xlsx' : 'csv');
-  if (result.exported.length === 0) return 'Geen waarnemingen met een locatie om te exporteren.';
+  if (result.exported.length === 0) return t('export.noneWithLocation');
   const uncertain = result.exported.filter((obs) => obs.uncertain).length;
   const earlier = result.sessions.filter((s) => s.exportedAt).length;
   const warnings = [
-    uncertain > 0 &&
-      `${uncertain} ${uncertain === 1 ? 'waarneming is' : 'waarnemingen zijn'} nog onzeker ` +
-        `en ${uncertain === 1 ? 'gaat' : 'gaan'} mee als "niet zeker".`,
+    uncertain > 0 && t('export.uncertain', { n: uncertain }),
     earlier > 0 &&
-      `${sessions.length === 1 ? 'Deze sessie is' : `${earlier} van deze sessies zijn`} ` +
-        'al eerder geëxporteerd. Waarneming.nl weigert de hele import als er een waarneming in ' +
-        'zit die al is ingevoerd.',
+      (sessions.length === 1 ? t('export.earlierThis') : t('export.earlierSome', { n: earlier })),
   ].filter(Boolean);
-  if (warnings.length && !confirm([...warnings, 'Toch exporteren?'].join('\n\n'))) return;
+  if (warnings.length && !confirm([...warnings, t('export.continue')].join('\n\n'))) return;
 
   let saved;
   try {
@@ -169,19 +166,20 @@ export async function exportForWaarneming(sessions: Session[]): Promise<string |
     if (!saved) return;
   } catch (error) {
     logEvent('export_failed', { error: String(error) });
-    return `Opslaan mislukt: ${error instanceof Error ? error.message : error}`;
+    return t('export.saveFailed', {
+      error: String(error instanceof Error ? error.message : error),
+    });
   }
   await markExported(result.sessions, result.exported);
   const n = result.exported.length;
   const sessionCount = result.sessions.length;
   return [
-    `${n === 1 ? '1 waarneming' : `${n} waarnemingen`}` +
-      (sessionCount > 1 ? ` uit ${sessionCount} sessies` : '') +
-      ' geëxporteerd.',
-    saved.folder && `Het bestand staat in ${saved.folder}.`,
-    result.skipped.length &&
-      `${result.skipped.length} zonder locatie overgeslagen; voer die met de hand in.`,
-    result.excluded.length && `${result.excluded.length} uitgevinkt en niet geëxporteerd.`,
+    sessionCount > 1
+      ? t('export.doneFromSessions', { n, sessions: sessionCount })
+      : t('export.done', { n }),
+    saved.folder && t('export.savedIn', { folder: saved.folder }),
+    result.skipped.length && t('export.skippedNoLocation', { n: result.skipped.length }),
+    result.excluded.length && t('export.excluded', { n: result.excluded.length }),
   ]
     .filter(Boolean)
     .join(' ');

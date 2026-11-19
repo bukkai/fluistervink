@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n';
   // Wat alleen de gebruiker weet over een sessie als checklist: alles
   // genoteerd, en met hoeveel waarnemers (docs/plan-ebird.md, punt 3 en 8).
   // Staat in het eBird-kaartje en in de vraag na Stop en bij het klaarzetten;
@@ -20,37 +21,37 @@
 </script>
 
 <div class="field">
-  <span class="label" id="{uid}-complete">Heb je alles genoteerd wat je kon herkennen?</span>
+  <span class="label" id="{uid}-complete">{t('checklist.complete')}</span>
   <div class="choice" role="group" aria-labelledby="{uid}-complete">
     <button
       class="btn secondary"
       aria-pressed={checklist.complete === true}
-      onclick={() => answer(true)}>Ja</button
+      onclick={() => answer(true)}>{t('sessions.yes')}</button
     >
     <button
       class="btn secondary"
       aria-pressed={checklist.complete === false}
-      onclick={() => answer(false)}>Nee</button
+      onclick={() => answer(false)}>{t('sessions.no')}</button
     >
   </div>
   <span class="muted small">
-    Dat betekent niet dat je elke vogel telde, wel dat je geen soort bewust wegliet.
+    {t('checklist.completeHint')}
   </span>
 </div>
 
 <div class="field">
-  <span class="label" id="{uid}-observers">Aantal waarnemers</span>
+  <span class="label" id="{uid}-observers">{t('checklist.observers')}</span>
   <div class="stepper" role="group" aria-labelledby="{uid}-observers">
     <button
       class="btn secondary"
-      aria-label="Eén minder"
+      aria-label={t('checklist.fewer')}
       disabled={checklist.observers <= 1}
       onclick={() => setChecklist(session.id, { observers: checklist.observers - 1 })}>−</button
     >
     <output aria-live="polite">{checklist.observers}</output>
     <button
       class="btn secondary"
-      aria-label="Eén meer"
+      aria-label={t('checklist.more')}
       onclick={() => setChecklist(session.id, { observers: checklist.observers + 1 })}>+</button
     >
   </div>

@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import { db, type Checklist, type EbirdProtocol, type Observation, type Session } from './db';
 import { ebirdProtocol, sessionDurationMs } from './effort';
 import { saveFile } from './export';
@@ -162,7 +163,11 @@ export async function buildEbirdExport(sessions: Session[]): Promise<EbirdExport
   const several = sessions.length > 1;
 
   for (const session of sessions) {
-    const name = several ? `${session.place?.name ?? 'Sessie'}: ` : '';
+    const prefix = several
+      ? t('ebirdExport.sessionPrefix', {
+          name: session.place?.name ?? t('ebirdExport.defaultSessionName'),
+        })
+      : '';
     const observations = (await listObservations(session.id)).sort(
       (a, b) => a.observedAt - b.observedAt || a.createdAt - b.createdAt,
     );
@@ -175,21 +180,19 @@ export async function buildEbirdExport(sessions: Session[]): Promise<EbirdExport
     const checklist = resolveChecklist(session);
     // Een losse waarneming (Incidental) is nooit een volledige lijst
     if (checklist.complete === undefined && checklist.protocol !== 'Incidental') {
-      problems.push(`${name}vul eerst in of je alles hebt genoteerd.`);
+      problems.push(t('ebirdExport.needComplete', { prefix }));
     }
     if (checklist.protocol === 'Traveling' && checklist.distanceM === undefined) {
-      problems.push(`${name}een lopende telling heeft een afstand nodig.`);
+      problems.push(t('ebirdExport.needDistance', { prefix }));
     }
     if (checklist.protocol === 'Traveling' && (checklist.distanceM ?? 0) > LONG_TRAVELING_M) {
-      warnings.push(
-        `${name}langer dan 8 km. eBird raadt kortere lopende tellingen aan; je kunt hem bij eBird nog opsplitsen.`,
-      );
+      warnings.push(t('ebirdExport.long', { prefix }));
     }
     if (
       session.endedAt &&
       isoDate(new Date(session.endedAt)) !== isoDate(new Date(session.startedAt))
     ) {
-      warnings.push(`${name}loopt over middernacht en wordt één checklist op de begindatum.`);
+      warnings.push(t('ebirdExport.midnight', { prefix }));
     }
 
     const location = await checklistLocation(session, included);
@@ -201,10 +204,7 @@ export async function buildEbirdExport(sessions: Session[]): Promise<EbirdExport
 
   const uncertain = exported.filter((obs) => obs.uncertain).length;
   if (uncertain > 0) {
-    warnings.push(
-      `${uncertain === 1 ? '1 waarneming is' : `${uncertain} waarnemingen zijn`} nog onzeker. ` +
-        'eBird kent geen "niet zeker": ze gaan mee als gewone waarneming.',
-    );
+    warnings.push(t('ebirdExport.uncertain', { n: uncertain }));
   }
   return {
     file: toCsv(rows),
@@ -225,16 +225,17 @@ export async function buildEbirdExport(sessions: Session[]): Promise<EbirdExport
  */
 export async function exportForEbird(sessions: Session[]): Promise<string | undefined> {
   const result = await buildEbirdExport(sessions);
-  if (result.problems.length) return ['Nog niet klaar voor eBird:', ...result.problems].join(' ');
-  if (result.rows === 0) return 'Geen waarnemingen om te exporteren.';
+  if (result.problems.length) return [t('ebirdExport.notReady'), ...result.problems].join(' ');
+  if (result.rows === 0) return t('ebirdExport.none');
   const earlier = result.sessions.filter((s) => s.ebirdExportedAt).length;
   const warnings = [
     ...result.warnings,
     earlier > 0 &&
-      `${sessions.length === 1 ? 'Deze sessie is' : `${earlier} van deze sessies zijn`} al eerder ` +
-        'voor eBird geëxporteerd. Importeer hem niet twee keer.',
+      (sessions.length === 1
+        ? t('ebirdExport.earlierThis')
+        : t('ebirdExport.earlierSome', { n: earlier })),
   ].filter(Boolean);
-  if (warnings.length && !confirm([...warnings, 'Toch exporteren?'].join('\n\n'))) return;
+  if (warnings.length && !confirm([...warnings, t('export.continue')].join('\n\n'))) return;
 
   let saved;
   try {
@@ -242,7 +243,9 @@ export async function exportForEbird(sessions: Session[]): Promise<string | unde
     if (!saved) return;
   } catch (error) {
     logEvent('export_failed', { error: String(error), target: 'ebird' });
-    return `Opslaan mislukt: ${error instanceof Error ? error.message : error}`;
+    return t('export.saveFailed', {
+      error: String(error instanceof Error ? error.message : error),
+    });
   }
   const ebirdExportedAt = Date.now();
   await db.sessions.bulkUpdate(
@@ -251,12 +254,10 @@ export async function exportForEbird(sessions: Session[]): Promise<string | unde
   // Regels zijn per soort per sessie; dezelfde soort in twee sessies is één soort
   const n = new Set(result.exported.map((obs) => getSpecies(obs.speciesId)!.scientific)).size;
   return [
-    `${n === 1 ? '1 soort' : `${n} soorten`} geëxporteerd voor eBird.`,
-    saved.folder && `Het bestand staat in ${saved.folder}.`,
-    result.excluded.length && `${result.excluded.length} uitgevinkt en niet geëxporteerd.`,
-    result.notBirds.length &&
-      `${result.notBirds.length === 1 ? '1 waarneming' : `${result.notBirds.length} waarnemingen`} ` +
-        'van andere dieren niet meegenomen: eBird is alleen voor vogels.',
+    t('ebirdExport.done', { n }),
+    saved.folder && t('export.savedIn', { folder: saved.folder }),
+    result.excluded.length && t('export.excluded', { n: result.excluded.length }),
+    result.notBirds.length && t('ebirdExport.notBirds', { n: result.notBirds.length }),
   ]
     .filter(Boolean)
     .join(' ');
