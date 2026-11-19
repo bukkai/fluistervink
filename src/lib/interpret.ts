@@ -46,8 +46,12 @@ import { MAX_CANDIDATES, variant } from './prompt';
 
 export const MODEL = 'claude-haiku-5-5';
 
-/** Zoveel recente waarnemingen krijgt het model als context. */
-const CONTEXT_SIZE = 10;
+/**
+ * Zoveel recente waarnemingen krijgt het model als context. In een trektelling
+ * van een kwartier zijn 10 er snel te weinig: "die kraanvogel van twintig
+ * minuten geleden" viel erbuiten (19 nov) en kwam op een andere soort terecht.
+ */
+export const CONTEXT_SIZE = 20;
 
 // ---------------------------------------------------------------------------
 // Acties: wat het model kan teruggeven, na validatie door de app
@@ -186,7 +190,13 @@ function describe(obs: Observation, here: Position | undefined, language: Langua
     names.method(obs.speciesId, obs.methodId),
     names.lifeStage(obs.speciesId, obs.lifeStageId),
     obs.sex === 'male' ? words.male : obs.sex === 'female' ? words.female : undefined,
-    obs.uncertain ? words.uncertain : undefined,
+    // Met de reden: daar staat in wat er gezegd is ("Gezegd: hulpen, opgevat
+    // als Huismus"), zodat "die hulpen" later naar deze waarneming verwijst
+    obs.uncertain
+      ? obs.uncertainReason
+        ? `${words.uncertain} (${obs.uncertainReason})`
+        : words.uncertain
+      : undefined,
     obs.candidates?.length
       ? `${words.candidates}: ${obs.candidates.map((id) => names.species(id)).join(', ')}`
       : undefined,

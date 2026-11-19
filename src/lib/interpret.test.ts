@@ -245,6 +245,16 @@ describe('kandidaten', () => {
     }
   });
 
+  it('de twijfelreden staat in de context, met wat er gezegd is', () => {
+    const obs = observation({
+      speciesId: VINK,
+      uncertain: true,
+      uncertainReason: 'Gezegd: hulpen, opgevat als Vink',
+    });
+    expect(describeContext([obs])).toContain('onzeker (Gezegd: hulpen, opgevat als Vink)');
+    expect(describeContext([observation({ uncertain: true })])).toMatch(/onzeker$/);
+  });
+
   it('staan in de context voor het model', () => {
     const obs = observation({ speciesId: 595858, uncertain: true, candidates: [89, 186] });
     expect(describeContext([obs])).toContain('twijfel tussen: Fitis, Tjiftjaf');

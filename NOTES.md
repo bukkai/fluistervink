@@ -20,6 +20,7 @@ Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/ro
   - **Correcties door elkaar:** "die hulpen waren wulpen" kwam op de holenduiven, "die kraanvogel van twintig minuten geleden" op de houtduiven, en "holenduiven terug" daarna op de huismus. Oorzaken: het model krijgt maar 10 waarnemingen (`CONTEXT_SIZE` in `interpret.ts`), de kraanvogel viel erbuiten; de promptregel "staat X niet in de lijst, kies wat erop lijkt" (`prompt.ts`) geldt ook voor een echte soortnaam; de contextregel toont bij een onzekere niet wat er gezegd is ("hulpen"), en na een correctie niet wat het eerst was.
   - **Plekken:** stukken uit de tijd dat de webcode stillag, vragen hun plek pas bij het ontgrendelen op, dan een grove eerste meting (±100–200 m). Het stuk van 21:31 (net na de tweede start, "begin niet gemeld") kreeg helemaal geen plek: de eerstvolgende meting kwam na meer dan 10 min (`LATER_MAX_MS`).
   - **Stilte:** alle 29 stukken zijn verstuurd, 18 gaven een lege tekst. Mogelijk door de muziek of de oortjesmicrofoon; kost spraakherkenning.
+- **Instellingen opnieuw ingedeeld** (open PR's): #304 groepen van het veld naar thuis (Wat de app verstaat, Bediening in het veld, Tellen, Nalopen en export, je gegevens; naam bij Delen), #306 ontwikkelopties in hun eigen groep met een label (bovenop #304, eerst #304 mergen). Stap 3, subpagina's, pas als de exportbestemmingen of de betaalde laag komen (`docs/ontwerp.md`, Instellingen). Na het mergen in de app nagaan: kaart "Bediening in het veld" met volumeknop, gesproken bevestiging en de twee ontwikkelopties.
 - **Twee sessies tegelijk:** elk in een eigen worktree. Op 18 nov wisselde een sessie in de hoofdmap van branch en nam de niet-gecommitte code van een andere mee in een NOTES-commit op `main`.
 
 ## Op de telefoon proberen
@@ -41,7 +42,7 @@ Elk punt na het proberen hier weghalen.
 - **Soortveld** (#233): "noordse" typen: suggesties onder het veld, één tik kiest, Inspreken weg tijdens het typen.
 - **Opslaan in beeld** (#237): tijdens een sessie een waarneming openen: Opslaan meteen onderaan, het ronde knopje niet over Annuleren.
 - **Opname afspelen** (#222): nog eens tikken pauzeert, een tweede opname stopt de eerste.
-- **Instellingen** (#234, #235): "Ook andere dieren inspreken" staat aan en een ree komt goed binnen; volumeknop aan, gesproken bevestiging uit (zelf weer aanzetten); Ontwikkelopties zegt "Op dit moment geen". Play-tekst bijwerken (`docs/play-store/README.md`).
+- **Instellingen** (#234, #235): "Ook andere dieren inspreken" staat aan en een ree komt goed binnen; volumeknop aan, gesproken bevestiging uit (zelf weer aanzetten); Play-tekst bijwerken (`docs/play-store/README.md`).
 - **Developer en Statistieken** (#244, #245): "Verwerkte wissen" (blijft weg na opnieuw delen), nieuwe indeling bevalt; week in de grafiek aantikken licht de rij op.
 - Bij de volgende import naar waarneming.nl een Bonte Kraai meenemen (#153).
 

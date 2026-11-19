@@ -31,6 +31,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     topics: {
       Inspreken: [
         'Met de gesproken bevestiging aan hoor je bij een correctie nu wat het was en wat het werd: "holenduif wordt wulp, 3" of "houtduif, 3 wordt 6". Zo hoor je meteen of de correctie op de goede waarneming terechtkwam.',
+        'Een correctie met de stem, zoals "die kraanvogel van twintig minuten geleden was een blauwe reiger", vindt de bedoelde waarneming beter terug: de app kijkt verder terug, en weet bij een onzekere waarneming wat je toen zei.',
       ],
       Export: [
         'Het bestand voor eBird heeft nu ook de Engelse naam van elke soort, zoals eBird hem schrijft. Daardoor herkent eBird bij het importeren meer soorten meteen, ook de soorten waarvan de wetenschappelijke naam bij eBird anders is (zoals de Winterkoning).',
