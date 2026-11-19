@@ -1,4 +1,5 @@
 import { nameFromSession } from './area';
+import { t } from './i18n';
 import { db, type Session } from './db';
 import { newEffort, resumedEffort, stoppedEffort } from './effort';
 import { logEvent } from './log';
@@ -182,5 +183,5 @@ export function formatDuration(ms: number): string {
   const minutes = Math.max(0, Math.floor(ms / 60_000));
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
-  return h > 0 ? `${h} u ${m} min` : `${m} min`;
+  return h > 0 ? t('format.durationHours', { h, m }) : t('format.durationMinutes', { m });
 }

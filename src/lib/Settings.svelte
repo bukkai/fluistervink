@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n';
   import {
     ApiError,
     getAccessCode,
@@ -37,10 +38,12 @@
       await setDisplayName(displayName);
       displayName = getDisplayName();
       nameStatus = 'ok';
-      nameMessage = displayName ? 'Opgeslagen.' : 'Naam weggehaald.';
+      nameMessage = displayName ? t('settings.nameSaved') : t('settings.nameRemoved');
     } catch (error) {
       nameStatus = 'error';
-      nameMessage = `Opslaan mislukt: ${error instanceof Error ? error.message : error}`;
+      nameMessage = t('settings.saveFailed', {
+        error: String(error instanceof Error ? error.message : error),
+      });
     }
   }
 
@@ -61,35 +64,34 @@
       // Een oude testercode is dan net vervangen door een installatie (api.ts)
       code = getAccessCode();
       status = 'ok';
-      message = tester ? `Verbonden als ${tester}.` : 'Verbonden met de proxy.';
+      message = tester ? t('settings.connectedAs', { tester }) : t('settings.connected');
     } catch (error) {
       status = 'error';
       message =
         error instanceof ApiError && error.status === 401 && getAccessCode()
-          ? 'Code klopt niet.'
+          ? t('settings.wrongCode')
           : error instanceof ApiError && error.status !== 0
-            ? `Aanmelden lukt niet: ${error.message}`
-            : 'Proxy niet bereikbaar.';
+            ? t('settings.signInFailed', { error: error.message })
+            : t('settings.proxyUnreachable');
     }
   }
 </script>
 
-<a class="back" href="#/">Terug</a>
-<h2 class="page-title">Instellingen</h2>
+<a class="back" href="#/">{t('common.back')}</a>
+<h2 class="page-title">{t('settings.title')}</h2>
 
 {#if !isOwner}
   <section class="card">
-    <div class="card-head"><h2>Je naam</h2></div>
+    <div class="card-head"><h2>{t('settings.nameTitle')}</h2></div>
     <form class="card-body" onsubmit={saveName}>
       <label>
-        Naam (niet verplicht)
+        {t('settings.nameLabel')}
         <input bind:value={displayName} maxlength="40" autocomplete="name" />
       </label>
       <p class="hint">
-        Alleen voor de ontwikkelaar, zodat die weet van wie gebruik en feedback komen. Leeg laten en
-        opslaan haalt je naam weg.
+        {t('settings.nameHint')}
       </p>
-      <button class="btn" disabled={nameStatus === 'busy'}>Opslaan</button>
+      <button class="btn" disabled={nameStatus === 'busy'}>{t('common.save')}</button>
       {#if nameMessage}
         <p class="message {nameStatus}">{nameMessage}</p>
       {/if}
@@ -112,22 +114,25 @@
 {/if}
 
 <p class="version">
-  Fluistervink{CHANNEL === 'beta' ? ' beta' : ''} · versie {APP_VERSION}{#if appVersion}<br
-    />Android-app {appVersion}{/if}<br /><a class="link" href="#nieuw">Wat is er nieuw?</a>
+  Fluistervink{CHANNEL === 'beta' ? ' beta' : ''} · {t('settings.version', {
+    version: APP_VERSION,
+  })}{#if appVersion}<br />{t('settings.androidApp', { version: appVersion })}{/if}<br /><a
+    class="link"
+    href="#nieuw">{t('update.whatsNew')}</a
+  >
 </p>
 
 <details class="owner-code">
-  <summary>Code van de ontwikkelaar</summary>
+  <summary>{t('settings.ownerCode')}</summary>
   <form onsubmit={save}>
     <label>
-      Code
+      {t('settings.codeLabel')}
       <input type="password" bind:value={code} autocomplete="off" />
     </label>
     <p class="hint">
-      Alleen voor de ontwikkelaar; de app werkt zonder code. Leeg laten en opslaan haalt de code
-      weg.
+      {t('settings.codeHint')}
     </p>
-    <button class="btn" disabled={status === 'busy'}>Opslaan en testen</button>
+    <button class="btn" disabled={status === 'busy'}>{t('settings.saveAndTest')}</button>
     {#if message}
       <p class="message {status}">{message}</p>
     {/if}

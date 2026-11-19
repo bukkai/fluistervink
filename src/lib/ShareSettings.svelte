@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n';
   import { dateYearTimeFormat } from './format';
   // Delen met de ontwikkelaar aan/uit, met of zonder opnames, en handmatig
   // versturen. Zie share.ts; de eerste keuze vraagt het welkom (of anders het hoofdscherm).
@@ -23,33 +24,33 @@
       const { sessions, audio } = await shareNow();
       shareStatus = 'idle';
       sharedAt = lastSharedAt();
-      shareMessage =
-        sessions || audio
-          ? [
-              sessions && `${sessions === 1 ? '1 sessie' : `${sessions} sessies`}`,
-              audio && `${audio === 1 ? '1 opname' : `${audio} opnames`}`,
-            ]
-              .filter(Boolean)
-              .join(' en ') + ' verstuurd.'
-          : 'Alles was al verstuurd.';
+      const parts = [
+        sessions && t('common.sessions', { n: sessions }),
+        audio && t('common.recordings', { n: audio }),
+      ].filter((part): part is string => !!part);
+      shareMessage = parts.length
+        ? t('share.sent', {
+            what: parts.length === 2 ? t('common.and', { a: parts[0], b: parts[1] }) : parts[0],
+          })
+        : t('share.allSent');
     } catch (error) {
       shareStatus = 'error';
-      shareMessage = `Versturen mislukt: ${error instanceof Error ? error.message : error}`;
+      shareMessage = t('share.failed', {
+        error: String(error instanceof Error ? error.message : error),
+      });
     }
   }
 </script>
 
 <section class="card">
-  <div class="card-head"><h2>Delen met de ontwikkelaar</h2></div>
+  <div class="card-head"><h2>{t('share.title')}</h2></div>
   <div class="card-body stack">
     <p class="hint">
-      Na elke sessie gaan de uitspraken, wat de app ervan maakte, je correcties bij het nalopen en
-      je feedback naar de ontwikkelaar, om de herkenning te verbeteren. Ook de locaties van je
-      waarnemingen. Zie <a href="#privacy">Privacy</a>.
+      {t('share.hintVoor')} <a href="#privacy">{t('menu.privacy')}</a>{t('share.hintNa')}
     </p>
     <label class="check">
       <input type="checkbox" bind:checked={sharing} onchange={() => setShareEnabled(sharing)} />
-      Sessies en feedback delen
+      {t('share.sessions')}
     </label>
     <label class="check">
       <input
@@ -58,17 +59,17 @@
         disabled={!sharing}
         onchange={() => setShareAudio(sharingAudio)}
       />
-      Ook de opnames (helpt om de spraakherkenning te vergelijken)
+      {t('share.audio')}
     </label>
     {#if sharing}
       <button class="btn secondary block" disabled={shareStatus === 'busy'} onclick={shareManually}>
-        {shareStatus === 'busy' ? 'Bezig…' : 'Nu versturen'}
+        {shareStatus === 'busy' ? t('common.busy') : t('share.now')}
       </button>
       <p class="hint" class:error={shareStatus === 'error'}>
         {shareMessage ||
           (sharedAt
-            ? `Laatst verstuurd: ${dateYearTimeFormat.format(sharedAt)}.`
-            : 'Nog niets verstuurd.')}
+            ? t('share.lastSent', { date: dateYearTimeFormat.format(sharedAt) })
+            : t('share.nothingSent'))}
       </p>
     {/if}
   </div>

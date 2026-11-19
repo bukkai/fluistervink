@@ -4,6 +4,7 @@
 // telefoon; wat niet bij waarneming.nl staat, gaat verloren met de telefoon.
 
 import type { Session } from './db';
+import { t } from './i18n';
 
 export const REMIND_AFTER_MS = 7 * 24 * 60 * 60_000;
 /** "Later": zo lang geen melding */
@@ -33,12 +34,11 @@ export function exportReminder(
 }
 
 export function reminderText({ ready, unreviewed }: Reminder): string {
-  const sessions = (n: number) => (n === 1 ? '1 sessie' : `${n} sessies`);
-  if (!ready) {
-    return `${sessions(unreviewed)} van meer dan een week geleden ${unreviewed === 1 ? 'is' : 'zijn'} nog niet nagelopen.`;
-  }
-  const text = `${sessions(ready)} ${ready === 1 ? 'staat' : 'staan'} al een week klaar voor waarneming.nl`;
-  return unreviewed ? `${text}, ${unreviewed} nog niet nagelopen.` : `${text}.`;
+  if (!ready) return t('reminder.unreviewed', { n: unreviewed });
+  const text = t('reminder.ready', { n: ready });
+  return unreviewed
+    ? t('reminder.readyAndUnreviewed', { text, n: unreviewed })
+    : t('reminder.readyEnd', { text });
 }
 
 export function snoozedAt(): number | undefined {
