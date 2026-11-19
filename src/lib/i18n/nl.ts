@@ -287,4 +287,137 @@ export const nl = {
   'log.status.ignored': 'niet begrepen',
   'log.status.uncertain': 'onzeker',
   'log.status.done': 'verwerkt',
+  // Vorige sessies (PastSessions.svelte)
+  'sessions.title': 'Vorige sessies',
+  'sessions.cancel': 'Annuleren',
+  'sessions.cleanUp': 'Opruimen',
+  'sessions.none': 'Nog geen sessies.',
+  'sessions.readyForWaarneming': {
+    one: '1 sessie klaar voor waarneming.nl',
+    other: '{n} sessies klaar voor waarneming.nl',
+  },
+  'sessions.exportWaarneming': 'Exporteren voor waarneming.nl',
+  'sessions.importHintVoor': 'Importeer het bestand bij',
+  'sessions.importHintNa':
+    ', met de site in het Nederlands (NL, rechtsboven; dat is de standaard): gedrag en methode staan in het Nederlands in het bestand.',
+  'sessions.forEbird': { one: '1 sessie voor eBird', other: '{n} sessies voor eBird' },
+  'sessions.ebirdQuestion': 'Heb je alles genoteerd wat je kon herkennen?',
+  'sessions.yes': 'Ja',
+  'sessions.no': 'Nee',
+  'sessions.notToEbird': 'Niet naar eBird',
+  'sessions.exportEbird': 'Exporteren voor eBird',
+  'sessions.answerFirst': {
+    one: 'Beantwoord eerst de vraag bij 1 sessie.',
+    other: 'Beantwoord eerst de vraag bij {n} sessies.',
+  },
+  'sessions.ebirdHintVoor': 'Importeer het bestand bij',
+  'sessions.ebirdHintNa':
+    'en kies daar bij Format "eBird Record Format (Extended)". Soorten die eBird niet herkent, kies je daar zelf.',
+  'sessions.selectHint': 'Vink de sessies aan die weg mogen.',
+  'sessions.selectAll': 'Alles aanvinken',
+  'sessions.selectNone': 'Niets aanvinken',
+  'sessions.selectExported': 'Alle geëxporteerde',
+  'sessions.selectEmpty': 'Alle lege ({n})',
+  'sessions.nothingSelected': 'Niets aangevinkt',
+  'sessions.deleteSelected': { one: 'Verwijder 1 sessie', other: 'Verwijder {n} sessies' },
+  'sessions.confirmDelete': {
+    one: '1 sessie voorgoed verwijderen, met alle waarnemingen en opnames?',
+    other: '{n} sessies voorgoed verwijderen, met alle waarnemingen en opnames?',
+  },
+  'sessions.confirmNotExported': {
+    one: 'Eén daarvan is nog niet geëxporteerd.',
+    other: '{n} daarvan zijn nog niet geëxporteerd.',
+  },
+  'sessions.confirmDevNotes': {
+    one: '1 feedbackbericht gaat ook weg.',
+    other: '{n} feedbackberichten gaan ook weg.',
+  },
+  'sessions.confirmUnprocessed': {
+    one: '1 uitspraak is nog niet verwerkt (bv. geen bereik) en gaat verloren.',
+    other: '{n} uitspraken zijn nog niet verwerkt (bv. geen bereik) en gaan verloren.',
+  },
+  'sessions.utterances': { one: '1 uitspraak', other: '{n} uitspraken' },
+  'sessions.devNotes': { one: '1 feedbackbericht', other: '{n} feedbackberichten' },
+  'sessions.unprocessed': '{n} niet verwerkt',
+  'sessions.badgeWaarneming': 'waarneming.nl ✓',
+  'sessions.badgeExported': 'geëxporteerd',
+  'sessions.badgeReady': 'klaar',
+  'sessions.badgeNotExported': 'niet geëxporteerd',
+  'sessions.badgeEbird': 'eBird ✓',
+  'sessions.when': '{day}, {time}',
+
+  // Eén sessie nalopen (PastSession.svelte)
+  'past.back': 'Sessies',
+  'past.confirmResume': 'Deze sessie voortzetten?',
+  'past.confirmDelete': 'Sessie voorgoed verwijderen, met alle waarnemingen en opnames?',
+  'past.confirmDeleteNotExported':
+    'Sessie voorgoed verwijderen, met alle waarnemingen en opnames?\n\nDeze sessie is nog niet geëxporteerd.',
+  'recordings.scopeSession': 'van deze sessie',
+  'past.renamePrompt':
+    'Naam van de sessie (leeg laten = automatisch, uit het gebied met de meeste waarnemingen):',
+  'past.confirmReady': {
+    one: 'Nog 1 onzekere waarneming. Klopt die ook? Dan wordt hij zeker.',
+    other: 'Nog {n} onzekere waarnemingen. Kloppen die ook? Dan worden ze zeker.',
+  },
+  'past.ebirdQuestionLabel': 'Vraag voor eBird',
+  'past.forEbird': 'Voor eBird',
+  'past.done': 'Klaar',
+  'past.notNow': 'Nu niet',
+  'past.savedTitle': '✓ Sessie opgeslagen',
+  'past.savedText':
+    'Alles staat veilig op je telefoon. Loop de waarnemingen na en zet de sessie klaar voor waarneming.nl.',
+  'past.rename': 'Naam wijzigen',
+  'past.when': '{date}, {from}–{to}',
+  'past.duration': 'Duur',
+  'past.species': 'Soorten',
+  // Met een zacht afbreekstreepje voor een heel smalle telefoon
+  'past.observations': 'Waarne\u00ADmingen',
+  'past.uncertainCount': '{n} onzeker',
+  'past.readyTitle': 'Klaar met nalopen?',
+  'past.exportedOn': 'Geëxporteerd op {date} om {time}.',
+  'past.isReady':
+    'Deze sessie staat klaar. Exporteer alle klaarstaande sessies in één keer bij Sessies.',
+  'past.toSessions': 'Naar Sessies',
+  'past.notReadyYet': 'Toch nog niet klaar',
+  'past.unprocessed': {
+    one: 'Nog 1 uitspraak wacht op verwerking, bijvoorbeeld omdat er geen bereik was. Dat gaat vanzelf zodra er verbinding is; daarna kun je de sessie klaarzetten.',
+    other:
+      'Nog {n} uitspraken wachten op verwerking, bijvoorbeeld omdat er geen bereik was. Dat gaat vanzelf zodra er verbinding is; daarna kun je de sessie klaarzetten.',
+  },
+  'past.uncertainLeft': {
+    one: 'Nog 1 onzekere waarneming. Loop ze bovenaan na, of tik erop in de lijst.',
+    other: 'Nog {n} onzekere waarnemingen. Loop ze bovenaan na, of tik erop in de lijst.',
+  },
+  'past.allCorrect': 'Alles klopt, klaar voor waarneming.nl',
+  'past.allCorrectEbird': 'Alles klopt, klaar voor export',
+  'past.readyHint':
+    'De waarnemingen gelden dan als nagelopen. Klaargezette sessies exporteer je later in één bestand, bij Sessies.',
+  'past.readyHintEbird':
+    'De waarnemingen gelden dan als nagelopen. Klaargezette sessies exporteer je later in één bestand voor waarneming.nl en een voor eBird, bij Sessies.',
+  'past.exportOnlyThis': 'Alleen deze sessie exporteren',
+  'past.exportOnlyThisEbird': 'Alleen deze sessie exporteren voor waarneming.nl',
+  'past.importHintVoor': 'Importeer het bestand bij',
+  'past.importHintNa': ', met de site in het Nederlands.',
+  'past.resume': 'Per ongeluk gestopt? Voortzetten',
+  'past.deleteRecordings': 'Alleen de opnames wissen',
+  'past.delete': 'Sessie verwijderen',
+
+  // Onzeker nalopen (UncertainReview.svelte)
+  'review.title': 'Onzeker nalopen',
+  'review.left': 'nog {n}',
+  'review.skippedCount': '{n} overgeslagen',
+  'review.whichSpecies': 'Welke soort was het?',
+  'review.edit': 'Aanpassen',
+  'review.skip': 'Overslaan',
+  'review.skipped': {
+    one: 'Overgeslagen. Pas hem aan in de lijst, of bevestig hem onderaan met "Alles klopt".',
+    other: 'Overgeslagen. Pas ze aan in de lijst, of bevestig ze onderaan met "Alles klopt".',
+  },
+  'review.again': 'Opnieuw langslopen',
+
+  // Samenvatting (SessionSummary.svelte)
+  'summary.title': 'Samenvatting',
+  'summary.copy': 'Kopiëren',
+  'summary.copied': 'Gekopieerd',
+  'summary.heading': '{title}, {date}: {n} soorten',
 } satisfies Record<string, Entry>;

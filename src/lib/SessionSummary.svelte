@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { LOCALE, t } from './i18n';
   // Samenvatting van een sessie (instelling, summary.ts): soortenlijst met
   // aantallen, ook te kopiëren (bv. voor een appgroep).
   import { liveQuery } from 'dexie';
@@ -13,13 +14,13 @@
 
   async function copy() {
     if (!$lines) return;
-    const title = session.place?.name ?? 'Vogelsessie';
-    const date = new Date(session.startedAt).toLocaleDateString('nl-NL', {
+    const title = session.place?.name ?? t('common.defaultSessionName');
+    const date = new Date(session.startedAt).toLocaleDateString(LOCALE, {
       day: 'numeric',
       month: 'long',
     });
     const text = [
-      `${title}, ${date}: ${$lines.length} soorten`,
+      t('summary.heading', { title, date, n: $lines.length }),
       ...groups.flatMap((group) => [
         ...(group.title ? ['', `${group.title}:`] : []),
         ...group.lines.map((line) => `${line.name} ${line.count}`),
@@ -38,8 +39,9 @@
 {#if $lines?.length}
   <section class="card">
     <div class="card-head">
-      <h2>Samenvatting</h2>
-      <button class="link" onclick={copy}>{copied ? 'Gekopieerd' : 'Kopiëren'}</button>
+      <h2>{t('summary.title')}</h2>
+      <button class="link" onclick={copy}>{copied ? t('summary.copied') : t('summary.copy')}</button
+      >
     </div>
     <div class="card-body">
       {#each groups as group (group.title ?? '')}
