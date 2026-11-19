@@ -113,6 +113,14 @@ describe('importJson', () => {
     await expect(importJson(file)).rejects.toThrow('Ongeldige export');
   });
 
+  it('neemt het land van een uitspraak mee, maar weigert een onbekend land', async () => {
+    const utterance = { id: 'uitspraak', sessionId: 'sessie', recordedAt: 1, status: 'done' };
+    await importJson(exportFile({ utterances: [{ ...utterance, region: 'es' }] }));
+    expect((await db.utterances.get('uitspraak'))?.region).toBe('es');
+    const file = exportFile({ utterances: [{ ...utterance, id: 'ander', region: 'xx' }] });
+    await expect(importJson(file)).rejects.toThrow('Ongeldige export');
+  });
+
   it('weigert een sessie met een ongeldige inspanning', async () => {
     const session = { id: 'sessie', startedAt: 1, endedAt: 2, status: 'ended' };
     const file = exportFile({

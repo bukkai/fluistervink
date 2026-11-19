@@ -25,6 +25,12 @@
       hint: 'De app in het Engels: schermen, namen van soorten en gedrag, en inspreken. Uitleg, privacy, welkom, de changelog en de ontwikkelopties blijven Nederlands (docs/plan-engels.md, stap 3). Aan- of uitzetten laadt de app opnieuw.',
     },
     {
+      option: 'spanje',
+      group: 'understanding',
+      label: 'Spanje',
+      hint: 'De vogels van Spanje in plaats van die van Nederland: bijeneter, blauwe ekster en rode patrijs zijn dan gewoon, en de zeldzaamheid is die van Spanje. Alleen vogels; andere dieren blijven de Nederlandse lijst. Geldt ook voor uitspraken die nog op bereik wachten (docs/plan-andere-landen.md). Aan- of uitzetten laadt de app opnieuw.',
+    },
+    {
       option: 'oortjesMicrofoon',
       group: 'field',
       label: 'Microfoon van de oortjes',
@@ -61,8 +67,8 @@
     if (item.option === 'oortjesMicrofoon' && checked[item.option]) {
       void requestBluetoothMicrophone();
     }
-    // De taal staat vast zolang de app draait (i18n/index.ts)
-    if (item.option === 'english') location.reload();
+    // De taal en het land staan vast zolang de app draait (i18n/index.ts, region.ts)
+    if (item.option === 'english' || item.option === 'spanje') location.reload();
   }
 </script>
 

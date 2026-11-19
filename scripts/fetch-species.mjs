@@ -7,6 +7,10 @@
 // docs/plan-engels.md) en de namen van eBird voor de eBird-export
 // (data/ebird-namen.json, docs/plan-ebird.md).
 //
+// En de vogels van Spanje (data/soorten-es.json, ontwikkeloptie "Spanje",
+// docs/plan-andere-landen.md), met een zeldzaamheid uit het aantal
+// waarnemingen; dat zijn ruim duizend aanroepen, een paar minuten.
+//
 // Gebruik: node scripts/fetch-species.mjs
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -206,6 +210,99 @@ for (const group of GROUPS) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Andere landen (docs/plan-andere-landen.md, "Proef Spanje"): alleen vogels.
+// De zeldzaamheid in de regiolijsten is buiten Nederland en België grotendeels
+// leeg (bijeneter en blauwe ekster "onbekend"), dus die rekenen we zelf uit
+// het aantal waarnemingen per soort in dat land, als aandeel van het totaal.
+// Geijkt op Nederland: alle algemene soorten van de bron komen er als
+// algemeen uit.
+
+const COUNTRIES = [{ code: 'es', country: 'ES', list: 267 }];
+
+/** Per 100.000 waarnemingen in het land */
+const PER = 100_000;
+const IN_PROMPT = 2; // inheems, en verzamelsoorten
+const IN_PROMPT_EXOTIC = 10; // gevestigde exoten wel, ontsnapte enkelingen niet
+const RARITY_FROM_SHARE = [
+  [150, 1],
+  [30, 2],
+  [5, 3],
+];
+
+/**
+ * Aantal waarnemingen per soort in het land. Twee tegelijk; bij "te veel
+ * verzoeken" (429) wachten zoals de server vraagt, en anders steeds langer.
+ */
+async function countsIn(country, ids) {
+  const counts = new Map();
+  const queue = [...ids];
+  const wait = (s) => new Promise((r) => setTimeout(r, s * 1000));
+  async function worker() {
+    for (let id = queue.shift(); id !== undefined; id = queue.shift()) {
+      const url = `${API}/species/${id}/observations/?country=${country}&limit=1`;
+      for (let attempt = 1; ; attempt++) {
+        const res = await fetch(url, { headers: { Accept: 'application/json' } }).catch(() => null);
+        if (res?.ok) {
+          counts.set(id, (await res.json()).count);
+          break;
+        }
+        if (attempt === 8) throw new Error(`${url}: HTTP ${res?.status ?? 'geen verbinding'}`);
+        const retryAfter = Number(res?.headers.get('retry-after'));
+        await wait(retryAfter > 0 ? retryAfter : Math.min(60, 2 ** attempt));
+      }
+    }
+  }
+  await Promise.all([1, 2].map(worker));
+  return counts;
+}
+
+const birds = GROUPS[0];
+const dutchById = new Map(allSpecies.map((s) => [s.id, s]));
+const dutchPromptIds = new Set(species.map((s) => s.id));
+const countryLists = {};
+const foreignSpecies = [];
+for (const { code, country, list } of COUNTRIES) {
+  const source = (await get(`/region-lists/${list}/species/`)).filter((s) =>
+    ALL_TYPES.includes(s.type),
+  );
+  for (const s of await get(`/region-lists/${list}/species/`, 'en'))
+    if (!englishSpecies.has(s.species)) englishSpecies.set(s.species, s.name);
+  const counted = source.filter((s) => s.type !== 'Y');
+  const counts = await countsIn(
+    country,
+    counted.map((s) => s.species),
+  );
+  const total = counted
+    .filter((s) => s.type === 'S')
+    .reduce((sum, s) => sum + (counts.get(s.species) ?? 0), 0);
+  const share = (s) => ((counts.get(s.species) ?? 0) / total) * PER;
+  const rarity = (s) => RARITY_FROM_SHARE.find(([min]) => share(s) >= min)?.[1] ?? 4;
+  const inPrompt = (s) =>
+    birds.extraIds.includes(s.species) ||
+    (s.type === 'S' && s.native ? share(s) >= IN_PROMPT : false) ||
+    // Verzamelsoorten: ook alle van de Nederlandse prompt ("Eend onbekend"),
+    // daar verwijzen de regels in de prompt naar
+    (s.type === 'M' && (share(s) >= IN_PROMPT || dutchPromptIds.has(s.species))) ||
+    (['S', 'F'].includes(s.type) && !s.native && share(s) >= IN_PROMPT_EXOTIC);
+  countryLists[code] = [...source].sort(order(birds)).map((s) => ({
+    id: s.species,
+    // Dezelfde naam als in de Nederlandse lijst, met onze eigen correcties
+    name: dutchById.get(s.species)?.name ?? birds.names[s.species] ?? s.name,
+    scientific: s.scientific_name,
+    type: s.type,
+    // Een verzamelsoort ("Eend onbekend") is niet zeldzaam: geen zeldzaamheid,
+    // anders maakt "zeldzaam wordt onzeker" hem onzeker
+    rarity: ['S', 'F'].includes(s.type) ? rarity(s) : 0,
+    group: birds.id,
+    ...(inPrompt(s) && { prompt: true }),
+  }));
+  // Soorten die alleen in dit land staan (Iberische Tjiftjaf): ook een Engelse
+  // en een eBird-naam
+  for (const s of countryLists[code])
+    if (!dutchById.has(s.id) && !foreignSpecies.some((f) => f.id === s.id)) foreignSpecies.push(s);
+}
+
 // Telmethode staat niet bij de attributen maar in /lookups/; de Nederlandse
 // namen staan vast in src/lib/vocab.ts.
 const lookupsEn = await get('/lookups/', 'en');
@@ -216,7 +313,7 @@ const englishCountingMethods = byId(pick(lookupsEn.counting_method));
 // valt er toch op terug (speciesNameIn in vocab.ts).
 const namesEn = {};
 const withoutEnglish = [];
-for (const s of allSpecies) {
+for (const s of [...allSpecies, ...foreignSpecies]) {
   const name = (NAMES_EN[s.id] ?? englishSpecies.get(s.id) ?? '').trim();
   if (name && name !== s.scientific) namesEn[s.id] = name;
   else if (s.type === 'S') withoutEnglish.push(s);
@@ -256,6 +353,11 @@ await writeFile(
   'data/soorten-nl-alle.json',
   '[\n' + allSpecies.map((s) => JSON.stringify(s)).join(',\n') + '\n]\n',
 );
+for (const [code, list] of Object.entries(countryLists))
+  await writeFile(
+    `data/soorten-${code}.json`,
+    '[\n' + list.map((s) => JSON.stringify(s)).join(',\n') + '\n]\n',
+  );
 for (const [file, attrs] of Object.entries(attributes))
   await writeFile(`data/attributen-${file}.json`, JSON.stringify(attrs, null, 1) + '\n');
 
@@ -274,7 +376,7 @@ await writeFile(
 );
 
 const ebird = await ebirdNames(
-  allSpecies.filter((s) => s.group === 1),
+  [...allSpecies, ...foreignSpecies].filter((s) => s.group === 1),
   namesEn,
 );
 await writeFile('data/ebird-namen.json', '{\n' + entries(ebird.names).join(',\n') + '\n}\n');
@@ -290,6 +392,10 @@ console.log(
   `eBird: ${Object.keys(ebird.names).length} soorten gekoppeld; ` +
     `niet gekoppeld (zeldzaamheid 1–3): ${ebird.missing.map((s) => s.name).join(', ') || 'geen'}`,
 );
+for (const [code, list] of Object.entries(countryLists))
+  console.log(
+    `${code}: ${list.filter((s) => s.prompt).length} vogels in de prompt (alle: ${list.length})`,
+  );
 for (const group of GROUPS) {
   const a = attributes[group.file];
   const count = (list) => list.filter((s) => s.group === group.id).length;

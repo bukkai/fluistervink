@@ -8,7 +8,9 @@ import allSpeciesList from '../../data/soorten-nl-alle.json';
 import ebirdNames from '../../data/ebird-namen.json';
 import namesEn from '../../data/namen-en.json';
 import speciesList from '../../data/soorten-nl.json';
+import spainList from '../../data/soorten-es.json';
 import { language as appLanguage, LOCALE, t, type Language } from './i18n';
+import { region, type Region } from './region';
 
 // Vaste lijsten met waarneming.nl-ID's: soorten, gedrag, methode, kleed en
 // telmethode. Zie docs/waarneming-nl.md. Naast vogels ook zoogdieren,
@@ -42,8 +44,46 @@ export interface Code {
   name: string;
 }
 
+/** Soort in de lijst van een ander land; `prompt`: het model kiest hieruit */
+interface CountrySpecies extends Species {
+  prompt?: boolean;
+}
+
+const countryBirds: Record<Exclude<Region, 'nl'>, CountrySpecies[]> = {
+  es: spainList as CountrySpecies[],
+};
+
+/**
+ * Soortenlijsten voor een land (region.ts, docs/plan-andere-landen.md). Een
+ * ander land heeft alleen een eigen lijst met vogels, met de zeldzaamheid van
+ * dat land; de andere soortgroepen blijven die van Nederland. Nederlandse
+ * vogels die daar niet in staan, blijven op te zoeken (oude sessies), zonder
+ * zeldzaamheid: dan zijn ze daar ook geen dwaalgast.
+ */
+export function speciesListsFor(r: Region): { prompt: Species[]; all: Species[] } {
+  const dutchPrompt = speciesList as Species[];
+  const dutchAll = allSpeciesList as Species[];
+  if (r === 'nl') return { prompt: dutchPrompt, all: dutchAll };
+  const birds = countryBirds[r].map(({ prompt, ...s }) => ({ s, prompt }));
+  const ids = new Set(birds.map(({ s }) => s.id));
+  return {
+    prompt: [
+      ...birds.filter(({ prompt }) => prompt).map(({ s }) => s),
+      ...dutchPrompt.filter((s) => s.group !== BIRDS),
+    ],
+    all: [
+      ...birds.map(({ s }) => s),
+      ...dutchAll
+        .filter((s) => !ids.has(s.id))
+        .map((s) => (s.group === BIRDS ? { ...s, rarity: 0 } : s)),
+    ],
+  };
+}
+
+const lists = speciesListsFor(region);
+
 /** Soorten in de prompt van alle groepen; voorlopig gaan alleen de vogels naar het model */
-const promptSpeciesAllGroups = speciesList as Species[];
+const promptSpeciesAllGroups = lists.prompt;
 
 /** Vogels in de prompt: het model kiest alleen hieruit */
 export const species = promptSpeciesAllGroups.filter((s) => s.group === BIRDS);
@@ -55,11 +95,11 @@ export function promptSpeciesOf(group: GroupId): Species[] {
 }
 
 /** Alle soorten van alle groepen, ook zeer zeldzame: om een ID op te zoeken */
-const allSpeciesAllGroups = allSpeciesList as Species[];
+const allSpeciesAllGroups = lists.all;
 const speciesById = new Map(allSpeciesAllGroups.map((s) => [s.id, s]));
 
 /**
- * Alle Nederlandse vogels van waarneming.nl, ook zeer zeldzame dwaalgasten.
+ * Alle vogels van waarneming.nl in het land, ook zeer zeldzame dwaalgasten.
  * Voor het bewerkformulier, zodat je zo'n waarneming thuis goed kunt zetten.
  */
 export const allSpecies = allSpeciesAllGroups.filter((s) => s.group === BIRDS);
@@ -321,6 +361,8 @@ export const heardNames = (a: Alias): string[] => [...a.bijnamen, ...(a.verhaspe
 const allAliases = (aliasList as Alias[]).filter((a) => {
   if (isPromptSpecies(a.soort, true)) return true;
   if (vagrantIds.has(a.soort)) return false; // alleen voor findVagrant
+  // In een ander land ontbreken sommige Nederlandse soorten gewoon
+  if (region !== 'nl') return false;
   console.warn(`bijnamen.json: onbekende soort-ID ${a.soort} (${a.naam})`);
   return false;
 });

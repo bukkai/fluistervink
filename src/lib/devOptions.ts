@@ -9,8 +9,10 @@
  *   de oortjes (proef, docs/roadmap-android.md stap 3)
  * - `english`: de app in het Engels, scherm én inspreken (docs/plan-engels.md,
  *   stap 3); aan- of uitzetten laadt de app opnieuw (i18n/index.ts)
+ * - `spanje`: de soortenlijst van Spanje in plaats van die van Nederland
+ *   (docs/plan-andere-landen.md, proef); laadt de app opnieuw (region.ts)
  */
-export type DevOption = 'oortjesMicrofoon' | 'schermUit' | 'english';
+export type DevOption = 'oortjesMicrofoon' | 'schermUit' | 'english' | 'spanje';
 
 const PREFIX = 'fluistervink.dev.';
 

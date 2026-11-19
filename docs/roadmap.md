@@ -31,7 +31,7 @@ De vier sporen van 13 okt, met de stand op 12 nov:
 | `docs/plan-trektelmodus.md` | gebouwd, proef met tester Maarten; vervolg na de proef |
 | `docs/plan-ios.md` | voorstel, nog niet goedgekeurd; pas na de lancering in Play |
 | `docs/plan-engels.md` | voorstel 19 nov, nog niet goedgekeurd; na de betaalde laag |
-| `docs/plan-andere-landen.md` | voorstel 19 nov, nog niet goedgekeurd; na het Engelse plan |
+| `docs/plan-andere-landen.md` | voorstel 19 nov, nog niet goedgekeurd; proef Spanje gebouwd als ontwikkeloptie |
 
 Afgerond en alleen nog naslag: `docs/plan-capacitor.md` (fase 0–2 en 4; fase 3 loopt nu via `docs/roadmap-android.md`), `docs/plan-laagdrempelig.md`, `docs/plan-ebird.md` (16 nov), `docs/plan-soortgroepen.md` (16 nov: voor iedereen, standaard aan).
 

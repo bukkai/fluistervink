@@ -21,6 +21,10 @@
 //                     amfibieën, dagvlinders en libellen (in de app standaard
 //                     aan, uit te zetten bij Instellingen): andere prompt
 //                     voor model en spraakherkenning
+//   --land <code>     soortenlijst van een ander land ("es": ontwikkeloptie
+//                     "Spanje", docs/plan-andere-landen.md); standaard nl.
+//                     Uitspraken met een ander land in de export slaat hij
+//                     over: hun label hoort bij een andere lijst
 //   --laadtest        alleen de code van de app laden en stoppen (zonder
 //                     export of sleutels; draait in CI, zie check.yml)
 //
@@ -70,9 +74,16 @@ const { values: opts, positionals } = parseArgs({
     'context-nieuw': { type: 'boolean', default: false },
     laadtest: { type: 'boolean', default: false },
     soortgroepen: { type: 'boolean', default: true },
+    land: { type: 'string', default: 'nl' },
   },
   allowNegative: true,
 });
+
+const LANDEN = ['nl', 'es'];
+if (!LANDEN.includes(opts.land)) {
+  console.error(`Onbekend land "${opts.land}"; kies uit ${LANDEN.join(', ')}`);
+  process.exit(1);
+}
 
 if (!opts.laadtest && positionals.length !== 1) {
   console.error(
@@ -123,10 +134,17 @@ if (replay) {
   )?.[1];
   if (!code) throw new Error('Geen ACCESS_CODE in .dev.vars');
   // api.ts leest de toegangscode uit localStorage en roept relatieve URL's aan
-  globalThis.localStorage = { getItem: () => code.trim(), setItem() {} };
+  globalThis.localStorage = { getItem: (key) => devOption(key) ?? code.trim(), setItem() {} };
   const realFetch = globalThis.fetch;
   globalThis.fetch = (url, init) => realFetch(new URL(url, base), init);
 }
+
+// Het land kiest region.ts uit de ontwikkeloptie "Spanje" in localStorage
+function devOption(key) {
+  if (key === 'fluistervink.dev.spanje') return opts.land === 'es' ? '1' : null;
+  return undefined;
+}
+globalThis.localStorage ??= { getItem: (key) => devOption(key) ?? null, setItem() {} };
 
 // Alleen om modules te laden (zonder de Worker). Wel met de Svelte-plugin:
 // sommige modules gebruiken runes ($state in instance.svelte.ts, via log.ts).
@@ -310,6 +328,7 @@ const excluded = existsSync(excludeFile)
 let items = [];
 for (const u of utterances) {
   if (excluded.some((prefix) => u.id.startsWith(prefix))) skip('uitgesloten');
+  else if ((u.region ?? 'nl') !== opts.land) skip(`ander land (${u.region ?? 'nl'})`);
   else if (u.transcript === undefined) skip('nog niet verstaan');
   else if (u.status !== 'done') skip('mislukt of niet verwerkt');
   else if (u.undone) skip('ongedaan gemaakt');
@@ -588,7 +607,10 @@ const median = (xs) => {
 
 const version = await promptVersionFor(opts.soortgroepen);
 console.log(`\nTestset: ${positionals[0]}`);
-console.log(`Spraak: ${opts.stt} · model: ${model} · prompt ${version}`);
+console.log(
+  `Spraak: ${opts.stt} · model: ${model} · prompt ${version}` +
+    (opts.land === 'nl' ? '' : ` · land ${opts.land}`),
+);
 console.log(
   `Overgeslagen: ${
     Object.entries(skipped)
@@ -655,6 +677,7 @@ writeFileSync(
       stt: opts.stt,
       model,
       promptVersion: version,
+      land: opts.land,
       durationMs: Date.now() - started,
       skipped,
       results,
