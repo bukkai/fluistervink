@@ -104,7 +104,44 @@ describe('gesproken bevestiging', () => {
       },
       current(obs('a', { count: 9 })),
     );
-    expect(text).toBe('Aangepast: houtduif, 9. Weg: vink');
+    expect(text).toBe('Houtduif, 6 wordt 9. Weg: vink');
+  });
+
+  describe('bij een correctie wat het was en wat het werd', () => {
+    const update = (before: Partial<Observation>, now: Partial<Observation>) =>
+      confirmationText(
+        {
+          status: 'done',
+          result: 'saved',
+          changes: [{ type: 'update', observationId: 'a', before }],
+        },
+        current(obs('a', now)),
+      );
+
+    it('een andere soort: de oude soort en dan de nieuwe waarneming', () => {
+      expect(update({ speciesId: VINK, uncertain: true }, { speciesId: SPREEUW, count: 3 })).toBe(
+        'Vink wordt spreeuw, 3',
+      );
+    });
+
+    it('dezelfde soort: alleen wat veranderde', () => {
+      expect(
+        update(
+          { count: 2, spokenPlace: { text: 'dertig meter zuid', distanceM: 30, direction: 'Z' } },
+          {
+            count: 4,
+            spokenPlace: { text: 'vijfhonderd meter noord', distanceM: 500, direction: 'N' },
+          },
+        ),
+      ).toBe('Houtduif, 2, 30 meter zuid wordt 4, 500 meter noord');
+    });
+
+    it('niets om tegenover elkaar te zetten: aangepast, met hoe hij nu is', () => {
+      expect(update({ uncertain: true }, { count: 5 })).toBe('Aangepast: houtduif, 5');
+      expect(update({ activityId: undefined }, { count: 6, activityId: 6 })).toBe(
+        'Aangepast: houtduif, 6, overvliegend',
+      );
+    });
   });
 
   it('bij meer dan twee waarnemingen alleen het aantal', () => {

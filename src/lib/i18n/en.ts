@@ -658,6 +658,8 @@ export const en: Dictionary = {
   'spoken.savedUncertain': 'Saved, uncertain',
   'spoken.deleted': 'removed: {species}',
   'spoken.updated': 'changed: {what}',
+  'spoken.replaced': '{before} is now {after}',
+  'spoken.changed': '{species}, {before} is now {after}',
   'spoken.many': '{n} observations',
   'spoken.manyFlagged': '{n} observations. Uncertain',
   'spoken.manyUncertain': '{n} observations, {uncertain} uncertain',
