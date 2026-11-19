@@ -1,6 +1,6 @@
 # Plan: wake word "Fluistervink"
 
-18 nov 2026. Status: **model trainen en meten, los van de app.** In de app pas na de productierelease en na stap 3 en 4 van `roadmap-android.md` (opnemen met het scherm uit, de microfoon delen), en dan eerst als proef die alleen logt.
+18 nov 2026. Status: **geparkeerd tot na de release (19 nov).** Een eerste model is getraind en gemeten (hieronder); verder pas met echte opnames van testers (volgende stap 1). In de app pas na de productierelease en na stap 3 en 4 van `roadmap-android.md` (opnemen met het scherm uit, de microfoon delen), en dan eerst als proef die alleen logt.
 
 ## Doel
 
@@ -49,6 +49,6 @@ Wat opvalt:
 
 ## Volgende stappen
 
-1. **Echte opnames van "Fluistervink"**, van de eigenaar en een paar anderen, elk vijf à tien keer: gewoon, zacht, fluisterend, snel, aan het begin van een zin, buiten met wind, met de oortjes. Eerst om te meten, daarna ook om mee te trainen. Het makkelijkst via de app (dezelfde microfoon), bijvoorbeeld een ontwikkeloptie "Wake word inspreken" die de opnames in de sessie bewaart; met het delen gaan ze mee als opnames delen aan staat.
+1. **Echte opnames van "Fluistervink", na de release** (besloten 19 nov): testers vragen het wake word in te spreken met een kaart of pop-up die verschijnt als ze de app weer eens gebruiken. Elk vijf à tien keer: gewoon, zacht, fluisterend, snel, aan het begin van een zin, buiten met wind, met de oortjes. Via de app, zodat het dezelfde microfoon is. Uitwerken: wanneer de kaart verschijnt (niet midden in een sessie), hoe vaak hij terugkomt als iemand "Later" kiest, en hoe de opnames bij de ontwikkelaar komen (mee met het delen, met eigen toestemming, ook als opnames delen uit staat?). `#privacy` en `#uitleg` bijwerken. Eerst om te meten, daarna ook om mee te trainen.
 2. **Proef in de app die alleen logt** (`roadmap-android.md`, stap 5): na stap 3 en 4, met de drie ONNX-modellen in de service. Logt score en tijd bij elke melding; de eigenaar zegt af en toe "Fluistervink" en houdt bij wanneer. Daarna beslissen.
 3. `#privacy` en `#uitleg` bijwerken voordat het voor anderen aan kan.
