@@ -68,6 +68,13 @@ const TRANSCRIBE_MODELS = [
 const PER_SECOND_MODELS = ['gpt-transcribe', 'whisper-1'];
 
 /**
+ * Talen voor de spraakherkenning: Nederlands, en Engels voor de ontwikkeloptie
+ * "English" (docs/plan-engels.md). De app geeft de taal mee; een andere taal
+ * weigert de proxy, net als een ander model.
+ */
+const TRANSCRIBE_LANGUAGES = ['nl', 'en'];
+
+/**
  * Plafond op de spraakherkenning per tester per dag (docs/plan-trektelmodus.md,
  * punt 5): een trektelling houdt de microfoon uren aan, en sinds aanmelden
  * zonder code kan iedereen de app installeren. Vijf uur spraak is een hele dag
@@ -283,11 +290,16 @@ async function transcribe(
   const audio = form.get('audio');
   const model = String(form.get('model') ?? TRANSCRIBE_MODELS[0]);
   const prompt = form.get('prompt');
+  // Taal van de uitspraak (ontwikkeloptie "English"); zonder: Nederlands
+  const language = String(form.get('language') ?? 'nl');
 
   if (!(audio instanceof File)) return json({ error: 'Geen audio meegestuurd' }, 400);
   if (audio.size > MAX_AUDIO_BYTES) return json({ error: 'Audio te groot' }, 413);
   if (!TRANSCRIBE_MODELS.includes(model)) {
     return json({ error: `Model niet toegestaan: ${model}` }, 400);
+  }
+  if (!TRANSCRIBE_LANGUAGES.includes(language)) {
+    return json({ error: `Taal niet toegestaan: ${language}` }, 400);
   }
   if (tester !== OWNER) {
     if (!PER_SECOND_MODELS.includes(model)) {
@@ -309,8 +321,8 @@ async function transcribe(
   upstream.set('file', audio);
   upstream.set('model', model);
   // gpt-transcribe kent meerdere talen (`languages`) in plaats van `language`
-  if (model === 'gpt-transcribe') upstream.append('languages[]', 'nl');
-  else upstream.set('language', 'nl');
+  if (model === 'gpt-transcribe') upstream.append('languages[]', language);
+  else upstream.set('language', language);
   upstream.set('response_format', 'json');
   if (typeof prompt === 'string' && prompt) upstream.set('prompt', prompt);
   // Zekerheid per stukje tekst; whisper-1 en gpt-transcribe geven die niet

@@ -345,11 +345,14 @@ function fromDataUrl(url) {
 
 async function run(item) {
   const { u, context } = item;
+  // Taal van de uitspraak (ontwikkeloptie "English"); leeg = Nederlands
+  const language = u.language ?? 'nl';
   const result = { transcript: u.transcript };
   if (opts.stt !== 'opgeslagen') {
     const { text, timing } = await transcribe(fromDataUrl(u.audioData), {
       model: opts.stt,
       groups: opts.soortgroepen,
+      language,
     });
     result.transcript = text;
     result.sttMs = timing.requestMs;
@@ -358,7 +361,7 @@ async function run(item) {
     if (!text) return { ...result, actions: [] };
   }
   if (model === 'origineel') {
-    return { ...result, ...parseResponse(u.llmOutput, context, opts.soortgroepen) };
+    return { ...result, ...parseResponse(u.llmOutput, context, opts.soortgroepen, language) };
   }
   // Stond de context van destijds erbij, dan precies die; anders nagebouwd
   const contextText = u.metrics?.contextIds ? u.metrics.context : undefined;
@@ -367,6 +370,7 @@ async function run(item) {
     contextText,
     groups: opts.soortgroepen,
     trektel: u.trektel,
+    language,
   });
   return {
     ...result,

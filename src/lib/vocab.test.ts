@@ -8,6 +8,7 @@ import {
   convertCodes,
   countingMethodNameIn,
   editDistance,
+  findPromptSpecies,
   findVagrant,
   getSpecies,
   groupOf,
@@ -324,5 +325,30 @@ describe('namen in een andere taal', () => {
     expect(countingMethodNameIn('en', 2)).toBe('real count');
     expect(countingMethodNameIn('nl', 6)).toBe('schatting');
     expect(countingMethodNameIn('en', undefined)).toBeUndefined();
+  });
+});
+
+describe('Engelse namen opzoeken (ontwikkeloptie English)', () => {
+  it('vindt een soort uit de prompt op de Engelse naam en die van eBird', () => {
+    expect(findPromptSpecies('Brambling', false, 'en')?.id).toBe(127);
+    expect(findPromptSpecies('brambling', false, 'en')?.id).toBe(127);
+    expect(findPromptSpecies('Arctic Loon', false, 'en')?.id).toBe(305);
+    expect(findPromptSpecies('Fringilla montifringilla', false, 'en')?.id).toBe(127);
+    // Zonder de taal blijft het zoals het was
+    expect(findPromptSpecies('Brambling')).toBeUndefined();
+    expect(findPromptSpecies('Keep')?.id).toBe(127);
+  });
+
+  it('vindt dwaalgasten op de Engelse naam, ook in het meervoud', () => {
+    expect(findVagrant('Woodchat Shrike', false, 'en')?.id).toBe(53);
+    expect(findVagrant('woodchat shrikes', false, 'en')?.id).toBe(53);
+    expect(findVagrant('Lanius senator', false, 'en')?.id).toBe(53);
+    expect(findVagrant('wolves', true, 'en')?.id).toBe(70056);
+    expect(findVagrant('Common Hamster', true, 'en')?.id).toBe(402);
+    // Een soort uit de prompt is geen dwaalgast: Red-backed Shrike staat erin
+    expect(findVagrant('Red-backed Shrike', false, 'en')).toBeUndefined();
+    // De Nederlandse naam geldt niet in het Engels, en andersom
+    expect(findVagrant('roodkopklauwier', false, 'en')).toBeUndefined();
+    expect(findVagrant('Woodchat Shrike')).toBeUndefined();
   });
 });

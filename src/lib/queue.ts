@@ -1,4 +1,4 @@
-import { t } from './i18n';
+import { language as appLanguage, t } from './i18n';
 import {
   db,
   audioBlob,
@@ -113,7 +113,15 @@ async function submit(
 ): Promise<void> {
   const id = crypto.randomUUID();
   try {
-    await db.utterances.add({ id, ...fields, savedAt: Date.now(), status: 'pending' });
+    // De taal van nu: zo blijft een uitspraak in zijn taal, ook als hij pas
+    // later verwerkt wordt (geen bereik) of met "Opnieuw"
+    await db.utterances.add({
+      id,
+      ...fields,
+      language: appLanguage,
+      savedAt: Date.now(),
+      status: 'pending',
+    });
   } catch (error) {
     saveFailed(error, fields.sessionId, fields.trektel);
     return;
@@ -442,6 +450,7 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
   await db.utterances.update(utterance.id, { status: 'processing', attempts });
   // Ook andere dieren (keuze bij Instellingen, standaard aan): een andere prompt
   const groups = preferenceOn('soortgroepen');
+  const language = utterance.language ?? 'nl';
 
   let step: 'transcribe' | 'interpret' = 'transcribe';
   let interpretation: Interpretation;
@@ -482,6 +491,7 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
       sessionId: utterance.sessionId,
       groups,
       trektel: utterance.trektel,
+      language,
     });
     if (interpretation.warnings.length) {
       logEvent('species_id_fixed', { warnings: interpretation.warnings }, ids);
@@ -543,7 +553,7 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
     appVersion: APP_VERSION,
     platform: PLATFORM,
     model: MODEL,
-    promptVersion: await promptVersionFor(groups),
+    promptVersion: await promptVersionFor(groups, language),
     context: interpretation.context,
     contextIds: interpretation.contextIds,
     instance: INSTANCE_ID,
@@ -630,15 +640,17 @@ async function finishWithout(
 /** Zet de opname om in tekst en slaat het transcript op. */
 async function transcribeUtterance(utterance: Utterance): Promise<Utterance> {
   const groups = preferenceOn('soortgroepen');
+  const language = utterance.language ?? 'nl';
   const { text, confidence, timing } = await transcribe(audioBlob(utterance.audio!), {
     sessionId: utterance.sessionId,
     groups,
+    language,
   });
   const changes = {
     transcript: text,
     transcription: {
       model: TRANSCRIBE_MODEL,
-      promptVersion: await transcribePromptVersionFor(groups),
+      promptVersion: await transcribePromptVersionFor(groups, language),
       ...timing,
       confidence,
     },

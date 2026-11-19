@@ -1,5 +1,6 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type { Area } from './api';
+import type { Language } from './i18n';
 import type { LogEvent } from './log';
 
 // Datamodel, zie CLAUDE.md. ID's zijn UUID's (crypto.randomUUID), zodat ze
@@ -154,6 +155,12 @@ export interface Utterance {
   kind?: 'dev_note';
   /** Een stuk uit de trektelmodus (de app knipte zelf), niet met de knop ingesproken */
   trektel?: true;
+  /**
+   * Taal waarin de uitspraak is ingesproken of getypt, en waarin hij verwerkt
+   * wordt (spraakherkenning en prompt). Leeg = Nederlands (alles van vóór de
+   * ontwikkeloptie "English", docs/plan-engels.md).
+   */
+  language?: Language;
   /**
    * Bij feedback die midden in een uitspraak met waarnemingen zat: de
    * uitspraak waar hij uit komt (die heeft de opname en het hele transcript)

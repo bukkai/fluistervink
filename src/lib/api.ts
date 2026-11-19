@@ -205,6 +205,8 @@ export interface TranscribeOptions {
   prompt?: string;
   /** Sessie waar de uitspraak bij hoort, voor het verbruik (zie sessionHeader) */
   sessionId?: string;
+  /** Taal van de uitspraak; de proxy laat alleen 'nl' en 'en' door */
+  language?: 'nl' | 'en';
 }
 
 /**
@@ -217,7 +219,7 @@ function sessionHeader(sessionId: string | undefined): HeadersInit {
 
 export async function transcribe(
   audio: Blob,
-  { model, prompt, sessionId }: TranscribeOptions = {},
+  { model, prompt, sessionId, language }: TranscribeOptions = {},
 ): Promise<{ data: { text: string; model: string; confidence?: number }; timing: Timing }> {
   const form = new FormData();
   // OpenAI herkent het formaat aan de extensie: "audio/webm;codecs=opus" → .webm
@@ -225,6 +227,8 @@ export async function transcribe(
   form.set('audio', audio, `opname.${extension}`);
   if (model) form.set('model', model);
   if (prompt) form.set('prompt', prompt);
+  // Alleen Engels meesturen: zonder taal kiest de proxy Nederlands, zoals altijd
+  if (language && language !== 'nl') form.set('language', language);
   return timedRequest(
     '/api/transcribe',
     { method: 'POST', headers: sessionHeader(sessionId), body: form },

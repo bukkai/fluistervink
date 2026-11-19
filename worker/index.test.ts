@@ -690,6 +690,23 @@ describe('/api/transcribe (OpenAI)', () => {
     expect(sent.has('include[]')).toBe(false);
   });
 
+  it('geeft Engels door als de app dat vraagt (ontwikkeloptie English)', async () => {
+    upstream.mockResolvedValue(Response.json({ text: 'six Woodpigeons' }));
+    await post({ audio: audio(), language: 'en' });
+    expect((upstream.mock.calls[0][1]?.body as FormData).getAll('languages[]')).toEqual(['en']);
+
+    upstream.mockClear();
+    await post({ audio: audio(), model: 'whisper-1', language: 'en' });
+    expect((upstream.mock.calls[0][1]?.body as FormData).get('language')).toBe('en');
+  });
+
+  it('weigert een taal die niet op de lijst staat', async () => {
+    for (const language of ['de', 'nl,en', '']) {
+      expect((await post({ audio: audio(), language })).status, language).toBe(400);
+    }
+    expect(upstream).not.toHaveBeenCalled();
+  });
+
   it('vraagt bij gpt-4o-transcribe om Nederlands en de zekerheid', async () => {
     upstream.mockResolvedValue(Response.json({ text: 'vink' }));
     await post({ audio: audio(), model: 'gpt-4o-transcribe' }, OWNER_CODE);

@@ -67,10 +67,14 @@ vi.mock('./interpret', async (importOriginal) => {
   return {
     ...actual,
     interpret: vi.fn(
-      async (_transcript: string, recent: Observation[], options?: { groups?: boolean }) => {
+      async (
+        _transcript: string,
+        recent: Observation[],
+        options?: { groups?: boolean; language?: 'nl' | 'en' },
+      ) => {
         const response = model.respond(recent);
         return {
-          ...actual.parseResponse(response, recent, options?.groups),
+          ...actual.parseResponse(response, recent, options?.groups, options?.language),
           response,
           context: '',
           contextIds: recent.map((obs) => obs.id),
@@ -1269,6 +1273,73 @@ describe('netwerk weg', () => {
       }
     },
   );
+
+  // Ontwikkeloptie "English": de taal hoort bij de uitspraak, ook na wachten
+  // op bereik of "Opnieuw" (docs/plan-engels.md, stap 3)
+  describe('Engelse uitspraak', () => {
+    const brambling = () =>
+      toolResponse(['add_observation', { species_name: 'Brambling', species_id: KEEP, count: 1 }]);
+
+    async function recordEnglish(): Promise<string> {
+      const id = await record();
+      await db.utterances.update(id, { language: 'en' });
+      return id;
+    }
+
+    /** Het formulier van het laatste verzoek aan de spraakherkenning */
+    const lastForm = () => vi.mocked(fetch).mock.calls.at(-1)?.[1]?.body as FormData;
+
+    it('gaat in het Engels naar spraakherkenning en model', async () => {
+      network(true);
+      model.respond = brambling;
+      const id = await recordEnglish();
+      await processQueue();
+      expect(lastForm().get('language')).toBe('en');
+      expect(lastForm().get('prompt')).toContain('Brambling');
+      expect(vi.mocked(interpret).mock.calls[0][2]).toMatchObject({ language: 'en' });
+      const u = await db.utterances.get(id);
+      expect(u).toMatchObject({ status: 'done', result: 'saved', language: 'en' });
+      // De Engelse naam in species_name hoort bij Keep
+      expect((await listObservations(SESSION))[0].speciesId).toBe(KEEP);
+    });
+
+    it('een nieuwe uitspraak bewaart de taal van de app', async () => {
+      model.respond = () => toolResponse(['add_observation', { species_id: VINK, count: 1 }]);
+      await submitText(SESSION, 'roepje vink');
+      await vi.waitFor(async () => expect(await db.observations.count()).toBe(1));
+      expect((await db.utterances.toArray()).at(-1)?.language).toBe('nl');
+    });
+
+    it('een Nederlandse uitspraak stuurt geen taal mee, zoals altijd', async () => {
+      network(true);
+      model.respond = () => toolResponse(['add_observation', { species_id: VINK, count: 1 }]);
+      await record();
+      await processQueue();
+      expect(lastForm().has('language')).toBe(false);
+      expect(vi.mocked(interpret).mock.calls[0][2]).toMatchObject({ language: 'nl' });
+    });
+
+    it.each(Object.entries(STORINGEN))(
+      'storing "%s": blijft Engels als het daarna lukt',
+      async (_naam, { fetch, uitkomst }) => {
+        vi.stubGlobal('fetch', fetch());
+        const id = await recordEnglish();
+        await processQueue();
+        stopWaiting();
+        const waiting = await db.utterances.get(id);
+        expect(waiting?.audio).toBeDefined();
+        expect(waiting?.status).toBe(uitkomst === 'wacht' ? 'pending' : 'failed');
+
+        network(true);
+        model.respond = brambling;
+        if (uitkomst === 'wacht') await processQueue();
+        else await retry(id);
+        await vi.waitFor(async () => expect((await db.utterances.get(id))?.status).toBe('done'));
+        expect(lastForm().get('language')).toBe('en');
+        expect(vi.mocked(interpret).mock.calls.at(-1)?.[2]).toMatchObject({ language: 'en' });
+      },
+    );
+  });
 
   describe('wachten op bereik', () => {
     const events = async (type: string) =>

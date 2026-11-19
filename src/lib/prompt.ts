@@ -1,4 +1,6 @@
 import type Anthropic from '@anthropic-ai/sdk';
+import type { Language } from './i18n';
+import { buildEnglishPrompt, englishTools } from './promptEn';
 import { DIRECTIONS } from './spokenPlace';
 import {
   activities,
@@ -430,24 +432,27 @@ interface Variant {
   version: Promise<string>;
 }
 
-const variants = new Map<boolean, Variant>();
+const variants = new Map<string, Variant>();
 
 /**
- * Systeemprompt en tools, met of zonder de andere soortgroepen; vast per
+ * Systeemprompt en tools, met of zonder de andere soortgroepen, in de taal van
+ * de uitspraak (Engels: promptEn.ts, ontwikkeloptie "English"); vast per
  * variant, dus te cachen
  */
-export function variant(withGroups: boolean): Variant {
-  let found = variants.get(withGroups);
+export function variant(withGroups: boolean, language: Language = 'nl'): Variant {
+  const key = `${language}:${withGroups}`;
+  let found = variants.get(key);
   if (!found) {
-    const system = buildPrompt(withGroups);
-    const tools = buildTools(withGroups);
+    const dutchTools = buildTools(withGroups);
+    const system = language === 'en' ? buildEnglishPrompt(withGroups) : buildPrompt(withGroups);
+    const tools = language === 'en' ? englishTools(dutchTools, withGroups) : dutchTools;
     const version = crypto.subtle
       .digest('SHA-256', new TextEncoder().encode(system + JSON.stringify(tools)))
       .then((hash) =>
         [...new Uint8Array(hash).slice(0, 4)].map((b) => b.toString(16).padStart(2, '0')).join(''),
       );
     found = { system, tools, version };
-    variants.set(withGroups, found);
+    variants.set(key, found);
   }
   return found;
 }
@@ -456,7 +461,9 @@ export function variant(withGroups: boolean): Variant {
  * Korte hash van systeemprompt en tools. Bij elke uitspraak bewaard, zodat
  * resultaten van verschillende promptversies uit elkaar te houden zijn.
  */
-export const promptVersionFor = (withGroups = false) => variant(withGroups).version;
+export const promptVersionFor = (withGroups = false, language: Language = 'nl') =>
+  variant(withGroups, language).version;
 
 /** De tools van een variant (voor de tests) */
-export const toolsFor = (withGroups = false) => variant(withGroups).tools;
+export const toolsFor = (withGroups = false, language: Language = 'nl') =>
+  variant(withGroups, language).tools;
