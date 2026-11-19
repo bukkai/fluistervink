@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n';
   import { attachAreaToObservations } from './area';
   import LocationPicker from './LocationPicker.svelte';
   import { placeUnplaced } from './observations';
@@ -38,25 +39,22 @@
 {#if open}
   <div class="picker card">
     <div class="card-body stack">
-      <p>
-        Waar stond je? {count === 1 ? 'De waarneming' : `Alle ${count} waarnemingen`} zonder plek
-        {count === 1 ? 'komt' : 'komen'} daar te staan.
-      </p>
+      <p>{t('unplaced.question', { n: count })}</p>
       <LocationPicker
         {sessionId}
         onplace={(lat, lon, accuracy) => (chosen = { lat, lon, accuracy })}
       />
       <div class="buttons">
-        <button type="button" class="btn secondary" onclick={close}>Annuleren</button>
+        <button type="button" class="btn secondary" onclick={close}>{t('editor.cancel')}</button>
         <button type="button" class="btn" onclick={save} disabled={!chosen || saving}>
-          Opslaan
+          {t('common.save')}
         </button>
       </div>
     </div>
   </div>
 {:else}
   <button type="button" class="btn secondary place" onclick={() => (open = true)}>
-    {count === 1 ? 'Plek kiezen' : `Plek kiezen voor alle ${count}`}
+    {t('unplaced.choose', { n: count })}
   </button>
 {/if}
 

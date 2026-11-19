@@ -420,4 +420,67 @@ export const nl = {
   'summary.copy': 'Kopiëren',
   'summary.copied': 'Gekopieerd',
   'summary.heading': '{title}, {date}: {n} soorten',
+  // Bewerkformulier (ObservationEditor.svelte)
+  'editor.species': 'Soort',
+  'editor.speciesList': 'Soorten',
+  'editor.count': 'Aantal',
+  'editor.chooseSpecies': 'Kies een soort uit de lijst.',
+  'editor.activity': 'Gedrag',
+  'editor.method': 'Methode',
+  'editor.lifeStage': 'Kleed/leeftijd',
+  'editor.sex': 'Geslacht',
+  'editor.countingMethod': 'Telmethode',
+  'editor.more': 'Meer',
+  'editor.location': 'Locatie',
+  'editor.placeByVoice': 'volgens de uitspraak, ±{m} m',
+  'editor.placeByHand': 'met de hand gezet (±{m} m)',
+  'editor.placeGps': 'GPS, ±{m} m',
+  'editor.changeLocation': 'Locatie aanpassen',
+  'editor.spoken': 'Gezegd: {text}',
+  'editor.backToRecorded': 'Terug naar de opgenomen plek',
+  'editor.backToRecordedNone': 'Terug naar de opgenomen plek (geen locatie)',
+  'editor.privateNote': 'Eigen notitie (gaat niet mee in de export)',
+  'editor.remarks': 'Opmerking voor waarneming.nl',
+  'editor.uncertain': 'Onzeker',
+  'editor.uncertainBecause': 'Onzeker ({reason})',
+  'editor.copy': 'Kopiëren',
+  'editor.delete': 'Verwijderen',
+  'editor.gone':
+    'Deze waarneming is intussen verwijderd, bijvoorbeeld met de stem. Terugzetten kan onder "Verwijderd" bij de sessie.',
+  'editor.cancel': 'Annuleren',
+
+  // Plek kiezen (LocationPicker.svelte, PlaceUnplaced.svelte)
+  'picker.markerTitle': 'Plek van de waarneming (te verslepen)',
+  'picker.tilesFailed':
+    'De kaart laadt niet. "Huidige locatie" werkt wel; op de kaart tikken kan later, als je weer bereik hebt.',
+  'picker.tilesFailedOffline':
+    'De kaart laadt niet: geen bereik. "Huidige locatie" werkt wel; op de kaart tikken kan later, als je weer bereik hebt.',
+  'picker.hint': 'Tik op de kaart of sleep de stip naar de plek van de vogel.',
+  'picker.locating': 'Plek zoeken…',
+  'picker.here': 'Huidige locatie',
+  'unplaced.question': {
+    one: 'Waar stond je? De waarneming zonder plek komt daar te staan.',
+    other: 'Waar stond je? Alle {n} waarnemingen zonder plek komen daar te staan.',
+  },
+  'unplaced.choose': { one: 'Plek kiezen', other: 'Plek kiezen voor alle {n}' },
+
+  // Kaart van een sessie (ObservationMap.svelte)
+  'map.zoomIn': 'Inzoomen',
+  'map.uncertain': '(onzeker)',
+  'map.uncertainTitle': 'onzeker',
+  'map.mapsApp': 'kaarten-app',
+  'map.accuracy': '± {m} m · ',
+  'map.clusterCount': '{n} waarnemingen',
+  'map.clusterCountScreenReader': ' waarnemingen',
+  'map.withoutLocation': {
+    one: '1 waarneming zonder locatie staat niet op de kaart.',
+    other: '{n} waarnemingen zonder locatie staan niet op de kaart.',
+  },
+  'map.reload': 'Kaart opnieuw laden',
+
+  // Zeldzaamheid (rarity.ts)
+  'rarity.1': 'algemeen',
+  'rarity.2': 'vrij algemeen',
+  'rarity.3': 'zeldzaam',
+  'rarity.4': 'zeer zeldzaam',
 } satisfies Record<string, Entry>;
