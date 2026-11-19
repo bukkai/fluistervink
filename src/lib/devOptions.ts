@@ -1,6 +1,7 @@
 // Ontwikkelopties: nieuwe functies die eerst alleen de eigenaar ziet, tot ze
 // bevallen (docs/roadmap-android.md, besloten 11 nov). Per telefoon in
-// localStorage; het kaartje bij Instellingen staat alleen bij de eigenaar.
+// localStorage; bij Instellingen alleen bij de eigenaar, in de groep waar ze
+// later als gewone keuze komen (DevOptions.svelte).
 
 /**
  * - `oortjesMicrofoon`: de microfoon van Bluetooth-oortjes (microphone.ts)

@@ -8,7 +8,6 @@
   import ShareSettings from './ShareSettings.svelte';
   import PreferenceSettings from './PreferenceSettings.svelte';
   import TrektelSettings from './TrektelSettings.svelte';
-  import DevSettings from './DevSettings.svelte';
 
   let code = $state(getAccessCode());
   let status = $state<'idle' | 'busy' | 'ok' | 'error'>('idle');
@@ -52,23 +51,19 @@
 
 <!-- Volgorde van het veld naar thuis: wat de app verstaat, de bediening, tellen,
      nalopen en export, en dan je gegevens (docs/ontwerp.md, Instellingen) -->
-<PreferenceSettings group="understanding" />
+<PreferenceSettings group="understanding" {isOwner} />
 
-<PreferenceSettings group="field" />
+<PreferenceSettings group="field" {isOwner} />
 
 <TrektelSettings />
 
-<PreferenceSettings group="review" />
+<PreferenceSettings group="review" {isOwner} />
 
 <BackupSettings />
 
 <RecordingSettings />
 
 <ShareSettings showName={!isOwner} />
-
-{#if isOwner}
-  <DevSettings />
-{/if}
 
 <p class="version">
   Fluistervink{CHANNEL === 'beta' ? ' beta' : ''} · {t('settings.version', {
