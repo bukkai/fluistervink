@@ -26,6 +26,7 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 | `plan-soortgroepen.md` | zoogdieren, reptielen en amfibieën, dagvlinders en libellen inspreken; afgerond 16 nov (voor iedereen, standaard aan) |
 | `plan-offline.md` | offline wachtrij: zonder bereik doorvogelen, vanzelf verwerken; afgerond, op stable sinds 18 nov |
 | `plan-ios.md` | iPhone-app; voorstel, na de lancering |
+| `plan-wakeword.md` | wake word "Fluistervink" (openWakeWord); model trainen en meten, los van de app (scripts in `wakeword/`) |
 | `plan-robuustheid.md` | edge cases die een tester zou proberen, en hoe we ze blijvend afdekken; code klaar, nog proberen op de telefoon en testset-opnames |
 
 ## Naslag

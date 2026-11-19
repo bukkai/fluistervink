@@ -187,6 +187,8 @@ def main():
     p.add_argument("--acav", type=int, default=1_000_000, help="aantal vensters uit de 2000 uur")
     p.add_argument("--uit", default="modellen/fluistervink.onnx")
     p.add_argument("--zaad", type=int, default=7)
+    p.add_argument("--breed", type=int, default=64, help="neuronen per laag")
+    p.add_argument("--varianten", type=int, default=2, help="mengsels per positief")
     a = p.parse_args()
     rnd = random.Random(a.zaad)
     np.random.seed(a.zaad)
@@ -219,7 +221,7 @@ def main():
     pos_v, neg_v = [], []
     for f in pos_train:
         x = lees(f)
-        for _ in range(2):
+        for _ in range(a.varianten):
             pos_v.append(mix.maak(x))
         # Alleen het begin ("Fluister…") is géén wake word: niet te vroeg afgaan
         neg_v.append(mix.maak(x[: int(len(x) * rnd.uniform(0.4, 0.7))]))
@@ -250,7 +252,7 @@ def main():
         acav = None
         print("  geen gewone audio (data/oww/acav_2000h.npy)")
 
-    model = Model()
+    model = Model(a.breed)
     opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-3)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, a.epochs)
     for epoch in range(a.epochs):

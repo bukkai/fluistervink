@@ -24,7 +24,28 @@ Hoe je traint en meet: `wakeword/README.md`.
 
 ## Uitslagen
 
-Zie hieronder per poging. "Herkend" is op aparte synthetische stemmen in apart veldgeluid, dus een schatting: echte stemmen kunnen het slechter doen.
+"Herkend" is op aparte synthetische stemmen in apart veldgeluid, dus een schatting: echte stemmen kunnen het slechter doen. "Veld" is 0,74 uur aparte veldopnames (te weinig voor een harde uitspraak per uur), "gewoon" de 10,7 uur gewone audio.
+
+| Poging (18–19 nov) | Drempel | Herkend | Vals veld per uur | Vals gewoon per uur |
+| --- | --- | --- | --- | --- |
+| 1. Alleen eigen negatieven, groot model (128) | 0,9 | 89% | 191 | – |
+| 2. Plus dropout, "…vink" als negatief, klein model (64) | 0,9 | 51% | 0 | 9,4 |
+| 3. Plus 2000 uur gewone audio | 0,9 | 56% | 0 | 2,0 |
+| 3. | 0,8 | 70% | 0 | 6,2 |
+| 4. Plus 9000 extra positieven (12.000) | 0,9 | 73% | 0 | 6,1 |
+| 4. | 0,95 | 59% | 0 | 2,1 |
+| 5. Groter model (128), 50 rondes, 3 mengsels per positief | 0,98 | 77% | 1,3 | 8,0 |
+
+Poging 4 (`train.py` met de standaardinstellingen) is de beste. Een groter model (5) leert weer de stemmen: meer herkend, maar veel vaker vals.
+
+Wat opvalt:
+
+- **Zonder veel gewone audio leert het model de stemmen, niet het woord** (poging 1: op de trainingsdata bijna perfect, in het veld 191 valse meldingen per uur). De 2000 uur van openWakeWord halveren de valse meldingen op gewone audio bij dezelfde herkenning.
+- **Meer stemvariatie helpt het meest voor de herkenning** (poging 4: van 56 naar 73% bij drempel 0,9).
+- **De echte veldopnames gaan zelden vals af** (0 per uur vanaf drempel 0,9), ook al zeggen ze vaak "vink". Synthetische zinnen van aparte stemmen gaan veel vaker af (21% bij 0,9); die meting is streng, want het zijn ook nieuwe stemmen, en veel van die zinnen eindigen op "…vink".
+- **Echte opnames van de eigenaar** (de enige drie in de testset): in een lange feedbackzin herkend (0,98), "een kraai en een luistervink" niet (0,20, terecht), en een los "Fluistervink." met veel geruis (wind?) nooit (0,00). Dat laatste is zorgelijk: buiten waait het.
+
+**Stand:** ongeveer 75% herkend bij weinig valse meldingen. Het doel (90% bij ≤ 1 per uur) haalt dit met alleen synthetische stemmen nog niet. De grootste stap is nu echte opnames (volgende stap 1).
 
 ## Volgende stappen
 
