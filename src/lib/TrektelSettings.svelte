@@ -11,7 +11,7 @@
 </script>
 
 <section class="card">
-  <div class="card-head"><h2>{t('trektel.title')}</h2></div>
+  <div class="card-head"><h2>{t('prefs.groupCounting')}</h2></div>
   <div class="card-body stack">
     <label class="check">
       <input type="checkbox" bind:checked={enabled} onchange={toggle} />
