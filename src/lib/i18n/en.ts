@@ -250,6 +250,8 @@ export const en: Dictionary = {
     one: '1 voice note in the queue (see Voice notes)',
     other: '{n} voice notes in the queue (see Voice notes)',
   },
+  'log.trektelBacklog':
+    'Your migration count kept going: {n} voice notes from the last {minutes} minutes are in and are now being processed in order.',
   'log.observations': 'Observations',
   'log.speciesCount': { one: '1 species', other: '{n} species' },
   'log.observationCount': { one: '1 observation', other: '{n} observations' },
