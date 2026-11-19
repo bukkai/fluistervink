@@ -27,6 +27,9 @@ Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/ro
 
 Elk punt na het proberen hier weghalen.
 
+- **Correctie oud→nieuw** (#305, gemerged): gesproken bevestiging aan, oortjes in, "drie holenduiven" en dan "nee, wulpen" → "Holenduif wordt wulp, 3". Ook "nog twee erbij" → "Wulp, 3 wordt 5".
+- **Niet begrepen redden** (#309, nog niet gemerged; niet in de browser bekeken): een sessie met een niet begrepen uitspraak stoppen → kaart "Niet begrepen" boven de waarnemingen; "Maak er een waarneming van" opent het formulier met Vogel onbekend (Annuleren en de terugknop halen hem weg), "Geen waarneming" zet hem weg. Na de export geen kaart meer.
+
 - **Spanje** (#308, ontwikkeloptie "Spanje (proef)", `docs/plan-andere-landen.md`): aanzetten laadt de app opnieuw met de vogels van Spanje. Inspreken: "drie overvliegende bijeneters", "blauwe ekster", "twee rode patrijzen", "zingende kleine zwartkop" (niet zwartkop), "duponts leeuwerik" (onzeker, dwaalgast). Uitzetten: weer de Nederlandse lijst. Synthetische testset: 37/40 met spraakherkenning, tegen 26/40 met de Nederlandse lijst. Daarna: echte opnames uit Spanje, en beslissen over de keuze bij Instellingen en de vraag bij het starten.
 
 - **English** (#299 en #300, ontwikkeloptie): aanzetten laadt de app opnieuw in het Engels. Inspreken: "six Woodpigeons flying over", "no, Brambling instead of Chaffinch", "three more", "scratch that last one", "Buzzard, half a mile north-east". De gesproken bevestiging is Engels maar met een Nederlandse stem (native, later). Uitleg, privacy, welkom en Probeer het eens blijven Nederlands.
