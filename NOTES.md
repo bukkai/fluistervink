@@ -29,7 +29,7 @@ Elk punt na het proberen hier weghalen.
 
 - **Correctie oud→nieuw** (#305, gemerged): gesproken bevestiging aan, oortjes in, "drie holenduiven" en dan "nee, wulpen" → "Holenduif wordt wulp, 3". Ook "nog twee erbij" → "Wulp, 3 wordt 5".
 - **Niet begrepen redden** (#309, gemerged 19 nov; nog nergens bekeken): een sessie met een niet begrepen uitspraak stoppen → kaart "Niet begrepen" boven de waarnemingen; "Maak er een waarneming van" opent het formulier met Vogel onbekend (Annuleren en de terugknop halen hem weg), "Geen waarneming" zet hem weg. Na de export geen kaart meer.
-- **Met de stem aangepast** (#311, nog niet gemerged; nog nergens bekeken): "drie holenduiven", dan "nee, wulpen", stoppen → in de lijst "Met de stem aangepast, was: 3 × Holenduif"; weg na Klopt, aanpassen of "Alles klopt".
+- **Met de stem aangepast** (#311, gemerged 20 nov; nog nergens bekeken): "drie holenduiven", dan "nee, wulpen", stoppen → in de lijst "Met de stem aangepast, was: 3 × Holenduif"; weg na Klopt, aanpassen of "Alles klopt".
 
 - **English** (#299 en #300, ontwikkeloptie): aanzetten laadt de app opnieuw in het Engels. Inspreken: "six Woodpigeons flying over", "no, Brambling instead of Chaffinch", "three more", "scratch that last one", "Buzzard, half a mile north-east". De gesproken bevestiging is Engels maar met een Nederlandse stem (native, later). Uitleg, privacy, welkom en Probeer het eens blijven Nederlands.
 
