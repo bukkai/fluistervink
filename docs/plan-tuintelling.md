@@ -4,16 +4,21 @@ Voorstel van 20 nov 2026, nog niet goedgekeurd. Voortgekomen uit het idee "Aanha
 
 ## De telling
 
-Bekend uit eerdere edities (2025: 24–26 jan, 2026: 30 jan–1 feb); de editie van 2027 is nog niet aangekondigd:
+Nagegaan op 20 nov bij Vogelbescherming zelf ([tuinvogeltelling](https://www.vogelbescherming.nl/tuinvogeltelling), [hoe werkt het](https://www.vogelbescherming.nl/tuinvogeltelling/hoe-werkt-het), [veelgestelde vragen](https://www.vogelbescherming.nl/tuinvogeltelling/veel-gestelde-vragen)):
 
-- Vermoedelijk **vrijdag 29 t/m zondag 31 januari 2027** (laatste weekend van januari; nog bevestigen).
+- **Vrijdag 29 t/m zondag 31 januari 2027** (bevestigd op de site van Vogelbescherming). Vrijdag is ook de scholenteldag.
 - Je telt **één keer een half uur** in je tuin of op je balkon.
 - Per soort geef je het **hoogste aantal dat je tegelijk zag** op (eerst 3 koolmezen, later 5 tegelijk: je geeft 5 op).
 - Vogels die **alleen overvliegen tellen niet mee**.
+- Voor- en achtertuin samen mag: ook dan het hoogste aantal tegelijk, niet optellen. Mannetjes en vrouwtjes samen in één vakje.
+- Alleen wat je in dat half uur écht zag ("je merel" die er nu niet is, telt niet). Weinig of geen vogels doorgeven is ook nuttig.
+- Een ingestuurde telling is **niet te corrigeren**; een vergeten vogel stuur je los in als nieuwe telling met alleen die soort.
 - Invoeren via de web-app **mijntuinvogeltelling.nl** van Vogelbescherming, van vrijdagochtend tot maandag 12:00.
-- Ruim 100.000 deelnemers per jaar, veel aandacht in de media (Vroege Vogels, regionale omroepen, lokale kranten).
+- In 2026 **136.903 deelnemers** en 1,9 miljoen vogels; de koolmees werd voor het eerst nummer één (de huismus was dat 23 jaar). Organisatie door Vogelbescherming, met Sovon; veel aandacht in de media (Vroege Vogels, regionale omroepen, lokale kranten).
 
-Bronnen: RODI over de telling van [2026](https://www.rodi.nl/dijkenwaard/nieuws/481392/doe-mee-aan-de-nationale-tuinvogeltelling-2026) en [2025](https://www.rodi.nl/haarlem/nieuws/427192/de-nationale-tuinvogeltelling-2025), [Vroege Vogels over 2025](https://www.bnnvara.nl/vroegevogels/artikelen/ruim-100000-mensen-tellen-1-miljoen-vogels-tuinvogeltelling-2025).
+Ook in België is het vogelweekend (Natuurpunt, Het Grote Vogelweekend) op 30–31 januari 2027; buiten de scope van dit plan (`docs/roadmap.md`, Kader: landen en talen), wel goed om te weten voor Vlaamse gebruikers.
+
+Eerdere bronnen: RODI over de telling van [2026](https://www.rodi.nl/dijkenwaard/nieuws/481392/doe-mee-aan-de-nationale-tuinvogeltelling-2026) en [2025](https://www.rodi.nl/haarlem/nieuws/427192/de-nationale-tuinvogeltelling-2025), [Vroege Vogels over 2025](https://www.bnnvara.nl/vroegevogels/artikelen/ruim-100000-mensen-tellen-1-miljoen-vogels-tuinvogeltelling-2025).
 
 ## Tijdlijn
 
@@ -32,12 +37,19 @@ Voorwaarde: Fluistervink staat half januari openbaar in Play. Lukt dat niet, dan
 
 ## Uitzoeken
 
-### Bij de telling
+### Bij de telling (uitgezocht 20 nov)
 
-1. **Data en regels 2027**: officiële datums, en of de regels gelijk blijven (tuin en balkon, half uur, overvliegers niet).
-2. **Invoer bij Vogelbescherming**: heeft mijntuinvogeltelling.nl een import, een API of een link met de soorten erin? Waarschijnlijk niet. Dan een overzicht in de volgorde en met de namen van hun formulier, zodat overtypen in een minuut kan. Daarvoor hun soortenlijst en de volgorde ophalen (zonder in te loggen: eventueel een proefinvoer door de eigenaar).
-3. **Waarneming.nl**: wat doen vogelaars daar met hun tuintelling (een gewone lijst, een project, niets)? Bepaalt of de gewone export erbij hoort, en of overvliegers dan wel mee mogen (bij waarneming.nl wel, bij de tuintelling niet).
-4. **Houding van Vogelbescherming**: ziet de organisatie een app die "voor" hun telling werkt als hulp of als concurrent van de eigen app? Bepaalt of we ze vooraf benaderen (en hoe), en welke woorden we mogen gebruiken. Geen logo of huisstijl van Vogelbescherming gebruiken, en niet de indruk wekken dat het een officiële app is.
+1. **Data en regels 2027**: gedaan, zie De telling hierboven. Datums bevestigd, regels gelijk aan 2026.
+2. **Invoer bij Vogelbescherming**: **geen import, geen API, geen link met soorten erin.** Uit de openbare code van de web-app (Angular, `mijntuinvogeltelling.vogelbescherming.nl`): het formulier stuurt één JSON-object naar hun eigen gateway, met:
+   - wie: voornaam, achternaam, e-mailadres (verplicht), eventueel telefoon; nieuwsbrief;
+   - waar: **postcode en huisnummer** (geen GPS; hun database koppelt de telling aan het adres), woonadres of ander adres, tuin of balkon;
+   - wanneer: **datum en begintijd** van het half uur (alleen de drie teldagen);
+   - wie telde: aantal tellers, en hoe ervaren ("een beginnende vogelaar" e.d.);
+   - per soort een aantal, met een eigen soort-ID; ze controleren zelf op verdachte aantallen.
+
+   Een telling vooraf invullen via de URL kan niet (de app leest alleen parameters voor inloggen en een campagnecode). Zelf naar hun gateway posten doen we niet: niet bedoeld voor anderen, en het zou namens de gebruiker een formulier insturen. **Dus: overtypen**, en ons overzicht moet dat zo makkelijk mogelijk maken. Het formulier toont eerst vaste soorten, de rest via "vogelsoort toevoegen". De papieren [tellijst](https://www.vogelbescherming.nl/docs/c9f893fb-55b7-4d7c-87b6-7fe0626bbd3a.pdf) heeft 25 soorten op alfabet: Boomklever, Boomkruiper, Ekster, Gaai, Groenling, Grote bonte specht, Halsbandparkiet, Heggenmus, Houtduif, Huismus, Kauw, Koolmees, Koperwiek, Kramsvogel, Merel, Pimpelmees, Roodborst, Spreeuw, Staartmees, Stadsduif, Turkse tortel, Vink, Winterkoning, Zanglijster, Zwarte kraai. Alle 25 staan met dezelfde naam in onze lijst (`data/soorten-nl.json`, alleen hoofdletters anders). Het formulier gaat pas in januari open; dan nog nagaan of de volgorde in de web-app gelijk is aan de tellijst.
+3. **Waarneming.nl**: geen koppeling gevonden; de tuintelling loopt alleen via Vogelbescherming, en niemand beschrijft dat je hem ook bij waarneming.nl invoert. Dus: de sessie blijft een gewone sessie die je óók naar waarneming.nl kunt exporteren (met overvliegers, elke waarneming los, zoals nu); het tuintelresultaat is een apart overzicht. Geen extra exportvorm nodig.
+4. **Houding van Vogelbescherming**: niets openbaars over andere apps bij de telling. Wel: ze hebben een eigen web-app met quiz, herkennen en vogelgids, en die app kent een verwijzingscode (`referralCode`) en campagnes van partners (een vlag "intratuinactie"). Ze werken dus met partners en kunnen meten wie via wie binnenkomt. Dat maakt een vriendelijke vraag kansrijker dan zwijgend ernaast staan: Fluistervink stuurt tellers naar hún formulier, en kan hun verwijzingscode meegeven in de link als ze dat willen. Positie: aanvulling ("tel met je stem, voer in bij Vogelbescherming"), geen concurrent; geen logo of huisstijl, niet de indruk wekken dat het een officiële app is.
 
 ### In de app
 
@@ -47,15 +59,15 @@ Voorwaarde: Fluistervink staat half januari openbaar in Play. Lukt dat niet, dan
    - Wat gaat er mee naar waarneming.nl: elke waarneming los (zoals nu), of één per soort met het maximum?
 6. **Overvliegers**: blijven in de lijst (het model zet al "overvliegend"), maar tellen niet mee in het tuintelresultaat, met een korte uitleg in het overzicht ("3 overvliegend, telt niet mee").
 7. **Half uur**: bij het starten van een tuintelling loopt een timer van 30 minuten, zichtbaar en met een tril (en de gesproken bevestiging, als die aanstaat) bij 5 minuten voor het eind en bij het eind. Daarna stopt de sessie vanzelf; wat nog in de wachtrij zit, wordt gewoon verwerkt.
-8. **Overzicht na afloop**: per soort het hoogste aantal, in de volgorde van het formulier, met een knop Kopiëren en een link naar mijntuinvogeltelling.nl. Onzekere waarnemingen eerst nalopen (zoals nu), anders tellen ze mee met een merkteken.
+8. **Overzicht na afloop**: bovenaan datum en begintijd (die vraagt het formulier), dan de 25 soorten van het formulier op alfabet met het hoogste aantal (alleen die je zag), daarna de rest ("via vogelsoort toevoegen"). Een knop Kopiëren en een link naar mijntuinvogeltelling.nl. Omdat een ingestuurde telling niet te corrigeren is, is dit het moment om te controleren: onzekere waarnemingen eerst nalopen, en een "onbekend" (Mees onbekend, Duif onbekend; die staan in onze lijst) kan niet in hun formulier, dus vraagt het overzicht om een soort te kiezen of hem weg te laten. Aantal tellers en adres vult de gebruiker zelf in bij Vogelbescherming; Fluistervink stuurt niets naar hen.
 9. **Hoe je inspreekt**: de knop, of de microfoon steeds aan zoals bij de trektelling (telefoon op de vensterbank). Doorlopend luisteren is makkelijk maar vangt in een huiskamer veel op (kinderen, tv, radio) en kost meer. Meten met een paar proeftellingen bij het raam, met en zonder huisgenoten. Voorlopig: de knop als standaard, doorlopend als keuze.
-10. **Soorten en woorden van beginners**: de tuinvogels staan allemaal in de lijst. Wel nalopen met de testset: "mus" (huismus of ringmus), "mees", "kraai", "duif", "specht", "roodborstje", "pimpelmeesje", "ekster" en "spreeuw" in de verkleinvorm en in het meervoud. Bij twijfel liever onzeker met kandidaten dan een gok.
+10. **Soorten en woorden van beginners**: de tuinvogels staan allemaal in de lijst, plus Mees, Mus, Duif, Kraai en Specht "onbekend". De prompt zegt al dat bijnamen ook als verkleinwoord gelden ("twee pimmetjes"). Wel nalopen met de testset: "mus" (huismus of ringmus), "mees", "kraai", "duif", "specht", "roodborstje", "pimpelmeesje", "ekster" en "spreeuw" in de verkleinvorm en in het meervoud. Bij twijfel liever onzeker met kandidaten dan een gok.
 11. **Nieuwelingen**: voor velen wordt dit de eerste keer. Het welkom moet een tuinteller zonder omweg naar "Tuintelling starten" brengen, en Probeer het eens moet werken met alleen "een merel".
 12. **Waar de knop staat**: tijdens het telweekend een duidelijke knop "Tuintelling" op het startscherm, daarbuiten weg (of onder Instellingen). Zo hoeft er niets permanent bij.
 
 ### Kosten en capaciteit
 
-13. **Piek in één weekend.** Een paar honderd tot duizend tellers met Fluistervink is denkbaar. Een half uur doorlopend luisteren kost grofweg $0,15–0,20 per teller (spraakherkenning ~$0,0045 per minuut, gemeten bij de trektelling van 19 nov, plus het model); met de knop veel minder. Bij 1000 tellers dus tot ~$200. Vóór de telling: de plafonds bij OpenAI en Anthropic voor het weekend ophogen, nagaan of de daglimiet per installatie (`worker/index.ts`) een half uur ruim toelaat, en een duidelijke melding als een plafond bereikt is. Ook aanmelden (Play Integrity, Turnstile) onder piekbelasting nalopen.
+13. **Piek in één weekend.** Een paar honderd tot duizend tellers met Fluistervink is denkbaar. Een half uur doorlopend luisteren kost grofweg $0,15–0,20 per teller (spraakherkenning ~$0,0045 per minuut, gemeten bij de trektelling van 19 nov, plus het model); met de knop veel minder. Bij 1000 tellers dus tot ~$200. Vóór de telling: de plafonds bij OpenAI en Anthropic voor het weekend ophogen, de daglimiet per installatie laat een half uur ruim toe (nagegaan 20 nov: 5 uur spraak en 1500 modelverzoeken per dag, 60 verzoeken per minuut, `worker/index.ts` en `wrangler.jsonc`; aanmelden ook 60 per minuut per IP-adres, krap alleen als een hele klas achter één IP-adres tegelijk installeert), en een duidelijke melding als een plafond bereikt is. Ook aanmelden (Play Integrity, Turnstile) onder piekbelasting nalopen.
 14. **Delen met de ontwikkelaar**: honderden gedeelde sessies in één weekend zijn waardevol voor de testset (veel nieuwe sprekers, huiskamergeluid), maar ook veel. Opnames alleen als de gebruiker dat apart aanzet, zoals nu; de opslag in de proxy nagaan.
 15. **Privacy**: als er cijfers naar buiten gaan (Promotie, terugblik), alleen totalen van gedeelde sessies, en `#privacy` noemt dat.
 
