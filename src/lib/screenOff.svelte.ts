@@ -14,6 +14,7 @@ import {
 import { submitRecording } from './queue';
 import { MIN_DURATION_MS } from './recorder.svelte';
 import { takeChunkLookup } from './trektelRecorder.svelte';
+import { trektelLookup } from './trektelPosition';
 
 // Proef: opnemen met het scherm uit (docs/roadmap-android.md stap 3,
 // ontwikkeloptie `schermUit`). Met het scherm uit start en stopt de
@@ -61,7 +62,7 @@ const NO_POSITION: PositionLookup = {
   error: 'opname met het scherm uit, app was gesloten',
 };
 
-/** Trektelstuk waarvan de webcode het begin niet hoorde */
+/** Trektelstuk waarvan de webcode het begin niet hoorde, en de telling nog geen plek had */
 const NO_CHUNK_POSITION: PositionLookup = {
   source: 'none',
   waitMs: 0,
@@ -89,11 +90,13 @@ export async function receiveScreenOffRecording(
   const hidden = document.hidden;
   const context = { sessionId: recording.sessieId };
   const trektel = recording.trektel === true;
-  // Een trektelstuk: de positie die bij het begin van het stuk is opgevraagd
-  const position =
-    lookup ??
-    (trektel ? takeChunkLookup(recording.startedAt) : undefined) ??
-    Promise.resolve(trektel ? NO_CHUNK_POSITION : NO_POSITION);
+  // Een trektelstuk: de positie die bij het begin van het stuk is opgevraagd.
+  // Hoorde de webcode het begin niet, dan de plek van de telling (je staat
+  // stil; trektelPosition.ts), en anders komt de eerste meting er later bij.
+  const chunkLookup = () =>
+    takeChunkLookup(recording.startedAt) ??
+    Promise.resolve(trektelLookup(recording.sessieId) ?? NO_CHUNK_POSITION);
+  const position = lookup ?? (trektel ? chunkLookup() : Promise.resolve(NO_POSITION));
   try {
     const audio = toBlob(recording);
     await submitRecording(
