@@ -49,6 +49,7 @@ import { setPreference } from './preferences';
 import { UNKNOWN_PLACE_ACCURACY } from './spokenPlace';
 import { distanceMeters } from './geo';
 import { receiveScreenOffRecording } from './screenOff.svelte';
+import { noteTrektelFix, resetTrektelPosition, startTrektelPosition } from './trektelPosition';
 
 // De wachtrij van begin tot eind, met een nagebootst model: wat het model
 // teruggeeft gaat door de echte validatie (parseResponse) en wordt echt in de
@@ -1271,6 +1272,45 @@ describe('netwerk weg', () => {
       } else {
         expect(u.status).toBe('failed');
       }
+    },
+  );
+
+  // Stuk waarvan de webcode het begin niet hoorde (pagina stilgezet met het
+  // scherm uit): de plek van de telling, en een betere meting verbetert hem,
+  // ook terwijl het stuk op bereik wacht of mislukt is
+  it.each(Object.entries(STORINGEN))(
+    'storing "%s": een trektelstuk zonder gemeld begin krijgt de plek van de telling',
+    async (_naam, { fetch }) => {
+      vi.stubGlobal('fetch', fetch());
+      const good = { lat: 52.0, lon: 5.9, accuracy: 18, fixedAt: clock };
+      startTrektelPosition(SESSION, clock + 1000, good);
+      const startedAt = clock + 5_000;
+      await receiveScreenOffRecording(
+        {
+          id: `${crypto.randomUUID()}_${startedAt}_61000_trektel.m4a`,
+          sessieId: SESSION,
+          startedAt,
+          durationMs: 61_000,
+          type: 'audio/mp4',
+          data: btoa('aac'),
+          trektel: true,
+        },
+        undefined,
+      );
+      const stored = () => db.utterances.filter((utt) => utt.trektel === true).first();
+      await vi.waitFor(async () => {
+        const u = await stored();
+        expect(u?.status !== 'pending' || u.waitingSince !== undefined).toBe(true);
+        expect(u?.position).toEqual(good);
+      });
+      stopWaiting();
+      expect((await stored())?.positionLookup).toMatchObject({ source: 'trektel' });
+
+      const better = { ...good, accuracy: 6, fixedAt: startedAt + 600_000 };
+      await noteTrektelFix(better);
+      expect((await stored())?.position).toEqual(better);
+      expect((await stored())?.audio).toBeDefined();
+      resetTrektelPosition();
     },
   );
 

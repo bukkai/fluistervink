@@ -27,6 +27,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026-11-20',
+    topics: {
+      Trektelling: [
+        'Elk stuk van een trektelling krijgt de beste GPS-plek van die telling, want je staat stil. Komt er later een nauwkeurigere meting, dan krijgen de stukken die alsnog.',
+      ],
+    },
+  },
+  {
     date: '2026-11-19',
     topics: {
       Nalopen: [

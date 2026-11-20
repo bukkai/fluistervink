@@ -35,9 +35,11 @@ export interface PositionLookup {
    * opgevraagd. `last_known`: verse meting lukte niet, laatst bekende positie
    * (kan oud zijn). `none`: geen positie. `later`: eerst geen positie, daarna
    * de eerste meting die binnenkwam (GPS zonder fix, bv. in vliegtuigmodus);
-   * `waitMs` is dan hoe veel later.
+   * `waitMs` is dan hoe veel later. `trektel`: trektelstuk met de beste
+   * meting van die telling (je staat stil), ook een oudere of een latere
+   * (`waitMs` is dan hoe veel later), zie `trektelPosition.ts`.
    */
-  source: 'recent' | 'fresh' | 'last_known' | 'none' | 'later';
+  source: 'recent' | 'fresh' | 'last_known' | 'none' | 'later' | 'trektel';
   position?: Position;
   /** Hoe lang het zoeken duurde */
   waitMs: number;
