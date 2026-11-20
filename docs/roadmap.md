@@ -55,6 +55,19 @@ Volgorde besloten op 17 nov. Alles komt eerst achter een ontwikkeloptie op `main
 
 **Ooit:** iPhone-app (`docs/plan-ios.md`); eventueel BirdNET op de telefoon voor soortsuggesties.
 
+## Kader: landen en talen (20 nov)
+
+Fluistervink blijft bewust gericht op waarneming.nl: "inspreken en thuis met één klik naar waarneming.nl" is een scherp verhaal voor een duidelijke groep, en elk land of elke taal vermenigvuldigt het werk (soortenlijst, bijnamen, zeldzaamheid, prompt, testset met sprekers, export, uitleg, support). We breiden uit in ringen, en pas naar de volgende als de vorige zich bewezen heeft:
+
+1. **Nederland, in het Nederlands (nu).** Bewijzen dat de app aanslaat.
+2. **Nederlandse vogelaars in het buitenland.** observation.org is dezelfde database en dekt Europa, dus dezelfde werkwijze en export; regiolijsten (punt 7, proef Spanje). Weinig extra werk, dezelfde mensen.
+3. **Engelstaligen in Europa,** via observation.org en eBird (punt 8). Na de betaalde laag, en pas als er vraag naar is.
+4. **Noord-Amerika.** Een aparte beslissing, eigenlijk een nieuw product op dezelfde motor: eBird voorop (eigen taxonomie, checklists met inspanning), Amerikaans Engels in de herkenning, en alleen samen met de iPhone-app. Niet zonder bewijs uit ring 1–3.
+
+**Signalen om een ring verder te gaan**, vooraf afgesproken zodat het een besluit is en geen geleidelijke verschuiving: een groep gebruikers die na een maand of twee nog wekelijks vogelt, kosten per gebruiker die de betaalde laag dekt, en herhaalde vragen van buiten de huidige ring.
+
+**In de code:** wat specifiek is voor waarneming.nl (export, vertaling van codes, de soortenlijst als bron) blijft aan de rand; de kern (wachtrij, acties van het model, sessies) hoort waarneming.nl niet te kennen. Teksten via `t()` en de taal per uitspraak zijn al goedkope verzekeringen. Nu níet: een eigen, landonafhankelijk soort-ID onder de waarneming.nl-ID's (pas bij ring 4; dan is de vertaling naar eBird-codes een begin), een Amerikaanse testset of reclame buiten Nederland.
+
 ## Bewust niet
 
 Niet zonder overleg (zie ook `CLAUDE.md`, MVP-scope): GPS-track (ook later niet), accounts of multi-user. Overweging 8 nov: later hooguit een **optioneel** account, alleen als iemand daar zelf voor kiest (automatische back-up, nieuwe telefoon); standaard blijft gratis en anoniem.
