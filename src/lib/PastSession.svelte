@@ -15,6 +15,7 @@
   import SessionSummary from './SessionSummary.svelte';
   import { preferenceOn } from './preferences';
   import UncertainReview from './UncertainReview.svelte';
+  import { trackReviewTime } from './reviewTime';
   import { IMPORT_URL, approveSession, exportForWaarneming, markReady } from './waarnemingExport';
 
   // Een afgelopen sessie nalopen en klaarzetten voor waarneming.nl (de
@@ -30,6 +31,15 @@
     resumable,
     justSaved = false,
   }: { session: Session; resumable: boolean; justSaved?: boolean } = $props();
+
+  // Nalooptijd tellen tot "Alles klopt" (reviewTime.ts). Via losse waarden,
+  // niet `session` zelf: elke wijziging (ook het wegschrijven van de tijd)
+  // geeft een nieuw sessie-object, en dan zou het tellen steeds herstarten.
+  let sessionId = $derived(session.id);
+  let reviewing = $derived(!session.readyAt && !session.exportedAt);
+  $effect(() => {
+    if (reviewing) return trackReviewTime(sessionId);
+  });
 
   let observations = $derived(liveQuery(() => listObservations(session.id)));
   let uncertainCount = $derived($observations?.filter((obs) => obs.uncertain).length ?? 0);
@@ -193,7 +203,7 @@
   </dl>
 {/if}
 
-<SessionSummary {session} />
+<SessionSummary {session} observationCount={$observations?.length ?? 0} />
 
 {#if !session.exportedAt}
   <UncertainReview {session} />

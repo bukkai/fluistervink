@@ -5,8 +5,18 @@
   import { liveQuery } from 'dexie';
   import type { Session } from './db';
   import { byGroup, sessionSummary } from './summary';
+  import { reviewMinutes } from './reviewTime';
 
-  let { session }: { session: Session } = $props();
+  let { session, observationCount }: { session: Session; observationCount: number } = $props();
+
+  // "42 waarnemingen, nagelopen in 3 minuten": pas als de sessie klaarstaat,
+  // en alleen als de tijd gemeten is (niet bij sessies van vóór 20 nov 2026)
+  let reviewed = $derived.by(() => {
+    if (!(session.readyAt || session.exportedAt) || session.reviewMs === undefined) return;
+    const minutes = reviewMinutes(session.reviewMs);
+    const time = minutes === 0 ? t('summary.underAMinute') : t('summary.minutes', { n: minutes });
+    return t('summary.reviewedIn', { n: observationCount, time });
+  });
 
   const lines = $derived(liveQuery(() => sessionSummary(session)));
   let groups = $derived(byGroup($lines ?? []));
@@ -44,6 +54,9 @@
       >
     </div>
     <div class="card-body">
+      {#if reviewed}
+        <p class="muted reviewed">{reviewed}</p>
+      {/if}
       {#each groups as group (group.title ?? '')}
         {#if group.title}
           <h3>{group.title}</h3>
@@ -62,6 +75,10 @@
 {/if}
 
 <style>
+  .reviewed {
+    margin: 0 0 0.5rem;
+  }
+
   h3 {
     margin: 0.75rem 0 0.25rem;
     font-size: 0.95rem;

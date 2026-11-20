@@ -499,6 +499,12 @@ export const nl = {
   'summary.copy': 'Kopiëren',
   'summary.copied': 'Gekopieerd',
   'summary.heading': '{title}, {date}: {n} soorten',
+  'summary.reviewedIn': {
+    one: '1 waarneming, nagelopen in {time}',
+    other: '{n} waarnemingen, nagelopen in {time}',
+  },
+  'summary.minutes': { one: '1 minuut', other: '{n} minuten' },
+  'summary.underAMinute': 'minder dan een minuut',
   // Bewerkformulier (ObservationEditor.svelte)
   'editor.species': 'Soort',
   'editor.speciesList': 'Soorten',
