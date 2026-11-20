@@ -53,11 +53,33 @@ export interface PrivacyPage {
   css: string;
 }
 
+type Language = 'nl' | 'en';
+
+/** Per taal: bronbestand, naam van de pagina en de kop (Engels: docs/plan-engels.md) */
+const PAGES: Record<
+  Language,
+  { component: string; name: string; title: string; description: string }
+> = {
+  nl: {
+    component: 'Privacy.svelte',
+    name: 'privacy',
+    title: 'Privacy · Fluistervink',
+    description: 'Wat Fluistervink met je opnames, locaties en waarnemingen doet.',
+  },
+  en: {
+    component: 'Privacy.en.svelte',
+    name: 'privacy-en',
+    title: 'Privacy · Fluistervink',
+    description: 'What Fluistervink does with your recordings, locations and observations.',
+  },
+};
+
 /** De losse pagina: HTML en de stylesheet (algemene stijl van de app plus die van de pagina). */
-export async function renderPrivacyPage(): Promise<PrivacyPage> {
-  const source = readFileSync(join(root, 'src/lib/Privacy.svelte'), 'utf8');
+export async function renderPrivacyPage(language: Language = 'nl'): Promise<PrivacyPage> {
+  const page = PAGES[language];
+  const source = readFileSync(join(root, 'src/lib', page.component), 'utf8');
   const compiled = compile(source, {
-    filename: 'Privacy.svelte',
+    filename: page.component,
     generate: 'server',
     css: 'external',
   });
@@ -74,15 +96,15 @@ export async function renderPrivacyPage(): Promise<PrivacyPage> {
 
   const { body } = render(Privacy, { props: { standalone: true } });
   const html = `<!doctype html>
-<html lang="nl">
+<html lang="${language}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
-    <title>Privacy · Fluistervink</title>
-    <meta name="description" content="Wat Fluistervink met je opnames, locaties en waarnemingen doet." />
+    <title>${page.title}</title>
+    <meta name="description" content="${page.description}" />
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="/privacy.css" />
+    <link rel="stylesheet" href="/${page.name}.css" />
   </head>
   <body>
     <header>
@@ -98,16 +120,19 @@ ${body}
   return { html, css: `${appCss}\n${pageCss}\n${compiled.css?.code ?? ''}` };
 }
 
-/** Vite-plugin: zet privacy.html en privacy.css naast de app (alleen bij bouwen). */
+/** Vite-plugin: zet privacy.html en privacy.css (en de Engelse privacy-en.*) naast de app (alleen bij bouwen). */
 export function privacyPage(): Plugin {
   return {
     name: 'fluistervink-privacy-page',
     apply: 'build',
     applyToEnvironment: (environment) => environment.name === 'client',
     async generateBundle() {
-      const page = await renderPrivacyPage();
-      this.emitFile({ type: 'asset', fileName: 'privacy.html', source: page.html });
-      this.emitFile({ type: 'asset', fileName: 'privacy.css', source: page.css });
+      for (const language of ['nl', 'en'] as const) {
+        const { name } = PAGES[language];
+        const page = await renderPrivacyPage(language);
+        this.emitFile({ type: 'asset', fileName: `${name}.html`, source: page.html });
+        this.emitFile({ type: 'asset', fileName: `${name}.css`, source: page.css });
+      }
     },
   };
 }

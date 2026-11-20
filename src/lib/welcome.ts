@@ -3,6 +3,7 @@
 // alvast toestemming geven voor microfoon en locatie. Anders vraagt de
 // telefoon dat midden in de eerste waarneming.
 
+import { t } from './i18n';
 import { isNativeApp } from './native';
 
 const WELCOME_DONE_KEY = 'fluistervink.welcomeDone';
@@ -55,5 +56,5 @@ export async function askPermissions(): Promise<PermissionResult> {
 
 /** Waar je een geweigerde toestemming alsnog aanzet */
 export const permissionSettingsPath = isNativeApp
-  ? 'Instellingen van je telefoon → Apps → Fluistervink → Rechten'
-  : 'Chrome: tik op het icoontje links van het adres → Rechten';
+  ? t('welcome.settingsPathApp')
+  : t('welcome.settingsPathBrowser');

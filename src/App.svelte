@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { t } from './lib/i18n';
+  import { language, t } from './lib/i18n';
   import { timeFormat } from './lib/format';
   import StillBirding from './lib/StillBirding.svelte';
   import { liveQuery } from 'dexie';
@@ -38,10 +38,12 @@
   import Developer from './lib/Developer.svelte';
   import Changelog from './lib/Changelog.svelte';
   import Home from './lib/Home.svelte';
-  import HowItWorks from './lib/HowItWorks.svelte';
+  import HowItWorksEn from './lib/HowItWorks.en.svelte';
+  import HowItWorksNl from './lib/HowItWorks.svelte';
   import PastSession from './lib/PastSession.svelte';
   import PastSessions from './lib/PastSessions.svelte';
-  import Privacy from './lib/Privacy.svelte';
+  import PrivacyEn from './lib/Privacy.en.svelte';
+  import PrivacyNl from './lib/Privacy.svelte';
   import Settings from './lib/Settings.svelte';
   import Statistics from './lib/Statistics.svelte';
   import Welcome from './lib/Welcome.svelte';
@@ -311,9 +313,9 @@
   {:else if route === 'nieuw'}
     <Changelog />
   {:else if route === 'uitleg'}
-    <HowItWorks />
+    {#if language === 'en'}<HowItWorksEn />{:else}<HowItWorksNl />{/if}
   {:else if route === 'privacy'}
-    <Privacy />
+    {#if language === 'en'}<PrivacyEn />{:else}<PrivacyNl />{/if}
   {:else if route === 'statistieken' && isOwner}
     <Statistics />
   {:else if route === 'developer' && isOwner}

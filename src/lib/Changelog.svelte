@@ -1,15 +1,20 @@
 <script lang="ts">
-  // Wat is er nieuw? De lijst staat in changelog.ts.
+  // Wat is er nieuw? De lijst staat in changelog.ts. De regels zelf zijn alleen
+  // Nederlands (docs/plan-engels.md); in het Engels staat dat erboven.
   import { CHANGELOG, TOPICS } from './changelog';
+  import { language, LOCALE, t } from './i18n';
   import { APP_VERSION } from './log';
 
-  const dateFormat = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'long' });
+  const dateFormat = new Intl.DateTimeFormat(LOCALE, { day: 'numeric', month: 'long' });
   // Middag, zodat een tijdzone de dag niet verschuift
   const formatDate = (date: string) => dateFormat.format(new Date(`${date}T12:00:00`));
 </script>
 
-<a class="back" href="#instellingen">Instellingen</a>
-<h2 class="page-title">Wat is er nieuw?</h2>
+<a class="back" href="#instellingen">{t('menu.settings')}</a>
+<h2 class="page-title">{t('changelog.title')}</h2>
+{#if language !== 'nl'}
+  <p class="dutch">{t('changelog.inDutch')}</p>
+{/if}
 
 {#each CHANGELOG as entry (entry.date)}
   <section class="card">
@@ -27,9 +32,14 @@
   </section>
 {/each}
 
-<p class="version">Je hebt versie {APP_VERSION}</p>
+<p class="version">{t('changelog.version', { version: APP_VERSION })}</p>
 
 <style>
+  .dutch {
+    margin: 0 0 0.75rem;
+    color: var(--muted);
+  }
+
   h3 {
     margin: 0 0 0.5rem;
     font-size: 1rem;

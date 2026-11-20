@@ -1,7 +1,8 @@
 <script lang="ts">
   // Uitleg voor testers en andere geïnteresseerden: hoe je de app gebruikt en
   // wat AI er wel en niet in doet. Kort en zonder technische termen. Houd de
-  // trilpatronen gelijk met feedback.ts.
+  // trilpatronen gelijk met feedback.ts. De Engelse versie staat in
+  // HowItWorks.en.svelte: een wijziging hier hoort in dezelfde PR ook daar.
   import { isNativeApp } from './native';
 </script>
 

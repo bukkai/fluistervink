@@ -66,6 +66,77 @@ export const en: Dictionary = {
     'Never tried it? Give it a go in the garden or at the window: one Blackbird is enough.',
   'home.lastSession': 'Last session',
 
+  // Welkom (Welcome.svelte, welcome.ts)
+  'welcome.title': 'Welcome to Fluistervink',
+  'welcome.lead':
+    'Say what you see or hear as you go. Fluistervink takes the notes, so you can keep watching and listening.',
+  'welcome.howTalk': 'Press the button and just say it:',
+  'welcome.howTalkExample': '"three blackbirds"',
+  'welcome.howTrill': 'One short buzz: saved. No need to look at the screen.',
+  'welcome.howHome': 'At home you review the list and send it on to waarneming.nl.',
+  'welcome.permissionsTitle': 'Microphone and location',
+  'welcome.permissionsLeadBefore': 'The first time, your phone asks whether the app may use your',
+  'welcome.microphone': 'microphone',
+  'welcome.and': 'and',
+  'welcome.location': 'location',
+  'welcome.permissionsLeadAfter':
+    '. Allow it now, so the question doesn’t pop up in the middle of your first observation.',
+  'welcome.permissionsHint':
+    'The microphone is only on while you press the button. The location puts every observation in the right place.',
+  'welcome.permissionsHintApp':
+    'While you’re birding, Fluistervink shows a notification; that keeps the app working with your phone in your pocket.',
+  'welcome.microphoneStatus': 'Microphone: {status}',
+  'welcome.locationStatus': 'Location: {status}',
+  'welcome.granted': 'OK',
+  'welcome.denied': 'not allowed',
+  'welcome.permissionsMissing':
+    'Without the microphone you can’t speak anything in, and without location your observations won’t be on the map. You can still switch them on under {path}.',
+  'welcome.settingsPathApp': 'your phone’s Settings → Apps → Fluistervink → Permissions',
+  'welcome.settingsPathBrowser': 'Chrome: tap the icon to the left of the address → Permissions',
+  'welcome.tryTitle': 'Give it a try',
+  'welcome.tryLead': 'Say something as if you were outside, for example',
+  'welcome.tryExample': '"three blackbirds and a singing robin"',
+  'welcome.tryNothingSaved': 'Nothing is saved.',
+  'welcome.shareTitle': 'Will you help?',
+  'welcome.shareLead':
+    'Fluistervink is still being developed, by a single developer, Stephan. What you say and correct shows where the app still gets things wrong.',
+  'welcome.shareText':
+    'After each session, may the app send the developer what you said (as text), what the app made of it, your corrections and feedback, and the locations of your observations? Not the recordings, unless you switch that on in Settings. Only the developer can read it, and you can switch it off at any time.',
+  'welcome.asking': 'One moment…',
+  'welcome.allow': 'Allow',
+  'welcome.start': 'Let’s go',
+  'welcome.next': 'Next',
+  'welcome.skip': 'Skip',
+  'welcome.step': 'Step {i} of {n}',
+
+  // Probeer het eens (TryOut.svelte, tryout.ts)
+  'tryout.listening': 'Listening…',
+  'tryout.recording': 'Done? Tap again · {s} s',
+  'tryout.starting': 'Switching on the microphone…',
+  'tryout.again': 'Once more',
+  'tryout.tap': 'Tap and say it',
+  'tryout.trillNothing': 'Two short buzzes: nothing recognised. Say it again.',
+  'tryout.trillUncertain':
+    'A short and a long buzz: in a session that means saved, but uncertain. You review it at home.',
+  'tryout.trillSaved': 'One short buzz: in a session that means saved.',
+  'tryout.micDenied':
+    'The app isn’t allowed to use the microphone. You can switch it on under {path}.',
+  'tryout.unsupported': 'This browser can’t record.',
+  'tryout.heard': 'Fluistervink heard:',
+  'tryout.heardNothing': 'Fluistervink didn’t catch anything.',
+  'tryout.uncertain': 'uncertain',
+  'tryout.note': 'This was just a try: nothing has been saved.',
+  'tryout.or': ' or ',
+  'tryout.audioLimit': 'The daily limit for speech has been reached. Try again tomorrow.',
+  'tryout.messageLimit': 'The daily limit for voice notes has been reached. Try again tomorrow.',
+  'tryout.failed': 'That didn’t work just now. Please try again.',
+  'tryout.offline': 'You have no connection right now. Try again when you’re back online.',
+
+  // Wat is er nieuw? (Changelog.svelte)
+  'changelog.title': 'What’s new?',
+  'changelog.inDutch': 'The list of changes is only available in Dutch for now.',
+  'changelog.version': 'You have version {version}',
+
   // Herinnering aan de export
   'reminder.unreviewed': {
     one: '1 session from more than a week ago hasn’t been reviewed yet.',

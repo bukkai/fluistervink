@@ -26,7 +26,7 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 | `plan-soortgroepen.md` | zoogdieren, reptielen en amfibieën, dagvlinders en libellen inspreken; afgerond 16 nov (voor iedereen, standaard aan) |
 | `plan-offline.md` | offline wachtrij: zonder bereik doorvogelen, vanzelf verwerken; afgerond, op stable sinds 18 nov |
 | `plan-ios.md` | iPhone-app; voorstel, na de lancering |
-| `plan-engels.md` | de app in het Engels: één app met een taalkeuze; voorstel 19 nov, na de betaalde laag; stap 1 (woordenboek), 2 (Engelse namen) en 3 (ontwikkeloptie "English") gedaan |
+| `plan-engels.md` | de app in het Engels: één app met een taalkeuze; voorstel 19 nov, na de betaalde laag; stap 1 (woordenboek), 2 (Engelse namen) en 3 (ontwikkeloptie "English") gedaan, van 5 de schermen |
 | `plan-andere-landen.md` | soortenlijsten van andere landen en namen in andere talen; uitgewerkt 20 nov, voor later (eerst West-Europa); proef Spanje gedaan |
 | `plan-robuustheid.md` | edge cases die een tester zou proberen, en hoe we ze blijvend afdekken; code klaar, nog proberen op de telefoon en testset-opnames |
 

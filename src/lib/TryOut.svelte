@@ -5,6 +5,7 @@
   // eens tikken stopt) of vasthouden (loslaten stopt).
   import { onDestroy } from 'svelte';
   import { vibrate } from './feedback';
+  import { t } from './i18n';
   import { logEvent } from './log';
   import { preferenceOn } from './preferences';
   import {
@@ -94,22 +95,22 @@
 
   let label = $derived(
     busy
-      ? 'Even luisteren…'
+      ? t('tryout.listening')
       : recorder.status === 'recording'
-        ? `Klaar? Tik nog eens · ${Math.floor(elapsed / 1000)} s`
+        ? t('tryout.recording', { s: Math.floor(elapsed / 1000) })
         : recorder.status === 'starting'
-          ? 'Microfoon aanzetten…'
+          ? t('tryout.starting')
           : result || error
-            ? 'Nog een keer'
-            : 'Tik en zeg het',
+            ? t('tryout.again')
+            : t('tryout.tap'),
   );
 
   let trill = $derived(
     !result?.lines.length
-      ? 'Twee korte trillen: niets herkend. Zeg het nog eens.'
+      ? t('tryout.trillNothing')
       : result.lines.some((line) => line.uncertain)
-        ? 'Een korte en een lange tril: in een sessie betekent dat opgeslagen, maar onzeker. Die loop je thuis na.'
-        : 'Eén korte tril: in een sessie betekent dat opgeslagen.',
+        ? t('tryout.trillUncertain')
+        : t('tryout.trillSaved'),
   );
 
   function press(event: PointerEvent) {
@@ -149,31 +150,31 @@
 
   <div role="status">
     {#if recorder.status === 'denied'}
-      <p class="error">
-        De app mag de microfoon niet gebruiken. Aanzetten kan bij {permissionSettingsPath}.
-      </p>
+      <p class="error">{t('tryout.micDenied', { path: permissionSettingsPath })}</p>
     {:else if recorder.status === 'unsupported'}
-      <p class="error">Deze browser kan niet opnemen.</p>
+      <p class="error">{t('tryout.unsupported')}</p>
     {:else if error}
       <p class="error">{error}</p>
     {:else if result}
       <div class="result card">
         {#if result.transcript}
-          <p class="heard">Fluistervink verstond: <q>{result.transcript}</q></p>
+          <p class="heard">{t('tryout.heard')} <q>{result.transcript}</q></p>
         {:else}
-          <p class="heard">Fluistervink verstond niets.</p>
+          <p class="heard">{t('tryout.heardNothing')}</p>
         {/if}
         {#if result.lines.length}
           <ul>
             {#each result.lines as line, i (i)}
               <li>
-                {line.text}{#if line.uncertain}<span class="uncertain"> · onzeker</span>{/if}
+                {line.text}{#if line.uncertain}<span class="uncertain">
+                    · {t('tryout.uncertain')}</span
+                  >{/if}
               </li>
             {/each}
           </ul>
         {/if}
         <p class="trill">{trill}</p>
-        <p class="note">Dit was een proef: er is niets bewaard.</p>
+        <p class="note">{t('tryout.note')}</p>
       </div>
     {/if}
   </div>
