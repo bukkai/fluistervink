@@ -51,6 +51,11 @@ Voorwaarde: Fluistervink staat half januari openbaar in Play. Lukt dat niet, dan
 3. **Waarneming.nl**: geen koppeling gevonden; de tuintelling loopt alleen via Vogelbescherming, en niemand beschrijft dat je hem ook bij waarneming.nl invoert. Dus: de sessie blijft een gewone sessie die je óók naar waarneming.nl kunt exporteren (met overvliegers, elke waarneming los, zoals nu); het tuintelresultaat is een apart overzicht. Geen extra exportvorm nodig.
 4. **Houding van Vogelbescherming**: niets openbaars over andere apps bij de telling. Wel: ze hebben een eigen web-app met quiz, herkennen en vogelgids, en die app kent een verwijzingscode (`referralCode`) en campagnes van partners (een vlag "intratuinactie"). Ze werken dus met partners en kunnen meten wie via wie binnenkomt. Dat maakt een vriendelijke vraag kansrijker dan zwijgend ernaast staan: Fluistervink stuurt tellers naar hún formulier, en kan hun verwijzingscode meegeven in de link als ze dat willen. Positie: aanvulling ("tel met je stem, voer in bij Vogelbescherming"), geen concurrent; geen logo of huisstijl, niet de indruk wekken dat het een officiële app is.
 
+   **Contact (20 nov):** de eigenaar kent mensen bij Vogelbescherming. De lead merk & campagnes is gemaild (vraag: bij wie moet ik zijn voor een tuintelmodus). In de week van 23 nov gesprekken met de social media manager en een developer. Namen staan bewust niet in deze (openbare) repo.
+
+   - **Developer:** de grootste winst is een link die het formulier vooraf invult (soort-ID's en aantallen in de URL; adres, e-mail en insturen blijven bij de gebruiker). Verder: de soort-ID's en de volgorde van de vaste soorten in 2027, of er een testomgeving is, en of een verwijzingscode voor Fluistervink kan.
+   - **Social media manager:** of en hoe ze Fluistervink willen noemen (bericht, filmpje, de week ervoor), welke woorden wel en niet, #tuinvogeltelling, en wanneer hun planning voor januari vastligt.
+
 ### In de app
 
 5. **Wat een aantal betekent.** Bij de tuintelling betekent "vijf koolmezen" *nu vijf tegelijk*, niet *vijf erbij*. De belangrijkste ontwerpkeuze. Voorstel: de uitspraken blijven gewone waarnemingen (zodat nalopen, kaart en export werken), en het tuintelresultaat rekent per soort het **maximum** over de waarnemingen van die soort. Open vragen:
