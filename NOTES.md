@@ -29,6 +29,7 @@ Elk punt na het proberen hier weghalen.
 
 - **Correctie oud→nieuw** (#305, gemerged): gesproken bevestiging aan, oortjes in, "drie holenduiven" en dan "nee, wulpen" → "Holenduif wordt wulp, 3". Ook "nog twee erbij" → "Wulp, 3 wordt 5".
 - **Niet begrepen redden** (#309, gemerged 19 nov; nog nergens bekeken): een sessie met een niet begrepen uitspraak stoppen → kaart "Niet begrepen" boven de waarnemingen; "Maak er een waarneming van" opent het formulier met Vogel onbekend (Annuleren en de terugknop halen hem weg), "Geen waarneming" zet hem weg. Na de export geen kaart meer.
+- **Met de stem aangepast** (#311, nog niet gemerged; nog nergens bekeken): "drie holenduiven", dan "nee, wulpen", stoppen → in de lijst "Met de stem aangepast, was: 3 × Holenduif"; weg na Klopt, aanpassen of "Alles klopt".
 
 - **Spanje** (#308, ontwikkeloptie "Spanje (proef)", `docs/plan-andere-landen.md`): aanzetten laadt de app opnieuw met de vogels van Spanje. Inspreken: "drie overvliegende bijeneters", "blauwe ekster", "twee rode patrijzen", "zingende kleine zwartkop" (niet zwartkop), "duponts leeuwerik" (onzeker, dwaalgast). Uitzetten: weer de Nederlandse lijst. Synthetische testset: 37/40 met spraakherkenning, tegen 26/40 met de Nederlandse lijst. Daarna: echte opnames uit Spanje, en beslissen over de keuze bij Instellingen en de vraag bij het starten.
 

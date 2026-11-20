@@ -20,6 +20,13 @@
   import { screenOff, screenOffEnabled, startScreenOff, stopScreenOff } from './screenOff.svelte';
   import SessionLog from './SessionLog.svelte';
   import { positionLater } from './utterancePosition';
+  import {
+    chunkPosition,
+    endTrektelPosition,
+    noteTrektelFix,
+    resetTrektelPosition,
+    startTrektelPosition,
+  } from './trektelPosition';
   import { syncSessionService } from './sessionService';
   import { createTalkButton } from './talkButton';
   import { trektelEnabled } from './trektel';
@@ -74,6 +81,7 @@
       // Sessie gestopt tijdens een opname: microfoon uit, opname bewaren
       if (recorder.status === 'recording') finishRecording();
       stopTrektel();
+      resetTrektelPosition();
     };
   });
 
@@ -97,6 +105,16 @@
     return () => {
       if (Object.keys(fixCounts).length) logEvent('distance_fixes', fixCounts, { sessionId });
     };
+  });
+
+  // Trektelling: elke meting kan de plek van de stukken verbeteren
+  // (trektelPosition.ts); bij het stoppen van de telling niet meer
+  $effect(() => {
+    const fix = gps.latest;
+    if (fix) noteTrektelFix($state.snapshot(fix));
+  });
+  $effect(() => {
+    if (trektel.status === 'idle') endTrektelPosition();
   });
 
   // Eerste meting (of weer een na zoeken): uitspraken van daarvoor zonder
@@ -301,9 +319,11 @@
     if (recorder.status !== 'idle') return;
     syncSessionService(session.id);
     const sessionId = session.id;
+    startTrektelPosition(sessionId, Date.now(), gps.latest && $state.snapshot(gps.latest));
     const started = await startTrektel(
       {
-        onChunkStart: () => currentPosition(),
+        // Je staat stil: de beste meting van deze telling (trektelPosition.ts)
+        onChunkStart: () => chunkPosition(sessionId),
         onChunk: (recording, chunkLookup) =>
           submitRecording(sessionId, recording, chunkLookup, { trektel: true }),
         onStopped: () => vibrate('trektelStopped'),

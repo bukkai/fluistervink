@@ -316,6 +316,18 @@ describe('opnemen met het scherm uit', () => {
       expect(submitRecording).toHaveBeenCalledTimes(1);
     });
 
+    it('zonder gemeld begin: de plek van de telling als die er is', async () => {
+      const { startTrektelPosition, resetTrektelPosition } = await import('./trektelPosition');
+      const good = { lat: 52, lon: 4, accuracy: 18, fixedAt: 900 };
+      startTrektelPosition('s1', 1000, good);
+      await receiveScreenOffRecording(recording({ trektel: true }), undefined);
+      expect(await submitRecording.mock.calls[0][2]).toMatchObject({
+        source: 'trektel',
+        position: good,
+      });
+      resetTrektelPosition();
+    });
+
     it('zonder gemeld begin: bewaard zonder positie, met de reden', async () => {
       await receiveScreenOffRecording(recording({ trektel: true }), undefined);
       const lookupUsed = await submitRecording.mock.calls[0][2];
