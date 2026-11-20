@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import { db, isStoredAudio, storeAudio, type Utterance } from './db';
 import { logEvent } from './log';
 
@@ -86,7 +87,7 @@ export async function migrateAudio(): Promise<boolean> {
       await db.utterances
         .update(id, {
           audio: undefined,
-          ...(waiting && { status: 'failed', error: 'Opname niet meer te lezen' }),
+          ...(waiting && { status: 'failed', error: t('error.recordingUnreadable') }),
         })
         .catch((error) => failed(error, u));
       continue;

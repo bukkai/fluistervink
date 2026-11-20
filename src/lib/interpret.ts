@@ -309,7 +309,7 @@ export async function interpret(
   );
 
   if (response.stop_reason === 'refusal') {
-    throw new Error('Het model weigerde de uitspraak te verwerken');
+    throw new Error(t('error.modelRefused'));
   }
 
   const { actions, rejected, warnings } = parseResponse(response, context, withGroups, language);
@@ -560,14 +560,14 @@ function toAction(
     !isPromptSpecies(fields.speciesId, withGroups) &&
     fields.speciesId !== vagrant?.id
   ) {
-    return `${block.name}: onbekende soort-ID ${fields.speciesId}`;
+    return t('error.unknownSpecies', { tool: block.name, id: fields.speciesId });
   }
   // Hele getallen: het schema vraagt dat, maar het model houdt zich er niet altijd aan
   if (fields.count !== undefined && (!Number.isInteger(fields.count) || fields.count < 1)) {
-    return `${block.name}: ongeldig aantal ${fields.count}`;
+    return t('error.invalidCount', { tool: block.name, count: fields.count });
   }
   if (input.add_count !== undefined && !Number.isInteger(input.add_count)) {
-    return `${block.name}: ongeldig aantal erbij ${input.add_count}`;
+    return t('error.invalidAddCount', { tool: block.name, count: input.add_count });
   }
   // De soort waar gedrag, methode en kleed bij moeten passen: de nieuwe soort,
   // of bij een aanpassing zonder soort die van de waarneming waar het om gaat
@@ -582,17 +582,17 @@ function toAction(
         validCode(methods, fields.methodId) &&
         validCode(lifeStages, fields.lifeStageId))
   ) {
-    return `${block.name}: ongeldige code`;
+    return t('error.invalidCode', { tool: block.name });
   }
 
   if (block.name === 'add_observation') {
     if (fields.speciesId === undefined || fields.count === undefined) {
-      return 'add_observation: soort of aantal ontbreekt';
+      return t('error.missingSpeciesOrCount', { tool: 'add_observation' });
     }
     return { type: 'add', fields: { ...fields, speciesId: fields.speciesId, count: fields.count } };
   }
 
-  if (!target) return `${block.name}: verwijzing #${input.ref} bestaat niet`;
+  if (!target) return t('error.unknownRef', { tool: block.name, ref: String(input.ref) });
 
   if (block.name === 'delete_observation') {
     return { type: 'delete', observationId: target.id };
@@ -600,5 +600,5 @@ function toAction(
   if (block.name === 'update_observation') {
     return { type: 'update', observationId: target.id, fields, addCount: input.add_count };
   }
-  return `onbekende tool ${block.name}`;
+  return t('error.unknownTool', { tool: block.name });
 }

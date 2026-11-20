@@ -689,6 +689,26 @@ export const nl = {
   'error.turnstileSlow': 'Controle van Cloudflare duurde te lang',
   'error.turnstileFailed': 'Controle van Cloudflare mislukt ({code})',
   'error.transcribePrefix': 'Spraakherkenning: {message}',
+  // Foutmeldingen bij een uitspraak (api.ts, interpret.ts, audioMigration.ts).
+  // De Nederlandse teksten van de proxy staan ook in worker/index.ts; hier
+  // staan ze per status of code, zodat ze in de taal van de app op het scherm komen.
+  'error.timeout': 'Time-out: geen antwoord binnen {s} s',
+  'error.audioLimit': 'Daglimiet bereikt: vandaag is er al 5 uur ingesproken. Morgen kan het weer.',
+  'error.messageLimit':
+    'Daglimiet bereikt: vandaag zijn er al heel veel uitspraken verwerkt. Morgen kan het weer.',
+  'error.tooMany': 'Te veel verzoeken achter elkaar; probeer het zo opnieuw',
+  'error.unauthorized': 'Ongeldige of ontbrekende toegangscode of installatie',
+  'error.proxyInternal': 'Interne fout in de proxy',
+  'error.refused': 'Verzoek geweigerd (HTTP {status})',
+  'error.modelRefused': 'Het model weigerde de uitspraak te verwerken',
+  'error.recordingUnreadable': 'Opname niet meer te lezen',
+  'error.unknownSpecies': '{tool}: onbekende soort-ID {id}',
+  'error.invalidCount': '{tool}: ongeldig aantal {count}',
+  'error.invalidAddCount': '{tool}: ongeldig aantal erbij {count}',
+  'error.invalidCode': '{tool}: ongeldige code',
+  'error.missingSpeciesOrCount': '{tool}: soort of aantal ontbreekt',
+  'error.unknownRef': '{tool}: verwijzing #{ref} bestaat niet',
+  'error.unknownTool': 'onbekende tool {tool}',
 
   // Locatie (location.svelte.ts)
   'location.unsupported': 'Deze telefoon of browser geeft geen locatie.',
