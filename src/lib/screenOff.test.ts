@@ -77,7 +77,7 @@ describe('opnemen met het scherm uit', () => {
     expect(native.listenScreenOff).not.toHaveBeenCalled();
   });
 
-  it('geeft de regels van de webknop en de trilpatronen mee', () => {
+  it('geeft de regels van de webknop, de trilpatronen en de proef met de zichtbare WebView mee', () => {
     startScreenOff('s1', 180_000, onPress);
     expect(native.listenScreenOff.mock.calls[0][0]).toEqual({
       sessieId: 's1',
@@ -85,6 +85,7 @@ describe('opnemen met het scherm uit', () => {
       minMs: 500,
       trilStart: [40, 60, 40],
       trilStop: [200],
+      zichtbaar: true,
     });
   });
 

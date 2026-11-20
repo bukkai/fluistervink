@@ -145,6 +145,16 @@ export async function receiveScreenOffRecording(
 }
 
 /**
+ * Proef (20 nov): de WebView blijft zich met het scherm uit in beeld melden
+ * (ZichtbareWebView.java), zodat Chromium de pagina niet stilzet en stukken
+ * meteen verwerkt worden, met tril. Meten: geen `page_frozen` meer, `hidden`
+ * false bij `trektel_stuk` met het scherm uit, en de accu in
+ * `trektel_native_end`; hoe vaak het nodig was in `screen_off_webview_zichtbaar`.
+ * Kost het te veel accu, dan hier uitzetten (geen nieuwe app-versie nodig).
+ */
+export const KEEP_WEBVIEW_VISIBLE = true;
+
+/**
  * Chromium zet een pagina die niet in beeld is na een minuut stil (Page
  * Lifecycle "freeze"), ook met de service en een vastgehouden Web Lock
  * (gemeten 18 nov: stilgezet 60 s na het vergrendelen, tot het ontgrendelen).
@@ -197,6 +207,7 @@ export function startScreenOff(
       minMs: MIN_DURATION_MS,
       trilStart: vibrationPattern('screenOffStart'),
       trilStop: vibrationPattern('screenOffStop'),
+      zichtbaar: KEEP_WEBVIEW_VISIBLE,
     },
     {
       onStart: (startedAt, via) => {
@@ -239,7 +250,7 @@ export function startScreenOff(
   const stopWatching = watchPageFreeze(context);
   done.then((result) => {
     if (result.ok) screenOff.ready = true;
-    logEvent('screen_off_on', result, context);
+    logEvent('screen_off_on', { ...result, zichtbaar: KEEP_WEBVIEW_VISIBLE }, context);
   });
   // Wat de service maakte terwijl de app dicht was
   pendingScreenOffRecordings().then((recordings) =>
