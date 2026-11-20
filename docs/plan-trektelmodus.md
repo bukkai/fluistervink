@@ -37,6 +37,7 @@ Stukken van een paar minuten lossen dit allemaal op. Daarom geen langere limiet,
 - Een stuk waarin vrijwel geen spraak zit (te weinig tijd boven de geluidsdrempel), gaat niet naar de spraakherkenning. Het wordt niet bewaard, alleen gelogd (`events`, met duur en gemeten niveau), zodat in de testset te zien is of de drempel goed staat.
 - Dit scheelt kosten en is de belangrijkste bescherming: wie de modus vergeet en de telefoon wegstopt, verstuurt dan bijna niets.
 - De drempel voorzichtig kiezen. Liever een stuk wind versturen dan een zacht ingesproken "twee sperwers" weggooien. Afstellen met echte opnames van een telpost (wind, andere tellers in de buurt).
+- **Nagekeken op 20 nov** (telling binnen, 18 van 29 stukken zonder tekst): de lege stukken hebben echt geen woorden (ook niet volgens Whisper), maar tikken en geritsel die in een stille kamer boven de drempel komen. Op 104 stukken met audio scheidt geen drempel op niveau, duur of spectrum ze van korte echte uitspraken; daarom niet veranderd. Kost ongeveer $0,0045 per leeg stuk.
 
 ### 3. Beveiligingen tegen per ongeluk uren opnemen
 
