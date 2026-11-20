@@ -288,7 +288,8 @@ function checkImport(data: {
       !optional(s.endedAt, isNumber) ||
       !optional(s.effort, isEffort) ||
       !optional(s.checklist, isChecklist) ||
-      !optional(s.ebirdExportedAt, isNumber)
+      !optional(s.ebirdExportedAt, isNumber) ||
+      !optional(s.reviewMs, isNumber)
     )
       fail('sessie');
   }

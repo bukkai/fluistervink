@@ -56,6 +56,8 @@ export interface Session {
   status: 'active' | 'ended';
   /** Nagelopen en klaargezet voor de volgende export naar waarneming.nl */
   readyAt?: number;
+  /** Hoe lang het nalopen duurde (actieve tijd op het scherm, `reviewTime.ts`); leeg bij sessies van vóór 20 nov 2026 */
+  reviewMs?: number;
   /** Laatst geëxporteerd voor waarneming.nl */
   exportedAt?: number;
   /** Naam van de sessie ("Amsterdamse Waterleidingduinen"), zie `area.ts` */

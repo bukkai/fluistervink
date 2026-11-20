@@ -31,6 +31,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     topics: {
       Nalopen: [
         'Verbeterde je een waarneming onderweg met de stem ("nee, wulpen"), dan staat er in de lijst "Met de stem aangepast", met hoe hij eerst was. Zo zie je bij het nalopen of de correctie op de goede waarneming terechtkwam.',
+        'Heb je een sessie nagelopen, dan zegt de samenvatting hoe lang dat duurde, bijvoorbeeld "42 waarnemingen, nagelopen in 3 minuten". Alleen de tijd dat je met de sessie bezig was telt.',
       ],
       Trektelling: [
         'Elk stuk van een trektelling krijgt de beste GPS-plek van die telling, want je staat stil. Komt er later een nauwkeurigere meting, dan krijgen de stukken die alsnog.',

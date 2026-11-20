@@ -506,6 +506,12 @@ export const en: Dictionary = {
   'summary.copy': 'Copy',
   'summary.copied': 'Copied',
   'summary.heading': '{title}, {date}: {n} species',
+  'summary.reviewedIn': {
+    one: '1 observation, reviewed in {time}',
+    other: '{n} observations, reviewed in {time}',
+  },
+  'summary.minutes': { one: '1 minute', other: '{n} minutes' },
+  'summary.underAMinute': 'less than a minute',
   // Bewerkformulier
   'editor.species': 'Species',
   'editor.speciesList': 'Species',
