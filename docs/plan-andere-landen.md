@@ -1,6 +1,6 @@
 # Plan: vogels van andere landen, in andere talen
 
-Voorstel van 19 nov 2026, nog niet goedgekeurd; de proef met Spanje is gebouwd (ontwikkeloptie "Spanje", zie hieronder). Punt 7 van "Na v1.0" in `docs/roadmap.md`, en het vervolg op `docs/plan-engels.md`. Dit plan vervangt het idee "Vogels van andere landen" uit `docs/ideeen.md`.
+Voorstel van 19 nov 2026, uitgewerkt op 20 nov; **voor later**. Eerst blijft de focus op Nederland; de eerste uitbreiding wordt West-Europa. De proef met Spanje werkte (zie hieronder); het vinkje is op 20 nov weer weggehaald, de testset kan Spanje nog gebruiken (`--land es`). Punt 7 van "Na v1.0" in `docs/roadmap.md`, en het vervolg op `docs/plan-engels.md`. Dit plan vervangt het idee "Vogels van andere landen" uit `docs/ideeen.md`.
 
 ## Doel
 
@@ -65,28 +65,57 @@ Nu staan soort, naam en zeldzaamheid samen in `data/soorten-nl.json`. Wordt:
 
 Zo is elke combinatie mogelijk zonder voor elk paar een bestand te maken: een Nederlander in Spanje is `soorten-es` met `namen-nl`.
 
-### 2. Niet alles meebundelen, wel van de eigen site
+### 2. Lijsten als bestanden van de eigen site
 
-Nederland met de Nederlandse en de Engelse namen blijft in de app zitten (de meeste gebruikers, en het werkt offline vanaf het begin). Andere landen en talen:
+Nederland blijft in de app zitten (de meeste gebruikers, en het werkt offline vanaf het begin). Andere landen:
 
-- De wekelijkse workflow (`.github/workflows/soortenlijst.yml`) haalt ze op en zet ze als statische bestanden op de site (`/lijsten/es.json`, `/lijsten/namen-de.json`). Geen nieuwe route in de proxy, geen nieuwe externe bron in de CSP.
-- De app downloadt een lijst als je hem kiest en bewaart hem in IndexedDB, zodat hij op de bestemming werkt zonder bereik. "Download vóór vertrek" bij Instellingen, met de grootte.
-- Beginnen met een handvol landen waar Nederlanders vogelen (Spanje, Portugal, Frankrijk, Duitsland, Polen, Griekenland, het Verenigd Koninkrijk, Marokko) en uitbreiden op verzoek.
+- Per land een bestand op de site (`/lijsten/es.json`, gecomprimeerd 20–30 kB) en een overzicht (`/lijsten/index.json`: land, grootte, datum, kwaliteit "goed" of "proef"). Geen nieuwe route in de proxy, geen nieuwe externe bron in de CSP.
+- De app bewaart een gekozen lijst in IndexedDB, zodat hij op de bestemming werkt zonder bereik. Een nieuwere versie haalt hij op wifi vanzelf op.
+- **Eilanden** met een eigen lijst bij waarneming.nl (Canarische Eilanden 244, Azoren 361, Balearen) zijn een eigen keuze, net als een land.
 
-### 3. Land kiezen
+### 3. Het land hoort bij de sessie
 
-- Bij Instellingen een land, standaard Nederland.
-- Bij het starten van een sessie buiten het land van de lijst: een vraag ("Je bent in Spanje. Spaanse vogellijst gebruiken?") met één tik ja. Met bereik downloadt hij dan meteen; zonder bereik blijft de oude lijst en zegt de app dat.
-- **Per sessie bewaren** welke lijst en welke taal gebruikt zijn (`Session.region`, en `Utterance.language` uit het Engelse plan). Nodig voor de testset, voor het log en voor wie later terugkijkt.
-- Belgen: België heeft een eigen regiolijst. Voor iemand die in de Ardennen vogelt kan dat al verschil maken; een goede eerste proef van het mechanisme, met dezelfde taal.
+Nu kiest `region.ts` het land bij het laden van de app (zoals de taal). Voor echt gebruik moet het per sessie:
 
-### 4. Wat er per land en taal verandert
+- **`Session.region`**, en elke uitspraak wordt verwerkt met het land van zijn sessie. Dan klopt ook de wachtrij: een uitspraak uit Spanje die thuis pas verwerkt wordt, houdt de Spaanse lijst (nu niet: daar geldt het land van de app op dat moment).
+- `vocab.ts` geeft de lijsten per land in plaats van als vaste waarden bij het laden (`speciesListsFor` bestaat al); de prompt krijgt per land een eigen variant, zoals nu per taal (`variant` in `prompt.ts`), en dus een eigen promptversie en cache bij Anthropic.
+- **Herkennen bij het starten:** de app ziet aan de GPS in welk land je bent, offline, met een kleine kaart van de landsgrenzen (alleen de landen die er zijn). Buiten het land van de laatste lijst: "Je bent in Spanje. Spaanse vogellijst gebruiken?", één tik. Is de lijst er niet en is er geen bereik, dan blijft de Nederlandse lijst met een duidelijke melding; er gaat niets verloren, thuis loop je het na.
+- **Vóór vertrek** bij Instellingen: "Lijst voor je reis", een land kiezen en downloaden, met de grootte.
+- Belgen: België heeft een eigen regiolijst met een goede zeldzaamheid; voor wie in de Ardennen vogelt al nuttig, en de eenvoudigste eerste proef van het mechanisme.
+
+### 4. Maken van de lijsten, zuinig met de API
+
+- **Zeldzaamheid:** voor Nederland en België die van de bron, voor de andere landen uit de aantallen (Proef Spanje).
+- **Tellen kost ruim duizend aanroepen per land**, en de API gaf al een 429. Dus: per kwartaal tellen, één land per run, de aantallen bewaren; de wekelijkse workflow werkt alleen namen en ID's bij. Met waarneming.nl overleggen wat we doen; misschien hebben ze een betere manier.
+- **Landen zonder eigen lijst** (Denemarken, Ierland, Polen, Finland, Slovenië e.a.): de soorten van de buurlanden nemen en tellen wat er echt voorkomt; het tellen gaat per land, ook zonder lijst.
+- **Maximum in de prompt:** ongeveer 450 vogels. Komen er meer boven de drempel, dan gaat de drempel omhoog tot het past; de rest vindt de app op naam in de hele lijst van het land, zoals nu met dwaalgasten, en dan onzeker.
+- **Controle per land** in het script: genoeg waarnemingen in totaal, een redelijk aantal algemene soorten, geen grote sprong ten opzichte van de vorige versie. Een land dat zakt, gaat niet mee.
+
+### 5. Wat er per land en taal verandert
 
 - **Prompt voor het model:** een andere soortenlijst, dus een eigen cache bij Anthropic per combinatie (de eerste uitspraak van een sessie is iets duurder). De promptversie krijgt land en taal erbij.
 - **Prompt voor de spraakherkenning:** de namen van dat land in die taal, en de taal zelf (de proxy laat per taal door, zie `docs/plan-engels.md`).
 - **Zeldzaamheid:** "zeldzame soort wordt onzeker", `findVagrant` en de kleuren in de lijst rekenen met de zeldzaamheid van het land van de sessie. Een bijeneter is in Spanje gewoon, in Nederland zeldzaam.
 - **Andere diergroepen:** in het begin alleen vogels buiten Nederland; de lijsten voor zoogdieren, vlinders en libellen per land zijn er wel, maar nog niet nagegaan of ze goed genoeg zijn.
 - **Gedrag, methode en kleed** zijn per soortgroep, niet per land: alleen de namen per taal.
+
+## Welke landen
+
+Nagegaan op 20 nov: waarnemingen per land bij waarneming.nl (de laatste tijd, niet alle jaren) en het aantal vogelsoorten op de lijst.
+
+| Groep | Landen | Waarnemingen | Soorten op de lijst |
+| --- | --- | --- | --- |
+| Bron is goed | Nederland, België | miljoenen | ~900 |
+| Veel gegevens | Duitsland, Frankrijk, Spanje, VK, Oostenrijk, Italië, Zweden, Zwitserland, Portugal, Griekenland, Noorwegen, Luxemburg | 20.000–1,3 mln | 450–900 |
+| Redelijk | Kroatië, Hongarije, Roemenië, Tsjechië, Marokko, Georgië, Cyprus, Turkije, Armenië, Gambia, Oman, Zuid-Afrika | 5.000–17.000 | 400–1000 |
+| Weinig gegevens, enorme lijst | Peru, Brazilië, Colombia, Ecuador, Kenia, Indonesië, India, VS | 1.000–13.000 | 1000–1900 |
+
+Geen eigen lijst: Denemarken, Ierland, Polen, Finland, Slovenië, Bosnië, Letland; helemaal geen regio: Chili, Slowakije, Oekraïne, Vietnam.
+
+- **Eerst West-Europa:** België, Duitsland, Frankrijk, Luxemburg, het VK, en daarna Spanje, Portugal, Zwitserland, Oostenrijk en Italië. Genoeg gegevens, soorten met bekende Nederlandse namen, en de export naar waarneming.nl werkt er gewoon.
+- **Daarna** de rest van Europa en het Middellandse Zeegebied (Marokko, Turkije, Cyprus), met het label "proef" waar de gegevens dun zijn.
+- **Niet beloven: de tropen en Amerika in het Nederlands.** Een lijst van 1000–1900 soorten, weinig waarnemingen om algemeen van zeldzaam te scheiden, en bijna niemand kent de Nederlandse naam van een tropische vogel. Dat hoort bij het Engels: de meest getelde soorten in de prompt, de rest op naam opzoeken, altijd onzeker. Eerst meten met een testset.
+- **eBird** buiten Europa vraagt eerst een vertaling naar Clements (zie Haken en ogen).
 
 ## Talen
 
@@ -112,17 +141,23 @@ Een tussenvorm is goedkoop: **soortnamen in een andere taal, de rest in het Enge
 
 ## Stappen
 
-1. **Lijst en namen apart** in `fetch-species.mjs` en `vocab.ts`, met Nederland en Nederlands; verder niets zichtbaars. Tests voor de samenvoeging. Begonnen 19 nov met het Engels (`data/namen-en.json`, `speciesNameIn` in `vocab.ts`, stap 2 van `docs/plan-engels.md`); de Nederlandse namen staan nog in `soorten-nl.json`.
-2. **Engelse namen** (hoort bij stap 2 van `docs/plan-engels.md`).
-3. **Proef Spanje** (gebouwd 19 nov, ontwikkeloptie, meegebundeld): eerst proberen op de telefoon en met echte opnames, dan pas de keuze bij Instellingen en de vraag bij het starten.
-4. **België** als tweede land, gebundeld: de keuze bij Instellingen en de vraag bij het starten, als ontwikkeloptie.
-5. **Downloadbare lijsten** van de eigen site, met de opslag in IndexedDB, voor de eerste reeks vakantielanden. Lijst en zeldzaamheid uit de aantallen (Proef Spanje), behalve voor Nederland en België.
-6. **Proef op vakantie** (eigenaar of testers), testset aanvullen, dan voor iedereen.
-7. **Soortnamen in een andere taal** (Duits of Frans) met Engelse schermen, als iemand erom vraagt.
+Voor later: eerst Nederland. De volgorde als we beginnen:
+
+1. **Lijst en namen apart** in `fetch-species.mjs` en `vocab.ts`. Begonnen 19 nov met het Engels (`data/namen-en.json`, `speciesNameIn`); de Nederlandse namen staan nog in `soorten-nl.json`.
+2. **Het land per sessie** (`Session.region`, verwerken met het land van de sessie, lijsten en prompt per land). Het fundament; lost ook de valkuil met de wachtrij op. Nog niets zichtbaars.
+3. **België**, meegebundeld, achter een ontwikkeloptie: de vraag bij het starten en de keuze bij Instellingen.
+4. **Lijsten als bestanden van de site**, met de controle en het maximum, voor West-Europa (zie Welke landen). Tellen per kwartaal.
+5. **Downloaden vóór vertrek** en de proef op vakantie (eigenaar of testers), testset aanvullen met echte opnames, dan voor iedereen.
+6. **Rest van Europa en het Middellandse Zeegebied**, eilanden, landen zonder eigen lijst via de buurlanden.
+7. **Met het Engels:** soortnamen in een andere taal, en een proef met een groot land buiten Europa.
+
+Gedaan: **Proef Spanje** (19 nov, #308): zeldzaamheid uit aantallen, `data/soorten-es.json`, testset 37/40 tegen 26/40 met de Nederlandse lijst. Het vinkje is weg (20 nov); het script maakt de Spaanse lijst nog wekelijks, de testset gebruikt hem met `--land es`.
 
 ## Open vragen
 
 - Welke talen kent de API van waarneming.nl, en zijn de namen in elke taal compleet?
 - Een gebied binnen een land (een Spaanse provincie): heeft waarneming.nl regiolijsten op dat niveau, en is dat nuttig?
-- Hoe groot is een landenlijst als bestand, en hoe lang duurt de download met slecht bereik?
+- Hoe lang duurt de download van een lijst (20–30 kB gecomprimeerd) met slecht bereik? Waarschijnlijk geen probleem.
+- Wil waarneming.nl dat we per kwartaal zo tellen, of is er een betere bron voor aantallen per land?
+- Kaart van de landsgrenzen in de app: welke bron, hoe grof mag hij zijn (grens tussen Nederland en België)?
 - Aantallen over alle jaren (nu) of de laatste tien jaar (`date_after`)? Alle jaren is stabieler; tien jaar volgt verschuivingen. Eerst alle jaren.

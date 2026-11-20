@@ -7,11 +7,13 @@
 // docs/plan-engels.md) en de namen van eBird voor de eBird-export
 // (data/ebird-namen.json, docs/plan-ebird.md).
 //
-// En de vogels van Spanje (data/soorten-es.json, ontwikkeloptie "Spanje",
+// Met --landen ook de vogels van Spanje (data/soorten-es.json, proef van
 // docs/plan-andere-landen.md), met een zeldzaamheid uit het aantal
-// waarnemingen; dat zijn ruim duizend aanroepen, een paar minuten.
+// waarnemingen: ruim duizend aanroepen, een paar minuten. Niet elke week (de
+// API geeft dan een 429, en de aantallen veranderen langzaam); zonder de vlag
+// blijft de bestaande lijst staan en komen alleen de namen ervan mee.
 //
-// Gebruik: node scripts/fetch-species.mjs
+// Gebruik: node scripts/fetch-species.mjs [--landen]
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 
@@ -262,7 +264,18 @@ const dutchById = new Map(allSpecies.map((s) => [s.id, s]));
 const dutchPromptIds = new Set(species.map((s) => s.id));
 const countryLists = {};
 const foreignSpecies = [];
+const countAgain = process.argv.includes('--landen');
 for (const { code, country, list } of COUNTRIES) {
+  if (!countAgain) {
+    // Niet opnieuw tellen: de bestaande lijst, alleen voor de Engelse en eBird-namen
+    countryLists[code] = JSON.parse(await readFile(`data/soorten-${code}.json`, 'utf8'));
+    for (const s of await get(`/region-lists/${list}/species/`, 'en'))
+      if (!englishSpecies.has(s.species)) englishSpecies.set(s.species, s.name);
+    for (const s of countryLists[code])
+      if (!dutchById.has(s.id) && !foreignSpecies.some((f) => f.id === s.id))
+        foreignSpecies.push(s);
+    continue;
+  }
   const source = (await get(`/region-lists/${list}/species/`)).filter((s) =>
     ALL_TYPES.includes(s.type),
   );

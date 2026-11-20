@@ -31,7 +31,7 @@ De vier sporen van 13 okt, met de stand op 12 nov:
 | `docs/plan-trektelmodus.md` | gebouwd, proef met tester Maarten; vervolg na de proef |
 | `docs/plan-ios.md` | voorstel, nog niet goedgekeurd; pas na de lancering in Play |
 | `docs/plan-engels.md` | voorstel 19 nov, nog niet goedgekeurd; na de betaalde laag |
-| `docs/plan-andere-landen.md` | voorstel 19 nov, nog niet goedgekeurd; proef Spanje gebouwd als ontwikkeloptie |
+| `docs/plan-andere-landen.md` | uitgewerkt 20 nov, voor later; eerst West-Europa. Proef Spanje gedaan |
 
 Afgerond en alleen nog naslag: `docs/plan-capacitor.md` (fase 0–2 en 4; fase 3 loopt nu via `docs/roadmap-android.md`), `docs/plan-laagdrempelig.md`, `docs/plan-ebird.md` (16 nov), `docs/plan-soortgroepen.md` (16 nov: voor iedereen, standaard aan).
 
@@ -50,7 +50,7 @@ Volgorde besloten op 17 nov. Alles komt eerst achter een ontwikkeloptie op `main
 
 5. **Export naar observation.org**: nagegaan 18 nov (`docs/waarneming-nl.md`, "observation.org"): dezelfde database als waarneming.nl, dus een import bij waarneming.nl staat er al. Alleen voor Engelstaligen nodig: gedrag, methode, kleed en telmethode in het Engels (bij punt 8). Ook trektellen.nl (import nog uitzoeken). iNaturalist als laatste (zonder foto of geluid telt een waarneming daar nauwelijks). Inzenden via de API van waarneming.nl pas als er meer gebruikers zijn.
 6. **Betaalde laag**, vóór het aantal gebruikers flink groeit. Eerst de kosten per actieve gebruiker meten (de proef van 17 nov–1 dec, Developer en Statistieken). Dan Play Billing (verplicht voor digitale extra's in een Android-app): de aankoop hangt aan het Google-account, de proxy controleert hem en koppelt hem aan het installatietoken, dus geen eigen accounts. Denkrichting: gratis met een plafond per dag, betaald een ruimer plafond en de trektelmodus. Native, dus een nieuwe app-versie; voorwaarden en `#privacy` erbij.
-7. **Vogels van andere landen**, gewoon in het Nederlands (regiolijsten van waarneming.nl, `docs/plan-andere-landen.md`). Dezelfde lijsten maken later ook namen in andere talen mogelijk.
+7. **Vogels van andere landen**, gewoon in het Nederlands (regiolijsten van waarneming.nl, `docs/plan-andere-landen.md`). Eerst West-Europa (België, Duitsland, Frankrijk, Luxemburg, VK, dan Spanje, Portugal, Zwitserland, Oostenrijk, Italië); het land hoort bij de sessie, lijsten komen als bestand van de site. De tropen niet in het Nederlands. Dezelfde lijsten maken later ook namen in andere talen mogelijk.
 8. **De app in het Engels** (`docs/plan-engels.md`): één app met een taalkeuze, geen tweede app. Teksten, Engelse prompt en soortnamen, Engelse bijnamen. Het meeste werk is een Engelse testset met Engelstalige sprekers. Eerst voor Engelstaligen in Nederland en België (de Nederlandse lijst klopt voor hen), daarna samen met punt 7 voor andere landen.
 
 **Ooit:** iPhone-app (`docs/plan-ios.md`); eventueel BirdNET op de telefoon voor soortsuggesties.

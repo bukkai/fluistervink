@@ -10,7 +10,9 @@
  * - `english`: de app in het Engels, scherm én inspreken (docs/plan-engels.md,
  *   stap 3); aan- of uitzetten laadt de app opnieuw (i18n/index.ts)
  * - `spanje`: de soortenlijst van Spanje in plaats van die van Nederland
- *   (docs/plan-andere-landen.md, proef); laadt de app opnieuw (region.ts)
+ *   (docs/plan-andere-landen.md, proef van 19 nov); laadt de app opnieuw
+ *   (region.ts). Het vinkje staat er alleen nog als hij aan staat; de
+ *   testset gebruikt hem met `--land es`
  */
 export type DevOption = 'oortjesMicrofoon' | 'schermUit' | 'english' | 'spanje';
 
