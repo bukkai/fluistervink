@@ -23,6 +23,8 @@
     restoreObservation,
     setSkipExport,
     spokenAt,
+    voiceOriginals,
+    type VoiceOriginal,
   } from './observations';
   import { LONG_WAIT_MS, retry, retryNow } from './queue';
   import { trektelBacklog } from './trektel';
@@ -193,6 +195,18 @@
     return [...behaviour(obs), obs.area?.name].filter(Boolean).join(' · ');
   }
 
+  // Met de stem aangepast ("nee, wulpen"): opvallen tot hij nagelopen is, want
+  // een correctie kan op de verkeerde waarneming landen
+  let voiceChanged = $derived(voiceOriginals($utterances ?? [], $observations ?? []));
+
+  /** "3 × Holenduif", met het gedrag dat toen anders was */
+  function wasText(obs: Observation, original: VoiceOriginal): string {
+    const was = { ...obs, ...original };
+    const now = behaviour(obs);
+    const extra = behaviour(was).filter((label) => !now.includes(label));
+    return [`${was.count} × ${speciesLabel(was.speciesId)}`, ...extra].join(', ');
+  }
+
   function behaviour(obs: Observation) {
     return [
       obs.countingMethodId !== DEFAULT_COUNTING_METHOD
@@ -353,6 +367,7 @@
       {#each shown as obs (obs.id)}
         {@const source = utteranceById.get(obs.utteranceId)}
         {@const species = getSpecies(obs.speciesId)}
+        {@const original = obs.status === 'draft' ? voiceChanged.get(obs.id) : undefined}
         <li
           id="obs-{obs.id}"
           class:uncertain={obs.uncertain}
@@ -388,6 +403,11 @@
                     >{obs.uncertainReason
                       ? t('log.uncertainBecause', { reason: obs.uncertainReason })
                       : t('log.uncertain')}</span
+                  >
+                {/if}
+                {#if original}
+                  <span class="voice"
+                    >{t('log.changedByVoice', { was: wasText(obs, original) })}</span
                   >
                 {/if}
                 {#if obs.privateNote}
@@ -836,6 +856,11 @@
   .reason {
     color: var(--amber);
     font-size: 0.9rem;
+  }
+
+  .voice {
+    font-size: 0.9rem;
+    color: var(--brand);
   }
 
   .remarks {

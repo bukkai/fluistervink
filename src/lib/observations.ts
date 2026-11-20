@@ -25,6 +25,54 @@ export async function listUtterances(sessionId: string): Promise<Utterance[]> {
   return all.reverse();
 }
 
+/** Velden die bepalen wát er waargenomen is; daarop let het merkje "met de stem aangepast" */
+const IDENTITY = [
+  'speciesId',
+  'count',
+  'countingMethodId',
+  'activityId',
+  'methodId',
+  'lifeStageId',
+  'sex',
+] as const;
+
+export type VoiceOriginal = Pick<Observation, (typeof IDENTITY)[number]>;
+
+/**
+ * Waarnemingen die een latere uitspraak veranderde ("nee, wulpen"), met hoe
+ * ze waren vóór de eerste correctie: een correctie kan op de verkeerde
+ * waarneming landen, dus bij het nalopen moet hij opvallen. Uit de
+ * wijzigingen die de uitspraken toch al bewaren voor `undo`; teruggedraaide
+ * uitspraken tellen niet. Alleen als soort, aantal of gedrag nu anders is
+ * dan eerst (niet bij alleen een plek, opmerking of "onzeker").
+ * `utterances` in elke volgorde.
+ */
+export function voiceOriginals(
+  utterances: Utterance[],
+  observations: Observation[],
+): Map<string, VoiceOriginal> {
+  const before = new Map<string, Partial<Observation>>();
+  const oldestFirst = [...utterances].sort((a, b) => a.recordedAt - b.recordedAt);
+  for (const u of oldestFirst) {
+    if (u.undone) continue;
+    for (const change of u.changes ?? []) {
+      if (change.type !== 'update') continue;
+      // De eerste correctie weet hoe het oorspronkelijk was
+      before.set(change.observationId, { ...change.before, ...before.get(change.observationId) });
+    }
+  }
+  const originals = new Map<string, VoiceOriginal>();
+  for (const obs of observations) {
+    const earlier = before.get(obs.id);
+    if (!earlier) continue;
+    const original = Object.fromEntries(
+      IDENTITY.map((key) => [key, key in earlier ? earlier[key] : obs[key]]),
+    ) as VoiceOriginal;
+    if (IDENTITY.some((key) => original[key] !== obs[key])) originals.set(obs.id, original);
+  }
+  return originals;
+}
+
 /**
  * Uitspraken waarin het model geen waarneming vond en die nog niet nagelopen
  * zijn, voor de kaart "Niet begrepen" bij het nalopen: een half verstane soort

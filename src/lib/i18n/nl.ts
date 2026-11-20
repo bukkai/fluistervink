@@ -254,6 +254,7 @@ export const nl = {
   'log.uncertain': 'Onzeker',
   'log.uncertainBecause': 'Onzeker: {reason}',
   'log.note': 'Notitie: {note}',
+  'log.changedByVoice': 'Met de stem aangepast, was: {was}',
   'log.showOnMap': 'Op de kaart laten zien',
   'log.placedByVoice': 'volgens de uitspraak',
   'log.placedByHand': 'met de hand gezet',

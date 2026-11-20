@@ -132,8 +132,10 @@
     <p>
       Na "Stop" staan de onzekere waarnemingen bovenaan, één voor één, met de opname erbij. Wat de
       app niet begreep, staat er ook, met de opname: zat er toch een vogel in, maak er dan met één
-      tik een waarneming van en kies de soort. Daarna zet "Alles klopt" de sessie klaar. Bij Sessies
-      exporteer je alles wat klaarstaat in één bestand voor waarneming.nl.
+      tik een waarneming van en kies de soort. Wat je onderweg met de stem verbeterde, zie je aan
+      "Met de stem aangepast", met hoe het eerst was: zo zie je of de correctie op de goede
+      waarneming kwam. Daarna zet "Alles klopt" de sessie klaar. Bij Sessies exporteer je alles wat
+      klaarstaat in één bestand voor waarneming.nl.
     </p>
     <p>
       Gebruik je ook eBird? Zet dan bij Instellingen "Ik gebruik eBird" aan. Na het stoppen vraagt

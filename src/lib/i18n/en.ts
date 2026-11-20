@@ -261,6 +261,7 @@ export const en: Dictionary = {
   'log.uncertain': 'Uncertain',
   'log.uncertainBecause': 'Uncertain: {reason}',
   'log.note': 'Note: {note}',
+  'log.changedByVoice': 'Changed by voice, was: {was}',
   'log.showOnMap': 'Show on the map',
   'log.placedByVoice': 'as spoken',
   'log.placedByHand': 'placed by hand',
