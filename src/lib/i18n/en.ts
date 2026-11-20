@@ -696,6 +696,23 @@ export const en: Dictionary = {
   'error.turnstileSlow': 'The Cloudflare check took too long',
   'error.turnstileFailed': 'The Cloudflare check failed ({code})',
   'error.transcribePrefix': 'Speech recognition: {message}',
+  'error.timeout': 'Timed out: no answer within {s} s',
+  'error.audioLimit': 'Daily limit reached: 5 hours of speech today already. Try again tomorrow.',
+  'error.messageLimit':
+    'Daily limit reached: a great many voice notes processed today already. Try again tomorrow.',
+  'error.tooMany': 'Too many requests in a row; try again in a moment',
+  'error.unauthorized': 'Invalid or missing access code or installation',
+  'error.proxyInternal': 'Internal error in the proxy',
+  'error.refused': 'Request refused (HTTP {status})',
+  'error.modelRefused': 'The model refused to process the voice note',
+  'error.recordingUnreadable': 'The recording can no longer be read',
+  'error.unknownSpecies': '{tool}: unknown species ID {id}',
+  'error.invalidCount': '{tool}: invalid count {count}',
+  'error.invalidAddCount': '{tool}: invalid count to add {count}',
+  'error.invalidCode': '{tool}: invalid code',
+  'error.missingSpeciesOrCount': '{tool}: species or count missing',
+  'error.unknownRef': '{tool}: reference #{ref} doesn’t exist',
+  'error.unknownTool': 'unknown tool {tool}',
 
   // Locatie
   'location.unsupported': 'This phone or browser doesn’t give a location.',

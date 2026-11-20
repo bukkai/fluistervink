@@ -3,7 +3,7 @@
 // keer ingevuld bij Instellingen en daarna in localStorage bewaard, samen met
 // de naam die de proxy erbij teruggeeft.
 
-import { t } from './i18n';
+import { language, t } from './i18n';
 import type { Billing, UsageRow } from './costs';
 import { forgetInstallToken, getInstallToken, register } from './install';
 import type { ActivityRow } from './stats';
@@ -110,7 +110,7 @@ async function timedRequest<T>(
     response = await fetch(path, { ...init, headers, signal: AbortSignal.timeout(timeoutMs) });
   } catch (error) {
     if (error instanceof DOMException && error.name === 'TimeoutError') {
-      throw new ApiError(`Time-out: geen antwoord binnen ${timeoutMs / 1000} s`, 0);
+      throw new ApiError(t('error.timeout', { s: timeoutMs / 1000 }), 0);
     }
     throw new ApiError(navigator.onLine ? t('error.proxyUnreachable') : t('error.offline'), 0);
   }
@@ -147,13 +147,28 @@ async function timedRequest<T>(
       setAccessCode('');
       return timedRequest<T>(path, init, timeoutMs);
     }
-    throw new ApiError(
-      typeof body?.error === 'string' ? body.error : `HTTP ${response.status}`,
-      response.status,
-      typeof body?.code === 'string' ? body.code : undefined,
-    );
+    const code = typeof body?.code === 'string' ? body.code : undefined;
+    const text = typeof body?.error === 'string' ? body.error : undefined;
+    throw new ApiError(proxyErrorText(response.status, code, text), response.status, code);
   }
   return { data: body as T, timing };
+}
+
+/**
+ * Foutmelding van de proxy in de taal van de app. De proxy antwoordt in het
+ * Nederlands; wat een gebruiker kan tegenkomen, staat per status of code in het
+ * woordenboek. Een fout van een aanbieder (502 en hoger) geeft de proxy door
+ * zoals die is (meestal Engels). De rest is zeldzaam en technisch: in het
+ * Nederlands de tekst van de proxy, anders alleen de status.
+ */
+export function proxyErrorText(status: number, code?: string, text?: string): string {
+  if (code === 'audio_limit') return t('error.audioLimit');
+  if (code === 'message_limit') return t('error.messageLimit');
+  if (status === 429) return t('error.tooMany');
+  if (status === 401) return t('error.unauthorized');
+  if (status === 500) return t('error.proxyInternal');
+  if (text && (language === 'nl' || status >= 502)) return text;
+  return t('error.refused', { status });
 }
 
 /** Een JSON-object, of undefined als het antwoord dat niet is (bv. HTML). */
