@@ -759,4 +759,8 @@ export const en: Dictionary = {
 
   // Zeemeeuwen
   'gulls.label': 'There’s no such thing as a seagull',
+  'gulls.shout': 'SEAGULL?!',
+  'gulls.notExist': 'There’s no such thing as a seagull.',
+  'gulls.which': 'Herring Gull? Black-headed Gull? Common Gull? Great Black-backed Gull?',
+  'gulls.hint': 'Tap to calm the gulls',
 };

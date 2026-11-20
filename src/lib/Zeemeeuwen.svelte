@@ -122,11 +122,11 @@
       {/each}
     </div>
 
-    <p class="shout">ZEEMEEUW?!</p>
+    <p class="shout">{t('gulls.shout')}</p>
     <div class="card message">
-      <strong>Een zeemeeuw bestaat niet.</strong>
-      Zilvermeeuw? Kokmeeuw? Stormmeeuw? Grote mantelmeeuw?
-      <span class="hint">Tik om de meeuwen te kalmeren</span>
+      <strong>{t('gulls.notExist')}</strong>
+      {t('gulls.which')}
+      <span class="hint">{t('gulls.hint')}</span>
     </div>
   </div>
 {/if}
