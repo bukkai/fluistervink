@@ -5,6 +5,7 @@
   // browser kan opnemen), en de vraag over delen (alleen als die nog open
   // staat). Zie welcome.ts. Houd de trilpatronen gelijk met HowItWorks.
   import { tick, untrack } from 'svelte';
+  import { t } from './i18n';
   import { isNativeApp } from './native';
   import { recorder } from './recorder.svelte';
   import TryOut from './TryOut.svelte';
@@ -71,11 +72,8 @@
 <section class="welcome" aria-labelledby="welcome-title">
   {#if step === 'welkom'}
     <img class="hero" src="/icon.svg" alt="" width="112" height="112" />
-    <h1 id="welcome-title" tabindex="-1" bind:this={heading}>Welkom bij Fluistervink</h1>
-    <p class="lead">
-      Zeg onderweg wat je ziet of hoort. Fluistervink schrijft mee, zodat jij kunt blijven kijken en
-      luisteren.
-    </p>
+    <h1 id="welcome-title" tabindex="-1" bind:this={heading}>{t('welcome.title')}</h1>
+    <p class="lead">{t('welcome.lead')}</p>
     <ul class="how">
       <li>
         <span class="icon" aria-hidden="true">
@@ -85,7 +83,7 @@
             /></svg
           >
         </span>
-        <span>Druk op de knop en zeg het gewoon: <em>"drie merels"</em></span>
+        <span>{t('welcome.howTalk')} <em>{t('welcome.howTalkExample')}</em></span>
       </li>
       <li>
         <span class="icon" aria-hidden="true">
@@ -95,83 +93,77 @@
             /></svg
           >
         </span>
-        <span>Eén korte tril: opgeslagen. Je hoeft niet naar het scherm te kijken.</span>
+        <span>{t('welcome.howTrill')}</span>
       </li>
       <li>
         <span class="icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7M5.5 9.5V20h13V9.5M10 20v-5h4v5" /></svg>
         </span>
-        <span>Thuis loop je de lijst na en zet je hem door naar waarneming.nl.</span>
+        <span>{t('welcome.howHome')}</span>
       </li>
     </ul>
   {:else if step === 'toestemming'}
-    <h1 id="welcome-title" tabindex="-1" bind:this={heading}>Microfoon en locatie</h1>
+    <h1 id="welcome-title" tabindex="-1" bind:this={heading}>{t('welcome.permissionsTitle')}</h1>
     <p class="lead">
-      Je telefoon vraagt de eerste keer of de app je <strong>microfoon</strong> en
-      <strong>locatie</strong> mag gebruiken. Geef dat nu alvast, dan komt die vraag niet midden in je
-      eerste waarneming.
+      {t('welcome.permissionsLeadBefore')} <strong>{t('welcome.microphone')}</strong>
+      {t('welcome.and')}
+      <strong>{t('welcome.location')}</strong>{t('welcome.permissionsLeadAfter')}
     </p>
     <p class="hint">
-      De microfoon staat alleen aan als jij op de knop drukt. De locatie zorgt dat elke waarneming
-      op de goede plek komt.{#if isNativeApp}
-        Tijdens het vogelen staat er een melding van Fluistervink; daardoor werkt de app door als je
-        telefoon in je zak zit.{/if}
+      {t('welcome.permissionsHint')}{#if isNativeApp}
+        {' '}{t('welcome.permissionsHintApp')}{/if}
     </p>
     {#if permissions}
       <ul class="permissions" role="status">
         <li class:no={!permissions.microphone}>
-          Microfoon: {permissions.microphone ? 'in orde' : 'geen toestemming'}
+          {t('welcome.microphoneStatus', {
+            status: t(permissions.microphone ? 'welcome.granted' : 'welcome.denied'),
+          })}
         </li>
         <li class:no={!permissions.location}>
-          Locatie: {permissions.location ? 'in orde' : 'geen toestemming'}
+          {t('welcome.locationStatus', {
+            status: t(permissions.location ? 'welcome.granted' : 'welcome.denied'),
+          })}
         </li>
       </ul>
       {#if !permissions.microphone || !permissions.location}
         <p class="hint">
-          Zonder microfoon kun je niets inspreken, zonder locatie komen je waarnemingen niet op de
-          kaart. Aanzetten kan alsnog bij {permissionSettingsPath}.
+          {t('welcome.permissionsMissing', { path: permissionSettingsPath })}
         </p>
       {/if}
     {/if}
   {:else if step === 'proberen'}
-    <h1 id="welcome-title" tabindex="-1" bind:this={heading}>Probeer het eens</h1>
+    <h1 id="welcome-title" tabindex="-1" bind:this={heading}>{t('welcome.tryTitle')}</h1>
     <p class="lead">
-      Zeg iets alsof je buiten staat, bijvoorbeeld <em>"drie merels en een zingende roodborst"</em>.
-      Er wordt niets bewaard.
+      {t('welcome.tryLead')} <em>{t('welcome.tryExample')}</em>. {t('welcome.tryNothingSaved')}
     </p>
     <TryOut />
   {:else}
-    <h1 id="welcome-title" tabindex="-1" bind:this={heading}>Help je mee?</h1>
-    <p class="lead">
-      Fluistervink is nog in ontwikkeling, en het werk van één ontwikkelaar, Stephan. Wat jij
-      inspreekt en verbetert, laat zien waar de app nog misgaat.
-    </p>
+    <h1 id="welcome-title" tabindex="-1" bind:this={heading}>{t('welcome.shareTitle')}</h1>
+    <p class="lead">{t('welcome.shareLead')}</p>
     <p class="hint detail">
-      Mag de app na elke sessie je uitspraken (als tekst), wat de app ervan maakte, je correcties en
-      feedback, en de locaties van je waarnemingen naar de ontwikkelaar sturen? Opnames niet, tenzij
-      je dat bij Instellingen aanzet. Alleen de ontwikkelaar kan het lezen, en je kunt het altijd
-      weer uitzetten. <a href="#privacy">Meer over privacy</a>
+      {t('welcome.shareText')} <a href="#privacy">{t('home.privacyLink')}</a>
     </p>
   {/if}
 
   <div class="footer">
     {#if step === 'toestemming' && !permissions}
       <button class="btn block large" disabled={asking} onclick={ask}>
-        {asking ? 'Even wachten…' : 'Toestemming geven'}
+        {asking ? t('welcome.asking') : t('welcome.allow')}
       </button>
-      <button class="link" onclick={next}>Later</button>
+      <button class="link" onclick={next}>{t('common.later')}</button>
     {:else if step === 'delen'}
-      <button class="btn block large" onclick={() => share(true)}>Ja, delen</button>
-      <button class="link" onclick={() => share(false)}>Liever niet</button>
+      <button class="btn block large" onclick={() => share(true)}>{t('home.shareYes')}</button>
+      <button class="link" onclick={() => share(false)}>{t('home.shareNo')}</button>
     {:else}
       <button class="btn block large" class:secondary={step === 'proberen'} onclick={next}>
-        {last ? 'Aan de slag' : 'Verder'}
+        {last ? t('welcome.start') : t('welcome.next')}
       </button>
       {#if step === 'welkom'}
-        <button class="link" onclick={close}>Overslaan</button>
+        <button class="link" onclick={close}>{t('welcome.skip')}</button>
       {/if}
     {/if}
-    <p class="dots" aria-label="Stap {index + 1} van {steps.length}">
+    <p class="dots" aria-label={t('welcome.step', { i: index + 1, n: steps.length })}>
       {#each steps as name, i (name)}
         <span class:on={i === index}></span>
       {/each}

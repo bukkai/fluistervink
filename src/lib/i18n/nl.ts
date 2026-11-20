@@ -61,6 +61,77 @@ export const nl = {
   'home.tip': 'Nog nooit gedaan? Probeer het in de tuin of bij het raam: één merel is genoeg.',
   'home.lastSession': 'Laatste sessie',
 
+  // Welkom (Welcome.svelte, welcome.ts)
+  'welcome.title': 'Welkom bij Fluistervink',
+  'welcome.lead':
+    'Zeg onderweg wat je ziet of hoort. Fluistervink schrijft mee, zodat jij kunt blijven kijken en luisteren.',
+  'welcome.howTalk': 'Druk op de knop en zeg het gewoon:',
+  'welcome.howTalkExample': '"drie merels"',
+  'welcome.howTrill': 'Eén korte tril: opgeslagen. Je hoeft niet naar het scherm te kijken.',
+  'welcome.howHome': 'Thuis loop je de lijst na en zet je hem door naar waarneming.nl.',
+  'welcome.permissionsTitle': 'Microfoon en locatie',
+  'welcome.permissionsLeadBefore': 'Je telefoon vraagt de eerste keer of de app je',
+  'welcome.microphone': 'microfoon',
+  'welcome.and': 'en',
+  'welcome.location': 'locatie',
+  'welcome.permissionsLeadAfter':
+    ' mag gebruiken. Geef dat nu alvast, dan komt die vraag niet midden in je eerste waarneming.',
+  'welcome.permissionsHint':
+    'De microfoon staat alleen aan als jij op de knop drukt. De locatie zorgt dat elke waarneming op de goede plek komt.',
+  'welcome.permissionsHintApp':
+    'Tijdens het vogelen staat er een melding van Fluistervink; daardoor werkt de app door als je telefoon in je zak zit.',
+  'welcome.microphoneStatus': 'Microfoon: {status}',
+  'welcome.locationStatus': 'Locatie: {status}',
+  'welcome.granted': 'in orde',
+  'welcome.denied': 'geen toestemming',
+  'welcome.permissionsMissing':
+    'Zonder microfoon kun je niets inspreken, zonder locatie komen je waarnemingen niet op de kaart. Aanzetten kan alsnog bij {path}.',
+  'welcome.settingsPathApp': 'Instellingen van je telefoon → Apps → Fluistervink → Rechten',
+  'welcome.settingsPathBrowser': 'Chrome: tik op het icoontje links van het adres → Rechten',
+  'welcome.tryTitle': 'Probeer het eens',
+  'welcome.tryLead': 'Zeg iets alsof je buiten staat, bijvoorbeeld',
+  'welcome.tryExample': '"drie merels en een zingende roodborst"',
+  'welcome.tryNothingSaved': 'Er wordt niets bewaard.',
+  'welcome.shareTitle': 'Help je mee?',
+  'welcome.shareLead':
+    'Fluistervink is nog in ontwikkeling, en het werk van één ontwikkelaar, Stephan. Wat jij inspreekt en verbetert, laat zien waar de app nog misgaat.',
+  'welcome.shareText':
+    'Mag de app na elke sessie je uitspraken (als tekst), wat de app ervan maakte, je correcties en feedback, en de locaties van je waarnemingen naar de ontwikkelaar sturen? Opnames niet, tenzij je dat bij Instellingen aanzet. Alleen de ontwikkelaar kan het lezen, en je kunt het altijd weer uitzetten.',
+  'welcome.asking': 'Even wachten…',
+  'welcome.allow': 'Toestemming geven',
+  'welcome.start': 'Aan de slag',
+  'welcome.next': 'Verder',
+  'welcome.skip': 'Overslaan',
+  'welcome.step': 'Stap {i} van {n}',
+
+  // Probeer het eens (TryOut.svelte, tryout.ts)
+  'tryout.listening': 'Even luisteren…',
+  'tryout.recording': 'Klaar? Tik nog eens · {s} s',
+  'tryout.starting': 'Microfoon aanzetten…',
+  'tryout.again': 'Nog een keer',
+  'tryout.tap': 'Tik en zeg het',
+  'tryout.trillNothing': 'Twee korte trillen: niets herkend. Zeg het nog eens.',
+  'tryout.trillUncertain':
+    'Een korte en een lange tril: in een sessie betekent dat opgeslagen, maar onzeker. Die loop je thuis na.',
+  'tryout.trillSaved': 'Eén korte tril: in een sessie betekent dat opgeslagen.',
+  'tryout.micDenied': 'De app mag de microfoon niet gebruiken. Aanzetten kan bij {path}.',
+  'tryout.unsupported': 'Deze browser kan niet opnemen.',
+  'tryout.heard': 'Fluistervink verstond:',
+  'tryout.heardNothing': 'Fluistervink verstond niets.',
+  'tryout.uncertain': 'onzeker',
+  'tryout.note': 'Dit was een proef: er is niets bewaard.',
+  'tryout.or': ' of ',
+  'tryout.audioLimit': 'Voor vandaag is het maximum aan spraak bereikt. Morgen kan het weer.',
+  'tryout.messageLimit':
+    'Voor vandaag is het maximum aantal uitspraken bereikt. Morgen kan het weer.',
+  'tryout.failed': 'Dat lukte even niet. Probeer het nog eens.',
+  'tryout.offline': 'Je hebt nu geen verbinding. Probeer het als je weer online bent.',
+
+  // Wat is er nieuw? (Changelog.svelte)
+  'changelog.title': 'Wat is er nieuw?',
+  'changelog.inDutch': 'De wijzigingen staan alleen in het Nederlands.',
+  'changelog.version': 'Je hebt versie {version}',
+
   // Herinnering aan de export (exportReminder.ts)
   'reminder.unreviewed': {
     one: '1 sessie van meer dan een week geleden is nog niet nagelopen.',

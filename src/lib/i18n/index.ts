@@ -7,9 +7,10 @@ import { nl } from './nl';
 // TypeScript een vergeten tekst meldt.
 //
 // Engels staat voorlopig alleen achter de ontwikkeloptie "English" (stap 3).
-// Lange pagina's (uitleg, privacy, welkom, Probeer het eens), de changelog en
-// de schermen van de eigenaar (Developer, Statistieken, ontwikkelopties) staan
-// hier bewust niet in en blijven Nederlands: zie het plan.
+// Lange pagina's (uitleg, privacy) hebben per taal een eigen component
+// (`HowItWorks.en.svelte`, `Privacy.en.svelte`). De regels van de changelog
+// en de schermen van de eigenaar (Developer, Statistieken, ontwikkelopties)
+// staan hier bewust niet in en blijven Nederlands: zie het plan.
 //
 // Wisselen van taal laadt de app opnieuw, dus `t()` hoeft niet reactief te zijn.
 

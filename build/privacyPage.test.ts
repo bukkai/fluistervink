@@ -14,8 +14,20 @@ describe('losse privacypagina', () => {
     expect(css).toContain('--brand');
   });
 
+  it('heeft ook een Engelse versie, met dezelfde opbouw', async () => {
+    const { html } = await renderPrivacyPage('en');
+    expect(html).toContain('<html lang="en">');
+    expect(html).toContain('>In short</h3>');
+    expect(html).toContain('href="/privacy-en.css"');
+    expect(html).toContain('href="/#instellingen"');
+    expect(html).not.toMatch(/href="#/);
+    expect(html).not.toContain('class="back"');
+  });
+
   it('past in de Content-Security-Policy: geen scripts en geen inline stijl', async () => {
-    const { html } = await renderPrivacyPage();
-    expect(html).not.toMatch(/<script|<style|style="/);
+    for (const language of ['nl', 'en'] as const) {
+      const { html } = await renderPrivacyPage(language);
+      expect(html).not.toMatch(/<script|<style|style="/);
+    }
   });
 });

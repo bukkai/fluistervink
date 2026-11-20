@@ -1,8 +1,9 @@
 import { ApiError } from './api';
+import { language, t } from './i18n';
 import { interpret, type Action } from './interpret';
 import { logEvent } from './log';
 import { transcribe } from './transcribe';
-import { activityName, groupLabel, lifeStageName, methodName, speciesName } from './vocab';
+import { activityLabel, groupLabel, lifeStageLabel, methodLabel, speciesLabel } from './vocab';
 
 // "Probeer het eens" in het welkom: thuis één zin inspreken en zien wat
 // Fluistervink ervan maakt. Dezelfde spraakherkenning en hetzelfde model als
@@ -26,14 +27,14 @@ export interface TryResult {
 export function describeAdd(action: Extract<Action, { type: 'add' }>): TryLine {
   const { speciesId, count, activityId, methodId, lifeStageId, sex, candidates } = action.fields;
   const name = candidates?.length
-    ? candidates.map(speciesName).join(' of ')
-    : speciesName(speciesId);
+    ? candidates.map(speciesLabel).join(t('tryout.or'))
+    : speciesLabel(speciesId);
   const group = groupLabel(speciesId);
   const details = [
-    activityName(speciesId, activityId),
-    methodName(speciesId, methodId),
-    lifeStageName(speciesId, lifeStageId),
-    sex === 'male' ? 'man' : sex === 'female' ? 'vrouw' : undefined,
+    activityLabel(speciesId, activityId),
+    methodLabel(speciesId, methodId),
+    lifeStageLabel(speciesId, lifeStageId),
+    sex === 'male' ? t('log.male') : sex === 'female' ? t('log.female') : undefined,
   ].filter(Boolean);
   return {
     text: [`${count} × ${name}${group ? ` (${group})` : ''}`, ...details].join(', '),
@@ -41,15 +42,15 @@ export function describeAdd(action: Extract<Action, { type: 'add' }>): TryLine {
   };
 }
 
-/** Spraakherkenning en model, zonder iets op te slaan. */
+/** Spraakherkenning en model, in de taal van de app, zonder iets op te slaan. */
 export async function tryUtterance(audio: Blob, groups: boolean): Promise<TryResult> {
   const startedAt = Date.now();
   try {
-    const { text: transcript } = await transcribe(audio, { groups });
+    const { text: transcript } = await transcribe(audio, { groups, language });
     let lines: TryLine[] = [];
     if (transcript) {
       // Geen eerdere waarnemingen: verwijzingen ("nog drie") kunnen hier niet
-      const { actions } = await interpret(transcript, [], { groups });
+      const { actions } = await interpret(transcript, [], { groups, language });
       lines = actions.flatMap((action) => (action.type === 'add' ? [describeAdd(action)] : []));
     }
     logEvent('tryout', { ms: Date.now() - startedAt, observations: lines.length });
@@ -64,12 +65,10 @@ export async function tryUtterance(audio: Blob, groups: boolean): Promise<TryRes
 /** Foutmelding in gewone taal */
 export function tryErrorText(error: unknown): string {
   if (error instanceof ApiError && error.code === 'audio_limit') {
-    return 'Voor vandaag is het maximum aan spraak bereikt. Morgen kan het weer.';
+    return t('tryout.audioLimit');
   }
   if (error instanceof ApiError && error.code === 'message_limit') {
-    return 'Voor vandaag is het maximum aantal uitspraken bereikt. Morgen kan het weer.';
+    return t('tryout.messageLimit');
   }
-  return navigator.onLine
-    ? 'Dat lukte even niet. Probeer het nog eens.'
-    : 'Je hebt nu geen verbinding. Probeer het als je weer online bent.';
+  return navigator.onLine ? t('tryout.failed') : t('tryout.offline');
 }
