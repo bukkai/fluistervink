@@ -343,6 +343,11 @@ export interface ScreenOffOptions {
   minMs: number;
   trilStart: number[];
   trilStop: number[];
+  /**
+   * De WebView blijft zich in beeld melden (ZichtbareWebView.java, proef), zodat
+   * Chromium de pagina met het scherm uit niet stilzet
+   */
+  zichtbaar?: boolean;
 }
 
 interface SchermUitPlugin {

@@ -74,7 +74,10 @@ public class SchermUitPlugin extends Plugin implements WandelingService.Listener
         super.handleOnDestroy();
     }
 
-    /** Aanzetten: { sessieId, maxMs, minMs, trilStart, trilStop } */
+    /**
+     * Aanzetten: { sessieId, maxMs, minMs, trilStart, trilStop, zichtbaar? }.
+     * `zichtbaar`: de WebView blijft zich in beeld melden (ZichtbareWebView).
+     */
     @PluginMethod
     public void aan(PluginCall call) {
         WandelingService.Config config = new WandelingService.Config();
@@ -99,7 +102,7 @@ public class SchermUitPlugin extends Plugin implements WandelingService.Listener
         }
         WandelingService.config = config;
         // Ook als de service nog moet starten: die start zo (WandelingPlugin)
-        houdWebcodeWakker(true);
+        houdWebcodeWakker(true, call.getBoolean("zichtbaar", false), null);
         WandelingService service = WandelingService.instance;
         if (service == null) {
             // De service start bij de sessie (WandelingPlugin); dan neemt hij dit mee
@@ -123,8 +126,8 @@ public class SchermUitPlugin extends Plugin implements WandelingService.Listener
             service.flush();
         } else WandelingService.config = null;
         WandelingService.webRecording = false;
-        houdWebcodeWakker(false);
-        call.resolve();
+        // Pas klaar als het log van ZichtbareWebView verstuurd is: daarna haalt de webcode de luisteraars weg
+        houdWebcodeWakker(false, false, call::resolve);
     }
 
     /**
@@ -135,13 +138,39 @@ public class SchermUitPlugin extends Plugin implements WandelingService.Listener
      * eerste stuk kwam meteen aan, de volgende pas bij het ontgrendelen
      * (bridgeMs 79 s en 19 s), en de wachtrij hing. Zolang de proef aan staat
      * (een sessie loopt) houdt de renderer dezelfde voorrang als de app.
+     *
+     * Dat hield Chromium niet tegen (19 nov): die zet de pagina zelf stil als
+     * de WebView niet meer in beeld is. Met `zichtbaar` blijft de WebView zich
+     * in beeld melden (ZichtbareWebView, proef 20 nov). Bij het uitzetten gaat
+     * in het log hoe vaak dat nodig was (`screen_off_webview_zichtbaar`).
      */
-    private void houdWebcodeWakker(boolean wakker) {
-        if (getBridge() == null) return;
+    private void houdWebcodeWakker(boolean wakker, boolean zichtbaar, Runnable daarna) {
+        if (getBridge() == null) {
+            if (daarna != null) daarna.run();
+            return;
+        }
         getBridge().executeOnMainThread(() -> {
-            WebView webView = getBridge().getWebView();
-            if (webView != null) webView.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT, !wakker);
+            try {
+                stelWebViewIn(wakker, zichtbaar);
+            } finally {
+                if (daarna != null) daarna.run();
+            }
         });
+    }
+
+    /** Voorrang van de renderer en ZichtbareWebView aan of uit; op de main thread. */
+    private void stelWebViewIn(boolean wakker, boolean zichtbaar) {
+        WebView webView = getBridge().getWebView();
+        if (webView == null) return;
+        webView.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT, !wakker);
+        if (!(webView instanceof ZichtbareWebView)) return;
+        ZichtbareWebView zichtbareWebView = (ZichtbareWebView) webView;
+        if (!wakker) {
+            JSObject data = new JSObject();
+            data.put("tegengehouden", zichtbareWebView.tegengehoudenEnTerug());
+            log("webview_zichtbaar", data);
+        }
+        zichtbareWebView.zichtbaarHouden(wakker && zichtbaar);
     }
 
     /**
