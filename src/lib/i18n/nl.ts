@@ -752,4 +752,8 @@ export const nl = {
 
   // Zeemeeuwen (Zeemeeuwen.svelte)
   'gulls.label': 'Zeemeeuwen bestaan niet',
+  'gulls.shout': 'ZEEMEEUW?!',
+  'gulls.notExist': 'Een zeemeeuw bestaat niet.',
+  'gulls.which': 'Zilvermeeuw? Kokmeeuw? Stormmeeuw? Grote mantelmeeuw?',
+  'gulls.hint': 'Tik om de meeuwen te kalmeren',
 } satisfies Record<string, Entry>;
