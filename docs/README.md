@@ -28,6 +28,7 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 | `plan-ios.md` | iPhone-app; voorstel, na de lancering |
 | `plan-engels.md` | de app in het Engels: één app met een taalkeuze; voorstel 19 nov, na de betaalde laag; stap 1 (woordenboek), 2 (Engelse namen) en 3 (ontwikkeloptie "English") gedaan, van 5 de schermen |
 | `plan-andere-landen.md` | soortenlijsten van andere landen en namen in andere talen; uitgewerkt 20 nov, voor later (eerst West-Europa); proef Spanje gedaan |
+| `plan-tuintelling.md` | Nationale Tuinvogeltelling (eind jan 2027): telmodus en promotie; voorstel 20 nov |
 | `plan-robuustheid.md` | edge cases die een tester zou proberen, en hoe we ze blijvend afdekken; code klaar, nog proberen op de telefoon en testset-opnames |
 
 ## Naslag
