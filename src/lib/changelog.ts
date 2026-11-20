@@ -27,6 +27,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026-11-20',
+    topics: {
+      Nalopen: [
+        'Verbeterde je een waarneming onderweg met de stem ("nee, wulpen"), dan staat er in de lijst "Met de stem aangepast", met hoe hij eerst was. Zo zie je bij het nalopen of de correctie op de goede waarneming terechtkwam.',
+      ],
+    },
+  },
+  {
     date: '2026-11-19',
     topics: {
       Nalopen: [
