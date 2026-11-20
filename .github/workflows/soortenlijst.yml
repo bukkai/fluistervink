@@ -2,8 +2,9 @@
 # waarneming.nl een soort (Winterkoning werd Nannus troglodytes), dan herkent
 # de import onze export niet meer; deze workflow opent dan een pull request
 # met de nieuwe lijst en wat er veranderd is. Ook de Engelse namen
-# (data/namen-en.json), de namen van eBird (data/ebird-namen.json) en de
-# vogels van Spanje (data/soorten-es.json, een paar minuten extra) gaan mee.
+# (data/namen-en.json) en de namen van eBird (data/ebird-namen.json) gaan mee.
+# De vogels van Spanje (data/soorten-es.json) worden niet elke week opnieuw
+# geteld: dat doet `node scripts/fetch-species.mjs --landen` met de hand.
 #
 # Nodig: Settings → Actions → General → "Allow GitHub Actions to create and
 # approve pull requests". Een PR van deze workflow start de Check niet vanzelf

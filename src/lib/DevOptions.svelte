@@ -28,7 +28,9 @@
       option: 'spanje',
       group: 'understanding',
       label: 'Spanje',
-      hint: 'De vogels van Spanje in plaats van die van Nederland: bijeneter, blauwe ekster en rode patrijs zijn dan gewoon, en de zeldzaamheid is die van Spanje. Alleen vogels; andere dieren blijven de Nederlandse lijst. Geldt ook voor uitspraken die nog op bereik wachten (docs/plan-andere-landen.md). Aan- of uitzetten laadt de app opnieuw.',
+      hint: 'De vogels van Spanje in plaats van die van Nederland. De proef is voorbij (docs/plan-andere-landen.md): zet dit uit, dan verdwijnt het vinkje.',
+      // Alleen nog te zien als hij aan staat, zodat hij uit kan
+      available: devOptionOn('spanje'),
     },
     {
       option: 'oortjesMicrofoon',
