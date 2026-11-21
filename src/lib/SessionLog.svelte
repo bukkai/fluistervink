@@ -379,6 +379,7 @@
               observation={obs}
               utterance={source}
               onclose={closeEditor}
+              reviewing={obs.id === rescuing}
               oncopy={(id) => {
                 // Gekopieerd: het origineel blijft, ook als je de kopie annuleert
                 rescuing = undefined;
