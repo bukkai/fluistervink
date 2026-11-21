@@ -28,9 +28,6 @@ Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/ro
 
 Elk punt na het proberen hier weghalen.
 
-- **Correctie oud→nieuw** (#305, gemerged): gesproken bevestiging aan, oortjes in, "drie holenduiven" en dan "nee, wulpen" → "Holenduif wordt wulp, 3". Ook "nog twee erbij" → "Wulp, 3 wordt 5".
-- **Niet begrepen redden** (#309, gemerged 19 nov; nog nergens bekeken): een sessie met een niet begrepen uitspraak stoppen → kaart "Niet begrepen" boven de waarnemingen; "Maak er een waarneming van" opent het formulier met Vogel onbekend (Annuleren en de terugknop halen hem weg), "Geen waarneming" zet hem weg. Na de export geen kaart meer.
-- **Met de stem aangepast** (#311, gemerged 20 nov; nog nergens bekeken): "drie holenduiven", dan "nee, wulpen", stoppen → in de lijst "Met de stem aangepast, was: 3 × Holenduif"; weg na Klopt, aanpassen of "Alles klopt".
 
 - **English** (#299 en #300, ontwikkeloptie): aanzetten laadt de app opnieuw in het Engels. Inspreken: "six Woodpigeons flying over", "no, Brambling instead of Chaffinch", "three more", "scratch that last one", "Buzzard, half a mile north-east". De gesproken bevestiging is Engels maar met een Nederlandse stem (native, later). Uitleg, privacy, welkom en Probeer het eens zijn nu ook Engels (#314); de regels van Wat is er nieuw en de meldingen van de Android-app blijven Nederlands.
 
@@ -53,6 +50,8 @@ Elk punt na het proberen hier weghalen.
 - **Instellingen** (#234, #235): "Ook andere dieren inspreken" staat aan en een ree komt goed binnen; volumeknop aan, gesproken bevestiging uit (zelf weer aanzetten); Play-tekst bijwerken (`docs/play-store/README.md`).
 - **Developer en Statistieken** (#244, #245): "Verwerkte wissen" (blijft weg na opnieuw delen), nieuwe indeling bevalt; week in de grafiek aantikken licht de rij op.
 - Bij de volgende import naar waarneming.nl een Bonte Kraai meenemen (#153).
+
+- **Proef 20 nov (draaiboek, #305 #309 #311):** alles werkte. Daaruit: geredde waarneming na Opslaan meteen zeker (#318). Nog nagaan: `walk_service_failed` (`draait: false`) om 12:58 in die sessie, twee keer gelogd; en "nee, het waren duiven" na "drie houtduiven" werd Vogel onbekend (onzeker) in plaats van een duif.
 
 ## Met de testset nagaan
 
