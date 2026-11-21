@@ -29,7 +29,7 @@ Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/ro
 Elk punt na het proberen hier weghalen.
 
 - **Tuintelling** (#323, ontwikkeloptie `tuintelling`, na het mergen): knop "Tuintelling: een half uur tellen"; "drie koolmezen", "vijf koolmezen", "zes houtduiven overvliegend", "een mees". Klok in de kop, na 25 min twee trillen, na 30 min drie lange en het overzicht: Koolmees 5, houtduif bij overvliegend, mees als "Kies eerst een soort". Meteen de proeftelling bij het raam (plan, punt 9).
-- **Kinderstem** (vóór het mergen van #327, tuintellingpagina): een kind een paar soorten laten inspreken ("twee pimpelmeesjes", "een roodborstje", "nu vijf koolmezen"), liefst een jong en een ouder kind. Gaat het goed, dan blijft "Leuk met kinderen" op de pagina staan; anders eruit. Delen, dan kan het ook in de testset.
+- **Kinderstem** (#327, tuintellingpagina): een kind een paar soorten laten inspreken ("twee pimpelmeesjes", "een roodborstje", "nu vijf koolmezen"), liefst een jong en een ouder kind. Gaat het goed, dan blijft "Leuk met kinderen" op de pagina staan; anders die regel eruit. Delen, dan kan het ook in de testset.
 
 
 - **English** (#299 en #300, ontwikkeloptie): aanzetten laadt de app opnieuw in het Engels. Inspreken: "six Woodpigeons flying over", "no, Brambling instead of Chaffinch", "three more", "scratch that last one", "Buzzard, half a mile north-east". De gesproken bevestiging is Engels maar met een Nederlandse stem (native, later). Uitleg, privacy, welkom en Probeer het eens zijn nu ook Engels (#314); de regels van Wat is er nieuw en de meldingen van de Android-app blijven Nederlands.
