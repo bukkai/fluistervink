@@ -45,7 +45,7 @@ Afgevinkt op 18 nov: zonder deze stappen laat de Play Console een gesloten test 
 
 ## 3. Logo
 
-Een nieuw pictogram is een native wijziging: nieuwe tag en beide AAB's uploaden. Mag tijdens de gesloten test; laat de start er niet op wachten.
+Wordt ontwikkeld, komt waarschijnlijk in januari, dus na de lancering. Een nieuw pictogram is een native wijziging: nieuwe tag en beide AAB's uploaden. Mag tijdens de gesloten test; laat de start er niet op wachten.
 
 Vragen aan de artiest:
 
@@ -58,14 +58,14 @@ Daaruit maken we: Android-pictogram (`android/app/src/main/res/mipmap-*`, adapti
 ## 4. Vóór de aanvraag voor productie
 
 - [x] **Kwaliteitsronde** (`docs/kwaliteitsronde.md`): gedaan na de release van 18 nov (#279), plus de architectuurronde (#280–#283).
-- [x] Feedback van de testers ophalen en verwerken (`npm run feedback -- pull` en `notes`), zodat er iets te vertellen is bij de aanvraag: verwerkt t/m 19 nov. Vlak voor de aanvraag nog één keer.
-- [ ] Laatste release in de gesloten test minstens een paar dagen vóór de aanvraag (beoordeling).
+- [x] Feedback van de testers ophalen en verwerken (`npm run feedback -- pull` en `notes`), zodat er iets te vertellen is bij de aanvraag: gaat regelmatig. Testers gevraagd om nog wat in te dienen (21 nov). Vlak voor de aanvraag nog één keer.
+- [x] Laatste release in de gesloten test minstens een paar dagen vóór de aanvraag (beoordeling): v0.4 goedgekeurd, stable bijgewerkt op 21 nov. Mogelijk nog een v0.5 vóór 1 dec, afhankelijk van de proeven; die dan op tijd indienen.
 
 ## 5. Productie
 
 - [ ] Productietoegang aanvragen in de Play Console (na 14 dagen, als het dashboard het toestaat).
 - [ ] Na goedkeuring: de stabiele AAB naar **Productie**. Bij het maken van die release de landen kiezen: Nederland en België. De beta blijft in de interne test.
-- [ ] `#uitleg` en `#privacy` nalopen op "test"-taal; `CLAUDE.md` en `NOTES.md` bijwerken. Nagelopen op 18 nov: beide schoon (alleen de gesproken bevestiging heet er een proef, en dat is hij nog). Bij productie nog kiezen: "(proef)" bij Trektelmodus en de gesproken bevestiging (Instellingen), "nog in ontwikkeling" in de vraag om te delen (welkom en startscherm).
+- [ ] `#uitleg` en `#privacy` nalopen op "test"-taal; `CLAUDE.md` en `NOTES.md` bijwerken. Nagelopen op 18 nov: beide schoon (alleen de gesproken bevestiging heet er een proef, en dat is hij nog). Besloten 21 nov: "(proef)" bij Trektelmodus eraf (gesproken bevestiging blijft een proef); "nog in ontwikkeling" in de vraag om te delen (welkom en startscherm) blijft tijdens de test en verandert vóór de productierelease.
 - [ ] De eerste weken Statistieken en Kosten op Developer volgen.
 
 Later, niet nodig voor de lancering: automatisch uploaden vanuit de workflow.
