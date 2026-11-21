@@ -37,6 +37,7 @@ import com.getcapacitor.JSObject;
 import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -155,8 +156,9 @@ public class WandelingService extends Service {
     private String opnameVia;
     /** Loopt er een trektelling in de service (alleen met `config`) */
     private volatile TrektelOpname trektel;
-    private int trektelStukken = 0;
-    private int trektelStil = 0;
+    // Opgehoogd op de worker, gelezen op de hoofdthread
+    private volatile int trektelStukken = 0;
+    private volatile int trektelStil = 0;
     private Integer accuBegin;
 
     @Override
@@ -202,6 +204,11 @@ public class WandelingService extends Service {
         finish("service_gestopt");
         releaseScreenOff();
         worker.shutdown(); // maakt een opname die net stopte nog af
+        // De instellingen horen bij deze sessie. Zonder dit nam de service van
+        // een volgende sessie op met het oude sessie-id als de webcode `uit`
+        // niet meer zei (app weggeveegd, ontwikkeloptie intussen uit).
+        config = null;
+        webRecording = false;
         running = false;
         if (instance == this) instance = null;
         super.onDestroy();
@@ -627,7 +634,7 @@ public class WandelingService extends Service {
         updateMediaSession();
         String startVia = opnameVia;
         // Het bestand afmaken kost even: niet op de hoofdthread
-        worker.execute(() -> {
+        opWorker(() -> {
             long durationMs = current.stop();
             JSObject info = new JSObject();
             info.put("startedAt", current.startedAt);
@@ -725,6 +732,19 @@ public class WandelingService extends Service {
         return data;
     }
 
+    /**
+     * Op de worker; is die al dicht (onDestroy, terwijl de opnamethread het
+     * laatste stuk nog afgaf na de 3 s van `stop`), dan hier. Anders gooit
+     * `execute` en crasht de app, en blijft het stuk als .tmp liggen.
+     */
+    private void opWorker(Runnable taak) {
+        try {
+            worker.execute(taak);
+        } catch (RejectedExecutionException e) {
+            taak.run();
+        }
+    }
+
     /** Wacht tot alle stukken en opnames af zijn (bestand staat klaar) */
     void flush() {
         try {
@@ -761,7 +781,7 @@ public class WandelingService extends Service {
         @Override
         public void stuk(AacBestand bestand, Knipper.Stuk stuk, long schermUitMs) {
             long gestoptAt = System.currentTimeMillis();
-            worker.execute(() -> {
+            opWorker(() -> {
                 JSObject info = new JSObject();
                 info.put("startedAt", bestand.startedAt);
                 info.put("trektel", true);
