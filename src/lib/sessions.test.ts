@@ -6,6 +6,7 @@ import {
   checkStaleSession,
   countPerSession,
   formatDuration,
+  isFiledAway,
   keepSession,
 } from './sessions';
 
@@ -104,5 +105,37 @@ describe('formatDuration', () => {
     expect(formatDuration(-500)).toBe('0 min');
     expect(formatDuration(59 * 60_000)).toBe('59 min');
     expect(formatDuration(75 * 60_000)).toBe('1 u 15 min');
+  });
+});
+
+describe('isFiledAway', () => {
+  const DAY = 24 * HOUR;
+  const ended = (extra: Partial<Session>): Session => ({
+    id: 's',
+    startedAt: now - 30 * DAY,
+    status: 'ended',
+    ...extra,
+  });
+  const none = new Set<string>();
+
+  it('klapt een sessie in een week na de export', () => {
+    expect(isFiledAway(ended({ exportedAt: now - 8 * DAY }), false, none, now)).toBe(true);
+    expect(isFiledAway(ended({ exportedAt: now - 6 * DAY }), false, none, now)).toBe(false);
+  });
+
+  it('laat niet-geëxporteerde en lopende sessies staan', () => {
+    expect(isFiledAway(ended({ readyAt: now - 8 * DAY }), false, none, now)).toBe(false);
+    const active = ended({ status: 'active', exportedAt: now - 8 * DAY });
+    expect(isFiledAway(active, false, none, now)).toBe(false);
+  });
+
+  it('met eBird: pas als eBird ook af is, gerekend vanaf de laatste export', () => {
+    const s = ended({ exportedAt: now - 10 * DAY });
+    expect(isFiledAway(s, true, new Set(['s']), now)).toBe(false);
+    const both = ended({ exportedAt: now - 10 * DAY, ebirdExportedAt: now - 2 * DAY });
+    expect(isFiledAway(both, true, none, now)).toBe(false);
+    expect(isFiledAway(ended({ ebirdExportedAt: now - 8 * DAY }), true, none, now)).toBe(true);
+    // Zonder eBird telt alleen waarneming.nl
+    expect(isFiledAway(ended({ ebirdExportedAt: now - 8 * DAY }), false, none, now)).toBe(false);
   });
 });

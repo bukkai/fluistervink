@@ -37,6 +37,9 @@ export const CHANGELOG: ChangelogEntry[] = [
         'De trektelmodus is geen proef meer: bij Instellingen staat hij nu gewoon als "Trektelmodus".',
         'Kwamen er twee GPS-metingen vlak na elkaar binnen, dan kon een stuk van de trektelling de minder nauwkeurige plek houden. Nu krijgt het altijd de beste.',
       ],
+      Export: [
+        'Bij Vorige sessies zijn geëxporteerde sessies van meer dan een week geleden ingeklapt, onderaan. Tik erop om ze te zien.',
+      ],
       Nalopen: [
         'In donkere modus is "Met de stem aangepast" en "nagelopen" in de lijst beter te lezen, net als de knop Trektelling starten.',
       ],

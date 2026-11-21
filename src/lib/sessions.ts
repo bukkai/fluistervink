@@ -186,3 +186,23 @@ export function formatDuration(ms: number): string {
   const m = minutes % 60;
   return h > 0 ? t('format.durationHours', { h, m }) : t('format.durationMinutes', { m });
 }
+
+/** Hoe lang een afgehandelde sessie nog bovenaan blijft bij Vorige sessies */
+export const FILED_AWAY_AFTER_MS = 7 * 24 * 60 * 60_000;
+
+/**
+ * Afgehandeld en al een week oud: gestopt, geëxporteerd (naar waarneming.nl,
+ * of met eBird aan alleen naar eBird) en niets meer open voor eBird. Die gaan
+ * bij Vorige sessies in een ingeklapt blok. De week telt vanaf de laatste
+ * export, zodat een sessie niet wegklapt op het moment dat je hem exporteert.
+ */
+export function isFiledAway(
+  session: Session,
+  ebird: boolean,
+  ebirdPending: Set<string>,
+  now = Date.now(),
+): boolean {
+  if (session.status !== 'ended' || ebirdPending.has(session.id)) return false;
+  const exportedAt = Math.max(session.exportedAt ?? 0, ebird ? (session.ebirdExportedAt ?? 0) : 0);
+  return exportedAt > 0 && exportedAt < now - FILED_AWAY_AFTER_MS;
+}
