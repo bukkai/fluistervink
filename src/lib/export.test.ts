@@ -121,6 +121,14 @@ describe('importJson', () => {
     await expect(importJson(file)).rejects.toThrow('Ongeldige export');
   });
 
+  it('neemt een nagelopen niet begrepen uitspraak mee, maar weigert een onbekende waarde', async () => {
+    const utterance = { id: 'uitspraak', sessionId: 'sessie', recordedAt: 1, status: 'done' };
+    await importJson(exportFile({ utterances: [{ ...utterance, handled: 'none' }] }));
+    expect((await db.utterances.get('uitspraak'))?.handled).toBe('none');
+    const file = exportFile({ utterances: [{ ...utterance, id: 'ander', handled: 123 }] });
+    await expect(importJson(file)).rejects.toThrow('Ongeldige export');
+  });
+
   it('weigert een sessie met een ongeldige inspanning', async () => {
     const session = { id: 'sessie', startedAt: 1, endedAt: 2, status: 'ended' };
     const file = exportFile({

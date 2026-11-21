@@ -1,6 +1,6 @@
 # Plan: robuustheid (edge cases)
 
-18 nov 2026. Status: fase 1 (#268), 2 (#273) en 3–5 (code, tests en checklists) klaar. Kwaliteitsronde 18 nov: #9 besloten, #14–#16 erbij en afgedekt (#279). Open: proberen op de telefoon en opnames voor de testset; zie de tabel.
+18 nov 2026. Status: fase 1 (#268), 2 (#273) en 3–5 (code, tests en checklists) klaar. Kwaliteitsronde 18 nov: #9 besloten, #14–#16 erbij en afgedekt (#279). Kwaliteitsronde 21 nov: #17 erbij en afgedekt. Open: proberen op de telefoon en opnames voor de testset; zie de tabel.
 
 Een rondgang "wat zou een tester proberen?" langs de bestaande tests en code. Veel is al afgedekt: netwerk weg op elk moment, de wachtrij na een crash, twee tabbladen (slot en BroadcastChannel), haperende tikken met handschoenen, Merlin tijdens een trektelling, een back-up twee keer terugzetten, CSV met komma's en aanhalingstekens, soorten die het model verzint. Dit plan legt vast wat nog open staat en hoe we het blijvend afdekken, zodat het niet bij één keer nalopen blijft.
 
@@ -11,7 +11,7 @@ Wat de code en de tests niet kunnen afdekken. Op de telefoon proberen: de checkl
 | # | Geval | Nog te doen | Door wie |
 | --- | --- | --- | --- |
 | 2 | **Telefoon vol** | Op de telefoon proberen (veldchecklist). Later misschien vooraf waarschuwen met `navigator.storage.estimate()` | eigenaar |
-| 6 | **Verwijzing buiten de context** ("die buizerd van een kwartier geleden" na 30 waarnemingen) | De app-kant is afgedekt (zie onder). Of het model dan "niet begrepen" of onzeker kiest in plaats van de verkeerde buizerd: een paar opnames in de testset | eigenaar inspreken, daarna `npm run testset` |
+| 6 | **Verwijzing buiten de context** ("die buizerd van een kwartier geleden" na 30 waarnemingen) | De app-kant is afgedekt (zie onder); sinds #303 krijgt het model 20 waarnemingen in plaats van 10. Of het model dan "niet begrepen" of onzeker kiest in plaats van de verkeerde buizerd: een paar opnames in de testset | eigenaar inspreken, daarna `npm run testset` |
 | 7 | **Stemmen of geluid van anderen** in een trektelstuk (medevogelaar, radio, wind) | Opnames voor de testset; de prompt alleen aanpassen als de testset het laat zien | eigenaar inspreken |
 | 12 | **Gebeld worden** | De code is afgedekt (zie onder); nog op de telefoon proberen, ook met Bluetooth-oortjes | eigenaar |
 
@@ -46,3 +46,4 @@ Wat af is, komt hier met de test of PR erbij, en gaat uit de tabel.
 - **#14 Plek die later komt, na een vorige sessie** (kwaliteitsronde 18 nov): `positionLater` gaf de eerste meting ook aan uitspraken zonder plek van een sessie die vlak daarvoor gestopt was, misschien kilometers verderop. Nu alleen de lopende sessie. Test "eerdere uitspraken zonder plek krijgen de eerste meting alsnog".
 - **#15 Microfoon komt niet terug** (kwaliteitsronde 18 nov): ging de microfoon na een weggevallen spoor niet meer aan, dan stopte de trektelling met alleen twee lange trillen. Nu staat op het scherm waarom (reden `mic` in het log). Test "gaat de microfoon niet meer aan, dan stopt de telling".
 - **#16 Plafond van het model per dag** (kwaliteitsronde 18 nov): na #278 stopte alleen het plafond voor spraak een trektelling; bij het plafond van het model ging elk stuk nog naar de spraakherkenning. Nu stoppen beide (`onDailyLimit` in `queue.ts`), en Probeer het eens zegt het in gewone taal.
+- **#17 Twee GPS-metingen kort na elkaar in een trektelling** (kwaliteitsronde 21 nov): `improveChunks` in `trektelPosition.ts` wacht per stuk zonder plek op het opzoeken van het gebied. Een betere meting die intussen binnenkwam, werd daarna door de grovere overschreven, en verbeterde niet meer. Nu slaat een stuk over als het al een even goede of betere plek heeft. Test "een grove meting die trager door de stukken loopt, overschrijft een betere niet".

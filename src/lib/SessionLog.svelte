@@ -691,7 +691,7 @@
 
   .reviewed {
     font-weight: 400;
-    color: var(--brand);
+    color: var(--brand-strong);
   }
 
   .details,
@@ -861,7 +861,7 @@
 
   .voice {
     font-size: 0.9rem;
-    color: var(--brand);
+    color: var(--brand-strong);
   }
 
   .remarks {
