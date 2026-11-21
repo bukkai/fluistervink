@@ -27,6 +27,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026-11-21',
+    topics: {
+      Trektelling: [
+        'De trektelmodus is geen proef meer: bij Instellingen staat hij nu gewoon als "Trektelmodus".',
+      ],
+    },
+  },
+  {
     date: '2026-11-20',
     topics: {
       Nalopen: [

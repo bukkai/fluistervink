@@ -257,7 +257,7 @@ export const nl = {
   },
 
   // Trektelmodus (TrektelSettings.svelte)
-  'trektel.label': 'Trektelmodus (proef)',
+  'trektel.label': 'Trektelmodus',
   'trektel.hint1':
     'Voor als je op één plek telt en de telefoon naast je legt. Tijdens een sessie verschijnt dan de knop "Trektelling starten": de app luistert daarna door en verwerkt alles wat je zegt, zonder dat je steeds hoeft te drukken. Stilte wordt niet verstuurd.',
   'trektel.hint2':
