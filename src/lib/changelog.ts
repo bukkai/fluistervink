@@ -27,6 +27,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026-11-21',
+    topics: {
+      Trektelling: [
+        'Kwamen er twee GPS-metingen vlak na elkaar binnen, dan kon een stuk van de trektelling de minder nauwkeurige plek houden. Nu krijgt het altijd de beste.',
+      ],
+      Nalopen: [
+        'In donkere modus is "Met de stem aangepast" en "nagelopen" in de lijst beter te lezen, net als de knop Trektelling starten.',
+      ],
+    },
+  },
+  {
     date: '2026-11-20',
     topics: {
       Nalopen: [
