@@ -128,6 +128,27 @@ describe('plek van trektelstukken', () => {
     expect(attachArea).toHaveBeenCalledWith(unplaced, better);
   });
 
+  it('een grove meting die trager door de stukken loopt, overschrijft een betere niet', async () => {
+    startTrektelPosition(SESSION, START);
+    const first = await chunk(1);
+    const second = await chunk(2);
+    // Gebied opzoeken bij de eerste meting wacht op het netwerk
+    let release!: () => void;
+    attachArea.mockImplementationOnce(
+      () => new Promise<boolean>((resolve) => (release = () => resolve(true))),
+    );
+    const coarse = noteTrektelFix(fix(40, 10));
+    await vi.waitFor(() => expect(attachArea).toHaveBeenCalledTimes(1));
+    const better = fix(8, 11);
+    await noteTrektelFix(better);
+    release();
+    await coarse;
+
+    expect((await db.utterances.get(first))?.position).toEqual(better);
+    expect((await db.utterances.get(second))?.position).toEqual(better);
+    expect((await db.observations.get('obs-' + second))?.position).toEqual(better);
+  });
+
   it('met de hand gezet blijft staan; een gezegde plek wordt opnieuw uitgerekend', async () => {
     startTrektelPosition(SESSION, START);
     const hand = await chunk(1, { position: fix(200, 1) });

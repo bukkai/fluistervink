@@ -749,7 +749,7 @@
     font: inherit;
     font-size: 0.95rem;
     font-weight: 600;
-    color: var(--brand);
+    color: var(--brand-strong);
     background: var(--surface);
   }
 

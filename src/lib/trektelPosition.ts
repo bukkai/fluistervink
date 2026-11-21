@@ -90,8 +90,11 @@ async function improveChunks(fix: Position, sessionId: string, since: number) {
     .toArray();
   if (!chunks.length) return;
   for (const u of chunks) {
-    const before = u.position;
-    await db.transaction('rw', db.utterances, db.observations, async () => {
+    const placed = await db.transaction('rw', db.utterances, db.observations, async () => {
+      // Intussen een betere plek gekregen: een volgende meting liep sneller
+      // door de stukken (het gebied opzoeken hieronder wacht op het netwerk)
+      const now = await db.utterances.get(u.id);
+      if (!now || (now.position && now.position.accuracy <= fix.accuracy)) return undefined;
       await db.utterances.update(u.id, {
         position: { ...fix },
         positionLookup: { source: 'trektel', waitMs: fix.fixedAt - u.recordedAt },
@@ -108,9 +111,10 @@ async function improveChunks(fix: Position, sessionId: string, since: number) {
           else if (obs.spokenPlace) Object.assign(obs, placeFromSpeech(fix, obs.spokenPlace));
           else obs.position = { ...fix };
         });
+      return { first: !now.position };
     });
     // Het gebied alleen bij een eerste plek: een betere meting ligt op dezelfde plek
-    if (!before) await attachArea(u.id, fix);
+    if (placed?.first) await attachArea(u.id, fix);
   }
   logEvent('trektel_position', {
     count: chunks.length,
