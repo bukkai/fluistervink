@@ -23,7 +23,7 @@ Alles gaat eerst via `main` en de beta. Is de beta een tijdje goed bevallen:
 npm run release
 ```
 
-Dat laat zien welke commits meegaan en wanneer de laatste kwaliteitsronde was, vraagt of je door wilt, en zet dan `stable` gelijk aan `origin/main` (alleen vooruit; heeft `stable` een hotfix die nog niet op `main` staat, dan weigert het, zie hieronder). Workers Builds deployt daarna `fluistervink.nl`. Na de release is het tijd voor een kwaliteitsronde op de beta (`docs/kwaliteitsronde.md`).
+Dat laat zien welke commits meegaan en wanneer de laatste kwaliteitsronde was, vraagt of je door wilt, en zet dan `stable` gelijk aan `origin/main` (alleen vooruit; heeft `stable` een hotfix die nog niet op `main` staat, dan weigert het, zie hieronder). Workers Builds deployt daarna `fluistervink.nl`. Kort bij de release de changelog in: de dagen van vóór de vorige release alleen nog de hoofdzaken, zonder onderwerpen (`src/lib/changelog.ts`). Na de release is het tijd voor een kwaliteitsronde op de beta (`docs/kwaliteitsronde.md`).
 
 ## Nieuwe functies en fixes terwijl testers op stabiel zitten
 
