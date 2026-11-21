@@ -55,7 +55,7 @@ export default defineConfig({
       registerType: 'prompt',
       workbox: {
         // API-verzoeken nooit via de cache of de index.html-fallback laten lopen
-        navigateFallbackDenylist: [/^\/api\//, /^\/privacy/],
+        navigateFallbackDenylist: [/^\/api\//, /^\/privacy/, /^\/tuintelling/],
         // Ook afbeeldingen (de meeuwen van de zeemeeuw-grap), zodat ze offline werken
         globPatterns: ['**/*.{js,css,html,png,svg}'],
       },

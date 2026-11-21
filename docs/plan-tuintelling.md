@@ -84,7 +84,7 @@ Voorwaarde: Fluistervink staat half januari openbaar in Play. Lukt dat niet, dan
 
 ### Waar het staat
 
-- **Pagina `fluistervink.nl/tuintelling`**: in drie stappen hoe het werkt, een filmpje van 30 seconden bij het raam, de link naar Play en voor iPhone de PWA in Safari (voor een telling thuis mist alleen het trillen). Dit is de link in alle berichten.
+- **Pagina `fluistervink.nl/tuintelling`** (opzet 21 nov: `public/tuintelling.html`, met `noindex` tot de tuintelmodus voor iedereen is; de naam Vogelbescherming pas na hun akkoord; het filmpje nog niet): in drie stappen hoe het werkt, een filmpje van 30 seconden bij het raam, de link naar Play en voor iPhone de PWA in Safari (voor een telling thuis mist alleen het trillen). Dit is de link in alle berichten.
 - **Play-vermelding**: in januari een zin en een schermafbeelding over de tuintelling (`docs/play-store/README.md`).
 - **In de app**: op vrijdag van het telweekend een melding "Dit weekend is de tuintelling" (alleen in de app, geen pushbericht nodig).
 
