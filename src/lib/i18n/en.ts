@@ -425,6 +425,10 @@ export const en: Dictionary = {
   'sessions.utterances': { one: '1 voice note', other: '{n} voice notes' },
   'sessions.devNotes': { one: '1 feedback message', other: '{n} feedback messages' },
   'sessions.unprocessed': '{n} not processed',
+  'sessions.filedAway': {
+    one: '1 finished session from over a week ago',
+    other: '{n} finished sessions from over a week ago',
+  },
   'sessions.badgeWaarneming': 'waarneming.nl ✓',
   'sessions.badgeExported': 'exported',
   'sessions.badgeReady': 'ready',

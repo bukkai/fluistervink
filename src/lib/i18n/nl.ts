@@ -418,6 +418,10 @@ export const nl = {
   'sessions.utterances': { one: '1 uitspraak', other: '{n} uitspraken' },
   'sessions.devNotes': { one: '1 feedbackbericht', other: '{n} feedbackberichten' },
   'sessions.unprocessed': '{n} niet verwerkt',
+  'sessions.filedAway': {
+    one: '1 afgehandelde sessie van meer dan een week geleden',
+    other: '{n} afgehandelde sessies van meer dan een week geleden',
+  },
   'sessions.badgeWaarneming': 'waarneming.nl ✓',
   'sessions.badgeExported': 'geëxporteerd',
   'sessions.badgeReady': 'klaar',

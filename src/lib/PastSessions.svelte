@@ -3,7 +3,7 @@
   import { dayFormat, timeFormat } from './format';
   import { liveQuery } from 'dexie';
   import type { Session } from './db';
-  import { countPerSession, deleteSessions, formatDuration } from './sessions';
+  import { countPerSession, deleteSessions, formatDuration, isFiledAway } from './sessions';
   import { EBIRD_IMPORT_URL, exportForEbird, pendingForEbird, setChecklist } from './ebirdExport';
   import { preferenceOn, preferenceSince } from './preferences';
   import { IMPORT_URL, exportForWaarneming, readyForExport } from './waarnemingExport';
@@ -48,6 +48,15 @@
       ebirdBusy = false;
     }
   }
+
+  // Afgehandelde sessies van meer dan een week geleden ingeklapt, zodat
+  // bovenaan staat wat nog aandacht vraagt. Bij opruimen staat alles open.
+  let filedAwayIds = $derived.by(() => {
+    const pending = new Set(ebirdPending.map((s) => s.id));
+    return new Set(sessions.filter((s) => isFiledAway(s, ebird, pending)).map((s) => s.id));
+  });
+  let filedAway = $derived(sessions.filter((s) => filedAwayIds.has(s.id)));
+  let recent = $derived(sessions.filter((s) => !filedAwayIds.has(s.id)));
 
   let exportedIds = $derived(sessions.filter((s) => s.exportedAt).map((s) => s.id));
 
@@ -240,8 +249,36 @@
       {/if}
     </p>
   {/if}
+  {#if selecting || filedAway.length === 0}
+    {@render list(sessions)}
+  {:else}
+    {#if recent.length > 0}
+      {@render list(recent)}
+    {/if}
+    <details class="filed-away">
+      <summary>{t('sessions.filedAway', { n: filedAway.length })}</summary>
+      {@render list(filedAway)}
+    </details>
+  {/if}
+
+  {#if selecting}
+    <div class="actions">
+      <button
+        class="btn danger block large"
+        disabled={selected.size === 0}
+        onclick={removeSelected}
+      >
+        {selected.size === 0
+          ? t('sessions.nothingSelected')
+          : t('sessions.deleteSelected', { n: selected.size })}
+      </button>
+    </div>
+  {/if}
+{/if}
+
+{#snippet list(items: Session[])}
   <ul class="card">
-    {#each sessions as session (session.id)}
+    {#each items as session (session.id)}
       <li class:selected={selecting && selected.has(session.id)}>
         {#if selecting}
           <label class="row">
@@ -261,21 +298,7 @@
       </li>
     {/each}
   </ul>
-
-  {#if selecting}
-    <div class="actions">
-      <button
-        class="btn danger block large"
-        disabled={selected.size === 0}
-        onclick={removeSelected}
-      >
-        {selected.size === 0
-          ? t('sessions.nothingSelected')
-          : t('sessions.deleteSelected', { n: selected.size })}
-      </button>
-    </div>
-  {/if}
-{/if}
+{/snippet}
 
 {#snippet content(session: Session)}
   <span class="text">
@@ -455,6 +478,17 @@
   .badge.exported {
     color: var(--brand-strong);
     background: color-mix(in srgb, var(--brand) 12%, transparent);
+  }
+
+  .filed-away {
+    margin-top: 1rem;
+  }
+
+  /* Groot genoeg om met een duim te raken */
+  .filed-away summary {
+    padding: 0.75rem 0;
+    color: var(--muted);
+    cursor: pointer;
   }
 
   /* Knop blijft onderaan in beeld bij een lange lijst */
