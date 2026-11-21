@@ -20,10 +20,17 @@
   <section class="card">
     <div class="card-body">
       <h3>{formatDate(entry.date)}</h3>
-      {#each TOPICS.filter((topic) => entry.topics[topic]?.length) as topic (topic)}
+      {#if entry.items}
+        <ul>
+          {#each entry.items as item, i (i)}
+            <li>{item}</li>
+          {/each}
+        </ul>
+      {/if}
+      {#each TOPICS.filter((topic) => entry.topics?.[topic]?.length) as topic (topic)}
         <h4>{topic}</h4>
         <ul>
-          {#each entry.topics[topic] ?? [] as item, i (i)}
+          {#each entry.topics?.[topic] ?? [] as item, i (i)}
             <li>{item}</li>
           {/each}
         </ul>

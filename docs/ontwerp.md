@@ -79,4 +79,4 @@ Kleuren van de mannetjesvink: blauwgrijs van de kop als hoofdkleur, roze-oranje 
 
 ## Changelog
 
-Een regel in gewone taal in `src/lib/changelog.ts`, onder de datum van de merge (bovenaan) bij het passende onderwerp (`TOPICS`: Inspreken, Trektelling, Nalopen, Export, Back-up, Android-app, Over de app). Te zien op `#nieuw` ("Wat is er nieuw?"), gelinkt bij Instellingen en vanuit de melding "Bijgewerkt naar versie …" na een update (`src/lib/UpdateStatus.svelte`). Geen ontwikkelopties of schermen van de eigenaar.
+Een regel in gewone taal in `src/lib/changelog.ts`, onder de datum van de merge (bovenaan) bij het passende onderwerp (`TOPICS`: Inspreken, Trektelling, Nalopen, Export, Back-up, Android-app, Over de app). Te zien op `#nieuw` ("Wat is er nieuw?"), gelinkt bij Instellingen en vanuit de melding "Bijgewerkt naar versie …" na een update (`src/lib/UpdateStatus.svelte`). Geen ontwikkelopties of schermen van de eigenaar. Bij elke release naar stable worden de dagen van vóór de vorige release ingekort tot de hoofdzaken, als één lijst zonder onderwerpen (`items` in plaats van `topics`).
