@@ -59,6 +59,16 @@ public class SchermUitPlugin extends Plugin implements WandelingService.Listener
     @Override
     public void load() {
         WandelingService.listener = this;
+        // Halve bestanden van een opname die niet afkwam (app of telefoon viel
+        // uit): die worden nooit meer doorgegeven, en anders blijven ze staan
+        if (!WandelingService.isRecording() && !WandelingService.isTrektelling()) {
+            int weg = Bestanden.ruimOp(WandelingService.directory(getContext()));
+            if (weg > 0) {
+                JSObject data = new JSObject();
+                data.put("aantal", weg);
+                log("halve_bestanden_weg", data);
+            }
+        }
     }
 
     /**
@@ -82,6 +92,11 @@ public class SchermUitPlugin extends Plugin implements WandelingService.Listener
     public void aan(PluginCall call) {
         WandelingService.Config config = new WandelingService.Config();
         config.sessionId = call.getString("sessieId", "onbekend");
+        // Komt in de bestandsnaam (Bestanden.geldigSessieId)
+        if (!Bestanden.geldigSessieId(config.sessionId)) {
+            call.reject("Ongeldig sessieId");
+            return;
+        }
         config.maxMs = call.getLong("maxMs", 180_000L);
         config.minMs = call.getLong("minMs", 500L);
         try {
