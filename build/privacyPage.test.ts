@@ -7,7 +7,7 @@ describe('losse privacypagina', () => {
     expect(html).toContain('<h2 class="page-title">Privacy</h2>');
     expect(html).toContain('href="mailto:info@fluistervink.nl"');
     // Schermen van de app via de voorpagina, niet /privacy#instellingen
-    expect(html).toContain('href="/#instellingen"');
+    expect(html).toContain('href="/app/#instellingen"');
     expect(html).not.toMatch(/href="#/);
     // Geen Terug-knop: er is geen vorige pagina in de app
     expect(html).not.toContain('class="back"');
@@ -19,7 +19,7 @@ describe('losse privacypagina', () => {
     expect(html).toContain('<html lang="en">');
     expect(html).toContain('>In short</h3>');
     expect(html).toContain('href="/privacy-en.css"');
-    expect(html).toContain('href="/#instellingen"');
+    expect(html).toContain('href="/app/#instellingen"');
     expect(html).not.toMatch(/href="#/);
     expect(html).not.toContain('class="back"');
   });
