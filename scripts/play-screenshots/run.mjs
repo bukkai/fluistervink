@@ -150,7 +150,7 @@ try {
 
   /** Opent een scherm, altijd met een volledige laadbeurt (alleen de hash wisselen laadt niet) */
   async function open(hash) {
-    for (const url of ['about:blank', BASE + hash]) {
+    for (const url of ['about:blank', BASE + 'app/' + hash]) {
       const loaded = page.once('Page.loadEventFired');
       await page.send('Page.navigate', { url });
       await loaded;

@@ -5,6 +5,7 @@ Besloten 24 okt. Testers proberen nieuwe versies uit op de **beta**; wie gewoon 
 | | Beta | Stabiel |
 | --- | --- | --- |
 | Adres | `fluistervink.stephanmullernl.workers.dev` | `fluistervink.nl` |
+| App | `…workers.dev/app/` | `fluistervink.nl/app/` (op `/` de voorpagina) |
 | Branch | `main` (elke gemergde PR) | `stable` (alleen als je hem bijwerkt) |
 | Worker | `fluistervink` | `fluistervink-stable` (`env.stable` in `wrangler.jsonc`) |
 | Bouwen | `npm run build` | `npm run build:stable` |

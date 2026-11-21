@@ -4,9 +4,9 @@
   // dezelfde PR ook hier, met dezelfde datums onderaan.
   //
   // Ook als losse pagina op /privacy-en (build/privacyPage.ts). Links naar
-  // schermen van de app gaan dan via de voorpagina.
+  // schermen van de app gaan dan naar de app op /app/.
   let { standalone = false }: { standalone?: boolean } = $props();
-  const app = $derived(standalone ? '/' : '');
+  const app = $derived(standalone ? '/app/' : '');
 
   const CONTACT = 'info@fluistervink.nl';
 </script>
