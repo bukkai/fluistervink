@@ -1,9 +1,9 @@
 <script lang="ts">
   import { language, t } from './lib/i18n';
-  import { timeFormat } from './lib/format';
+  import { formatCountdown, timeFormat } from './lib/format';
   import StillBirding from './lib/StillBirding.svelte';
   import { liveQuery } from 'dexie';
-  import { onDestroy } from 'svelte';
+  import { onDestroy, untrack } from 'svelte';
   import {
     checkStaleSession,
     formatDuration,
@@ -20,6 +20,8 @@
   import { listDevNotes } from './lib/devNotes';
   import { CHANNEL } from './lib/log';
   import { vibrate } from './lib/feedback';
+  import { devOptionOn } from './lib/devOptions';
+  import { TUINTEL_WARN_MS, tuintelLeftMs } from './lib/tuintelling';
   import { instance } from './lib/instance.svelte';
   import { processQueue } from './lib/queue';
   import { syncSessionService } from './lib/sessionService';
@@ -177,10 +179,10 @@
   let welcomeClosed = $state(welcomeDone());
   let showWelcome = $derived($sessions?.length === 0 && !welcomeClosed);
 
-  async function start() {
+  async function start(options: { tuintelling?: boolean } = {}) {
     setWelcomeDone();
     welcomeClosed = true;
-    await startSession();
+    await startSession(options);
     requestPersistentStorage();
   }
 
@@ -235,6 +237,51 @@
 
   /** Net gestopte sessie, voor de bevestiging "opgeslagen" */
   let justStopped = $state<string>();
+
+  // Tuintelling (ontwikkeloptie, tuintelling.ts): een half uur, met een tril
+  // bij nog vijf minuten; daarna stopt de sessie vanzelf. Staat de app op de
+  // achtergrond en loopt de klok niet, dan gebeurt het bij terugkomen, met
+  // als eindtijd het eind van het half uur.
+  // Wie een tuintelling ná het half uur voortzet (een vergeten vogel), krijgt
+  // een gewone sessie: dan geen klok en niet opnieuw stoppen.
+  const tuintelOn = devOptionOn('tuintelling');
+  let tuintelLeftRaw = $derived(active?.tuintelling ? tuintelLeftMs(active, now) : undefined);
+  let tuintelOver = $derived(
+    active !== undefined &&
+      tuintelLeftRaw !== undefined &&
+      tuintelLeftRaw <= 0 &&
+      now + tuintelLeftRaw > (active.resumedAt ?? active.startedAt),
+  );
+  /** Klok in de kop, alleen zolang het half uur loopt */
+  let tuintelLeft = $derived(
+    tuintelLeftRaw !== undefined && tuintelLeftRaw > 0 ? tuintelLeftRaw : undefined,
+  );
+  /** Voor welke sessie al getrild/gestopt is, zodat het één keer gebeurt */
+  let tuintelWarned = '';
+  let tuintelStopped = '';
+  $effect(() => {
+    if (!active || tuintelLeftRaw === undefined) return;
+    const id = active.id;
+    if (tuintelOver && tuintelStopped !== id) {
+      tuintelStopped = id;
+      const endedAt = now + tuintelLeftRaw;
+      untrack(() => finishTuintel(id, endedAt));
+    } else if (
+      tuintelLeft !== undefined &&
+      tuintelLeft <= TUINTEL_WARN_MS &&
+      tuintelWarned !== id
+    ) {
+      tuintelWarned = id;
+      vibrate('tuintelBijna');
+    }
+  });
+
+  async function finishTuintel(id: string, endedAt: number) {
+    await stopSession(id, endedAt);
+    justStopped = id;
+    vibrate('tuintelKlaar');
+    location.hash = `sessie/${id}`;
+  }
 
   /** Na het stoppen meteen naar het nalopen van de sessie */
   async function stop() {
@@ -327,8 +374,12 @@
       <div class="session-info">
         <h1>{active.place?.name ?? t('common.defaultSessionName')}</h1>
         <p class="muted">
-          {t('app.since', { time: timeFormat.format(active.startedAt) })} ·
-          <span class="duration">{formatDuration(now - active.startedAt)}</span>
+          {#if tuintelLeft !== undefined}
+            {t('app.tuintelLeft', { time: formatCountdown(tuintelLeft) })}
+          {:else}
+            {t('app.since', { time: timeFormat.format(active.startedAt) })} ·
+            <span class="duration">{formatDuration(now - active.startedAt)}</span>
+          {/if}
         </p>
       </div>
       <button class="stop" onclick={stop}>{t('app.stop')}</button>
@@ -357,7 +408,8 @@
       ondismissstale={() => (stale = undefined)}
       {askShare}
       onshare={chooseShare}
-      onstart={start}
+      onstart={() => start()}
+      onstarttuintel={tuintelOn ? () => start({ tuintelling: true }) : undefined}
     />
   {/if}
 </main>

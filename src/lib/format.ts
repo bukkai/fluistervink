@@ -38,3 +38,9 @@ export function formatMoment(at: number): string {
       : dayFormat.format(at);
   return t('format.moment', { day, time: timeFormat.format(at) });
 }
+
+/** Resterende tijd als minuten:seconden ("23:05"), voor een aftellende klok */
+export function formatCountdown(ms: number): string {
+  const seconds = Math.max(0, Math.ceil(ms / 1000));
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+}

@@ -10,7 +10,7 @@ export function getActiveSession(): Promise<Session | undefined> {
 }
 
 /** Start een sessie, of geeft de lopende terug als die er al is. */
-export async function startSession(): Promise<Session> {
+export async function startSession(options: { tuintelling?: boolean } = {}): Promise<Session> {
   return db.transaction('rw', db.sessions, async () => {
     const active = await getActiveSession();
     if (active) return active;
@@ -21,6 +21,7 @@ export async function startSession(): Promise<Session> {
       startedAt,
       status: 'active',
       effort: newEffort(startedAt),
+      ...(options.tuintelling && { tuintelling: true as const }),
     };
     await db.sessions.add(session);
     return session;

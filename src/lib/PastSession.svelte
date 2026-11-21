@@ -13,6 +13,7 @@
   import ObservationMap from './ObservationMap.svelte';
   import SessionLog from './SessionLog.svelte';
   import SessionSummary from './SessionSummary.svelte';
+  import TuintelResult from './TuintelResult.svelte';
   import { preferenceOn } from './preferences';
   import UncertainReview from './UncertainReview.svelte';
   import { trackReviewTime } from './reviewTime';
@@ -203,7 +204,15 @@
   </dl>
 {/if}
 
-<SessionSummary {session} observationCount={$observations?.length ?? 0} />
+<!-- Bij een tuintelling geen samenvatting: die telt op, en dan staan er twee
+     verschillende aantallen per soort op het scherm -->
+{#if session.tuintelling}
+  {#if $observations}
+    <TuintelResult {session} observations={$observations} />
+  {/if}
+{:else}
+  <SessionSummary {session} observationCount={$observations?.length ?? 0} />
+{/if}
 
 {#if !session.exportedAt}
   <UncertainReview {session} />

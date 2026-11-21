@@ -38,6 +38,7 @@ export const nl = {
   'app.since': 'Sinds {time}',
   'app.stop': 'Stop',
   'app.confirmStop': 'Sessie stoppen?',
+  'app.tuintelLeft': 'Tuintelling, nog {time}',
 
   // Startscherm (Home.svelte)
   'home.title': 'Klaar om te gaan vogelen?',
@@ -58,6 +59,7 @@ export const nl = {
   'home.shareYes': 'Ja, delen',
   'home.shareNo': 'Liever niet',
   'home.start': 'Begin met vogelen',
+  'home.startTuintel': 'Tuintelling: een half uur tellen',
   'home.tip': 'Nog nooit gedaan? Probeer het in de tuin of bij het raam: één merel is genoeg.',
   'home.lastSession': 'Laatste sessie',
 
@@ -442,6 +444,28 @@ export const nl = {
   'past.forEbird': 'Voor eBird',
   'past.done': 'Klaar',
   'past.notNow': 'Nu niet',
+
+  // Tuintelling (TuintelResult.svelte, tuintelling.ts)
+  'tuintel.title': 'Tuintelling',
+  'tuintel.introVoor':
+    'Per soort het hoogste aantal dat je in één keer noemde, zoals Vogelbescherming het vraagt. Geef het zelf door op',
+  'tuintel.introNa': ', samen met de datum en de begintijd.',
+  'tuintel.started': 'Begonnen op {date} om {time}',
+  'tuintel.none': 'Geen vogels in de tuin geteld. Ook een telling zonder vogels kun je doorgeven.',
+  'tuintel.extraTitle': 'Zelf toevoegen met "vogelsoort toevoegen"',
+  'tuintel.unknownTitle': 'Kies eerst een soort',
+  'tuintel.unknownText':
+    'Deze kun je zo niet doorgeven. Tik in de lijst hieronder op de waarneming en kies de soort, of vink hem uit.',
+  'tuintel.flyoversTitle': 'Overvliegend, telt niet mee',
+  'tuintel.uncertain': 'onzeker',
+  'tuintel.uncertainHint':
+    'Loop de onzekere eerst na: een ingestuurde telling kun je niet meer verbeteren.',
+  'tuintel.copy': 'Kopiëren',
+  'tuintel.copied': 'Gekopieerd',
+  'tuintel.copyHeader': 'Tuintelling {date}, begonnen om {time}',
+  'tuintel.copyExtra': 'Zelf toevoegen:',
+  'tuintel.open': 'Naar het telformulier',
+
   'past.savedTitle': '✓ Sessie opgeslagen',
   'past.savedText':
     'Alles staat veilig op je telefoon. Loop de waarnemingen na en zet de sessie klaar voor waarneming.nl.',
