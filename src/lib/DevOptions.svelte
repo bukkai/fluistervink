@@ -33,6 +33,12 @@
       available: devOptionOn('spanje'),
     },
     {
+      option: 'tuintelling',
+      group: 'field',
+      label: 'Tuintelling',
+      hint: 'Een tweede knop op het startscherm: "Tuintelling". Je telt een half uur (twee trillen bij nog vijf minuten, drie lange als het om is, dan stopt de sessie vanzelf). Daarna staat bij de sessie per soort het hoogste aantal, om over te nemen in het formulier van Vogelbescherming (docs/plan-tuintelling.md).',
+    },
+    {
       option: 'oortjesMicrofoon',
       group: 'field',
       label: 'Microfoon van de oortjes',

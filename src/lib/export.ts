@@ -289,7 +289,8 @@ function checkImport(data: {
       !optional(s.effort, isEffort) ||
       !optional(s.checklist, isChecklist) ||
       !optional(s.ebirdExportedAt, isNumber) ||
-      !optional(s.reviewMs, isNumber)
+      !optional(s.reviewMs, isNumber) ||
+      !optional(s.tuintelling, (b) => b === true)
     )
       fail('sessie');
   }

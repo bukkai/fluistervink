@@ -30,6 +30,8 @@
     askShare: boolean;
     onshare: (on: boolean) => void;
     onstart: () => void;
+    /** Tuintelling starten (ontwikkeloptie, tuintelling.ts) */
+    onstarttuintel?: () => void;
   }
 
   let {
@@ -42,6 +44,7 @@
     askShare,
     onshare,
     onstart,
+    onstarttuintel,
   }: Props = $props();
 
   let last = $derived(sessions.find((s) => s.status === 'ended'));
@@ -108,6 +111,11 @@
     </div>
   {/if}
   <button class="start" onclick={onstart}>{t('home.start')}</button>
+  {#if onstarttuintel}
+    <button class="btn secondary block large" onclick={onstarttuintel}
+      >{t('home.startTuintel')}</button
+    >
+  {/if}
   {#if firstTime}
     <p class="tip">
       {t('home.tip')}

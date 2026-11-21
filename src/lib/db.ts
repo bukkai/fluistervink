@@ -68,6 +68,11 @@ export interface Session {
   checklist?: Checklist;
   /** Laatst geëxporteerd voor eBird (`ebirdExport.ts`) */
   ebirdExportedAt?: number;
+  /**
+   * Tuintelling (`tuintelling.ts`): stopt na een half uur, en na afloop per
+   * soort het hoogste aantal voor de Nationale Tuinvogeltelling
+   */
+  tuintelling?: true;
 }
 
 /**

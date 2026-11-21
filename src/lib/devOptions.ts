@@ -13,8 +13,11 @@
  *   (docs/plan-andere-landen.md, proef van 19 nov); laadt de app opnieuw
  *   (region.ts). Het vinkje staat er alleen nog als hij aan staat; de
  *   testset gebruikt hem met `--land es`
+ * - `tuintelling`: een knop "Tuintelling" op het startscherm: een half uur
+ *   tellen, daarna per soort het hoogste aantal (tuintelling.ts,
+ *   docs/plan-tuintelling.md)
  */
-export type DevOption = 'oortjesMicrofoon' | 'schermUit' | 'english' | 'spanje';
+export type DevOption = 'oortjesMicrofoon' | 'schermUit' | 'english' | 'spanje' | 'tuintelling';
 
 const PREFIX = 'fluistervink.dev.';
 

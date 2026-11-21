@@ -42,6 +42,7 @@ export const en: Dictionary = {
   'app.since': 'Since {time}',
   'app.stop': 'Stop',
   'app.confirmStop': 'Stop the session?',
+  'app.tuintelLeft': 'Garden count, {time} to go',
 
   // Startscherm
   'home.title': 'Ready to go birding?',
@@ -62,6 +63,7 @@ export const en: Dictionary = {
   'home.shareYes': 'Yes, share',
   'home.shareNo': 'Rather not',
   'home.start': 'Start birding',
+  'home.startTuintel': 'Garden count: half an hour',
   'home.tip':
     'Never tried it? Give it a go in the garden or at the window: one Blackbird is enough.',
   'home.lastSession': 'Last session',
@@ -450,6 +452,29 @@ export const en: Dictionary = {
   'past.forEbird': 'For eBird',
   'past.done': 'Done',
   'past.notNow': 'Not now',
+
+  // Garden count (TuintelResult.svelte, tuintelling.ts)
+  'tuintel.title': 'Garden count',
+  'tuintel.introVoor':
+    'For each species, the highest number you said at once, as Vogelbescherming asks. Submit it yourself at',
+  'tuintel.introNa': ', with the date and the time you started.',
+  'tuintel.started': 'Started on {date} at {time}',
+  'tuintel.none':
+    'No birds counted in the garden. A count without birds is still worth submitting.',
+  'tuintel.extraTitle': 'Add these yourself with "vogelsoort toevoegen"',
+  'tuintel.unknownTitle': 'Choose a species first',
+  'tuintel.unknownText':
+    'These can’t be submitted as they are. Tap the observation in the list below and choose the species, or untick it.',
+  'tuintel.flyoversTitle': 'Flying over, not counted',
+  'tuintel.uncertain': 'unsure',
+  'tuintel.uncertainHint':
+    'Review the unsure ones first: once submitted, a count can’t be corrected.',
+  'tuintel.copy': 'Copy',
+  'tuintel.copied': 'Copied',
+  'tuintel.copyHeader': 'Garden count {date}, started at {time}',
+  'tuintel.copyExtra': 'Add yourself:',
+  'tuintel.open': 'Open the count form',
+
   'past.savedTitle': '✓ Session saved',
   'past.savedText':
     'Everything is safely on your phone. Review the observations and mark the session ready for waarneming.nl.',

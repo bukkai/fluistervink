@@ -40,6 +40,10 @@ const PATTERNS = {
   trektelStopped: [500, 200, 500],
   /** Trektelling gepauzeerd (naar een andere app of scherm op slot): één lange */
   trektelPaused: [500],
+  /** Tuintelling: nog vijf minuten (tuintelling.ts): twee middellange */
+  tuintelBijna: [300, 200, 300],
+  /** Tuintelling: het half uur is om, de sessie stopt vanzelf: drie lange */
+  tuintelKlaar: [500, 200, 500, 200, 500],
   /** Easter egg "zeemeeuw": boos gepik */
   angry: [70, 40, 70, 40, 70, 40, 250, 80, 70, 40, 70, 40, 400],
 };

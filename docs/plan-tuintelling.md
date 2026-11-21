@@ -1,6 +1,6 @@
 # Plan: Nationale Tuinvogeltelling
 
-Voorstel van 20 nov 2026, nog niet goedgekeurd. Voortgekomen uit het idee "Aanhaken bij telmomenten" (`docs/ideeen.md`, 12 nov). Twee doelen: een tuintelling met Fluistervink moet makkelijker zijn dan met pen en papier, en de telling is het moment om nieuwe gebruikers te werven.
+Voorstel van 20 nov 2026. Uitzoekwerk gedaan op 20 nov; op 21 nov de kern gebouwd als ontwikkeloptie `tuintelling` (zie Gebouwd, onderaan). Voortgekomen uit het idee "Aanhaken bij telmomenten" (`docs/ideeen.md`, 12 nov). Twee doelen: een tuintelling met Fluistervink moet makkelijker zijn dan met pen en papier, en de telling is het moment om nieuwe gebruikers te werven.
 
 ## De telling
 
@@ -114,3 +114,10 @@ Voorwaarde: Fluistervink staat half januari openbaar in Play. Lukt dat niet, dan
 - Doorlopend luisteren in de tuintelling, of alleen de knop?
 - Vogelbescherming vooraf benaderen?
 - Budget voor het telweekend (plafonds).
+
+## Gebouwd (21 nov, ontwikkeloptie `tuintelling`)
+
+- Knop "Tuintelling: een half uur tellen" op het startscherm (`Home.svelte`), alleen met de ontwikkeloptie. De sessie krijgt `tuintelling: true` (`db.ts`, `sessions.ts`).
+- In de kop een klok die aftelt; bij nog vijf minuten twee middellange trillen, na het half uur drie lange en stopt de sessie vanzelf, met het eind van het half uur als eindtijd (`App.svelte`, `feedback.ts`). Pauzes tellen niet mee; wie na het half uur voortzet (een vergeten vogel), krijgt een gewone sessie zonder klok. Staat de app op de achtergrond en loopt de klok niet, dan stopt hij bij terugkomen.
+- Bij de sessie de kaart Tuintelling (`TuintelResult.svelte`, `tuintelling.ts`) in plaats van de samenvatting: datum en begintijd, de vaste soorten van het formulier in hun volgorde met het hoogste aantal, daarna "zelf toevoegen", verzamelsoorten als waarschuwing, overvliegers apart (tellen niet mee), Kopiëren en een knop naar het telformulier. Andere dieren en uitgevinkte waarnemingen tellen niet mee.
+- Nog niet: het model weet niet dat het een tuintelling is (punt 5, eerst meten); doorlopend luisteren is de gewone trektelmodus (punt 9); welkom en uitleg (punt 11); de knop alleen rond het telweekend (punt 12).
