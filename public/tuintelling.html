@@ -1,0 +1,154 @@
+<!doctype html>
+<!--
+  Promotiepagina voor de Nationale Tuinvogeltelling (docs/plan-tuintelling.md,
+  Promotie). Gewone HTML zonder scripts, met een eigen stylesheet: past in de
+  Content-Security-Policy van public/_headers. Opzet van 21 nov 2026:
+  - noindex tot de tuintelmodus voor iedereen is en de app openbaar in Play staat;
+  - de naam Vogelbescherming pas na hun akkoord (contact loopt);
+  - het filmpje komt bij "In een half minuutje" zodra het er is.
+-->
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="robots" content="noindex" />
+    <title>Tuintelling met je stem · Fluistervink</title>
+    <meta
+      name="description"
+      content="Tel mee met de Nationale Tuinvogeltelling zonder pen en papier: zeg wat je ziet, Fluistervink houdt per soort het hoogste aantal bij."
+    />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/tuintelling.css" />
+  </head>
+  <body>
+    <header>
+      <a href="/"><img src="/icon.svg" alt="" width="32" height="32" />Fluistervink</a>
+    </header>
+
+    <main>
+      <section class="hero">
+        <p class="date">Nationale Tuinvogeltelling · 29, 30 en 31 januari 2027</p>
+        <h1>Tel je tuin met je stem</h1>
+        <p class="lead">
+          Een half uur bij het raam, je ogen bij de vogels. Je zegt wat je ziet, en Fluistervink
+          houdt het lijstje bij. Geen pen, geen papier, niet steeds turven.
+        </p>
+        <a class="btn large" href="#meedoen">Zo doe je mee</a>
+      </section>
+
+      <section class="card example" aria-label="Voorbeeld">
+        <div class="said">
+          <p>"Drie koolmezen op het voederhuisje."</p>
+          <p>"Een merel op het gras."</p>
+          <p>"Nu vijf koolmezen."</p>
+          <p>"Zes houtduiven, overvliegend."</p>
+        </div>
+        <div class="arrow" aria-hidden="true">↓</div>
+        <ul class="result">
+          <li><span>Koolmees</span><strong>5</strong></li>
+          <li><span>Merel</span><strong>1</strong></li>
+          <li class="muted"><span>Houtduif, overvliegend</span><span>telt niet mee</span></li>
+        </ul>
+      </section>
+
+      <section id="meedoen">
+        <h2>Zo doe je mee</h2>
+        <ol class="steps">
+          <li>
+            <strong>Start een tuintelling.</strong>
+            Open Fluistervink, tik op <em>Tuintelling</em> en ga bij het raam zitten. De klok loopt
+            een half uur.
+          </li>
+          <li>
+            <strong>Zeg wat je ziet.</strong>
+            Druk op de knop en praat gewoon: "twee pimpelmezen", "een roodborst", "nu vier
+            huismussen". Fluistervink onthoudt per soort het hoogste aantal dat je tegelijk zag,
+            zoals de telling het vraagt. Vogels die alleen overvliegen, tellen niet mee.
+          </li>
+          <li>
+            <strong>Neem je lijstje over.</strong>
+            Na een half uur trilt je telefoon en staat je telling klaar, in de volgorde van het
+            telformulier. Vul hem in op
+            <a href="https://www.mijntuinvogeltelling.nl/" rel="noopener">mijntuinvogeltelling.nl</a
+            >, van vrijdag 29 januari tot maandag 1 februari 12:00.
+          </li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Waarom met je stem?</h2>
+        <ul class="points">
+          <li>
+            <strong>Je mist niets.</strong> Je kijkt naar de vogels, niet naar je lijstje.
+          </li>
+          <li>
+            <strong>Geen rekenwerk.</strong> Het hoogste aantal tegelijk houdt de app bij, ook als
+            de mezen af en aan vliegen.
+          </li>
+          <li>
+            <strong>Twijfel mag.</strong> Weet je het niet zeker, zeg dan "een mees". Voor je
+            invult, wijst de app je erop, zodat je de soort nog kunt kiezen.
+          </li>
+          <li>
+            <strong>Vergissen mag ook.</strong> "Nee, een pimpelmees" of "die laatste weg" werkt
+            gewoon.
+          </li>
+        </ul>
+      </section>
+
+      <section id="installeren">
+        <h2>Fluistervink installeren</h2>
+        <div class="install">
+          <div class="card">
+            <h3>Android</h3>
+            <p>Gratis in Google Play.</p>
+            <a
+              class="btn block"
+              href="https://play.google.com/store/apps/details?id=nl.hegmus.fluistervink"
+              rel="noopener"
+              >Naar Google Play</a
+            >
+          </div>
+          <div class="card">
+            <h3>iPhone</h3>
+            <p>
+              Open <a href="/">fluistervink.nl</a> in Safari, tik op Delen en kies
+              <em>Zet op beginscherm</em>. Alleen trillen werkt op de iPhone niet.
+            </p>
+          </div>
+        </div>
+        <p class="muted">
+          Probeer het een dag van tevoren een keer uit, bijvoorbeeld met de merel in de tuin.
+        </p>
+      </section>
+
+      <section class="faq">
+        <h2>Vragen</h2>
+        <h3>Kost het iets?</h3>
+        <p>Nee. Je hebt geen account nodig en geen e-mailadres.</p>
+        <h3>Stuurt Fluistervink mijn telling in?</h3>
+        <p>
+          Nee, dat doe je zelf op mijntuinvogeltelling.nl, met je adres erbij. Fluistervink is een
+          losse app en hoort niet bij de organisatie van de telling.
+        </p>
+        <h3>Wat gebeurt er met wat ik zeg?</h3>
+        <p>
+          Je opname gaat naar een dienst die spraak omzet in tekst, en de tekst naar een
+          taalmodel dat er een waarneming van maakt. Je waarnemingen staan op je eigen telefoon;
+          alleen als je dat goedvindt, gaan ze ook naar de maker van de app. Alles staat op de
+          pagina <a href="/privacy">Privacy</a>.
+        </p>
+        <h3>Kan ik het ook na de telling gebruiken?</h3>
+        <p>
+          Ja. Fluistervink is gemaakt voor vogelen onderweg: op een wandeling, op de fiets of in
+          een vogelhut. Thuis zet je je waarnemingen in één keer op waarneming.nl.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <a href="/">Fluistervink</a> · <a href="/privacy">Privacy</a>
+    </footer>
+  </body>
+</html>
