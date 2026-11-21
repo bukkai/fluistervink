@@ -262,7 +262,7 @@ export const en: Dictionary = {
   },
 
   // Trektelmodus
-  'trektel.label': 'Migration count mode (trial)',
+  'trektel.label': 'Migration count mode',
   'trektel.hint1':
     'For when you count from one spot with the phone beside you. During a session you get a "Start migration count" button: the app then keeps listening and processes everything you say, without you having to press each time. Silence isn’t sent.',
   'trektel.hint2':

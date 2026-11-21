@@ -30,6 +30,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-11-21',
     topics: {
       Trektelling: [
+        'De trektelmodus is geen proef meer: bij Instellingen staat hij nu gewoon als "Trektelmodus".',
         'Kwamen er twee GPS-metingen vlak na elkaar binnen, dan kon een stuk van de trektelling de minder nauwkeurige plek houden. Nu krijgt het altijd de beste.',
       ],
       Nalopen: [
