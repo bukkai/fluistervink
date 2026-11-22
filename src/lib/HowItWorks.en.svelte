@@ -74,6 +74,11 @@
       <li>"undo"</li>
     </ul>
     <p>At home, tap an observation to edit it, copy it or move its location.</p>
+    <p>
+      A nest or roost not everyone needs to see? Say "hide that one", "embargo that one until 1
+      March", or "hide all the previous ones". On waarneming.nl it is then hidden, or only shows up
+      later. Such an observation doesn't go to eBird.
+    </p>
   </div>
 </section>
 

@@ -26,6 +26,14 @@ function current(...list: Observation[]) {
 }
 
 describe('gesproken bevestiging', () => {
+  it('zegt bij een nieuwe waarneming dat hij vervaagd is', () => {
+    const text = confirmationText(
+      { status: 'done', result: 'saved', changes: [{ type: 'add', observationId: 'a' }] },
+      current(obs('a', { obscurity: 5 })),
+    );
+    expect(text).toBe('Houtduif, 1, vervaagd');
+  });
+
   it('noemt soort, aantal en een afwijkende activiteit', () => {
     const text = confirmationText(
       { status: 'done', result: 'saved', changes: [{ type: 'add', observationId: 'a' }] },
@@ -134,6 +142,15 @@ describe('gesproken bevestiging', () => {
           },
         ),
       ).toBe('Houtduif, 2, 30 meter zuid wordt 4, 500 meter noord');
+    });
+
+    it('afgeschermd of onder embargo gezet: zegt het erbij', () => {
+      expect(update({ obscurity: undefined }, { count: 2, obscurity: 9 })).toBe(
+        'Aangepast: houtduif, 2, afgeschermd',
+      );
+      expect(update({ embargoUntil: undefined }, { embargoUntil: '2027-03-01' })).toBe(
+        'Aangepast: houtduif, 1, onder embargo',
+      );
     });
 
     it('niets om tegenover elkaar te zetten: aangepast, met hoe hij nu is', () => {

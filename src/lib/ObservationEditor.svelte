@@ -1,6 +1,6 @@
 <script lang="ts">
   import { t } from './i18n';
-  import { type Observation, type Utterance } from './db';
+  import { OBSCURITIES, type Obscurity, type Observation, type Utterance } from './db';
   import { player } from './player.svelte';
   import LocationPicker from './LocationPicker.svelte';
   import LocationPreview from './LocationPreview.svelte';
@@ -69,6 +69,8 @@
   let sex = $state(original.sex === 'unknown' ? undefined : original.sex);
   let remarks = $state(original.remarks ?? '');
   let privateNote = $state(original.privateNote ?? '');
+  let obscurity = $state<Obscurity>(original.obscurity ?? 0);
+  let embargoUntil = $state(original.embargoUntil ?? '');
   // svelte-ignore state_referenced_locally
   let uncertain = $state(reviewing ? false : original.uncertain);
   /** Plek en bewaarde GPS-plek; pas bij "Opslaan" naar de database */
@@ -163,6 +165,8 @@
         sex,
         remarks: remarks.trim() || undefined,
         privateNote: privateNote.trim() || undefined,
+        obscurity: obscurity || undefined,
+        embargoUntil: embargoUntil || undefined,
         uncertain,
         uncertainReason: uncertain ? original.uncertainReason : undefined,
         candidates:
@@ -183,6 +187,16 @@
     original.uncertain &&
     !!original.spokenPlace &&
     original.uncertainReason === placeReason(original.spokenPlace);
+
+  /** De app twijfelde alleen omdat er een embargo zonder datum gezegd was */
+  const onlyEmbargoDoubt =
+    original.uncertain && original.uncertainReason === t('reason.embargoNoDate');
+
+  function setEmbargo(value: string) {
+    embargoUntil = value;
+    // Datum gekozen: die twijfel is opgelost
+    if (onlyEmbargoDoubt) uncertain = !value;
+  }
 
   function setPlace(lat: number, lon: number, accuracy?: number) {
     place = placeByHand(place, original.observedAt, lat, lon, accuracy);
@@ -379,6 +393,25 @@
     {t('editor.remarks')}
     <textarea bind:value={remarks} rows="2"></textarea>
   </label>
+
+  <div class="row">
+    <label>
+      {t('editor.obscurity')}
+      <select bind:value={obscurity}>
+        {#each OBSCURITIES as id (id)}
+          <option value={id}>{t(`obscurity.${id}`)}</option>
+        {/each}
+      </select>
+    </label>
+    <label>
+      {t('editor.embargo')}
+      <input
+        type="date"
+        value={embargoUntil}
+        onchange={(event) => setEmbargo(event.currentTarget.value)}
+      />
+    </label>
+  </div>
 
   <label class="check">
     <input type="checkbox" bind:checked={uncertain} />

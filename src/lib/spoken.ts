@@ -32,7 +32,7 @@ function describePlace(place: NonNullable<Observation['spokenPlace']>): string {
 
 type Described = Pick<
   Observation,
-  'speciesId' | 'count' | 'activityId' | 'spokenPlace' | 'uncertain'
+  'speciesId' | 'count' | 'activityId' | 'spokenPlace' | 'uncertain' | 'obscurity' | 'embargoUntil'
 >;
 
 /**
@@ -57,6 +57,8 @@ function details(obs: Described): Map<string, string> {
     if (activity) parts.set('activity', activity.toLowerCase().replaceAll(' / ', t('spoken.or')));
   }
   if (obs.spokenPlace) parts.set('place', describePlace(obs.spokenPlace));
+  if (obs.obscurity) parts.set('obscurity', t(`spoken.obscurity.${obs.obscurity}`));
+  if (obs.embargoUntil) parts.set('embargo', t('spoken.embargo'));
   if (obs.uncertain) parts.set('uncertain', t('spoken.uncertain'));
   return parts;
 }

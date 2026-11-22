@@ -1,6 +1,6 @@
 <script lang="ts">
   import { LOCALE, t } from './i18n';
-  import { timeFormat } from './format';
+  import { shieldText, timeFormat } from './format';
   import { liveQuery } from 'dexie';
   import { tick, untrack } from 'svelte';
   import { type Observation, type Session, type Utterance } from './db';
@@ -411,6 +411,21 @@
                     >{t('log.changedByVoice', { was: wasText(obs, original) })}</span
                   >
                 {/if}
+                {#if shieldText(obs)}
+                  <span class="shield">
+                    <!-- Slotje -->
+                    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                      <rect x="5" y="10.5" width="14" height="10" rx="2" fill="currentColor" />
+                      <path
+                        d="M8 10.5V7.5a4 4 0 0 1 8 0v3"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      />
+                    </svg>
+                    {shieldText(obs)}
+                  </span>
+                {/if}
                 {#if obs.privateNote}
                   <span class="note">{t('log.note', { note: obs.privateNote })}</span>
                 {/if}
@@ -698,6 +713,20 @@
   .note {
     font-size: 0.9rem;
     color: var(--muted);
+  }
+
+  .shield {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.3rem;
+    font-size: 0.9rem;
+    color: var(--brand-strong);
+  }
+
+  /* Ook bij twee regels tekst even groot, naast de eerste regel */
+  .shield svg {
+    flex-shrink: 0;
+    margin-top: 0.2em;
   }
 
   .side {

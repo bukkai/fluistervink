@@ -34,6 +34,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-11-22',
     topics: {
       Export: [
+        'Afschermen en embargo: zeg "die afschermen", "die op vijf kilometer vervagen" of "onder embargo tot 1 maart" (ook voor alle vorige tegelijk), of kies het thuis bij de waarneming. In de lijst staat dan een slotje. De export naar waarneming.nl neemt het mee; naar eBird gaat zo\'n waarneming niet. Zeg je "onder embargo" zonder datum, dan staat hij thuis bij het nalopen klaar om de datum te kiezen.',
         'Zeg je "onbekend aantal" of "niet geteld", dan wordt het aantal "gezien niet geteld" in plaats van een exact aantal van 1. In eBird wordt dat een X.',
       ],
       Inspreken: [

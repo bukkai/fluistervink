@@ -77,6 +77,11 @@
       Alleen "nee, keep" voert de app uit, maar onzeker: in de wind klinkt "een keep" net zo. Thuis
       tik je op een waarneming om hem aan te passen, te kopiëren of de plek te verzetten.
     </p>
+    <p>
+      Een nest of slaapplaats die niet iedereen hoeft te zien? Zeg "die afschermen" of "die onder
+      embargo tot 1 maart", of "alle vorige afschermen". Op waarneming.nl staat hij dan verborgen of
+      komt hij pas later in beeld. Naar eBird gaat zo'n waarneming niet mee.
+    </p>
   </div>
 </section>
 
