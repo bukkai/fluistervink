@@ -39,6 +39,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       ],
       Inspreken: [
         'Nieuw bij Instellingen: "Scherm aan houden tijdens een sessie". Het scherm gaat dan niet vanzelf uit, zodat je met de volumeknop kunt blijven inspreken.',
+        'Spreek je dezelfde soort nog eens in ("een hommel", even later weer "een hommel"), dan wordt dat altijd een nieuwe waarneming. Soms werd de tweede genegeerd omdat hij al in de lijst stond. Met "nog een hommel" telt hij op bij de vorige, zoals altijd.',
         'Vertel je iets van eerder ("gisteren zag ik hier een ijsvogel"), dan bewaart de app het als onzeker, omdat de tijd niet klopt. Huisdieren en vee ("een kat") worden geen waarneming meer.',
       ],
       'Over de app': [
