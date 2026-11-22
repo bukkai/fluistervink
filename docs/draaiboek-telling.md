@@ -4,6 +4,18 @@ Proeven met de microfoon die blijft aanstaan: de trektelling met het scherm uit 
 
 Duur: twee keer ongeveer een half uur. Een plek waar af en toe vogels langskomen (raam, balkon, tuin).
 
+## Uitslag 22 nov (A)
+
+Trektelling 20:51–21:07 met het scherm uit (beta, v0.6 met `ZichtbareWebView`), 16 stukken. **Het werkt:** elk stuk werd meteen verwerkt terwijl het scherm op slot zat (`hidden: false`, `bridgeMs` 22–47, 8–20 s na het einde van een stuk binnen), `screen_off_webview_zichtbaar` met `tegengehouden: 2`, accu 40 → 38% in 16 min. `page_frozen` alleen twee keer, bij het aanzetten van het scherm. Twee keer een time-out van de spraakherkenning (36 s); de wachtrij probeerde het opnieuw en het stuk kwam alsnog binnen (70 en 77 s). Geen nieuwe tag nodig: #312 zit al in v0.6. B (tuintelling) en C nog niet gedaan; `walk_service_failed` kwam in deze sessie niet voor.
+
+Gevonden in de uitspraken:
+
+- **Feedback in een trektelstuk werd uitgevoerd** (21:04): "Feedback, … ik geloof dat ik bedoelde te zeggen dat er één graszanger ter plaatse was … die grasmussen hadden niet aangepast moeten worden" → het model zette een deel in een dev note én paste de waarneming aan (aantal 1, ter plaatse). Wat in feedback staat, hoort nooit een actie te worden.
+- **"Graszanger verplaatsen"** (21:00) veranderde de drie grasmussen van 20:53 in één graszanger (onzeker). De reden bij de waarneming was te lang en onduidelijk ("Gezegd: graszanger, opgevat als grasmus van net; verplaatsing zonder nieuwe plek niet vastgelegd; Zeldzame soort (Graszanger): klopt het?").
+- Klein: "die zilverplevieren van eerder, dat waren eigenlijk goudplevieren" (er waren geen zilverplevieren) werd een nieuwe goudplevier (onzeker); "Amerikaanse robin" werd Vogel onbekend (niet gevonden bij de dwaalgasten); lieveheersbeestjes en het goudhaantje (kever) kwamen niet binnen omdat de ontwikkeloptie `insecten` uit stond.
+- Goed: afschermen (kerkuil, spreeuwen op 1 km), "ongedaan maken" en daarna "doe toch maar wel" (redo), "two mistle thrushes" en "no, make that three", plekken met afstand en richting, "Corvus monedula" en "Pica pica", het BSN weggelaten bij het delen (#335).
+- Instellingen: de tuintelling hoort bij Tellen, naast de trektelling (nu nog een ontwikkeloptie; meenemen als hij voor iedereen wordt).
+
 ## A. Trektelling met het scherm uit, WebView zichtbaar (#312)
 
 Tot nu toe zet Chromium de webcode een minuut na het vergrendelen stil: alles komt binnen, maar pas bij het ontgrendelen, en zonder tril. #312 laat de WebView zich in beeld melden, zodat elk stuk meteen verwerkt wordt.
