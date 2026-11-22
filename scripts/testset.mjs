@@ -267,7 +267,7 @@ function contextFor(u) {
 function calledFieldsOf(u) {
   return new Set(
     originalCalls(u)
-      .filter((c) => c.name === 'update_observation')
+      .filter((c) => c.name === 'update_observation' || c.name === 'shield_observation')
       .flatMap((c) => Object.entries(c.input))
       .filter(([key, value]) => SNAKE[key] && value !== null && value !== undefined)
       .map(([key]) => SNAKE[key]),

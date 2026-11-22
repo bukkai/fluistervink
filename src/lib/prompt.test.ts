@@ -4,6 +4,19 @@ import { englishAliases } from './promptEn';
 import { species } from './vocab';
 
 describe('tools', () => {
+  it('update_observation heeft alleen ref verplicht; afschermen heeft een eigen tool', () => {
+    // Verplichte velden vooraan in update_observation lieten het model na die
+    // velden stoppen, zonder de eigenlijke correctie (proef 22 nov)
+    for (const g of [false, true]) {
+      const tools = toolsFor(g);
+      const update = tools.find((t) => t.name === 'update_observation')!;
+      expect(update.input_schema.required).toEqual(['ref']);
+      expect(update.input_schema.properties).not.toHaveProperty('obscurity');
+      const shield = tools.find((t) => t.name === 'shield_observation')!;
+      expect(shield.input_schema.required).toEqual(['ref', 'obscurity', 'embargo_until']);
+    }
+  });
+
   it.each([false, true])('blijven onder de grens van optionele velden (soortgroepen: %s)', (g) => {
     let optional = 0;
     for (const tool of toolsFor(g)) {
