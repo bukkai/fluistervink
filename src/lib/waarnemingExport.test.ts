@@ -119,7 +119,7 @@ describe('buildExport', () => {
     expect(sheet).not.toContain('52.3601');
   });
 
-  it('zet afschermen als getal en een embargo als datum, leeg als het openbaar is', async () => {
+  it('zet afschermen als 1 (meer kent de import niet) en een embargo als datum, leeg als het openbaar is', async () => {
     const observedAt = Date.parse('2026-10-11T14:10:00');
     const hidden = observation({ observedAt, position, obscurity: 9 });
     const blurred = observation({ observedAt: observedAt + 1, position, obscurity: 5 });
@@ -131,14 +131,14 @@ describe('buildExport', () => {
     const open = observation({ observedAt: observedAt + 3, position, obscurity: 0 });
     await db.observations.bulkAdd([hidden, blurred, embargo, open]);
     const lines = await csvLines();
-    expect(lines[1]).toMatch(new RegExp(`,${hidden.id},9,$`));
-    expect(lines[2]).toMatch(new RegExp(`,${blurred.id},5,$`));
+    expect(lines[1]).toMatch(new RegExp(`,${hidden.id},1,$`));
+    expect(lines[2]).toMatch(new RegExp(`,${blurred.id},1,$`));
     expect(lines[3]).toMatch(new RegExp(`,${embargo.id},,2027-03-01$`));
     expect(lines[4]).toMatch(new RegExp(`,${open.id},,$`));
 
     const result = await buildExport([session], 'xlsx');
     const sheet = (await unzipStored(result.file)).get('xl/worksheets/sheet1.xml')!;
-    expect(sheet).toContain('<c r="P2" t="n"><v>9</v></c>');
+    expect(sheet).toContain('<c r="P2" t="n"><v>1</v></c>');
     expect(sheet).toContain(
       '<c r="Q4" t="inlineStr"><is><t xml:space="preserve">2027-03-01</t></is></c>',
     );
@@ -288,6 +288,19 @@ describe('exportForWaarneming', () => {
     saveFile.mockResolvedValueOnce({ folder: 'Downloads' });
     expect(await exportForWaarneming([session])).toBe(
       '1 waarneming geëxporteerd. Het bestand staat in Downloads.',
+    );
+  });
+
+  it('meldt welke afgeschermde waarnemingen je op waarneming.nl nog strenger moet zetten', async () => {
+    await db.sessions.add(session);
+    await db.observations.bulkAdd([
+      observation({ position, obscurity: 9 }),
+      observation({ position, obscurity: 5 }),
+      observation({ position, obscurity: 1 }),
+    ]);
+    saveFile.mockResolvedValueOnce({});
+    expect(await exportForWaarneming([session])).toBe(
+      '3 waarnemingen geëxporteerd. 2 waarnemingen moesten verborgen of op 5 km vervaagd: de import van waarneming.nl kent alleen "afgeschermd". Zet ze daar na het importeren zelf goed.',
     );
   });
 

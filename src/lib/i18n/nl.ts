@@ -666,6 +666,11 @@ export const nl = {
   'export.continue': 'Toch exporteren?',
   'export.saveFailed': 'Opslaan mislukt: {error}',
   'export.savedIn': 'Het bestand staat in {folder}.',
+  'export.obscurityLater': {
+    one: '1 waarneming moest verborgen of op 5 km vervaagd: de import van waarneming.nl kent alleen "afgeschermd". Zet hem daar na het importeren zelf goed.',
+    other:
+      '{n} waarnemingen moesten verborgen of op 5 km vervaagd: de import van waarneming.nl kent alleen "afgeschermd". Zet ze daar na het importeren zelf goed.',
+  },
   'export.excluded': '{n} uitgevinkt en niet geëxporteerd.',
   'export.noneWithLocation': 'Geen waarnemingen met een locatie om te exporteren.',
   'export.uncertain': {

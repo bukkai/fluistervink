@@ -25,7 +25,7 @@ Uitgezocht op 10 oktober 2026 (ingelogd). Waarneming.nl heeft een eigen **bulkim
 | `is escape` | | `True`/`False` | – |
 | `activity`, `life stage`, `method`, `counting method` | | **tekst in de taal van de site** ("overvliegend", "gezien en gehoord", "exact aantal") | Nederlandse naam van het ID |
 | `uuid` | | UUIDv4/v7; een uuid die al bestaat → import geweigerd | ID van de waarneming |
-| `obscurity` | | getal: 0 openbaar, 1 vervaagd (1 km), 5 vervaagd (5 km), 9 verborgen (`/api/v1/lookups/`) | `obscurity` (leeg = openbaar; afgeschermd gaat niet naar eBird, `docs/plan-afschermen.md`) |
+| `obscurity` | | **alleen 0 of 1** (proefimport 22 nov: "moet een keuze zijn uit 0, 1"), ook al kent de API 0, 1 (1 km), 5 (5 km) en 9 (verborgen) (`/api/v1/lookups/`) | `obscurity`: elke afscherming als 1, leeg = openbaar; bij 5 of 9 een melding om het op de site strenger te zetten (afgeschermd gaat niet naar eBird, `docs/plan-afschermen.md`) |
 | `embargo date` | | `YYYY-mm-dd` | `embargoUntil` |
 | `related species`, `external reference`, `id` | | – | – |
 
