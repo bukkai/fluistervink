@@ -18,6 +18,7 @@
     stopRecording,
   } from './recorder.svelte';
   import { screenOff, screenOffEnabled, startScreenOff, stopScreenOff } from './screenOff.svelte';
+  import { holdScreenOn } from './screenWakeLock';
   import SessionLog from './SessionLog.svelte';
   import { positionLater } from './utterancePosition';
   import {
@@ -214,6 +215,13 @@
       logEvent('talk_volume_key', { key, status: recorder.status }, { sessionId: session.id });
       talk.tap();
     });
+  });
+
+  // Scherm aan houden zolang de sessie open staat (instelling, screenWakeLock.ts)
+  $effect(() => {
+    if (!preferenceOn('schermAan')) return;
+    const sessionId = untrack(() => session.id);
+    return holdScreenOn((type, data) => logEvent(type, data, { sessionId }));
   });
 
   function press(event: PointerEvent) {

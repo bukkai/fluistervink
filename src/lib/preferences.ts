@@ -3,12 +3,18 @@
 // 16 nov; de samenvatting van een sessie is sinds 16 nov geen keuze meer).
 // De meeste staan standaard aan; `OFF_BY_DEFAULT` niet: wie geen eBird
 // gebruikt, mag er niets van merken (docs/plan-ebird.md, punt 8), en de
-// gesproken bevestiging is nog een proef. Per telefoon in localStorage; alleen
+// gesproken bevestiging is nog een proef; het scherm aan houden kost accu. Per telefoon in localStorage; alleen
 // wat afwijkt van de standaard wordt bewaard, zodat een nieuwe installatie de
 // standaard meteen heeft.
 
 export type Preference =
-  'soortgroepen' | 'zeldzaamOnzeker' | 'exportHerinnering' | 'ebird' | 'volumeknop' | 'gesproken';
+  | 'soortgroepen'
+  | 'zeldzaamOnzeker'
+  | 'exportHerinnering'
+  | 'ebird'
+  | 'volumeknop'
+  | 'gesproken'
+  | 'schermAan';
 
 /**
  * Groepen op Instellingen, van het veld naar thuis (PreferenceSettings.svelte;
@@ -16,7 +22,7 @@ export type Preference =
  */
 export type SettingsGroup = 'understanding' | 'field' | 'review';
 
-const OFF_BY_DEFAULT: readonly Preference[] = ['ebird', 'gesproken'];
+const OFF_BY_DEFAULT: readonly Preference[] = ['ebird', 'gesproken', 'schermAan'];
 
 const PREFIX = 'fluistervink.pref.';
 const SINCE = '.sinds';

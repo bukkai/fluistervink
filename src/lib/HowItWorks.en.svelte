@@ -54,9 +54,10 @@
     {#if isNativeApp}
       <p>
         In the Android app the volume button can also start and stop a recording (you can switch
-        that off in Settings). With earbuds in, the app can also say what it logged after the buzz
-        (a trial, switch it on in Settings). Quick start: press and hold the Fluistervink icon and
-        choose "Start birding".
+        that off in Settings). Switch on "Keep the screen on" in Settings and the screen won’t turn
+        off by itself during a session, so the volume button keeps working. With earbuds in, the app
+        can also say what it logged after the buzz (a trial, switch it on in Settings). Quick start:
+        press and hold the Fluistervink icon and choose "Start birding".
       </p>
     {/if}
   </div>

@@ -3,6 +3,7 @@
   // Keuzes voor iedereen (preferences.ts); eBird en de gesproken bevestiging
   // staan standaard uit
   import { speechSupported, volumeKeySupported } from './native';
+  import { wakeLockSupported } from './screenWakeLock';
   import {
     preferenceOn,
     setPreference,
@@ -35,6 +36,7 @@
     { preference: 'zeldzaamOnzeker', group: 'understanding' },
     { preference: 'volumeknop', group: 'field', available: volumeKeySupported },
     { preference: 'gesproken', group: 'field', available: speechSupported },
+    { preference: 'schermAan', group: 'field', available: wakeLockSupported },
     { preference: 'exportHerinnering', group: 'review' },
     { preference: 'ebird', group: 'review' },
   ];
@@ -47,7 +49,7 @@
   );
 </script>
 
-<!-- In de PWA heeft "Bediening in het veld" niets: dan geen lege kaart -->
+<!-- Een browser zonder Wake Lock heeft in "Bediening in het veld" niets: dan geen lege kaart -->
 {#if shown.length || hasDevOptions}
   <section class="card">
     <div class="card-head"><h2>{t(GROUP_TITLES[group])}</h2></div>

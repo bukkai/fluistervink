@@ -54,9 +54,10 @@
     {#if isNativeApp}
       <p>
         In de Android-app kan ook de volumeknop de opname starten en stoppen (uit te zetten bij
-        Instellingen). Met oortjes in kan de app na het trillen ook zeggen wat hij heeft vastgelegd
-        (een proef, aan te zetten bij Instellingen). Snel beginnen: houd het pictogram van
-        Fluistervink ingedrukt en kies "Begin met vogelen".
+        Instellingen). Zet bij Instellingen "Scherm aan houden" aan, dan gaat het scherm tijdens een
+        sessie niet vanzelf uit en blijft de volumeknop werken. Met oortjes in kan de app na het
+        trillen ook zeggen wat hij heeft vastgelegd (een proef, aan te zetten bij Instellingen).
+        Snel beginnen: houd het pictogram van Fluistervink ingedrukt en kies "Begin met vogelen".
       </p>
     {/if}
   </div>
