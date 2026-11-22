@@ -24,10 +24,6 @@ Voor de regel "Leuk met kinderen" op de tuintellingpagina. Liefst een jong en ee
 - [ ] Sessie stoppen en delen (met opnames), zodat ze in de testset kunnen.
 - [ ] Gaat het grotendeels goed, dan blijft de regel staan; anders eruit.
 
-## Nog over uit H
-
-- [ ] Met eBird aan: exporteren voor eBird → de melding noemt de afgeschermde waarnemingen die niet meegaan.
-
 ## Afsluiten
 
 - [ ] Sessie(s) stoppen en delen, met opnames.
