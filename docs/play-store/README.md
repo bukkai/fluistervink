@@ -101,6 +101,14 @@ Video (niet-openbaar op YouTube), zo'n 45–60 seconden. Met het scherm uit toon
 
 Ondertitels of een korte tekst in de beschrijving van de video helpen de beoordelaar: "Screen off → volume key starts recording → speak → volume key stops → observation appears."
 
+## App name
+
+Bij de productierelease (besloten 22 nov, `docs/plan-marketing.md`); tot dan "Fluistervink".
+
+```
+Fluistervink: vogels inspreken
+```
+
 ## Short description
 
 ```

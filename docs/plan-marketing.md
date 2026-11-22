@@ -1,6 +1,6 @@
 # Plan: Fluistervink bekend maken
 
-Voorstel van 22 nov 2026, nog niet besloten. Hoe Fluistervink gebruikers vindt zodra de app openbaar in Google Play staat (`docs/lancering.md`). De promotie rond de tuintelling staat apart in `docs/plan-tuintelling.md` (Promotie); dit plan is het kader eromheen: wanneer, voor wie, via welke kanalen en wat we meten.
+Voorstel van 22 nov 2026; titel, filmpje en december besloten op 22 nov, de kostengrens is een voorstel. Hoe Fluistervink gebruikers vindt zodra de app openbaar in Google Play staat (`docs/lancering.md`). De promotie rond de tuintelling staat apart in `docs/plan-tuintelling.md` (Promotie); dit plan is het kader eromheen: wanneer, voor wie, via welke kanalen en wat we meten.
 
 ## Uitgangspunt: elke gebruiker kost geld
 
@@ -51,7 +51,7 @@ Op volgorde van wat ze waarschijnlijk opleveren tegen wat ze kosten.
 
 De teksten staan in `docs/play-store/README.md`; daar ook bijwerken als hier iets besloten wordt.
 
-- **Titel** (max. 30 tekens): een zoekwoord erbij, bijvoorbeeld "Fluistervink: vogels inspreken". Op "Fluistervink" zoekt nog niemand. Mag pas als de naam in Play al zo heet.
+- **Titel** (max. 30 tekens): "Fluistervink: vogels inspreken" (besloten 22 nov). Op "Fluistervink" zoekt nog niemand.
 - **Korte beschrijving** (nu "Spreek je vogelwaarnemingen in en zet ze thuis op waarneming.nl."): "waarneming.nl" en "inspreken" staan er al in; eventueel "handen vrij" of "verrekijker" erbij.
 - **Lange beschrijving:** Google zoekt ook daarin. Woorden die vogelaars typen: vogels, vogelaar, waarnemingen, waarneming.nl, tellen, tuintelling, trektellen, spraak.
 - **Promotievideo** (YouTube-link in de winkelvermelding): het filmpje uit Het verhaal. Opnemen kan samen met de draaiboeken voor buiten (`docs/draaiboek-buiten.md`).
@@ -71,9 +71,28 @@ De teksten staan in `docs/play-store/README.md`; daar ook bijwerken als hier iet
 - Een grote lancering in december: weinig vogelen, nog geen logo, en de tuintelling in januari is een betere aanleiding.
 - De naam of het logo van Vogelbescherming, waarneming.nl of Natuurpunt gebruiken zonder hun akkoord.
 
-## Open beslissingen
+## Besloten (22 nov)
 
-1. Titel in Play met een zoekwoord, of alleen "Fluistervink"?
-2. Wie maakt het filmpje, en wie spreekt in (de eigenaar of een tester)?
-3. Wanneer de eerste stap buiten de eigen kring: begin december of pas in januari met de tuintelling?
-4. Welke stap moet de kosten bewijzen voordat de volgende komt: een bedrag per actieve gebruiker per maand vooraf afspreken.
+1. **Titel met zoekwoord:** "Fluistervink: vogels inspreken" (precies 30 tekens), in de Play Console bij de productierelease, ook in `docs/play-store/README.md`.
+2. **Het filmpje** maakt en spreekt de eigenaar zelf in.
+3. **December alleen eigen kring** (testers, Discord, vrienden en vogelmaatjes); de eerste stap daarbuiten is de tuintelling in januari.
+
+## Kostengrens per stap
+
+Voorstel van 22 nov, getallen nog te toetsen aan Developer na de proef (tot 1 dec).
+
+**Wat we weten:** met de knop kost een uitspraak ongeveer een halve cent (feedback van 6 nov, `docs/archief/werklog-2026.md`). Een wandeling van 50 à 70 uitspraken kost dus zo'n $0,25–0,35; een tuintelling van een half uur doorlopend luisteren $0,15–0,20 en een ochtend trektellen tientallen centen (`docs/plan-tuintelling.md`, punt 13; `docs/plan-trektelmodus.md`). Een vogelaar die elke week een keer wandelt, kost dan ruwweg **$1–1,50 per maand**; een trekteller die vaak telt meer.
+
+**Wat een betaalde laag kan dragen:** een abonnement van €2–3 per maand of €20–25 per jaar is gangbaar voor een app als deze. Google houdt 15% in, en betaalt maar een deel van de gebruikers. Bij een op de tien betalers moet het gemiddelde dus onder de **€0,25 à 0,40 per actieve gebruiker per maand** blijven om quitte te spelen. Gratis met de knop wandelen en betaald voor doorlopend luisteren (trektelling, tuin) past daarbij: het dure deel zit achter de betaalde laag.
+
+**De grens, per maand gemeten op Developer** (actieve gebruiker = minstens één sessie die maand):
+
+| Gemiddeld per actieve gebruiker | Wat we doen |
+| --- | --- |
+| onder $1 | volgende stap mag |
+| $1–2 | volgende stap mag, betaalde laag krijgt voorrang |
+| boven $2 | eerst kosten omlaag (daglimieten, prompt kleiner, goedkoper model nagaan) of de betaalde laag, dan pas groeien |
+
+**Plus een absoluut budget** dat de eigenaar zelf betaalt tot de betaalde laag er is: voorstel **€50 per maand** in december en januari, met daarbovenop eenmalig **tot €200 voor het telweekend**. Wordt het maandbudget gehaald voordat de betaalde laag er is, dan geen nieuwe actie tot hij er is.
+
+**Daglimiet per installatie:** nu 5 uur spraak en 1500 modelverzoeken per dag, in het ergste geval zo'n $11 per installatie per dag (`docs/proxy.md`). Voor een openbare app ruim: een trektelling van vier uur vraagt ongeveer 240 modelverzoeken. Voorstel: vóór de productierelease het model terug naar 500 per dag (ergste geval dan ~$4,70); spraak kan op 5 uur blijven.
