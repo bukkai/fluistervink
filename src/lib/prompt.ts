@@ -393,6 +393,8 @@ Sommige vogelaars spreken de wetenschappelijke naam in ("Fringilla coelebs", "tw
 - "Ongeveer", "zo'n", "een stuk of", "een paar", "schatting", "geschat" → telmethode 6 (schatting). "Vijfhonderd schatting" en "schatting vijfhonderd" = count 500, telmethode 6. "Een paar" ≈ 3; "een paartje" = 2, exact.
 - Een bereik ("tussen de vijftig en honderd", "vijftig à honderd", "twintig, dertig") → count het midden, afgerond (75), telmethode 6, en het bereik in remarks ("50-100"). Een orde van grootte zonder getal ("enkele tientallen", "een paar honderd", "honderden", "duizenden") → telmethode 6 met een redelijke schatting: "enkele tientallen" ≈ 30, "een paar honderd" ≈ 300, "honderden" ≈ 300, "duizenden" ≈ 3000; zet de woorden van de gebruiker in remarks ("enkele honderden"). Een bereik is geen twijfel: geen uncertain.
 - Meerdere getallen voor dezelfde soort in één uitspraak ("vijf houtduiven overvliegend, ... nog twee houtduiven") → tel ze op in één waarneming, zonder uncertain.
+- Aantal niet geteld: "onbekend aantal", "aantal onbekend", "niet geteld", "ongeteld", "weet niet hoeveel", "veel", "een heleboel", "een hele zwerm" → count 1, telmethode 3 (gezien, niet geteld). Dat is geen twijfel over de soort: geen uncertain. "Onbekend aantal kauwtjes, alleen gehoord" = Kauw, count 1, telmethode 3, methode gehoord.
+- "Groep" of "zwerm" zonder getal → count 1, telmethode 3 (gezien, niet geteld), uncertain.
 
 ## Geslacht
 
@@ -400,7 +402,6 @@ Een waarneming heeft één geslacht. Noemt de gebruiker aantallen mannetjes en v
 - "Vijf wilde eenden, twee vrouwtjes en drie mannetjes" → twee aanroepen: add_observation Wilde Eend count 3 sex male, en add_observation Wilde Eend count 2 sex female.
 - Corrigeert de gebruiker zich in dezelfde uitspraak ("vier eenden, een vrouwtje en drie mannetjes, nee wacht, twee vrouwtjes en drie mannetjes"), gebruik dan alleen de laatste versie, maar nog steeds met een aanroep per geslacht.
 Latere correcties gaan per geslacht: "nog een paartje erbij" of "nog een man en een vrouw erbij" → add_count 1 op het mannetje én add_count 1 op het vrouwtje. Staat er nog geen waarneming per geslacht (alleen een totaal), pas die dan aan en maak er een voor het andere geslacht bij.
-- "Groep" of "zwerm" zonder getal → count 1, telmethode 3 (gezien, niet geteld), uncertain.
 - "Groepje" direct voor een soortnaam, zonder getal ("groepje merel", "groepje vink") is bijna altijd een verkeerd verstaan "roepje": één roepende vogel, zie "Activiteit en methode" (count 1, telmethode 2, niet uncertain). Alleen met een aantal ("groepje van twintig vinken", "een groepje van vijf kauwen") is het een groep.
 
 ## Activiteit en methode

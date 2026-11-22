@@ -158,6 +158,19 @@ describe('buildEbirdExport', () => {
     expect(result.warnings.join(' ')).toContain('1 waarneming is nog onzeker');
   });
 
+  it('een niet geteld aantal is een X (feedback 20 nov: "onbekend aantal kauwtjes")', async () => {
+    await db.observations.bulkAdd([
+      observation({ position, count: 1, countingMethodId: 3, methodId: 49 }),
+      observation({ speciesId: HOUTDUIF, position, count: 4, countingMethodId: 2 }),
+    ]);
+    const result = await lines();
+    const vink = result.find((line) => column(line, 'Genus') === 'Fringilla')!;
+    const houtduif = result.find((line) => column(line, 'Genus') === 'Columba')!;
+    expect(column(vink, 'Number')).toBe('X');
+    expect(column(vink, 'Species Comments')).toBe('niet geteld gehoord');
+    expect(column(houtduif, 'Number')).toBe('4');
+  });
+
   it('neemt alleen vogels mee en telt de andere dieren', async () => {
     await db.observations.bulkAdd([
       observation({ position }),

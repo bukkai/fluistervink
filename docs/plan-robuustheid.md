@@ -30,7 +30,7 @@ Een tester (app-b726a027) deed op 20 nov in de eerste sessie een stresstest: 27 
 | "Maak het laatste ongedaan" | undo | goed |
 | "Maak alle vorige meldingen afgeschermd", "onder embargo" | niet begrepen | `docs/plan-afschermen.md` |
 | "Houtsnip raamslachtoffer", dan "is dood", dan "met het raam gebotst" | goed, in drie stappen | goed |
-| "Onbekend aantal kauwtjes, alleen gehoord" | aantal 1, exact | **open:** hoort "gezien niet geteld" (telmethode 3) te zijn |
+| "Onbekend aantal kauwtjes, alleen gehoord" | aantal 1, exact | nu "gezien niet geteld" (regel in de prompt, 22 nov) |
 | "Een goudhaantje, maar de kever niet de vogel" | werd de vogel Goudhaan | #334 (insecten) |
 | "Eén deltavliegen" (geen dier) | Vliegenvanger onbekend, onzeker | **open:** hoort niets te zijn |
 | "Female onbekend" | onzeker, met de vraag waar het bij hoort | goed |
@@ -48,7 +48,8 @@ Een tester (app-b726a027) deed op 20 nov in de eerste sessie een stresstest: 27 
 | Dubbele undo | twee keer "ongedaan maken", dan "toch niet" | één stap terug (redo) |
 | Soort en aantal tegelijk | "Die meeuw was een zilvermeeuw, en het waren er drie" | één aanpassing met soort en aantal |
 | Ver terug | correctie op een waarneming van meer dan 20 terug | niet begrepen of onzeker, niet de verkeerde (#6) |
-| Onbekend aantal | "onbekend aantal kauwen", "een hele zwerm" | telmethode gezien niet geteld |
+| Onbekend aantal | "onbekend aantal kauwen", "een heleboel spreeuwen", "veel graspiepers" | telmethode gezien niet geteld, niet onzeker; eBird een X. Proef 22 nov: goed (NL en EN) |
+| Werkwoord als soortnaam | "twaalf kauwen" (kauwen is ook eten) | 12 Kauw. Proef 22 nov: geen waarneming, ook met de oude prompt. **Open** |
 | Ongeldig aantal | "nul vinken", "een halve houtduif", "min twee" | niet begrepen of onzeker (#5) |
 | Grote aantallen | "duizenden spreeuwen" tegenover "dertigduizend spreeuwen" | schatting 3000 tegenover 30.000 exact |
 | Persoonsgegevens | naam, adres of telefoonnummer, met en zonder "feedback" | zonder: niets; met: zie #18 |
