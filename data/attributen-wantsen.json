@@ -1,0 +1,200 @@
+{
+ "activity": [
+  {
+   "id": 98,
+   "name": "ter plaatse"
+  },
+  {
+   "id": 3013,
+   "name": "in copula"
+  },
+  {
+   "id": 3187,
+   "name": "foeragerend"
+  },
+  {
+   "id": 3016,
+   "name": "nest"
+  },
+  {
+   "id": 3012,
+   "name": "overwinterend"
+  },
+  {
+   "id": 3014,
+   "name": "eileggend"
+  },
+  {
+   "id": 3011,
+   "name": "baltsend / zingend"
+  },
+  {
+   "id": 3017,
+   "name": "op licht"
+  },
+  {
+   "id": 3020,
+   "name": "dood"
+  },
+  {
+   "id": 3019,
+   "name": "slachtoffer verkeer"
+  },
+  {
+   "id": 3236,
+   "name": "zonnend"
+  },
+  {
+   "id": 3238,
+   "name": "geparasiteerd"
+  },
+  {
+   "id": 3288,
+   "name": "op windmolen"
+  },
+  {
+   "id": 3237,
+   "name": "onbekend"
+  }
+ ],
+ "method": [
+  {
+   "id": 447,
+   "name": "onbekend"
+  },
+  {
+   "id": 448,
+   "name": "gezien"
+  },
+  {
+   "id": 449,
+   "name": "gehoord"
+  },
+  {
+   "id": 703,
+   "name": "handvangst"
+  },
+  {
+   "id": 450,
+   "name": "gehoord en gezien"
+  },
+  {
+   "id": 704,
+   "name": "sleepnet"
+  },
+  {
+   "id": 705,
+   "name": "klopnet"
+  },
+  {
+   "id": 706,
+   "name": "malaiseval"
+  },
+  {
+   "id": 707,
+   "name": "kleurval"
+  },
+  {
+   "id": 708,
+   "name": "bodemval"
+  },
+  {
+   "id": 709,
+   "name": "lichtval"
+  },
+  {
+   "id": 710,
+   "name": "andere val"
+  },
+  {
+   "id": 711,
+   "name": "uitgekweekt en in collectie"
+  },
+  {
+   "id": 712,
+   "name": "uitgekweekt en losgelaten"
+  },
+  {
+   "id": 432,
+   "name": "dood exemplaar in collectie"
+  },
+  {
+   "id": 442,
+   "name": "(e)dna barcoding"
+  },
+  {
+   "id": 713,
+   "name": "binnenshuis"
+  },
+  {
+   "id": 807,
+   "name": "Led emmer"
+  },
+  {
+   "id": 790,
+   "name": "op laken"
+  },
+  {
+   "id": 779,
+   "name": "schepnet"
+  },
+  {
+   "id": 774,
+   "name": "handvangst en losgelaten"
+  },
+  {
+   "id": 775,
+   "name": "handvangst en in collectie"
+  },
+  {
+   "id": 443,
+   "name": "microscopisch onderzocht"
+  },
+  {
+   "id": 821,
+   "name": "translocatie"
+  }
+ ],
+ "life_stage": [
+  {
+   "id": 1025,
+   "name": "onbekend"
+  },
+  {
+   "id": 1028,
+   "name": "imago"
+  },
+  {
+   "id": 1026,
+   "name": "afwijkend"
+  },
+  {
+   "id": 1027,
+   "name": "ei"
+  },
+  {
+   "id": 1029,
+   "name": "imago macropteer"
+  },
+  {
+   "id": 1030,
+   "name": "gal"
+  },
+  {
+   "id": 1033,
+   "name": "werkster"
+  },
+  {
+   "id": 1034,
+   "name": "larve/nimf"
+  },
+  {
+   "id": 1149,
+   "name": "larvenhuidje"
+  },
+  {
+   "id": 1150,
+   "name": "imago brachypteer"
+  }
+ ]
+}

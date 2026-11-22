@@ -7,6 +7,7 @@ import {
   englishNamesOf,
   groupCodeNameIn,
   groups,
+  insectGroups,
   promptSpeciesOf,
   species,
   speciesNameIn,
@@ -64,6 +65,9 @@ const PROPERTY_DESCRIPTIONS: Record<string, string> = {
 const UNLISTED_WITH_GROUPS =
   'Only when the user clearly names a species that is not in the species list (a rare vagrant or a rare other animal): the name as said, e.g. "Woodchat Shrike" or "wolf". species_name and species_id are then the best matching unidentified species of its group (Unidentified bird, Mammal unknown, etc.). See "Species" and "Other wildlife".';
 
+const UNLISTED_WITH_INSECTS =
+  'Only when the user clearly names a species that is not in the species list (a rare vagrant, a rare other animal or an insect with a species name): the name as said, e.g. "Woodchat Shrike", "wolf" or "Buff-tailed Bumblebee". species_name and species_id are then the best matching unidentified species of its group (Unidentified bird, Mammal unknown, Bumblebee unknown, etc.). See "Species", "Other wildlife" and "Insects".';
+
 const TOOL_DESCRIPTIONS: Record<string, string> = {
   add_observation: 'Records a new observation. One call per species.',
   update_observation:
@@ -77,7 +81,11 @@ const TOOL_DESCRIPTIONS: Record<string, string> = {
 };
 
 /** De Nederlandse tools met Engelse beschrijvingen; een ontbrekende vertaling geeft een fout */
-export function englishTools(dutch: Anthropic.Tool[], withGroups: boolean): Anthropic.Tool[] {
+export function englishTools(
+  dutch: Anthropic.Tool[],
+  withGroups: boolean,
+  insects = false,
+): Anthropic.Tool[] {
   return dutch.map((tool) => {
     const description = TOOL_DESCRIPTIONS[tool.name];
     if (!description) throw new Error(`Geen Engelse beschrijving voor tool ${tool.name}`);
@@ -87,7 +95,9 @@ export function englishTools(dutch: Anthropic.Tool[], withGroups: boolean): Anth
         if (property.description === undefined) return [name, property];
         const english =
           name === 'unlisted_species' && withGroups
-            ? UNLISTED_WITH_GROUPS
+            ? insects
+              ? UNLISTED_WITH_INSECTS
+              : UNLISTED_WITH_GROUPS
             : PROPERTY_DESCRIPTIONS[name];
         if (!english) throw new Error(`Geen Engelse beschrijving voor ${tool.name}.${name}`);
         return [name, { ...property, description: english }];
@@ -181,11 +191,31 @@ Besides birds, the user also records mammals, reptiles and amphibians, butterfli
 
 ${otherGroups.map(groupCodeLines).join('\n\n')}`;
 
+/** Insects (docs/plan-insecten.md, layer 1), as INSECT_RULES in prompt.ts */
+const INSECT_RULES = `
+
+## Insects
+
+The user sometimes records an insect too: a beetle, bug, bumblebee, bee, wasp, ant, moth, grasshopper, cricket or hoverfly. Only the unidentified species of these groups are in the species list, under "Insects".
+- An insect without a species name ("a bumblebee", "two wasps", "a ladybird", "a micro moth") → that unidentified species, without uncertain.
+- An insect with a species name ("a Buff-tailed Bumblebee", "a stag beetle", "a Hummingbird Hawk-moth", "a Green Shieldbug", "a drone fly") → the unidentified species of its group, with the name as said in unlisted_species, uncertain, and literally "Said: Buff-tailed Bumblebee (not in the list)" in uncertain_reason. The app looks the species up itself in the list of that group, so the group must be right:
+  - bumblebee → Bumblebee unknown; bee, honey bee, mining bee → Bee unidentified; wasp, hornet → Wasp unknown; ant → Unidentified Ant;
+  - beetle, longhorn, ground beetle, chafer → Unknown beetle; ladybird, ladybug → Ladybird unknown; cockchafer, maybug, summer chafer → Cockchafer unknown;
+  - bug, froghopper, cicada → Bug unknown; shieldbug, stink bug → Shieldbug unknown;
+  - moth, hawk-moth, tiger moth, a moth caterpillar → Moth unknown; micro moth, plume moth → Micro moth unknown;
+  - grasshopper, bush-cricket, cricket, mole cricket → Unidentified grasshopper or locust; hoverfly, drone fly → Unidentified Hoverfly.
+- Names that sound like birds: if the user says it is an insect ("a Goldcrest, the beetle, not the bird"), it is an insect: the unidentified species of that group with the name in unlisted_species. Without such a hint, a bird name is a bird.
+- Butterflies and dragonflies are not insects in this sense: they are in the list as usual (see "Other wildlife"). An animal that belongs to neither (a spider, a mosquito, an ordinary fly) → don't call any tool.
+- Codes: each insect group has its own codes (below); only use those of the species' group. Nothing mentioned → present and seen for that group. "Caterpillar" → larva/caterpillar, "larva" → larva/nymph, "pupa" → pupa. "On the sheet", "at the light", "at the moth trap" → at light. A singing or chirping grasshopper or cricket → courtship / singing, method heard.
+
+${insectGroups.map(groupCodeLines).join('\n\n')}`;
+
 const birdCode = (field: keyof typeof FIELD_OF, id: number) =>
   `${id} (${groupCodeNameIn('en', BIRDS, FIELD_OF[field], id)})`;
 
 const buildPrompt = (
   withGroups: boolean,
+  insects = false,
 ) => `You are the interpretation layer of Fluistervink, an app with which a birder records observations by voice while birding. You get the text of one voice note, usually from speech recognition (so possibly garbled), plus the recent observations of this session. You answer only with tool calls; the app carries them out. You cannot ask anything back.
 
 The user speaks English. All names in your tool calls (species_name, candidate_species) are the English names from the species list below. Write uncertain_reason, remarks and private_note in English, in the user's words.
@@ -296,7 +326,7 @@ Birders abbreviate age and plumage. Speech recognition sometimes writes them as 
 
 If you are unsure about the species, count or which observation is meant, carry out the most likely action with uncertain: true and a short uncertain_reason. Better an uncertain observation than none.
 
-If the user is unsure themselves ("sounds like a Wren", "looks like a Willow Warbler", "I think it's a Sparrowhawk", "let me check it in Merlin"), it is still an observation: add_observation with uncertain: true and the doubt in uncertain_reason. Don't ignore it; if a confirmation comes later ("yes, it was a Wren"), the doubt goes. A task for later ("listen back at home", "check it in Merlin") goes in private_note.${CANDIDATE_RULES}${withGroups ? GROUP_RULES : ''}
+If the user is unsure themselves ("sounds like a Wren", "looks like a Willow Warbler", "I think it's a Sparrowhawk", "let me check it in Merlin"), it is still an observation: add_observation with uncertain: true and the doubt in uncertain_reason. Don't ignore it; if a confirmation comes later ("yes, it was a Wren"), the doubt goes. A task for later ("listen back at home", "check it in Merlin") goes in private_note.${CANDIDATE_RULES}${withGroups ? GROUP_RULES : ''}${insects ? INSECT_RULES : ''}
 
 ## Nicknames (nickname → ID|name)
 
@@ -309,6 +339,9 @@ ${
     ? [
         `### ${groupName(BIRDS)}\n${speciesLines(species)}`,
         ...otherGroups.map((g) => `### ${groupName(g.id)}\n${speciesLines(promptSpeciesOf(g.id))}`),
+        ...(insects
+          ? [`### Insects\n${speciesLines(insectGroups.flatMap((g) => promptSpeciesOf(g.id)))}`]
+          : []),
       ].join('\n\n')
     : speciesLines(species)
 }`;

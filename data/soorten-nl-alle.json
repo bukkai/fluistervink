@@ -1704,5 +1704,18 @@
 {"id":630,"name":"Zuidelijke oeverlibel","scientific":"Orthetrum brunneum","type":"S","rarity":3,"group":5},
 {"id":634,"name":"Zwarte heidelibel","scientific":"Sympetrum danae","type":"S","rarity":3,"group":5},
 {"id":637,"name":"Zwervende heidelibel","scientific":"Sympetrum fonscolombii","type":"S","rarity":2,"group":5},
-{"id":581,"name":"Zwervende pantserjuffer","scientific":"Lestes barbarus","type":"S","rarity":3,"group":5}
+{"id":581,"name":"Zwervende pantserjuffer","scientific":"Lestes barbarus","type":"S","rarity":3,"group":5},
+{"id":27916,"name":"Kever onbekend","scientific":"Coleoptera indet.","type":"M","rarity":1,"group":16},
+{"id":156859,"name":"Lieveheersbeestje onbekend","scientific":"Coccinellidae indet.","type":"M","rarity":1,"group":16},
+{"id":606842,"name":"Meikever onbekend","scientific":"Melolontha spec.","type":"M","rarity":1,"group":16},
+{"id":210669,"name":"Schildwants onbekend","scientific":"Pentatomidae indet.","type":"M","rarity":0,"group":15},
+{"id":18649,"name":"Wants onbekend","scientific":"Heteroptera indet.","type":"M","rarity":1,"group":15},
+{"id":186200,"name":"Bij onbekend","scientific":"Anthophila indet.","type":"M","rarity":1,"group":17},
+{"id":105323,"name":"Hommel onbekend","scientific":"Bombus spec.","type":"M","rarity":1,"group":17},
+{"id":186216,"name":"Mier onbekend","scientific":"Formicidae indet.","type":"M","rarity":1,"group":17},
+{"id":186244,"name":"Wesp onbekend","scientific":"Vespidae indet.","type":"M","rarity":1,"group":17},
+{"id":9059,"name":"Nachtvlinder onbekend","scientific":"Heterocera indet.","type":"M","rarity":2,"group":8},
+{"id":16726,"name":"Mot onbekend (microvlinder)","scientific":"Microlepidoptera indet.","type":"M","rarity":2,"group":8},
+{"id":105325,"name":"Sprinkhaan onbekend","scientific":"Orthoptera indet.","type":"M","rarity":1,"group":14},
+{"id":18628,"name":"Zweefvlieg onbekend","scientific":"Syrphidae indet.","type":"M","rarity":1,"group":18}
 ]

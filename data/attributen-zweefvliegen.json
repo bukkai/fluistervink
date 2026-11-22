@@ -1,0 +1,204 @@
+{
+ "activity": [
+  {
+   "id": 96,
+   "name": "ter plaatse"
+  },
+  {
+   "id": 3186,
+   "name": "foeragerend"
+  },
+  {
+   "id": 3041,
+   "name": "baltsend / zingend"
+  },
+  {
+   "id": 3043,
+   "name": "in copula"
+  },
+  {
+   "id": 3044,
+   "name": "eileggend"
+  },
+  {
+   "id": 3042,
+   "name": "overwinterend"
+  },
+  {
+   "id": 3050,
+   "name": "dood"
+  },
+  {
+   "id": 3047,
+   "name": "op licht"
+  },
+  {
+   "id": 3229,
+   "name": "onbekend"
+  },
+  {
+   "id": 3227,
+   "name": "zonnend"
+  },
+  {
+   "id": 3228,
+   "name": "slachtoffer raambotsing"
+  },
+  {
+   "id": 3231,
+   "name": "parasiterend"
+  },
+  {
+   "id": 3230,
+   "name": "geparasiteerd"
+  },
+  {
+   "id": 3232,
+   "name": "zwermend (aan winterverblijf)"
+  },
+  {
+   "id": 3286,
+   "name": "op windmolen"
+  }
+ ],
+ "method": [
+  {
+   "id": 522,
+   "name": "onbekend"
+  },
+  {
+   "id": 523,
+   "name": "gezien"
+  },
+  {
+   "id": 744,
+   "name": "handvangst en in collectie"
+  },
+  {
+   "id": 745,
+   "name": "handvangst en losgelaten"
+  },
+  {
+   "id": 746,
+   "name": "malaiseval"
+  },
+  {
+   "id": 747,
+   "name": "kleurval"
+  },
+  {
+   "id": 748,
+   "name": "bodemval"
+  },
+  {
+   "id": 749,
+   "name": "lichtval"
+  },
+  {
+   "id": 750,
+   "name": "andere val"
+  },
+  {
+   "id": 751,
+   "name": "uitgekweekt en in collectie"
+  },
+  {
+   "id": 752,
+   "name": "uitgekweekt en losgelaten"
+  },
+  {
+   "id": 518,
+   "name": "microscopisch onderzocht"
+  },
+  {
+   "id": 753,
+   "name": "genitaal onderzocht"
+  },
+  {
+   "id": 754,
+   "name": "sporen"
+  },
+  {
+   "id": 755,
+   "name": "op smeer"
+  },
+  {
+   "id": 507,
+   "name": "dood exemplaar in collectie"
+  },
+  {
+   "id": 756,
+   "name": "(e)dna barcoding"
+  },
+  {
+   "id": 757,
+   "name": "binnenshuis"
+  },
+  {
+   "id": 805,
+   "name": "Led emmer"
+  },
+  {
+   "id": 793,
+   "name": "op laken"
+  },
+  {
+   "id": 827,
+   "name": "translocatie"
+  },
+  {
+   "id": 786,
+   "name": "schepnet"
+  }
+ ],
+ "life_stage": [
+  {
+   "id": 1067,
+   "name": "onbekend"
+  },
+  {
+   "id": 1070,
+   "name": "imago"
+  },
+  {
+   "id": 1069,
+   "name": "ei"
+  },
+  {
+   "id": 1071,
+   "name": "imago macropteer"
+  },
+  {
+   "id": 1072,
+   "name": "gal"
+  },
+  {
+   "id": 1073,
+   "name": "imago micropteer"
+  },
+  {
+   "id": 1074,
+   "name": "koningin"
+  },
+  {
+   "id": 1075,
+   "name": "werkster"
+  },
+  {
+   "id": 1076,
+   "name": "larve/nimf"
+  },
+  {
+   "id": 1079,
+   "name": "mijn"
+  },
+  {
+   "id": 1080,
+   "name": "vervellingshuidje"
+  },
+  {
+   "id": 1083,
+   "name": "pop"
+  }
+ ]
+}

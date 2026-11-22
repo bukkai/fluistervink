@@ -1,0 +1,180 @@
+{
+ "activity": [
+  {
+   "id": 97,
+   "name": "ter plaatse"
+  },
+  {
+   "id": 3001,
+   "name": "baltsend / zingend"
+  },
+  {
+   "id": 3002,
+   "name": "overwinterend"
+  },
+  {
+   "id": 3004,
+   "name": "in copula"
+  },
+  {
+   "id": 3225,
+   "name": "geparasiteerd"
+  },
+  {
+   "id": 3008,
+   "name": "nest"
+  },
+  {
+   "id": 3009,
+   "name": "op licht"
+  },
+  {
+   "id": 3005,
+   "name": "eileggend"
+  },
+  {
+   "id": 3007,
+   "name": "dood"
+  },
+  {
+   "id": 3223,
+   "name": "zonnend"
+  },
+  {
+   "id": 3226,
+   "name": "aangevoerd"
+  },
+  {
+   "id": 3284,
+   "name": "op windmolen"
+  },
+  {
+   "id": 3224,
+   "name": "onbekend"
+  }
+ ],
+ "method": [
+  {
+   "id": 422,
+   "name": "onbekend"
+  },
+  {
+   "id": 423,
+   "name": "gezien"
+  },
+  {
+   "id": 424,
+   "name": "gehoord"
+  },
+  {
+   "id": 426,
+   "name": "gezien en gehoord"
+  },
+  {
+   "id": 419,
+   "name": "batdetector"
+  },
+  {
+   "id": 402,
+   "name": "gevangen"
+  },
+  {
+   "id": 694,
+   "name": "lichtval"
+  },
+  {
+   "id": 695,
+   "name": "malaiseval"
+  },
+  {
+   "id": 696,
+   "name": "kleurval"
+  },
+  {
+   "id": 697,
+   "name": "bodemval"
+  },
+  {
+   "id": 698,
+   "name": "andere val"
+  },
+  {
+   "id": 699,
+   "name": "op smeer"
+  },
+  {
+   "id": 700,
+   "name": "sporen"
+  },
+  {
+   "id": 701,
+   "name": "uitgekweekt en losgelaten"
+  },
+  {
+   "id": 407,
+   "name": "verzameld (in collectie)"
+  },
+  {
+   "id": 417,
+   "name": "(e)dna barcoding"
+  },
+  {
+   "id": 702,
+   "name": "binnenshuis"
+  },
+  {
+   "id": 803,
+   "name": "Led emmer"
+  },
+  {
+   "id": 824,
+   "name": "translocatie"
+  },
+  {
+   "id": 830,
+   "name": "op laken"
+  }
+ ],
+ "life_stage": [
+  {
+   "id": 1011,
+   "name": "onbekend"
+  },
+  {
+   "id": 1014,
+   "name": "imago"
+  },
+  {
+   "id": 1020,
+   "name": "larve/nimf"
+  },
+  {
+   "id": 1012,
+   "name": "afwijkend"
+  },
+  {
+   "id": 1013,
+   "name": "ei"
+  },
+  {
+   "id": 1015,
+   "name": "imago brachypteer"
+  },
+  {
+   "id": 1022,
+   "name": "exuviae"
+  },
+  {
+   "id": 1023,
+   "name": "imago, net verveld"
+  },
+  {
+   "id": 1086,
+   "name": "gynandromorf"
+  },
+  {
+   "id": 1088,
+   "name": "imago macropteer"
+  }
+ ]
+}

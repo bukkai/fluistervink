@@ -32,6 +32,9 @@ export default defineConfig({
   // Twee pagina's: de voorpagina op / (index.html) en de app op /app/
   // (app/index.html). Zie docs/ontwerp.md, Voorpagina.
   // Alleen voor de client: de Worker heeft zijn eigen ingang (wrangler.jsonc).
+  // De insectenlijst (data/soorten-insecten.json, ±530 kB, gzip ±105 kB) is een
+  // los bestand dat pas laadt als het nodig is (src/lib/insects.ts)
+  build: { chunkSizeWarningLimit: 600 },
   environments: {
     client: {
       build: {

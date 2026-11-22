@@ -3,6 +3,12 @@ import butterflyAttributes from '../../data/attributen-dagvlinders.json';
 import herpAttributes from '../../data/attributen-reptielen-amfibieen.json';
 import attributes from '../../data/attributen-vogels.json';
 import mammalAttributes from '../../data/attributen-zoogdieren.json';
+import beetleAttributes from '../../data/attributen-kevers.json';
+import bugAttributes from '../../data/attributen-wantsen.json';
+import beeAttributes from '../../data/attributen-bijen-wespen-mieren.json';
+import mothAttributes from '../../data/attributen-nachtvlinders.json';
+import grasshopperAttributes from '../../data/attributen-sprinkhanen.json';
+import hoverflyAttributes from '../../data/attributen-zweefvliegen.json';
 import aliasList from '../../data/bijnamen.json';
 import allSpeciesList from '../../data/soorten-nl-alle.json';
 import ebirdNames from '../../data/ebird-namen.json';
@@ -19,10 +25,18 @@ import { region, type Region } from './region';
 
 /**
  * Soortgroep van waarneming.nl: 1 vogels, 2 zoogdieren, 3 reptielen en
- * amfibieën, 4 dagvlinders, 5 libellen
+ * amfibieën, 4 dagvlinders, 5 libellen. Insecten (docs/plan-insecten.md):
+ * 16 kevers, 15 wantsen, 17 bijen, wespen en mieren, 8 nachtvlinders,
+ * 14 sprinkhanen en krekels, 18 vliegen en muggen (alleen zweefvliegen).
  */
-export type GroupId = 1 | 2 | 3 | 4 | 5;
+export type GroupId = 1 | 2 | 3 | 4 | 5 | InsectGroupId;
+export type InsectGroupId = 16 | 15 | 17 | 8 | 14 | 18;
 export const BIRDS: GroupId = 1;
+export const INSECT_GROUPS: readonly InsectGroupId[] = [16, 15, 17, 8, 14, 18];
+
+export function isInsectGroup(group: GroupId): group is InsectGroupId {
+  return (INSECT_GROUPS as readonly GroupId[]).includes(group);
+}
 
 export interface Species {
   id: number;
@@ -82,16 +96,51 @@ export function speciesListsFor(r: Region): { prompt: Species[]; all: Species[] 
 
 const lists = speciesListsFor(region);
 
-/** Soorten in de prompt van alle groepen; voorlopig gaan alleen de vogels naar het model */
-const promptSpeciesAllGroups = lists.prompt;
+/**
+ * Soorten in de prompt van alle groepen met de keuze 'soortgroepen', zonder
+ * insecten: die alleen met `insectsEnabled()` (`insectPromptSpecies`)
+ */
+const promptSpeciesAllGroups = lists.prompt.filter((s) => !isInsectGroup(s.group));
+
+/** Verzamelsoorten van de insecten in de prompt ("Kever onbekend", "Hommel onbekend") */
+const insectPromptSpecies = lists.prompt.filter((s) => isInsectGroup(s.group));
 
 /** Vogels in de prompt: het model kiest alleen hieruit */
 export const species = promptSpeciesAllGroups.filter((s) => s.group === BIRDS);
 const promptSpeciesIds = new Set(species.map((s) => s.id));
 
-/** Soorten van een andere groep die in de prompt kunnen (nog niet gebruikt) */
+/** Soorten van een andere groep die in de prompt kunnen */
 export function promptSpeciesOf(group: GroupId): Species[] {
-  return promptSpeciesAllGroups.filter((s) => s.group === group);
+  return lists.prompt.filter((s) => s.group === group);
+}
+
+// ---------------------------------------------------------------------------
+// Insecten (docs/plan-insecten.md, laag 1). In de prompt alleen verzamelsoorten
+// per groep; de volledige lijsten (ruim 4000 soorten) staan in
+// data/soorten-insecten.json, die src/lib/insects.ts pas laadt als het nodig
+// is en hier aanmeldt. Aan voor het model met `setInsectsEnabled` (ontwikkeloptie
+// `insecten` en de keuze 'soortgroepen').
+
+/** Een insect uit data/soorten-insecten.json, met de Engelse naam erbij */
+export interface InsectSpecies extends Species {
+  en?: string;
+}
+
+let insectsOn = false;
+let insectList: Species[] = [];
+
+/** Gaan de insecten naar het model en in het soortveld? */
+export function insectsEnabled(): boolean {
+  return insectsOn;
+}
+
+export function setInsectsEnabled(on: boolean): void {
+  insectsOn = on;
+}
+
+/** Zijn de volledige insectenlijsten geladen (namen op het scherm, opzoeken)? */
+export function insectsLoaded(): boolean {
+  return insectList.length > 0;
 }
 
 /** Alle soorten van alle groepen, ook zeer zeldzame: om een ID op te zoeken */
@@ -133,6 +182,8 @@ const byName = (list: Species[]) =>
 const promptSpeciesByName = byName(species);
 const promptSpeciesAllGroupsByName = byName(promptSpeciesAllGroups);
 const promptSpeciesAllGroupsIds = new Set(promptSpeciesAllGroups.map((s) => s.id));
+const insectPromptByName = byName(insectPromptSpecies);
+const insectPromptIds = new Set(insectPromptSpecies.map((s) => s.id));
 
 const englishNames: Record<string, string> = namesEn.species;
 
@@ -154,7 +205,9 @@ const byEnglishName = (list: Species[]) =>
     ...byName(list),
     ...list.flatMap((s) => englishNamesOf(s).map((n) => [n.toLowerCase(), s] as const)),
   ]);
-let englishMaps: { birds: Map<string, Species>; all: Map<string, Species> } | undefined;
+let englishMaps:
+  | { birds: Map<string, Species>; all: Map<string, Species>; insects: Map<string, Species> }
+  | undefined;
 
 /**
  * Soort uit de lijst in de prompt, op Nederlandse of wetenschappelijke naam
@@ -167,18 +220,27 @@ export function findPromptSpecies(
   language: Language = 'nl',
 ): Species | undefined {
   const key = name.trim().toLowerCase();
+  const insects = withGroups && insectsOn;
   if (language === 'en') {
     englishMaps ??= {
       birds: byEnglishName(species),
       all: byEnglishName(promptSpeciesAllGroups),
+      insects: byEnglishName(insectPromptSpecies),
     };
-    return (withGroups ? englishMaps.all : englishMaps.birds).get(key);
+    return (
+      (withGroups ? englishMaps.all : englishMaps.birds).get(key) ??
+      (insects ? englishMaps.insects.get(key) : undefined)
+    );
   }
-  return (withGroups ? promptSpeciesAllGroupsByName : promptSpeciesByName).get(key);
+  return (
+    (withGroups ? promptSpeciesAllGroupsByName : promptSpeciesByName).get(key) ??
+    (insects ? insectPromptByName.get(key) : undefined)
+  );
 }
 
 /** Mag het model deze soort kiezen? */
 export function isPromptSpecies(id: number, withGroups = false): boolean {
+  if (withGroups && insectsOn && insectPromptIds.has(id)) return true;
   return (withGroups ? promptSpeciesAllGroupsIds : promptSpeciesIds).has(id);
 }
 
@@ -338,6 +400,74 @@ function findVagrantKey(
     return undefined;
   }
   return best;
+}
+
+/**
+ * Namen waaronder een insect te vinden is: de naam, zonder wat tussen haakjes
+ * staat en zonder "onbekend" ("Goudhaantje (kever) onbekend" ook als
+ * "goudhaantje"), en de wetenschappelijke naam. In het Engels de Engelse naam.
+ */
+function insectKeys(s: Species, language: Language): string[] {
+  const name = language === 'en' ? (englishNames[s.id] ?? '') : s.name;
+  const short = name.replace(/\([^)]*\)/g, ' ').replace(/\b(onbekend|unknown)\b/gi, ' ');
+  return [...new Set([name, short, s.scientific].map(normalizeName).filter(Boolean))];
+}
+
+const insectIndexes = new Map<string, { key: string; s: Species }[]>();
+
+/**
+ * Meldt de volledige insectenlijsten aan (src/lib/insects.ts): hun namen op het
+ * scherm en in de export, het soortveld en het opzoeken met `findInsect`.
+ */
+export function registerInsects(list: InsectSpecies[]): void {
+  insectList = list.map(({ en, ...s }) => {
+    if (en) englishNames[s.id] ??= en;
+    speciesById.set(s.id, s);
+    return s;
+  });
+  insectIndexes.clear();
+  selectable = undefined;
+}
+
+/**
+ * Insect bij een gezegde naam, binnen één groep (die van de verzamelsoort die
+ * het model koos: "Kever onbekend" zoekt bij de kevers). Net als bij
+ * dwaalgasten met een paar letters speling en in het enkelvoud; niets als twee
+ * soorten even goed passen. Ook de verzamelsoorten van de groep tellen mee.
+ */
+export function findInsect(
+  name: string,
+  group: GroupId,
+  language: Language = 'nl',
+): Species | undefined {
+  const said = normalizeName(name);
+  if (!said || !isInsectGroup(group)) return undefined;
+  const indexKey = `${language}:${group}`;
+  let index = insectIndexes.get(indexKey);
+  if (!index) {
+    const inGroup = [...insectPromptSpecies, ...insectList].filter((s) => s.group === group);
+    index = inGroup.flatMap((s) => insectKeys(s, language).map((key) => ({ key, s })));
+    insectIndexes.set(indexKey, index);
+  }
+  const forms = language === 'en' ? englishSingulars(said) : singulars(said);
+  for (const form of new Set([said, ...forms])) {
+    const max = allowedTypos(form.length);
+    let best: Species | undefined;
+    let bestDistance = max + 1;
+    let tie = false;
+    for (const { key, s } of index) {
+      const d = editDistance(form, key, max);
+      if (d < bestDistance) {
+        best = s;
+        bestDistance = d;
+        tie = false;
+      } else if (d === bestDistance && best && s.id !== best.id) {
+        tie = true;
+      }
+    }
+    if (best && !tie) return best;
+  }
+  return undefined;
 }
 
 /**
@@ -559,9 +689,115 @@ const GROUPS: Record<GroupId, Group> = {
       { activity: 45, method: 198 },
     ),
   },
+  // Insecten (docs/plan-insecten.md): wat je zonder net of val ziet
+  16: {
+    id: 16,
+    name: 'Kevers',
+    codes: groupCodes(
+      beetleAttributes,
+      {
+        // ter plaatse, foeragerend, in copula, eileggend, zonnend, vliegend, op
+        // licht, dood, slachtoffer verkeer
+        activities: [94, 3188, 3023, 3024, 3218, 3220, 3027, 3030, 3029],
+        // gezien, gehoord
+        methods: [473, 474],
+        // imago, larve/nimf, pop, ei
+        lifeStages: [1042, 1048, 1089, 1041],
+      },
+      { activity: 94, method: 473 },
+    ),
+  },
+  15: {
+    id: 15,
+    name: 'Wantsen, cicaden en plantenluizen',
+    codes: groupCodes(
+      bugAttributes,
+      {
+        // ter plaatse, foeragerend, in copula, eileggend, zonnend, op licht,
+        // dood, slachtoffer verkeer
+        activities: [98, 3187, 3013, 3014, 3236, 3017, 3020, 3019],
+        // gezien, gehoord, gehoord en gezien
+        methods: [448, 449, 450],
+        // imago, larve/nimf, ei
+        lifeStages: [1028, 1034, 1027],
+      },
+      { activity: 98, method: 448 },
+    ),
+  },
+  17: {
+    id: 17,
+    name: 'Bijen, wespen en mieren',
+    codes: groupCodes(
+      beeAttributes,
+      {
+        // ter plaatse, foeragerend, in copula, nest, nestbouw, overvliegend,
+        // zonnend, dood, slachtoffer verkeer
+        activities: [95, 3185, 3033, 3036, 3241, 3276, 3239, 3040, 3039],
+        // gezien
+        methods: [498],
+        // imago, koningin, werkster, larve/nimf
+        lifeStages: [1056, 1060, 1061, 1062],
+      },
+      { activity: 95, method: 498 },
+    ),
+  },
+  8: {
+    id: 8,
+    name: 'Nachtvlinders',
+    codes: groupCodes(
+      mothAttributes,
+      {
+        // ter plaatse, overvliegend, foeragerend, in copula, op licht, rustend,
+        // eileggend, dood, spinselnest
+        activities: [82, 3203, 3182, 84, 90, 3205, 85, 83, 3133],
+        // gezien
+        methods: [273],
+        // imago, rups, pop, ei
+        lifeStages: [103, 101, 102, 106],
+      },
+      { activity: 82, method: 273 },
+    ),
+  },
+  14: {
+    id: 14,
+    name: 'Sprinkhanen en krekels',
+    codes: groupCodes(
+      grasshopperAttributes,
+      {
+        // ter plaatse, baltsend / zingend, in copula, eileggend, zonnend, dood
+        activities: [97, 3001, 3004, 3005, 3223, 3007],
+        // gezien, gehoord, gezien en gehoord, batdetector
+        methods: [423, 424, 426, 419],
+        // imago, larve/nimf
+        lifeStages: [1014, 1020],
+      },
+      { activity: 97, method: 423 },
+    ),
+  },
+  18: {
+    id: 18,
+    name: 'Zweefvliegen',
+    codes: groupCodes(
+      hoverflyAttributes,
+      {
+        // ter plaatse, foeragerend, in copula, eileggend, zonnend, dood,
+        // slachtoffer raambotsing
+        activities: [96, 3186, 3043, 3044, 3227, 3050, 3228],
+        // gezien
+        methods: [523],
+        // imago, larve/nimf
+        lifeStages: [1070, 1076],
+      },
+      { activity: 96, method: 523 },
+    ),
+  },
 };
 
-export const groups: Group[] = Object.values(GROUPS);
+/** Groepen zonder insecten: vogels en de andere dieren van de keuze 'soortgroepen' */
+export const groups: Group[] = Object.values(GROUPS).filter((g) => !isInsectGroup(g.id));
+
+/** Insectengroepen, in de volgorde van INSECT_GROUPS */
+export const insectGroups: Group[] = INSECT_GROUPS.map((id) => GROUPS[id]);
 
 export function getGroup(id: GroupId): Group {
   return GROUPS[id];
@@ -616,6 +852,12 @@ const ATTRIBUTE_FILES: Record<GroupId, string> = {
   3: 'reptielen-amfibieen',
   4: 'dagvlinders',
   5: 'libellen',
+  16: 'kevers',
+  15: 'wantsen',
+  17: 'bijen-wespen-mieren',
+  8: 'nachtvlinders',
+  14: 'sprinkhanen',
+  18: 'zweefvliegen',
 };
 
 /**
@@ -741,13 +983,25 @@ export function groupLabel(speciesId: number): string | undefined {
   return group === BIRDS ? undefined : groupName(group).toLowerCase();
 }
 
+let selectable: { insects: boolean; list: Species[] } | undefined;
+
 /**
  * Soorten voor de soortkeuze in het formulier: vogels, en met de andere
- * groepen (ontwikkeloptie) ook zoogdieren, reptielen en amfibieën,
- * dagvlinders en libellen
+ * groepen ook zoogdieren, reptielen en amfibieën, dagvlinders en libellen.
+ * Insecten alleen met `insectsEnabled()`, dan ook de volledige lijsten (als
+ * ze geladen zijn).
  */
 export function selectableSpecies(withGroups: boolean): Species[] {
-  return withGroups ? allSpeciesAllGroups : allSpecies;
+  if (!withGroups) return allSpecies;
+  if (selectable?.insects !== insectsOn) {
+    selectable = {
+      insects: insectsOn,
+      list: insectsOn
+        ? [...allSpeciesAllGroups, ...insectList]
+        : allSpeciesAllGroups.filter((s) => !isInsectGroup(s.group)),
+    };
+  }
+  return selectable.list;
 }
 
 /** Kleine letters en zonder accenten, voor het zoeken: "gele kwikstaart" */
@@ -893,5 +1147,6 @@ const FIELD_LISTS = {
  * korte lijsten van de groepen hebben geen ID's gemeen (een test bewaakt dat).
  */
 export function groupOfCode(field: keyof GroupFields, id: number): GroupId | undefined {
-  return groups.find((g) => g.codes[FIELD_LISTS[field]].some((c) => c.id === id))?.id;
+  return Object.values(GROUPS).find((g) => g.codes[FIELD_LISTS[field]].some((c) => c.id === id))
+    ?.id;
 }

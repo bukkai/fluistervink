@@ -1,0 +1,184 @@
+{
+ "activity": [
+  {
+   "id": 82,
+   "name": "ter plaatse"
+  },
+  {
+   "id": 3203,
+   "name": "overvliegend"
+  },
+  {
+   "id": 3182,
+   "name": "foeragerend"
+  },
+  {
+   "id": 2006,
+   "name": "overwinterend"
+  },
+  {
+   "id": 84,
+   "name": "in copula"
+  },
+  {
+   "id": 90,
+   "name": "op licht"
+  },
+  {
+   "id": 3205,
+   "name": "rustend"
+  },
+  {
+   "id": 85,
+   "name": "eileggend"
+  },
+  {
+   "id": 83,
+   "name": "dood"
+  },
+  {
+   "id": 3173,
+   "name": "verplaatst van locatie"
+  },
+  {
+   "id": 2008,
+   "name": "slachtoffer verkeer"
+  },
+  {
+   "id": 3133,
+   "name": "spinselnest"
+  },
+  {
+   "id": 3204,
+   "name": "geparasiteerd"
+  },
+  {
+   "id": 3283,
+   "name": "op windmolen"
+  }
+ ],
+ "method": [
+  {
+   "id": 272,
+   "name": "onbekend"
+  },
+  {
+   "id": 273,
+   "name": "gezien"
+  },
+  {
+   "id": 252,
+   "name": "gevangen"
+  },
+  {
+   "id": 643,
+   "name": "lichtval"
+  },
+  {
+   "id": 644,
+   "name": "malaiseval"
+  },
+  {
+   "id": 645,
+   "name": "andere val"
+  },
+  {
+   "id": 646,
+   "name": "op smeer"
+  },
+  {
+   "id": 647,
+   "name": "op feromonen"
+  },
+  {
+   "id": 648,
+   "name": "opgekweekt"
+  },
+  {
+   "id": 649,
+   "name": "uitgekweekt en losgelaten"
+  },
+  {
+   "id": 650,
+   "name": "handvangst en in collectie"
+  },
+  {
+   "id": 651,
+   "name": "handvangst en losgelaten"
+  },
+  {
+   "id": 268,
+   "name": "microscopisch onderzocht"
+  },
+  {
+   "id": 652,
+   "name": "zichtwaarneming zaklamp"
+  },
+  {
+   "id": 653,
+   "name": "binnenshuis"
+  },
+  {
+   "id": 654,
+   "name": "sporen"
+  },
+  {
+   "id": 655,
+   "name": "dood exemplaar in collectie"
+  },
+  {
+   "id": 794,
+   "name": "Led emmer"
+  },
+  {
+   "id": 776,
+   "name": "op laken"
+  },
+  {
+   "id": 818,
+   "name": "translocatie"
+  }
+ ],
+ "life_stage": [
+  {
+   "id": 92,
+   "name": "onbekend"
+  },
+  {
+   "id": 103,
+   "name": "imago"
+  },
+  {
+   "id": 101,
+   "name": "rups"
+  },
+  {
+   "id": 102,
+   "name": "pop"
+  },
+  {
+   "id": 105,
+   "name": "zak/koker"
+  },
+  {
+   "id": 106,
+   "name": "ei"
+  },
+  {
+   "id": 108,
+   "name": "mijn"
+  },
+  {
+   "id": 1174,
+   "name": "exuviae"
+  },
+  {
+   "id": 1007,
+   "name": "gal"
+  },
+  {
+   "id": 1139,
+   "name": "cocon"
+  }
+ ]
+}
