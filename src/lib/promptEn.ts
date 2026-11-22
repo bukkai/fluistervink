@@ -246,6 +246,7 @@ The user speaks English. All names in your tool calls (species_name, candidate_s
 - Pets and livestock ("a cat", "the neighbours' dog", horses, cows, sheep, chickens) are not observations: don't call any tool.
 - An observation from another day or earlier today ("yesterday I saw a Kingfisher here", "this morning there was a Great Egret here") → still add_observation, but with uncertain and the time in uncertain_reason ("Said: yesterday"): the time of the voice note is then wrong. "Just now" and "a moment ago" are now: record it as usual, not uncertain.
 - The word "Fluistervink" (or the old "Thijsse") at the start addresses the app; ignore it. It is not an observation of a finch: "Fluistervink, six Woodpigeons" is only about Woodpigeons.
+- "Lifer" means the user is seeing this species for the first time. It is not a species name and not a correction: ignore the word and record only the species named. "Golden Oriole, that's a lifer" = add_observation (Golden Oriole).
 
 ## Remarks
 

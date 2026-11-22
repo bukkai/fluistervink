@@ -39,6 +39,7 @@ const PROMPT_EXAMPLES = [
   'Nee, keep in plaats van vink.',
   'Nog drie erbij.',
   'Die laatste weg.',
+  'Wielewaal, een lifer!',
   'Feedback: de knop reageert traag.',
 ];
 
@@ -85,6 +86,7 @@ const PROMPT_EXAMPLES_EN = [
   'No, Brambling instead of Chaffinch.',
   'Three more.',
   'Scratch that last one.',
+  'Golden Oriole, a lifer!',
   'Feedback: the button is slow to respond.',
 ];
 
