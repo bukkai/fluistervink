@@ -174,6 +174,8 @@ export async function exportForWaarneming(sessions: Session[]): Promise<string |
   }
   await markExported(result.sessions, result.exported);
   const n = result.exported.length;
+  // Verborgen of op 5 km: gaat als afgeschermd (1) mee, de rest op de site zelf
+  const stricter = result.exported.filter((obs) => (obs.obscurity ?? 0) > 1).length;
   const sessionCount = result.sessions.length;
   return [
     sessionCount > 1
@@ -182,6 +184,7 @@ export async function exportForWaarneming(sessions: Session[]): Promise<string |
     saved.folder && t('export.savedIn', { folder: saved.folder }),
     result.skipped.length && t('export.skippedNoLocation', { n: result.skipped.length }),
     result.excluded.length && t('export.excluded', { n: result.excluded.length }),
+    stricter && t('export.obscurityLater', { n: stricter }),
   ]
     .filter(Boolean)
     .join(' ');
@@ -211,8 +214,11 @@ function toRow(obs: Observation): Row {
     // Waarneming.nl weigert een import met een uuid die al bestaat: zo kan
     // dezelfde waarneming niet twee keer worden ingevoerd
     uuid: obs.id,
-    // Het ID uit hun lijst (geen tekst, anders dan gedrag e.d.); leeg = openbaar
-    obscurity: obs.obscurity ? String(obs.obscurity) : '',
+    // De bulkimport neemt alleen 0 of 1 ("moet een keuze zijn uit 0, 1", proef
+    // 22 nov), ook al kent de API 1, 5 en 9. Afgeschermd gaat dus altijd als 1;
+    // 5 km of verborgen zet de gebruiker daarna op waarneming.nl (melding bij
+    // het exporteren). Leeg = openbaar.
+    obscurity: obs.obscurity ? '1' : '',
     'embargo date': obs.embargoUntil ?? '',
   };
 }

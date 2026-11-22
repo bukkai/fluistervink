@@ -32,6 +32,8 @@ Nog niet bekend (de API-documentatie zit achter een botcheck):
 
 Na het bouwen een proefimport met één afgeschermde waarneming en één met embargo.
 
+**Proefimport 22 nov:** de bulkimport weigert 5 en 9 ("obscurity: '9' moet een keuze zijn uit 0, 1"). De export zet elke afscherming daarom op 1 en meldt hoeveel waarnemingen je na het importeren op de site zelf strenger moet zetten. Nog na te gaan: wat 1 op de site betekent (vervaagd tot 1 km, of iets anders), en of de embargodatum goed binnenkomt.
+
 ## Voorstel
 
 ### Datamodel

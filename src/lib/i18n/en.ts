@@ -673,6 +673,11 @@ export const en: Dictionary = {
   'export.continue': 'Export anyway?',
   'export.saveFailed': 'Couldn’t save: {error}',
   'export.savedIn': 'The file is in {folder}.',
+  'export.obscurityLater': {
+    one: '1 observation was to be hidden or blurred to 5 km: the waarneming.nl import only knows "obscured". Set it there yourself after importing.',
+    other:
+      '{n} observations were to be hidden or blurred to 5 km: the waarneming.nl import only knows "obscured". Set them there yourself after importing.',
+  },
   'export.excluded': '{n} unticked and not exported.',
   'export.noneWithLocation': 'No observations with a location to export.',
   'export.uncertain': {
