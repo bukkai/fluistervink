@@ -288,7 +288,7 @@ export const en: Dictionary = {
   'session.tuintelStart': 'Start counting',
   'session.tuintelResume': 'Listen again',
   'session.tuintelStartHint':
-    'The microphone stays on for half an hour. Say what you see, like "three Great Tits now".',
+    'The microphone stays on for half an hour. Say what you see, like "three Great Tits now". Turn off the radio or TV for a moment: the app hears everything that is said.',
   'session.tuintelResumeHint': 'The half hour keeps running.',
   'session.typePlaceholder': 'Or type: six Woodpigeons flying over',
   'session.typeLabel': 'Type what you saw',

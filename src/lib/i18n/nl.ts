@@ -283,7 +283,7 @@ export const nl = {
   'session.tuintelStart': 'Begin met tellen',
   'session.tuintelResume': 'Verder luisteren',
   'session.tuintelStartHint':
-    'De microfoon blijft een half uur aan. Noem wat je ziet, zoals "nu drie koolmezen".',
+    'De microfoon blijft een half uur aan. Noem wat je ziet, zoals "nu drie koolmezen". Zet radio of tv even uit: de app hoort alles wat er gezegd wordt.',
   'session.tuintelResumeHint': 'Het half uur loopt door.',
   'session.typePlaceholder': 'Of typ: zes overvliegende houtduiven',
   'session.typeLabel': 'Uitspraak typen',
