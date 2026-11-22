@@ -510,6 +510,10 @@ export const en: Dictionary = {
   // Met een zacht afbreekstreepje voor een heel smalle telefoon
   'past.observations': 'Obser­vations',
   'past.uncertainCount': '{n} uncertain',
+  'past.tuintelExportTitle': 'Also submit to waarneming.nl or eBird?',
+  'past.tuintelExportText':
+    'Then your garden birds also count towards the distribution maps, all year round. You don’t have to.',
+  'past.tuintelExportOpen': 'Show me how',
   'past.readyTitle': 'Finished reviewing?',
   'past.exportedOn': 'Exported on {date} at {time}.',
   'past.isReady': 'This session is ready. Export all ready sessions in one go under Sessions.',

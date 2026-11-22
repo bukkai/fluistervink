@@ -3,7 +3,13 @@
   import { dayFormat, timeFormat } from './format';
   import { liveQuery } from 'dexie';
   import type { Session } from './db';
-  import { countPerSession, deleteSessions, formatDuration, isFiledAway } from './sessions';
+  import {
+    countPerSession,
+    deleteSessions,
+    formatDuration,
+    isFiledAway,
+    notForExport,
+  } from './sessions';
   import { EBIRD_IMPORT_URL, exportForEbird, pendingForEbird, setChecklist } from './ebirdExport';
   import { preferenceOn, preferenceSince } from './preferences';
   import { IMPORT_URL, exportForWaarneming, readyForExport } from './waarnemingExport';
@@ -311,7 +317,7 @@
           >
         {:else if session.readyAt}
           <span class="badge ready">{t('sessions.badgeReady')}</span>
-        {:else if !session.ebirdExportedAt}
+        {:else if !session.ebirdExportedAt && !notForExport(session)}
           <span class="badge">{t('sessions.badgeNotExported')}</span>
         {/if}
         {#if ebird && session.ebirdExportedAt}

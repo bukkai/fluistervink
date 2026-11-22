@@ -2,9 +2,11 @@
 // een week klaar zonder export, of een week gestopt zonder dat ze zijn
 // nagelopen, dan een melding op het hoofdscherm. Alles staat alleen op de
 // telefoon; wat niet bij waarneming.nl staat, gaat verloren met de telefoon.
+// Een tuintelling niet: die hoeft niet naar waarneming.nl (notForExport).
 
 import type { Session } from './db';
 import { t } from './i18n';
+import { notForExport } from './sessions';
 
 export const REMIND_AFTER_MS = 7 * 24 * 60 * 60_000;
 /** "Later": zo lang geen melding */
@@ -28,7 +30,8 @@ export function exportReminder(
   const old = (time: number | undefined) => time !== undefined && now - time >= REMIND_AFTER_MS;
   const ready = sessions.filter((s) => s.readyAt && !s.exportedAt && old(s.readyAt)).length;
   const unreviewed = sessions.filter(
-    (s) => s.status === 'ended' && !s.readyAt && !s.exportedAt && old(s.endedAt),
+    (s) =>
+      s.status === 'ended' && !s.readyAt && !s.exportedAt && !notForExport(s) && old(s.endedAt),
   ).length;
   return ready || unreviewed ? { ready, unreviewed } : undefined;
 }

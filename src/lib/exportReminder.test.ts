@@ -45,6 +45,14 @@ describe('herinnering aan de export', () => {
     );
   });
 
+  it('een tuintelling herinnert alleen als hij klaargezet is', () => {
+    const sessions = [
+      session({ tuintelling: true, endedAt: NOW - 10 * DAY }),
+      session({ tuintelling: true, readyAt: NOW - 10 * DAY }),
+    ];
+    expect(exportReminder(sessions, NOW)).toEqual({ ready: 1, unreviewed: 0 });
+  });
+
   it('"Later" houdt hem drie dagen weg', () => {
     const sessions = [session({ readyAt: NOW - 10 * DAY })];
     expect(exportReminder(sessions, NOW, NOW - DAY)).toBeUndefined();

@@ -502,6 +502,10 @@ export const nl = {
   // Met een zacht afbreekstreepje voor een heel smalle telefoon
   'past.observations': 'Waarne\u00ADmingen',
   'past.uncertainCount': '{n} onzeker',
+  'past.tuintelExportTitle': 'Ook doorgeven aan waarneming.nl of eBird?',
+  'past.tuintelExportText':
+    'Dan tellen je tuinvogels ook mee in de verspreidingskaarten, het hele jaar door. Het hoeft niet.',
+  'past.tuintelExportOpen': 'Laat zien hoe',
   'past.readyTitle': 'Klaar met nalopen?',
   'past.exportedOn': 'Geëxporteerd op {date} om {time}.',
   'past.isReady':

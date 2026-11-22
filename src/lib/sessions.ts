@@ -195,6 +195,8 @@ export const FILED_AWAY_AFTER_MS = 7 * 24 * 60 * 60_000;
  * of met eBird aan alleen naar eBird) en niets meer open voor eBird. Die gaan
  * bij Vorige sessies in een ingeklapt blok. De week telt vanaf de laatste
  * export, zodat een sessie niet wegklapt op het moment dat je hem exporteert.
+ * Een tuintelling hoeft niet naar waarneming.nl: die klapt een week na het
+ * stoppen weg, tenzij hij klaargezet is.
  */
 export function isFiledAway(
   session: Session,
@@ -203,6 +205,19 @@ export function isFiledAway(
   now = Date.now(),
 ): boolean {
   if (session.status !== 'ended' || ebirdPending.has(session.id)) return false;
+  if (notForExport(session))
+    return (session.endedAt ?? session.startedAt) < now - FILED_AWAY_AFTER_MS;
   const exportedAt = Math.max(session.exportedAt ?? 0, ebird ? (session.ebirdExportedAt ?? 0) : 0);
   return exportedAt > 0 && exportedAt < now - FILED_AWAY_AFTER_MS;
+}
+
+/**
+ * Een tuintelling die niemand naar waarneming.nl of eBird heeft gestuurd of
+ * klaargezet: die vraagt geen aandacht (geen herinnering, geen "niet
+ * geëxporteerd"). De meeste tuintellers exporteren niet.
+ */
+export function notForExport(session: Session): boolean {
+  return (
+    !!session.tuintelling && !session.readyAt && !session.exportedAt && !session.ebirdExportedAt
+  );
 }
