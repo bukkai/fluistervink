@@ -43,6 +43,9 @@ export const en: Dictionary = {
   'app.stop': 'Stop',
   'app.confirmStop': 'Stop the session?',
   'app.tuintelLeft': 'Garden count, {time} to go',
+  'app.tuintelBefore': 'Garden count: the half hour starts when you start counting',
+  'app.tuintelAfter': 'Forgot something? Say it and tap Done',
+  'app.tuintelDone': 'Done',
 
   // Startscherm
   'home.title': 'Ready to go birding?',
@@ -282,6 +285,11 @@ export const en: Dictionary = {
   'session.gpsUnavailable': 'Location isn’t available on this device.',
   'session.micStarting': 'Turning on the microphone…',
   'session.trektelStart': 'Start migration count',
+  'session.tuintelStart': 'Start counting',
+  'session.tuintelResume': 'Listen again',
+  'session.tuintelStartHint':
+    'The microphone stays on for half an hour. Say what you see, like "three Great Tits now".',
+  'session.tuintelResumeHint': 'The half hour keeps running.',
   'session.typePlaceholder': 'Or type: six Woodpigeons flying over',
   'session.typeLabel': 'Type what you saw',
   'session.submit': 'Process',
@@ -481,6 +489,9 @@ export const en: Dictionary = {
   'tuintel.copyHeader': 'Garden count {date}, started at {time}',
   'tuintel.copyExtra': 'Add yourself:',
   'tuintel.open': 'Open the count form',
+  'tuintel.forgotTitle': 'Forgot something?',
+  'tuintel.forgotText': "Saw a bird you didn't mention? Say it now and it still counts.",
+  'tuintel.forgotButton': 'Add something',
 
   'past.savedTitle': '✓ Session saved',
   'past.savedText':

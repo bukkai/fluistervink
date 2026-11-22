@@ -1,11 +1,12 @@
-import type { Observation, Session } from './db';
+import { db, type Observation, type Session } from './db';
 import { BIRDS, activityName, getSpecies, groupOf, speciesLabel } from './vocab';
-import { sessionDurationMs } from './effort';
 
 // Tuintelling voor de Nationale Tuinvogeltelling van Vogelbescherming
 // (docs/plan-tuintelling.md). Een gewone sessie met een vlag: je telt een half
-// uur, en daarna rekent de app per soort het hoogste aantal uit dat je in één
-// keer noemde. Dat geef je zelf door bij Vogelbescherming; de app stuurt hun
+// uur in de trektelstand (de microfoon blijft aan), en daarna rekent de app per
+// soort het hoogste aantal uit dat je in één keer noemde. Het half uur begint
+// pas als je begint met tellen, niet bij het starten van de sessie: wie de
+// telefoon klaarzet, begint vaak pas bij de eerste vogel (feedback 22 nov). Dat geef je zelf door bij Vogelbescherming; de app stuurt hun
 // niets (ze hebben geen import of API). De waarnemingen zelf blijven gewoon
 // staan, dus nalopen en de export naar waarneming.nl werken zoals altijd.
 
@@ -75,9 +76,48 @@ export interface TuintelResult {
   flyovers: TuintelLine[];
 }
 
-/** Hoe lang de tuintelling nog duurt (negatief: voorbij), zonder de pauzes */
-export function tuintelLeftMs(session: Session, now = Date.now()): number {
-  return TUINTEL_MS - sessionDurationMs(session, now);
+/** Begin van het tellen; bij sessies van vóór 22 nov de start van de sessie */
+export function tuintelStart(session: Session): number | undefined {
+  if (!session.tuintelling) return undefined;
+  if (session.tuintelStartedAt !== undefined) return session.tuintelStartedAt;
+  const older = session.status === 'ended' || session.resumedAt !== undefined;
+  return older ? session.startedAt : undefined;
+}
+
+/**
+ * Hoe lang de tuintelling nog duurt (negatief: voorbij), op de klok: het half
+ * uur van Vogelbescherming loopt ook door als je even stopt met luisteren.
+ * Leeg zolang het tellen nog niet begonnen is.
+ */
+export function tuintelLeftMs(session: Session, now = Date.now()): number | undefined {
+  const start = tuintelStart(session);
+  return start === undefined ? undefined : TUINTEL_MS - (now - start);
+}
+
+/**
+ * Waar een tuintelsessie is: nog niet begonnen met tellen, aan het tellen,
+ * of na afloop voortgezet om nog iets in te spreken dat je vergat ("nog iets
+ * vergeten?"). Leeg bij een gewone sessie.
+ */
+export function tuintelPhase(
+  session: Session,
+  now = Date.now(),
+): 'before' | 'counting' | 'after' | undefined {
+  const start = tuintelStart(session);
+  if (!session.tuintelling) return undefined;
+  if (start === undefined) return 'before';
+  const end = start + TUINTEL_MS;
+  if (session.resumedAt !== undefined && session.resumedAt >= end) return 'after';
+  return now < end ? 'counting' : 'after';
+}
+
+/** Het tellen begint: het half uur gaat lopen (één keer per sessie) */
+export async function startTuintelCount(sessionId: string, at = Date.now()): Promise<void> {
+  await db.transaction('rw', db.sessions, async () => {
+    const session = await db.sessions.get(sessionId);
+    if (!session?.tuintelling || session.tuintelStartedAt !== undefined) return;
+    await db.sessions.update(sessionId, { tuintelStartedAt: at });
+  });
 }
 
 function isFlyover(obs: Observation): boolean {

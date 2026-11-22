@@ -208,7 +208,7 @@
      verschillende aantallen per soort op het scherm -->
 {#if session.tuintelling}
   {#if $observations}
-    <TuintelResult {session} observations={$observations} />
+    <TuintelResult {session} observations={$observations} {resumable} />
   {/if}
 {:else}
   <SessionSummary {session} observationCount={$observations?.length ?? 0} />
@@ -291,7 +291,8 @@
 
 <!-- Knoppen in plaats van linkjes: ook met dikke vingers of handschoenen te raken -->
 <div class="footer actions">
-  {#if resumable}
+  <!-- Bij een tuintelling staat "Nog iets inspreken" al in het resultaat -->
+  {#if resumable && !session.tuintelling}
     <button class="btn secondary block" onclick={resume}>{t('past.resume')}</button>
   {/if}
   {#if $recordings?.count}

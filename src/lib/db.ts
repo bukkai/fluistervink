@@ -73,6 +73,8 @@ export interface Session {
    * soort het hoogste aantal voor de Nationale Tuinvogeltelling
    */
   tuintelling?: true;
+  /** Tuintelling: begin van het tellen (de eerste keer luisteren); daar loopt het half uur vanaf */
+  tuintelStartedAt?: number;
 }
 
 /**
