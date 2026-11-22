@@ -99,7 +99,7 @@ Voorwaarde: Fluistervink staat half januari openbaar in Play. Lukt dat niet, dan
 ### Na de telling
 
 - Een terugblik: hoeveel tellers met Fluistervink, de meest getelde soort, iets opvallends; alleen totalen (punt 15).
-- Een uitnodiging in de app na de telling: "Probeer het ook eens op een wandeling". Zo wordt de tuintelling een instap en geen eenmalig gebruik.
+- Een uitnodiging in de app na de telling: "Probeer het ook eens op een wandeling", of: blijf tellen in je tuin met de Jaarrond Tuintelling (`docs/plan-jaarrond-tuintelling.md`). Zo wordt de tuintelling een instap en geen eenmalig gebruik.
 - Meten wat bleef hangen: hoeveel installaties van het telweekend in februari nog een sessie starten (Statistieken, alleen totalen).
 
 ## Wat niet

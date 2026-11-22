@@ -32,6 +32,7 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 | Plan | Status |
 | --- | --- |
 | `plan-andere-landen.md` | soortenlijsten van andere landen en namen in andere talen; uitgewerkt 20 nov, eerst West-Europa; proef Spanje gedaan |
+| `plan-jaarrond-tuintelling.md` | de tuintelmodus ook voor de Jaarrond Tuintelling van Sovon (vrije duur, overvliegers mee); voorstel 22 nov, na de tuintelling van januari |
 | `plan-ios.md` | iPhone-app; voorstel, na de lancering |
 
 **Afgerond, naslag:**
