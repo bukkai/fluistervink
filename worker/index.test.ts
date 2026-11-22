@@ -508,8 +508,8 @@ describe('/api/messages (Anthropic)', () => {
     }
     const body = { model: 'claude-haiku-5-5', max_tokens: 10, messages: [] };
 
-    it('weigert boven de 1500 verzoeken vandaag, met een eigen code', async () => {
-      await asked(1500);
+    it('weigert boven de 500 verzoeken vandaag, met een eigen code', async () => {
+      await asked(500);
       const response = await post(body);
       expect(response.status).toBe(429);
       expect(await response.json()).toMatchObject({ code: 'message_limit' });
@@ -517,7 +517,7 @@ describe('/api/messages (Anthropic)', () => {
     });
 
     it('laat net onder het plafond nog door, en telt gisteren niet mee', async () => {
-      await asked(1499);
+      await asked(499);
       await asked(10, ANNA, new Date('2000-01-01T12:00:00Z'));
       upstream.mockResolvedValue(Response.json(message));
       expect((await post(body)).status).toBe(200);

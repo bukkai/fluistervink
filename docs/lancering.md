@@ -64,7 +64,7 @@ Daaruit maken we: Android-pictogram (`android/app/src/main/res/mipmap-*`, adapti
 
 ## 5. Productie
 
-- [ ] Vóór de productierelease: daglimiet van het model per installatie naar 500 per dag (voorstel, `docs/plan-marketing.md`, Kostengrens per stap).
+- [x] Vóór de productierelease: daglimiet van het model per installatie naar 500 per dag (22 nov, `docs/plan-marketing.md`, Kostengrens per stap).
 - [ ] Productietoegang aanvragen in de Play Console (na 14 dagen, als het dashboard het toestaat).
 - [ ] Na goedkeuring: de stabiele AAB naar **Productie**. Bij het maken van die release de landen kiezen: Nederland en België. De beta blijft in de interne test.
 - [ ] Zodra de app openbaar in Play staat: op de voorpagina (`index.html`) de zin onder "Open de app" wordt "Werkt in de browser van je telefoon. Op Android ook als app: Fluistervink in Google Play", met een link naar `https://play.google.com/store/apps/details?id=nl.hegmus.fluistervink` (eerder als draft #333, gesloten op 22 nov). Daarvóór geeft die link wie geen tester is een "niet gevonden". Tot dan gaan nieuwe testers met de hand op de e-maillijst van de gesloten test.
