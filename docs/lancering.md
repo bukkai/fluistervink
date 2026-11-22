@@ -69,5 +69,6 @@ Daaruit maken we: Android-pictogram (`android/app/src/main/res/mipmap-*`, adapti
 - [ ] Zodra de app openbaar in Play staat: op de voorpagina (`index.html`) de zin onder "Open de app" wordt "Werkt in de browser van je telefoon. Op Android ook als app: Fluistervink in Google Play", met een link naar `https://play.google.com/store/apps/details?id=nl.hegmus.fluistervink` (eerder als draft #333, gesloten op 22 nov). Daarvóór geeft die link wie geen tester is een "niet gevonden". Tot dan gaan nieuwe testers met de hand op de e-maillijst van de gesloten test.
 - [ ] `#uitleg` en `#privacy` nalopen op "test"-taal; `CLAUDE.md` en `NOTES.md` bijwerken. Nagelopen op 18 nov: beide schoon (alleen de gesproken bevestiging heet er een proef, en dat is hij nog). Besloten 21 nov: "(proef)" bij Trektelmodus eraf (gesproken bevestiging blijft een proef); "nog in ontwikkeling" in de vraag om te delen (welkom en startscherm) blijft tijdens de test en verandert vóór de productierelease.
 - [ ] De eerste weken Statistieken en Kosten op Developer volgen.
+- [ ] Bekendheid geven in stappen, eerst in eigen kring: `docs/plan-marketing.md`.
 
 Later, niet nodig voor de lancering: automatisch uploaden vanuit de workflow.
