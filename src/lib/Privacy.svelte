@@ -127,9 +127,11 @@
       maakte, je correcties, je feedback, het logboek en de locaties van je waarnemingen naar de
       ontwikkelaar; opnames alleen als je dat bij <a href="{app}#instellingen">Instellingen</a>
       aanzet. Feedback die je buiten een sessie typt, gaat meteen, met het logboek van het half uur ervoor.
-      Het staat bij Cloudflare onder de naam van je installatie. Alleen de ontwikkelaar leest het, om
-      de app te verbeteren, en geeft het niet door. Het blijft tot je vraagt het te wissen (via feedback
-      of <a href="mailto:{CONTACT}">{CONTACT}</a>).
+      Spreek geen persoonsgegevens in, zoals je naam, adres of BSN. Lange cijferreeksen (zoals een BSN,
+      telefoon- of rekeningnummer) en e-mailadressen laat de app weg voor het gedeeld wordt, en de opname
+      daarvan ook; op je telefoon blijven ze staan. Het staat bij Cloudflare onder de naam van je installatie.
+      Alleen de ontwikkelaar leest het, om de app te verbeteren, en geeft het niet door. Het blijft tot
+      je vraagt het te wissen (via feedback of <a href="mailto:{CONTACT}">{CONTACT}</a>).
     </p>
   </div>
 </section>

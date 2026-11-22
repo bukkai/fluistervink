@@ -36,6 +36,9 @@ export const CHANGELOG: ChangelogEntry[] = [
       Inspreken: [
         'Nieuw bij Instellingen: "Scherm aan houden tijdens een sessie". Het scherm gaat dan niet vanzelf uit, zodat je met de volumeknop kunt blijven inspreken.',
       ],
+      'Over de app': [
+        'Deel je met de ontwikkelaar, dan laat de app lange cijferreeksen (zoals een BSN of telefoonnummer) en e-mailadressen weg, en de opname daarvan ook.',
+      ],
     },
   },
   {
