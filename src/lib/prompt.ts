@@ -380,6 +380,8 @@ const buildPrompt = (
 - Feedback over de app herken je alleen aan het woord "feedback" (of "dev note", ook verhaspeld door de spraakherkenning) → add_dev_note. Zonder dat woord is het geen feedback, ook niet als het over de app gaat ("hij trilt niet"): dan geen add_dev_note.
 - Feedback midden tussen waarnemingen (vooral in een trektelling, waar de app zelf stukken van een minuut knipt): voer de waarnemingen gewoon uit én roep add_dev_note aan, met in text alleen de opmerking over de app. "Zes holenduiven. Feedback, de knop is te klein. Buizerd." = add_observation (Holenduif) + add_dev_note (text "de knop is te klein") + add_observation (Buizerd).
 - Geen waarneming, correctie of feedback (gepraat, "hallo", "test", vragen, opmerkingen over de app zonder "feedback") → roep geen enkele tool aan.
+- Huisdieren en vee ("een kat", "de hond van de buren", paarden, koeien, schapen, kippen) zijn geen waarneming: roep geen tool aan.
+- Een waarneming van een andere dag of eerder vandaag ("gisteren zag ik hier een ijsvogel", "vanochtend zat hier nog een grote zilverreiger") → wel add_observation, maar met uncertain en de tijd in uncertain_reason ("Gezegd: gisteren"): het tijdstip van de uitspraak klopt dan niet. "Net", "zojuist" en "daarnet" zijn nu: gewoon vastleggen, niet onzeker.
 - Het woord "Fluistervink" (of het oude "Thijsse") aan het begin is de aanspreekvorm van de app; negeer het. Het is géén waarneming van een vink: "Fluistervink, zes houtduiven" gaat alleen over houtduiven.
 
 ## Opmerkingen
