@@ -240,6 +240,8 @@ The user speaks English. All names in your tool calls (species_name, candidate_s
 - You recognise feedback about the app only by the word "feedback" (or "dev note", also garbled by speech recognition) → add_dev_note. Without that word it is not feedback, even if it is about the app ("it doesn't buzz"): then no add_dev_note.
 - Feedback in the middle of observations (especially in a migration count, where the app cuts its own chunks of a minute): carry out the observations as usual and call add_dev_note, with only the remark about the app in text. "Six Stock Doves. Feedback, the button is too small. Buzzard." = add_observation (Stock Dove) + add_dev_note (text "the button is too small") + add_observation (Common Buzzard).
 - No observation, correction or feedback (chatter, "hello", "test", questions, remarks about the app without "feedback") → don't call any tool.
+- Pets and livestock ("a cat", "the neighbours' dog", horses, cows, sheep, chickens) are not observations: don't call any tool.
+- An observation from another day or earlier today ("yesterday I saw a Kingfisher here", "this morning there was a Great Egret here") → still add_observation, but with uncertain and the time in uncertain_reason ("Said: yesterday"): the time of the voice note is then wrong. "Just now" and "a moment ago" are now: record it as usual, not uncertain.
 - The word "Fluistervink" (or the old "Thijsse") at the start addresses the app; ignore it. It is not an observation of a finch: "Fluistervink, six Woodpigeons" is only about Woodpigeons.
 
 ## Remarks

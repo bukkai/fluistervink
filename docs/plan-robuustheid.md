@@ -1,6 +1,6 @@
 # Plan: robuustheid (edge cases)
 
-18 nov 2026. Status: fase 1 (#268), 2 (#273) en 3–5 (code, tests en checklists) klaar. Kwaliteitsronde 18 nov: #9 besloten, #14–#16 erbij en afgedekt (#279). Kwaliteitsronde 21 nov: #17 erbij en afgedekt. 22 nov: uitspraken om te proberen (uit de stresstest van tester app-b726a027), #18 erbij en afgedekt. Open: proberen op de telefoon en opnames voor de testset; zie de tabel.
+18 nov 2026. Status: fase 1 (#268), 2 (#273) en 3–5 (code, tests en checklists) klaar. Kwaliteitsronde 18 nov: #9 besloten, #14–#16 erbij en afgedekt (#279). Kwaliteitsronde 21 nov: #17 erbij en afgedekt. 22 nov: uitspraken om te proberen (uit de stresstest van tester app-b726a027), #18 erbij en afgedekt, de nieuwe gevallen als tekst tegen het model geprobeerd. Open: proberen op de telefoon en opnames voor de testset; zie de tabel.
 
 Een rondgang "wat zou een tester proberen?" langs de bestaande tests en code. Veel is al afgedekt: netwerk weg op elk moment, de wachtrij na een crash, twee tabbladen (slot en BroadcastChannel), haperende tikken met handschoenen, Merlin tijdens een trektelling, een back-up twee keer terugzetten, CSV met komma's en aanhalingstekens, soorten die het model verzint. Dit plan legt vast wat nog open staat en hoe we het blijvend afdekken, zodat het niet bij één keer nalopen blijft.
 
@@ -40,30 +40,32 @@ Een tester (app-b726a027) deed op 20 nov in de eerste sessie een stresstest: 27 
 
 **Nieuwe gevallen**
 
-| Onderwerp | Uitspraak | Wat hoort |
-| --- | --- | --- |
-| Verwijzing op volgorde | "Maak van de tweede twee vogels" | de op één na laatste waarneming, of onzeker |
-| Uitzondering | "Verwijder alles behalve de specht" | alle andere weg, de specht blijft |
-| Dubbele undo | twee keer "ongedaan maken", dan "toch niet" | één stap terug (redo) |
-| Soort en aantal tegelijk | "Die meeuw was een zilvermeeuw, en het waren er drie" | één aanpassing met soort en aantal |
-| Ver terug | correctie op een waarneming van meer dan 20 terug | niet begrepen of onzeker, niet de verkeerde (#6) |
-| Onbekend aantal | "onbekend aantal kauwen", "een heleboel spreeuwen", "veel graspiepers" | telmethode gezien niet geteld, niet onzeker; eBird een X. Proef 22 nov: goed (NL en EN) |
-| Ongeldig aantal | "nul vinken", "een halve houtduif", "min twee" | niet begrepen of onzeker (#5) |
-| Grote aantallen | "duizenden spreeuwen" tegenover "dertigduizend spreeuwen" | schatting 3000 tegenover 30.000 exact |
-| Persoonsgegevens | naam, adres of telefoonnummer, met en zonder "feedback" | zonder: niets; met: bewaard, cijfers niet gedeeld (#18) |
-| "Feedback" als waarneming | "feedback: twee buizerds" | het model kiest; nagaan wat het doet |
-| Geluid van anderen | radio, tv, zingen of een medevogelaar op de achtergrond | geen waarnemingen (#7) |
-| Scheldwoord of kreet | "verdomme, weg is ie" | niets |
-| Verleden tijd | "gisteren zag ik hier een ijsvogel" | onzeker, met de tijd in de reden (de tijd van de opname klopt niet) |
-| Plek zonder windrichting | "vijf meter achter me", "op de kerktoren" | plek in de woorden, geen verschuiving |
-| Ander land | "in België" terwijl je in Nederland staat | opmerking, geen plek |
-| Huisdier | "een kat", "de hond van de buren" | niets, of Kat (zoogdier) als dat in de lijst staat |
-| Fictief of uitgestorven | "een dodo", "een draak" | niets |
-| Ontsnapte vogel | "een parkiet", "een pauw in de tuin" | Halsbandparkiet onzeker; pauw als exoot of niets |
-| Dubbele namen | "een uil" (vogel of nachtvlinder), "een vos" (zoogdier of dagvlinder), "een reiger" | de gewone betekenis: Uil onbekend, Vos, Blauwe Reiger onzeker |
-| Volumeknop met podcast of tijdens bellen | indrukken | opname start niet stil; zie veldchecklist |
-| Correctie in de wachtrij | offline: "drie vinken", dan "nee, keep" | na bereik eerst de vinken, dan de keep (plan-offline) |
-| Stoppen midden in een opname | Stop tijdens het inspreken | de opname wordt bewaard en verwerkt |
+Proef 22 nov: als tekst tegen het model (testset met een nagemaakte export, zonder opnames), zonder spraakherkenning. Wat met de telefoon moet, staat in de laatste kolom als "telefoon".
+
+| Onderwerp | Uitspraak | Wat hoort | Proef 22 nov |
+| --- | --- | --- | --- |
+| Verwijzing op volgorde | "Maak van de tweede twee vogels" | de op één na laatste waarneming, of onzeker | goed (5×) |
+| Uitzondering | "Verwijder alles behalve de specht" | alle andere weg, de specht blijft | goed (5×) |
+| Dubbele undo | twee keer "ongedaan maken", dan "toch niet" | één stap terug (redo) | niet geprobeerd; undo en redo zelf hebben tests |
+| Soort en aantal tegelijk | "Die meeuw was een zilvermeeuw, en het waren er drie" | één aanpassing met soort en aantal | **ging soms mis** (afschermvelden in `update_observation`, sinds #338): opgelost met een eigen tool voor afschermen, #340 |
+| Ver terug | correctie op een waarneming van meer dan 20 terug | niet begrepen of onzeker, niet de verkeerde (#6) | niet geprobeerd |
+| Onbekend aantal | "onbekend aantal kauwen", "een heleboel spreeuwen", "veel graspiepers" | telmethode gezien niet geteld, niet onzeker; eBird een X | goed, NL en EN (#336) |
+| Ongeldig aantal | "nul vinken", "een halve houtduif", "min twee" | niet begrepen of onzeker (#5) | goed: nul → niets; half en min → 1 en 2, onzeker |
+| Grote aantallen | "duizenden spreeuwen" tegenover "dertigduizend spreeuwen" | schatting 3000 tegenover 30.000 exact | goed |
+| Persoonsgegevens | naam, adres of telefoonnummer, met en zonder "feedback" | zonder: niets; met: bewaard, cijfers niet gedeeld (#18) | goed: zonder "feedback" niets |
+| "Feedback" als waarneming | "feedback: twee buizerds" | het model kiest; nagaan wat het doet | gaat niet naar het model: de app bewaart het als feedback, geen waarneming |
+| Geluid van anderen | radio, tv, zingen of een medevogelaar op de achtergrond | geen waarnemingen (#7) | goed als tekst ("en dan nu het weer …" → niets); telefoon |
+| Scheldwoord of kreet | "verdomme, weg is ie" | niets | goed |
+| Verleden tijd | "gisteren zag ik hier een ijsvogel", "vanochtend zat hier nog …" | onzeker, met de tijd in de reden (de tijd van de opname klopt niet) | **ging mis** (gisteren → niets, vanochtend → niet onzeker): regel in de prompt, nu goed, NL en EN; "net zag ik" blijft gewoon |
+| Plek zonder windrichting | "vijf meter achter me", "op de kerktoren" | plek in de woorden, geen verschuiving | goed (opmerking) |
+| Ander land | "in België" terwijl je in Nederland staat | opmerking, geen plek | goed (plekomschrijving, geen verschuiving) |
+| Huisdier | "een kat", "de hond van de buren", "drie koeien in de wei" | niets | **kat ging mis** (Zoogdier onbekend, onzeker): regel in de prompt, nu goed, NL en EN |
+| Fictief of uitgestorven | "een dodo", "een draak" | niets | dodo goed; draak → Draaihals, onzeker (een verstaanfout is daar ook goed denkbaar) |
+| Ontsnapte vogel | "een parkiet", "een pauw in de tuin" | Halsbandparkiet onzeker; pauw als exoot of niets | goed: Halsbandparkiet of Grote Alexanderparkiet; pauw → Vogel onbekend, onzeker |
+| Dubbele namen | "een uil", "een vos", "een reiger" | de gewone betekenis | vos en reiger (Reiger onbekend) goed; uil → Vogel onbekend, onzeker: "Uil onbekend" komt met de volgende wekelijkse soortenlijst in de prompt |
+| Volumeknop met podcast of tijdens bellen | indrukken | opname start niet stil; zie veldchecklist | telefoon |
+| Correctie in de wachtrij | offline: "drie vinken", dan "nee, keep" | na bereik eerst de vinken, dan de keep (plan-offline) | telefoon (de wachtrij zelf heeft tests) |
+| Stoppen midden in een opname | Stop tijdens het inspreken | de opname wordt bewaard en verwerkt | telefoon |
 
 ## Fasen
 

@@ -39,6 +39,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       ],
       Inspreken: [
         'Nieuw bij Instellingen: "Scherm aan houden tijdens een sessie". Het scherm gaat dan niet vanzelf uit, zodat je met de volumeknop kunt blijven inspreken.',
+        'Vertel je iets van eerder ("gisteren zag ik hier een ijsvogel"), dan bewaart de app het als onzeker, omdat de tijd niet klopt. Huisdieren en vee ("een kat") worden geen waarneming meer.',
       ],
       'Over de app': [
         'Deel je met de ontwikkelaar, dan laat de app lange cijferreeksen (zoals een BSN of telefoonnummer) en e-mailadressen weg, en de opname daarvan ook.',
