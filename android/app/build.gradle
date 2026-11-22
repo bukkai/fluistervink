@@ -1,10 +1,11 @@
 apply plugin: 'com.android.application'
 
-// Versie uit git, zodat elke build vanzelf een hoger nummer krijgt: het aantal
-// commits (versionCode, moet voor Google Play steeds hoger worden; ×2 voor
-// beta en stabiel, zie hieronder) en de
-// korte commit-hash. Te zien bij Instellingen in de app en in Android onder
-// Apps → Fluistervink. Zonder git (bv. een los archief) blijft het 1.
+// Versie uit git. versionCode is het aantal commits (moet voor Google Play
+// steeds hoger worden; ×2 voor beta en stabiel, zie hieronder). versionName
+// komt van de laatste tag (docs/google-play.md): op de tag v0.6 zelf
+// "0.6 (<hash>)", twaalf commits later "0.6+12 (<hash>)", zodat Play, Android
+// en Instellingen hetzelfde nummer tonen. Zonder tag "0.<aantal commits>
+// (<hash>)", zonder git (bv. een los archief) blijft het 1.
 def git(String... args) {
     try {
         def proc = (['git'] + args.toList()).execute(null, rootProject.projectDir)
@@ -16,6 +17,11 @@ def git(String... args) {
 }
 def commitCount = git('rev-list', '--count', 'HEAD')?.toInteger() ?: 1
 def commitHash = git('rev-parse', '--short', 'HEAD') ?: 'onbekend'
+// "v0.6-12-g8577151": tag, commits sinds de tag, hash
+def tagMatch = (git('describe', '--tags', '--long', '--match', 'v[0-9]*') ?: '') =~ /^v(.+)-(\d+)-g[0-9a-f]+$/
+def versie = tagMatch.matches()
+    ? (tagMatch.group(2) == '0' ? tagMatch.group(1) : "${tagMatch.group(1)}+${tagMatch.group(2)}")
+    : "0.${commitCount}"
 
 // Ondertekenen met de upload-key voor Google Play (fase 4, docs/google-play.md).
 // GitHub Actions zet deze variabelen uit de secrets (.github/workflows/release.yml).
@@ -38,7 +44,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode commitCount * 2 + (stable ? 0 : 1)
-        versionName "0.${commitCount} (${commitHash})"
+        versionName "${versie} (${commitHash})"
         resValue "string", "app_name", stable ? "Fluistervink" : "Fluistervink Beta"
         resValue "string", "title_activity_main", stable ? "Fluistervink" : "Fluistervink Beta"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
