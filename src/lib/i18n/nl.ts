@@ -39,6 +39,9 @@ export const nl = {
   'app.stop': 'Stop',
   'app.confirmStop': 'Sessie stoppen?',
   'app.tuintelLeft': 'Tuintelling, nog {time}',
+  'app.tuintelBefore': 'Tuintelling: het half uur begint als je begint met tellen',
+  'app.tuintelAfter': 'Nog iets vergeten? Spreek het in en tik op Klaar',
+  'app.tuintelDone': 'Klaar',
 
   // Startscherm (Home.svelte)
   'home.title': 'Klaar om te gaan vogelen?',
@@ -274,6 +277,11 @@ export const nl = {
   'session.gpsUnavailable': 'Locatie niet beschikbaar op dit apparaat.',
   'session.micStarting': 'Microfoon aanzetten…',
   'session.trektelStart': 'Trektelling starten',
+  'session.tuintelStart': 'Begin met tellen',
+  'session.tuintelResume': 'Verder luisteren',
+  'session.tuintelStartHint':
+    'De microfoon blijft een half uur aan. Noem wat je ziet, zoals "nu drie koolmezen".',
+  'session.tuintelResumeHint': 'Het half uur loopt door.',
   'session.typePlaceholder': 'Of typ: zes overvliegende houtduiven',
   'session.typeLabel': 'Uitspraak typen',
   'session.submit': 'Verwerk',
@@ -469,6 +477,10 @@ export const nl = {
   'tuintel.copyHeader': 'Tuintelling {date}, begonnen om {time}',
   'tuintel.copyExtra': 'Zelf toevoegen:',
   'tuintel.open': 'Naar het telformulier',
+  'tuintel.forgotTitle': 'Nog iets vergeten?',
+  'tuintel.forgotText':
+    'Zag je een vogel die je niet hebt ingesproken? Spreek hem nog in, dan telt hij gewoon mee.',
+  'tuintel.forgotButton': 'Nog iets inspreken',
 
   'past.savedTitle': '✓ Sessie opgeslagen',
   'past.savedText':

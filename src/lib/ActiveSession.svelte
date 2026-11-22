@@ -30,6 +30,7 @@
   import { syncSessionService } from './sessionService';
   import { createTalkButton } from './talkButton';
   import { trektelEnabled } from './trektel';
+  import { startTuintelCount, tuintelPhase } from './tuintelling';
   import { startTrektel, stopTrektel, trektel, trektelSupported } from './trektelRecorder.svelte';
   import { microphoneLine, refreshMicrophones } from './microphoneStatus.svelte';
 
@@ -199,6 +200,7 @@
       }
       vibrate('recording');
       maxTimer = setTimeout(finishRecording, MAX_RECORDING_MS);
+      if (session.tuintelling) void startTuintelCount(session.id);
       return true;
     },
     finish: () => (screenOff.startedAt !== undefined ? stopScreenOff() : finishRecording()),
@@ -209,7 +211,8 @@
   // tik op de knop. Niet tijdens een trektelling: die heeft een eigen knop.
   const volumeKeyOn = volumeKeySupported && preferenceOn('volumeknop');
   $effect(() => {
-    if (!volumeKeyOn || trektel.status !== 'idle') return;
+    // Ook niet bij een tuintelling die in de trektelstand gaat: daar begint de knop het tellen
+    if (!volumeKeyOn || trektel.status !== 'idle' || tuinTrektel) return;
     return listenVolumeKey((key) => {
       logEvent('talk_volume_key', { key, status: recorder.status }, { sessionId: session.id });
       talk.tap();
@@ -312,8 +315,29 @@
   });
   let micLine = $derived(microphoneLine());
 
-  // Trektelmodus (docs/plan-trektelmodus.md): alleen als hij bij Instellingen aanstaat
-  const trektelOn = trektelEnabled() && trektelSupported();
+  // Trektelmodus (docs/plan-trektelmodus.md): alleen als hij bij Instellingen
+  // aanstaat. Niet bij een tuintelling: die heeft zijn eigen knop onderaan.
+  let trektelOn = $derived(trektelEnabled() && trektelSupported() && !session.tuintelling);
+
+  // Tuintelling (tuintelling.ts): tellen gaat in de trektelstand, met één
+  // knop "Begin met tellen" in de duimzone; daar begint het half uur. Zonder
+  // trektelstand (oude browser) de gewone knop, en dan begint het half uur
+  // bij de eerste opname. Na afloop (nog iets vergeten) ook de gewone knop.
+  let now = $state(Date.now());
+  $effect(() => {
+    if (!session.tuintelling) return;
+    const timer = setInterval(() => (now = Date.now()), 1000);
+    return () => clearInterval(timer);
+  });
+  let tuinPhase = $derived(tuintelPhase(session, now));
+  let tuinTrektel = $derived(
+    trektelSupported() && (tuinPhase === 'before' || tuinPhase === 'counting'),
+  );
+
+  async function beginTuintel() {
+    await beginTrektel();
+    if (trektel.status !== 'idle') await startTuintelCount(session.id);
+  }
 
   async function beginTrektel() {
     if (recorder.status !== 'idle') return;
@@ -521,6 +545,37 @@
     {#if micLine}
       <p class="mic source">{micLine}</p>
     {/if}
+  {:else if tuinTrektel}
+    <!-- Tuintelling: de microfoon blijft aan, zoals bij de trektelling -->
+    {#if trektel.error}
+      <p class="mic denied">{trektel.error}</p>
+    {/if}
+    <button
+      class="talk"
+      disabled={recorder.status !== 'idle' || trektel.status !== 'idle'}
+      onclick={beginTuintel}
+    >
+      <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true">
+        <rect x="9" y="2.5" width="6" height="12" rx="3" fill="currentColor" />
+        <path
+          d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+      </svg>
+      <span
+        >{trektel.status === 'starting'
+          ? t('session.micStarting')
+          : tuinPhase === 'before'
+            ? t('session.tuintelStart')
+            : t('session.tuintelResume')}</span
+      >
+    </button>
+    <p class="mic source">
+      {tuinPhase === 'before' ? t('session.tuintelStartHint') : t('session.tuintelResumeHint')}
+    </p>
   {:else}
     {#if trektelOn && trektel.error}
       <p class="mic denied">{trektel.error}</p>

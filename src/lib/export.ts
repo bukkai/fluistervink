@@ -290,7 +290,8 @@ function checkImport(data: {
       !optional(s.checklist, isChecklist) ||
       !optional(s.ebirdExportedAt, isNumber) ||
       !optional(s.reviewMs, isNumber) ||
-      !optional(s.tuintelling, (b) => b === true)
+      !optional(s.tuintelling, (b) => b === true) ||
+      !optional(s.tuintelStartedAt, isNumber)
     )
       fail('sessie');
   }

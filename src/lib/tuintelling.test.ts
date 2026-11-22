@@ -5,7 +5,9 @@ import { startSession } from './sessions';
 import {
   TUINTEL_FORM_SPECIES,
   TUINTEL_MS,
+  startTuintelCount,
   tuintelLeftMs,
+  tuintelPhase,
   tuintelResult,
   tuintelText,
 } from './tuintelling';
@@ -121,10 +123,52 @@ describe('tuintelText', () => {
   });
 });
 
-describe('tuintelLeftMs', () => {
-  it('telt af vanaf de start', () => {
-    const session: Session = { id: 's', startedAt: 0, status: 'active' };
-    expect(tuintelLeftMs(session, 10 * 60_000)).toBe(TUINTEL_MS - 10 * 60_000);
+describe('tuintelLeftMs en tuintelPhase', () => {
+  const tuin = (extra: Partial<Session> = {}): Session => ({
+    id: 's',
+    startedAt: 0,
+    status: 'active',
+    tuintelling: true,
+    ...extra,
+  });
+
+  it('loopt pas als het tellen begonnen is, niet vanaf de start van de sessie', () => {
+    expect(tuintelLeftMs(tuin(), 10 * 60_000)).toBeUndefined();
+    expect(tuintelPhase(tuin(), 10 * 60_000)).toBe('before');
+    const counting = tuin({ tuintelStartedAt: 5 * 60_000 });
+    expect(tuintelLeftMs(counting, 10 * 60_000)).toBe(TUINTEL_MS - 5 * 60_000);
+    expect(tuintelPhase(counting, 10 * 60_000)).toBe('counting');
+  });
+
+  it('na het half uur, of voortgezet na afloop: nog iets vergeten', () => {
+    const start = 60_000;
+    expect(tuintelPhase(tuin({ tuintelStartedAt: start }), start + TUINTEL_MS)).toBe('after');
+    const resumed = tuin({ tuintelStartedAt: start, resumedAt: start + TUINTEL_MS + 60_000 });
+    expect(tuintelPhase(resumed, start + TUINTEL_MS + 90_000)).toBe('after');
+  });
+
+  it('een gewone sessie heeft geen klok', () => {
+    const gewoon: Session = { id: 's', startedAt: 0, status: 'active' };
+    expect(tuintelLeftMs(gewoon, 60_000)).toBeUndefined();
+    expect(tuintelPhase(gewoon, 60_000)).toBeUndefined();
+  });
+
+  it('een oude tuintelling zonder begin van het tellen telt vanaf de start', () => {
+    expect(tuintelLeftMs(tuin({ status: 'ended' }), 60_000)).toBe(TUINTEL_MS - 60_000);
+  });
+});
+
+describe('startTuintelCount', () => {
+  it('zet het begin één keer, alleen bij een tuintelling', async () => {
+    const tuin = await startSession({ tuintelling: true });
+    await startTuintelCount(tuin.id, 1000);
+    await startTuintelCount(tuin.id, 2000);
+    expect((await db.sessions.get(tuin.id))?.tuintelStartedAt).toBe(1000);
+
+    await db.sessions.clear();
+    const gewoon = await startSession();
+    await startTuintelCount(gewoon.id, 1000);
+    expect((await db.sessions.get(gewoon.id))?.tuintelStartedAt).toBeUndefined();
   });
 });
 
@@ -152,5 +196,24 @@ describe('tuintelsessie', () => {
     await expect(importJson(backup('ja'))).rejects.toThrow();
     await importJson(backup(true));
     expect((await db.sessions.get('s1'))?.tuintelling).toBe(true);
+  });
+
+  it('het begin van het tellen gaat mee in een back-up, als getal', async () => {
+    const backup = (tuintelStartedAt: unknown) =>
+      new File(
+        [
+          JSON.stringify({
+            sessions: [
+              { id: 's2', startedAt: 1, status: 'ended', tuintelling: true, tuintelStartedAt },
+            ],
+            utterances: [],
+            observations: [],
+          }),
+        ],
+        'export.json',
+      );
+    await expect(importJson(backup('nu'))).rejects.toThrow();
+    await importJson(backup(5));
+    expect((await db.sessions.get('s2'))?.tuintelStartedAt).toBe(5);
   });
 });

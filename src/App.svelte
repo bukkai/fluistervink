@@ -21,12 +21,12 @@
   import { CHANNEL } from './lib/log';
   import { vibrate } from './lib/feedback';
   import { devOptionOn } from './lib/devOptions';
-  import { TUINTEL_WARN_MS, tuintelLeftMs } from './lib/tuintelling';
+  import { TUINTEL_WARN_MS, tuintelLeftMs, tuintelPhase } from './lib/tuintelling';
   import { instance } from './lib/instance.svelte';
   import { processQueue } from './lib/queue';
   import { syncSessionService } from './lib/sessionService';
   import { LEAVE_TREKTEL_TEXT, leavesSessionScreen } from './lib/trektel';
-  import { trektel } from './lib/trektelRecorder.svelte';
+  import { stopTrektel, trektel } from './lib/trektelRecorder.svelte';
   import { listenShortcut, setShortcut } from './lib/native';
   import {
     SHARE_CHANGED,
@@ -238,14 +238,15 @@
   /** Net gestopte sessie, voor de bevestiging "opgeslagen" */
   let justStopped = $state<string>();
 
-  // Tuintelling (ontwikkeloptie, tuintelling.ts): een half uur, met een tril
-  // bij nog vijf minuten; daarna stopt de sessie vanzelf. Staat de app op de
-  // achtergrond en loopt de klok niet, dan gebeurt het bij terugkomen, met
-  // als eindtijd het eind van het half uur.
-  // Wie een tuintelling ná het half uur voortzet (een vergeten vogel), krijgt
-  // een gewone sessie: dan geen klok en niet opnieuw stoppen.
+  // Tuintelling (ontwikkeloptie, tuintelling.ts): een half uur vanaf het
+  // begin van het tellen, met een tril bij nog vijf minuten; daarna stopt de
+  // telling en de sessie vanzelf. Staat de app op de achtergrond en loopt de
+  // klok niet, dan gebeurt het bij terugkomen, met als eindtijd het eind van
+  // het half uur. Wie na afloop nog iets inspreekt ("nog iets vergeten?"),
+  // zet de sessie voort: dan geen klok en niet opnieuw stoppen.
   const tuintelOn = devOptionOn('tuintelling');
-  let tuintelLeftRaw = $derived(active?.tuintelling ? tuintelLeftMs(active, now) : undefined);
+  let tuintelPhaseNow = $derived(active ? tuintelPhase(active, now) : undefined);
+  let tuintelLeftRaw = $derived(active ? tuintelLeftMs(active, now) : undefined);
   let tuintelOver = $derived(
     active !== undefined &&
       tuintelLeftRaw !== undefined &&
@@ -277,6 +278,8 @@
   });
 
   async function finishTuintel(id: string, endedAt: number) {
+    // Eerst de microfoon uit: het laatste stuk gaat nog gewoon de wachtrij in
+    stopTrektel();
     await stopSession(id, endedAt);
     justStopped = id;
     vibrate('tuintelKlaar');
@@ -285,7 +288,8 @@
 
   /** Na het stoppen meteen naar het nalopen van de sessie */
   async function stop() {
-    if (!active || !confirm(t('app.confirmStop'))) return;
+    // Na een tuintelling nog iets ingesproken: "Klaar" zonder vraag, terug naar het resultaat
+    if (!active || (tuintelPhaseNow !== 'after' && !confirm(t('app.confirmStop')))) return;
     const id = active.id;
     await stopSession(id);
     justStopped = id;
@@ -376,13 +380,19 @@
         <p class="muted">
           {#if tuintelLeft !== undefined}
             {t('app.tuintelLeft', { time: formatCountdown(tuintelLeft) })}
+          {:else if tuintelPhaseNow === 'before'}
+            {t('app.tuintelBefore')}
+          {:else if tuintelPhaseNow === 'after'}
+            {t('app.tuintelAfter')}
           {:else}
             {t('app.since', { time: timeFormat.format(active.startedAt) })} ·
             <span class="duration">{formatDuration(now - active.startedAt)}</span>
           {/if}
         </p>
       </div>
-      <button class="stop" onclick={stop}>{t('app.stop')}</button>
+      <button class="stop" onclick={stop}
+        >{tuintelPhaseNow === 'after' ? t('app.tuintelDone') : t('app.stop')}</button
+      >
     </section>
     {#if askStillBirding}
       <StillBirding

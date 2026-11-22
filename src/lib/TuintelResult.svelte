@@ -2,21 +2,45 @@
   import { LOCALE, t } from './i18n';
   import { timeFormat } from './format';
   import type { Observation, Session } from './db';
-  import { TUINTEL_FORM_URL, tuintelResult, tuintelText, type TuintelLine } from './tuintelling';
+  import { resumeSession } from './sessions';
+  import {
+    TUINTEL_FORM_URL,
+    tuintelResult,
+    tuintelStart,
+    tuintelText,
+    type TuintelLine,
+  } from './tuintelling';
 
   // Het resultaat van een tuintelling (tuintelling.ts, docs/plan-tuintelling.md):
   // per soort het hoogste aantal, in de volgorde van het formulier van
   // Vogelbescherming, om daar over te nemen. Bovenaan bij een tuintelsessie.
 
-  let { session, observations }: { session: Session; observations: Observation[] } = $props();
+  let {
+    session,
+    observations,
+    resumable = false,
+  }: {
+    session: Session;
+    observations: Observation[];
+    /** Nog iets inspreken kan alleen bij de laatste sessie, als er geen andere loopt */
+    resumable?: boolean;
+  } = $props();
 
   let result = $derived(tuintelResult(observations));
   let anyUncertain = $derived([...result.form, ...result.extra].some((line) => line.uncertain));
   let counted = $derived(result.form.length + result.extra.length);
 
   const dateFormat = new Intl.DateTimeFormat(LOCALE, { dateStyle: 'full' });
-  let date = $derived(dateFormat.format(session.startedAt));
-  let time = $derived(timeFormat.format(session.startedAt));
+  // Begintijd voor het formulier: het begin van het tellen, niet van de sessie
+  let begin = $derived(tuintelStart(session) ?? session.startedAt);
+  let date = $derived(dateFormat.format(begin));
+  let time = $derived(timeFormat.format(begin));
+
+  // Nog iets vergeten? De sessie voortzetten zonder klok, met de gewone knop;
+  // "Klaar" brengt je hier terug (feedback 22 nov)
+  async function addForgotten() {
+    if (await resumeSession(session.id)) location.hash = '';
+  }
 
   let copied = $state(false);
   async function copy() {
@@ -92,6 +116,16 @@
       <div class="muted">{@render lines(result.flyovers)}</div>
     {/if}
 
+    {#if resumable}
+      <div class="forgot">
+        <h3>{t('tuintel.forgotTitle')}</h3>
+        <p>{t('tuintel.forgotText')}</p>
+        <button class="btn secondary block" onclick={addForgotten}
+          >{t('tuintel.forgotButton')}</button
+        >
+      </div>
+    {/if}
+
     <a class="btn block" href={TUINTEL_FORM_URL} target="_blank" rel="noopener"
       >{t('tuintel.open')}</a
     >
@@ -149,5 +183,9 @@
 
   .btn {
     margin-top: 0.6rem;
+  }
+
+  .forgot {
+    margin-top: 0.9rem;
   }
 </style>
