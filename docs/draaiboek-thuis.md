@@ -96,6 +96,20 @@ Voor de regel "Leuk met kinderen" op de tuintellingpagina. Liefst een jong en ee
 - [ ] Sessie stoppen en delen (met opnames), zodat ze in de testset kunnen.
 - [ ] Gaat het grotendeels goed, dan blijft de regel staan; anders eruit.
 
+## H. Afschermen en embargo (#337–#339)
+
+Na het mergen van #339. Feedback van tester app-b726a027; plan `docs/plan-afschermen.md`. Een eigen sessie, "Afschermen".
+
+- [ ] "een vink", dan "die afschermen" → in de lijst een slotje met "Verborgen op waarneming.nl"; de bevestiging zegt "afgeschermd".
+- [ ] "een houtduif", dan "die op vijf kilometer vervagen" → "Vervaagd tot 5 km op waarneming.nl".
+- [ ] "een keep", dan "die onder embargo tot 1 maart" → "Embargo tot 1 mrt 2027".
+- [ ] "een draaihals, nest, afschermen" → nieuwe waarneming, meteen verborgen, niet onzeker.
+- [ ] "alle vorige afschermen" → alle waarnemingen in de lijst krijgen het slotje.
+- [ ] "een merel onder embargo" (zonder datum) → onzeker, "kies de datum". Open hem, kies een datum bij "Embargo tot": Onzeker gaat vanzelf uit. Opslaan.
+- [ ] In de bewerker "Op waarneming.nl" terug op Openbaar zetten: het slotje verdwijnt.
+- [ ] Sessie stoppen, nalopen, exporteren voor waarneming.nl en **proefimporteren**: komen verborgen, vervaagd en embargo goed binnen? (Daarna de proefwaarnemingen bij waarneming.nl weer verwijderen.)
+- [ ] Met eBird aan: exporteren voor eBird → de melding noemt de afgeschermde waarnemingen die niet meegaan.
+
 ## Afsluiten
 
 - [ ] Sessie(s) stoppen en delen, met opnames.
