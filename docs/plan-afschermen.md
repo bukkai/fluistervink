@@ -51,7 +51,7 @@ Ook in `checkImport` (`src/lib/export.ts`) en in de back-up.
 - "vervagen", "op een kilometer vervagen" → 1; "op vijf kilometer" → 5
 - "alle vorige afgeschermd" → een `update_observation` per waarneming in de context (zoals "maak van alle voorgaande twee vogels" nu al gaat)
 - "een draaihals, nest, afschermen" → `add_observation` met `obscurity` 9
-- "onder embargo", "embargo tot volgende maand" → `embargo_until`; zonder datum een vaste termijn (zie Beslissen)
+- "onder embargo", "embargo tot volgende maand" → `embargo_until`; zonder datum onzeker, de gebruiker zet de datum thuis
 
 De app controleert de waarden zoals bij de andere ID's (`validate`): een onbekende waarde valt weg, met een regel in de waarschuwingen.
 
@@ -64,7 +64,7 @@ De app controleert de waarden zoals bij de andere ID's (`validate`): een onbeken
 ### Export
 
 - waarneming.nl (CSV en xlsx, `waarnemingExport.ts`): de kolom `obscurity` met het getal (leeg of `0` bij openbaar), `embargo date` als `YYYY-mm-dd`; in de xlsx als tekstcel zoals de datum, `obscurity` als getal zoals `number`.
-- eBird: geen kolom voor afschermen per waarneming. Een afgeschermde waarneming gaat daar dus openbaar heen. Opties onder Beslissen.
+- eBird: geen kolom voor afschermen per waarneming. Een afgeschermde waarneming gaat daar dus niet heen; de samenvatting van de export meldt hoeveel.
 
 ### Testset en tests
 
@@ -77,17 +77,17 @@ De app controleert de waarden zoals bij de andere ID's (`validate`): een onbeken
 - Changelog.
 - Privacy: niets nieuws (er gaan geen gegevens een nieuwe kant op).
 
-## Beslissen (eigenaar)
+## Besloten (22 nov)
 
-1. **Wat "afschermen" betekent zonder meer erbij**: verborgen (9) of vervaagd tot 1 km (1)? Voorstel: verborgen, het veiligst.
-2. **Embargo zonder datum**: een vaste termijn (bijvoorbeeld drie maanden), of onzeker zodat de gebruiker de datum thuis zet? Voorstel: onzeker.
-3. **eBird**: een afgeschermde waarneming wel of niet naar eBird? Voorstel: niet, met een regel in de samenvatting van de export ("2 afgeschermde waarnemingen niet naar eBird"), want eBird kan hem niet afschermen.
-4. **Hele sessie afschermen** ("alles van vandaag afschermen", een slaapplaats): alleen via losse updates zoals nu, of een veld op de sessie dat ook voor nieuwe waarnemingen geldt? Voorstel: eerst alleen per waarneming; een sessieveld pas als het gevraagd wordt.
-5. Achter een **ontwikkeloptie** of meteen voor iedereen? Voorstel: ontwikkeloptie tot de proefimport gelukt is.
+1. **"Afschermen" zonder meer erbij** = verborgen (9). "Vervagen" = 1 km, "op vijf kilometer" = 5.
+2. **Embargo zonder datum**: onzeker; de gebruiker zet de datum thuis.
+3. **eBird**: een afgeschermde waarneming gaat niet naar eBird, met een regel in de samenvatting van de export.
+4. **Hele sessie**: eerst alleen per waarneming ("alle vorige" via losse updates); een sessieveld pas als het gevraagd wordt.
+5. **Meteen voor iedereen**, geen ontwikkeloptie: de testers proberen het.
 
 ## Stappen
 
-1. Eigenaar: Beslissen invullen (importwaarden zijn nagegaan op 22 nov).
+1. ~~Eigenaar: beslissen~~ (22 nov).
 2. Datamodel, validatie, export en tests (één PR).
 3. Prompt NL en EN, testset-gevallen (één PR, met testset-run).
 4. Scherm: slotje, bewerker, gesproken bevestiging, uitleg en changelog.
