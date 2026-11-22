@@ -1,4 +1,4 @@
-# Beheer: sleutels, de Android-app bouwen, de branch-regel
+# Beheer: sleutels, de Android-app bouwen, de branch-regel, worktrees
 
 Praktische weetjes voor de eigenaar, verplaatst uit `NOTES.md` op 12 nov 2026. Hoe je de Android-app voor het eerst opzet, staat in de README; releases in `docs/google-play.md`; de twee omgevingen in `docs/omgevingen.md`.
 
@@ -20,3 +20,7 @@ Praktische weetjes voor de eigenaar, verplaatst uit `NOTES.md` op 12 nov 2026. H
 ## Branch-regel op main
 
 Sinds 12 nov een ruleset "main beschermen" (GitHub → Settings → Rules): een PR kan pas gemerged worden als de check `check` groen is; geen force-push, `main` niet te verwijderen. De eigenaar (beheerder) mag er altijd omheen, dus NOTES-commits direct op `main` blijven werken, en een PR met een hangende check kun je toch mergen ("bypass rules"). De PR's van de soortenlijst-workflow krijgen geen check vanzelf (GITHUB_TOKEN): sluiten en heropenen, of omheen mergen.
+
+## Twee Claude-sessies tegelijk
+
+Elk in een eigen worktree. Op 18 nov wisselde een sessie in de hoofdmap van branch en nam de niet-gecommitte code van een andere mee in een NOTES-commit op `main`.

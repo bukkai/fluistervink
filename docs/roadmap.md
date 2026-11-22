@@ -15,26 +15,13 @@ De vier sporen van 13 okt, met de stand op 12 nov:
 3. **Klaar voor vreemden:** twee omgevingen (`docs/omgevingen.md`), aanmelden zonder code (`docs/plan-laagdrempelig.md`), welkom voor nieuwelingen, back-up bij Instellingen: klaar.
 4. **Thuis meer waarde dan alleen exporteren:** kaart met clusters, snel nalopen (onzekere één voor één, "Alles klopt"), samenvatting van een sessie: klaar.
 
-## Komende stappen (18 nov)
+## Komende stappen (22 nov)
 
-1. ~~Release naar stable met de offline wachtrij, daarna de kwaliteitsronde~~ (18 nov, #279). Nog de proeven op de telefoon (gebeld worden en oortjes weg, de microfoon van de oortjes; `NOTES.md`).
-2. **Tot ongeveer 1 dec:** de aanvraag voorbereiden (`docs/lancering.md`, punt 4): plafond en daglimiet bij OpenAI en Anthropic, feedback van de testers en de testset, de afvinklijst bijwerken, de laatste release een paar dagen laten staan.
-3. **Ondertussen, los van de app:** ~~observation.org~~ (18 nov: dezelfde database, zie punt 5) en ~~kosten per actieve gebruiker per week~~ (#277, voor de betaalde laag, punt 6); het wake word: eerste model getraind, geparkeerd tot na de release (#290, gesloten 19 nov; punt 4).
-4. **Na de goedkeuring:** de stabiele AAB naar Productie; opnemen met het scherm uit mergen en taggen (verklaring microfoon); dan de microfoon delen en het wake word in de app, eerst als proef die alleen logt.
+1. **Proeven op de telefoon** met de draaiboeken (`docs/draaiboek-*.md`): thuis gedaan op 22 nov, buiten en de telling nog.
+2. **Tot ongeveer 1 dec:** de aanvraag voorbereiden (`docs/lancering.md`, punt 4): feedback van de testers en de testset, de afvinklijst bijwerken, de laatste release een paar dagen laten staan.
+3. **Na de goedkeuring:** de stabiele AAB naar Productie; dan opnemen met het scherm uit, de microfoon delen en het wake word (geparkeerd sinds 19 nov, #290), eerst als proef die alleen logt.
 
-## Lopende plannen
-
-| Plan | Stand (16 nov) |
-| --- | --- |
-| `docs/lancering.md` | gesloten test loopt; testers werven |
-| `docs/roadmap-android.md` | stap 1 (volumeknop, standaard aan) en 2 (gesproken bevestiging, proef voor iedereen, standaard uit) gebouwd; stap 3 en 5 na de productierelease |
-| `docs/plan-trektelmodus.md` | gebouwd, proef met tester Maarten; vervolg na de proef |
-| `docs/plan-ios.md` | voorstel, nog niet goedgekeurd; pas na de lancering in Play |
-| `docs/plan-engels.md` | voorstel 19 nov, nog niet goedgekeurd; na de betaalde laag |
-| `docs/plan-tuintelling.md` | voorstel 20 nov; telling vermoedelijk 29–31 jan 2027, dus uitzoeken vóór half dec |
-| `docs/plan-andere-landen.md` | uitgewerkt 20 nov, voor later; eerst West-Europa. Proef Spanje gedaan |
-
-Afgerond en alleen nog naslag: `docs/plan-capacitor.md` (fase 0–2 en 4; fase 3 loopt nu via `docs/roadmap-android.md`), `docs/plan-laagdrempelig.md`, `docs/plan-ebird.md` (16 nov), `docs/plan-soortgroepen.md` (16 nov: voor iedereen, standaard aan).
+De stand per plan staat in `docs/README.md`.
 
 ## Na v1.0
 
@@ -42,8 +29,8 @@ Volgorde besloten op 17 nov. Alles komt eerst achter een ontwikkeloptie op `main
 
 **Eerst: vogelen zonder netwerk en zonder scherm.**
 
-1. **Offline wachtrij** (`docs/plan-offline.md`): een uitspraak zonder bereik blijft wachten en wordt vanzelf verwerkt zodra er weer verbinding is, met een zichtbare stand ("3 uitspraken wachten op bereik"). Gebouwd op 17 nov; voor iedereen na de proeven in het veld.
-2. **Opnemen met het scherm uit** en starten met de knop op de oortjes (`docs/roadmap-android.md`, stap 3; gevraagd door Maarten voor op de fiets). Vraagt een nieuwe verklaring bij Google (microfoon in de service), dus: de proef nu op een eigen branch met een debug-APK, op `main` en in een tag pas na de productierelease.
+1. ~~**Offline wachtrij**~~ (`docs/plan-offline.md`): afgerond, op stable sinds 18 nov.
+2. **Opnemen met het scherm uit** en starten met de knop op de oortjes (`docs/roadmap-android.md`, stap 3; gevraagd door Maarten voor op de fiets). De verklaring bij Google (microfoon in de service) is goedgekeurd; de proef draait in de beta-build achter de ontwikkeloptie "scherm uit" (`docs/plan-trektelmodus.md`).
 3. **De microfoon delen** met Merlin en bellen (`AudioRecordingCallback`, stap 4), nodig voor het wake word.
 4. **Wake word "Fluistervink"**, open source (openWakeWord, stap 5). Het model trainen en meten op de opnames uit de testset kan al eerder, los van de app; in de app pas na stap 2 en 3, eerst een proef die alleen logt.
 
