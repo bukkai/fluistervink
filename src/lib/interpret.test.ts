@@ -329,7 +329,66 @@ describe('plek uit de uitspraak', () => {
   });
 });
 
+describe('afschermen en embargo', () => {
+  const add = (input: object) =>
+    parseResponse(
+      toolResponse([
+        'add_observation',
+        { species_name: 'Vink', species_id: VINK, count: 1, ...input },
+      ]),
+      [],
+    );
+
+  it('neemt een bekende afscherming en een datum over, en laat null weg', () => {
+    expect(add({ obscurity: 5, embargo_until: '2027-03-01' }).actions[0]).toMatchObject({
+      fields: { obscurity: 5, embargoUntil: '2027-03-01' },
+    });
+    const { actions } = add({ obscurity: null, embargo_until: null });
+    expect(actions[0].type === 'add' && actions[0].fields).not.toHaveProperty('obscurity');
+    expect(actions[0].type === 'add' && actions[0].fields).not.toHaveProperty('embargoUntil');
+  });
+
+  it('neemt 0 over: weer openbaar', () => {
+    expect(add({ obscurity: 0 }).actions[0]).toMatchObject({ fields: { obscurity: 0 } });
+  });
+
+  it('laat een onbekende afscherming weg, met een waarschuwing', () => {
+    const { actions, warnings } = add({ obscurity: 3 });
+    expect(actions[0].type === 'add' && actions[0].fields).not.toHaveProperty('obscurity');
+    expect(warnings).toEqual(['add_observation: afscherming 3 genegeerd']);
+  });
+
+  it('maakt van een embargo zonder geldige datum een embargo zonder datum', () => {
+    expect(add({ embargo_until: 'zonder datum' })).toMatchObject({
+      actions: [{ fields: { embargoNoDate: true } }],
+      warnings: [],
+    });
+    expect(add({ embargo_until: 'no date' }).warnings).toEqual([]);
+    const odd = add({ embargo_until: '2027-02-30' });
+    expect(odd.actions[0]).toMatchObject({ fields: { embargoNoDate: true } });
+    expect(odd.actions[0].type === 'add' && odd.actions[0].fields).not.toHaveProperty(
+      'embargoUntil',
+    );
+    expect(odd.warnings).toHaveLength(1);
+  });
+
+  it('zet afscherming en embargo in de context voor het model', () => {
+    const text = describeContext([observation({ obscurity: 9, embargoUntil: '2027-03-01' })]);
+    expect(text).toMatch(/afgeschermd: 9, embargo tot 2027-03-01/);
+  });
+});
+
 describe('userMessage', () => {
+  it('geeft de datum alleen mee als er een embargo genoemd wordt', () => {
+    const at = Date.parse('2026-11-22T10:00:00');
+    expect(userMessage('(geen)', 'Twee vinken.', false, 'nl', at)).not.toContain('Vandaag');
+    const embargo = userMessage('(geen)', 'Die onder embargo tot 1 maart.', false, 'nl', at);
+    expect(embargo).toContain('Vandaag: zondag 22 november 2026 (2026-11-22)\n\nUitspraak:');
+    expect(userMessage('(no observations yet)', 'Embargo that one', false, 'en', at)).toContain(
+      'Today: Sunday, 22 November 2026 (2026-11-22)',
+    );
+  });
+
   it('zegt het model alleen bij een trektelstuk dat het een trektelling is', () => {
     const plain = userMessage('(geen)', 'Twee vinken.', false);
     const trektel = userMessage('(geen)', 'Twee vinken.', true);

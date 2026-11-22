@@ -96,6 +96,25 @@ const fieldProperties = {
   },
 } as const;
 
+/**
+ * Afschermen en embargo voor waarneming.nl (docs/plan-afschermen.md).
+ * Verplicht maar null als het niet gezegd wordt: als optionele velden kwamen
+ * we boven MAX_OPTIONAL_PARAMETERS. Bij update_observation betekent null
+ * "niet veranderen".
+ */
+const shieldProperties = {
+  obscurity: {
+    anyOf: [{ type: 'integer', enum: [0, 1, 5, 9] }, { type: 'null' }],
+    description:
+      'Alleen als de gebruiker zegt dat de waarneming afgeschermd moet worden op waarneming.nl: 9 verborgen ("afschermen", "verbergen"), 1 vervaagd tot 1 km ("vervagen"), 5 vervaagd tot 5 km, 0 weer openbaar ("toch niet afschermen"). Anders null. Zie "Afschermen".',
+  },
+  embargo_until: {
+    anyOf: [{ type: 'string' }, { type: 'null' }],
+    description:
+      'Alleen als de gebruiker een embargo noemt: de einddatum als JJJJ-MM-DD, of "zonder datum" als er geen datum of termijn bij gezegd wordt. Anders null. Zie "Afschermen".',
+  },
+} as const;
+
 /** Twijfel tussen bepaalde soorten ("fitis of tjiftjaf"), voor iedereen sinds 16 nov */
 const candidateProperty = {
   candidate_species: {
@@ -181,11 +200,19 @@ const addRequired = [
   'sex',
   'uncertain',
   'candidate_species',
+  'obscurity',
+  'embargo_until',
 ];
+
+/** Verplicht bij update_observation, in deze volgorde */
+const updateRequired = ['ref', 'obscurity', 'embargo_until'];
 
 const buildTools = (withGroups: boolean, insects = false): Anthropic.Tool[] => {
   const fields = withGroups ? fieldPropertiesWithGroups(insects) : fieldProperties;
-  const properties = requiredFirst({ ...fields, ...candidateProperty }, addRequired);
+  const properties = requiredFirst(
+    { ...fields, ...candidateProperty, ...shieldProperties },
+    addRequired,
+  );
   return [
     {
       name: 'add_observation',
@@ -207,16 +234,20 @@ const buildTools = (withGroups: boolean, insects = false): Anthropic.Tool[] => {
       strict: true,
       input_schema: {
         type: 'object',
-        properties: {
-          ref: refProperty,
-          ...fields,
-          add_count: {
-            type: 'integer',
-            description:
-              'Tel dit op bij het bestaande aantal ("nog drie erbij" = 3, "twee minder" = -2).',
+        properties: requiredFirst(
+          {
+            ref: refProperty,
+            ...fields,
+            add_count: {
+              type: 'integer',
+              description:
+                'Tel dit op bij het bestaande aantal ("nog drie erbij" = 3, "twee minder" = -2).',
+            },
+            ...shieldProperties,
           },
-        },
-        required: ['ref'],
+          updateRequired,
+        ),
+        required: updateRequired,
         additionalProperties: false,
       },
     },
@@ -369,6 +400,16 @@ Voorbeelden:
 - "Buizerd overvliegend, 500 m zuid van hier" → activiteit overvliegend (zonder richting), place_description "500 m zuid van hier", place_distance_m 500, place_direction Z.
 - "Buizerd overvliegend naar het zuiden" is een vliegrichting, geen plek: geen plekvelden.
 Laat de plekvelden weg als de vogel bij de gebruiker is, of als het alleen gaat om waar hij zit zonder dat het een andere plek is ("zat op het hek", "in de rietkraag" → remarks). Een plek voor een eerdere waarneming ("die reiger zat eigenlijk 300 m noord") → update_observation met de plekvelden.
+
+## Afschermen
+
+Op waarneming.nl kan een waarneming afgeschermd worden (een nest of slaapplaats van een kwetsbare soort) of onder embargo, zodat hij pas later zichtbaar wordt. Alleen als de gebruiker dat zegt, vul je obscurity of embargo_until; anders zijn beide null.
+- "Afschermen", "afgeschermd", "verbergen", "verborgen" → obscurity 9. "Vervagen", "vervaagd", "op een kilometer vervagen" → 1; "op vijf kilometer vervagen" → 5. "Toch niet afschermen", "mag weer openbaar" → 0.
+- "Onder embargo", "embargo erop" zonder datum of termijn → embargo_until "zonder datum". Met een datum of termijn ("embargo tot 1 maart", "een maand embargo", "embargo van een jaar") → de einddatum als JJJJ-MM-DD, gerekend vanaf de datum van vandaag in het bericht. Een vage termijn ("tot na het broedseizoen") → "zonder datum".
+- Bij een nieuwe waarneming ("een draaihals, nest, afschermen") → add_observation met obscurity 9.
+- Over een eerdere waarneming ("die afschermen", "de laatste verbergen") → update_observation op die waarneming, met alleen obscurity of embargo_until.
+- Over meer eerdere waarnemingen ("alle vorige afgeschermd", "zet alle drie de waarnemingen op afgeschermd", "mijn waarnemingen onder embargo") → een update_observation voor elke bedoelde waarneming uit de lijst met recente waarnemingen. Zonder aantal ("alle", "mijn waarnemingen") zijn dat alle waarnemingen in de lijst.
+- Afschermen en embargo zijn geen twijfel: geen uncertain, en niet in remarks of private_note.
 
 ## Soorten
 

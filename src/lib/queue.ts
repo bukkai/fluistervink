@@ -494,6 +494,7 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
       groups,
       trektel: utterance.trektel,
       language,
+      recordedAt: utterance.recordedAt,
     });
     if (interpretation.warnings.length) {
       logEvent('species_id_fixed', { warnings: interpretation.warnings }, ids);

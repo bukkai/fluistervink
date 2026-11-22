@@ -103,6 +103,8 @@ const FIELDS = [
   'methodId',
   'lifeStageId',
   'sex',
+  'obscurity',
+  'embargoUntil',
 ];
 const SNAKE = {
   species_id: 'speciesId',
@@ -112,6 +114,8 @@ const SNAKE = {
   method_id: 'methodId',
   life_stage_id: 'lifeStageId',
   sex: 'sex',
+  obscurity: 'obscurity',
+  embargo_until: 'embargoUntil',
 };
 
 // ---------------------------------------------------------------------------
@@ -404,6 +408,7 @@ async function run(item) {
     groups: opts.soortgroepen,
     trektel: u.trektel,
     language,
+    recordedAt: u.recordedAt,
   });
   return {
     ...result,
@@ -426,6 +431,7 @@ function norm(field, value) {
   }
   if (DEFAULTS[field]?.has(value)) return 'standaard';
   if (field === 'lifeStageId' && value === 1) return undefined; // 1 = onbekend
+  if (field === 'obscurity' && value === 0) return undefined; // 0 = openbaar
   return value;
 }
 
@@ -529,6 +535,8 @@ const label = (f) =>
     lifeStageId: 'kleed',
     sex: 'geslacht',
     speciesId: 'soort',
+    obscurity: 'afscherming',
+    embargoUntil: 'embargo',
   })[f];
 
 function show(f, value) {

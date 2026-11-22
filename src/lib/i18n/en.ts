@@ -802,6 +802,7 @@ export const en: Dictionary = {
     'Only heard "{transcript}"; perhaps "a …" (new observation). Was {count} × {species}',
   'reason.vagrant': 'Vagrant, not in the standard list (said: "{named}")',
   'reason.insect': 'Insect, looked up (said: "{named}")',
+  'reason.embargoNoDate': 'Under embargo, but without a date: choose the date',
   'reason.place': 'Spot mentioned: "{text}"; put it on the map',
 
   // Gesproken bevestiging

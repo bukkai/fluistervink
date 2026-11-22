@@ -3,7 +3,14 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { timeFormat } from './format';
 import { distanceMeters } from './geo';
 import { createMessage, type Timing } from './api';
-import type { Observation, Position, SpokenPlace } from './db';
+import {
+  isDateString,
+  isObscurity,
+  type Obscurity,
+  type Observation,
+  type Position,
+  type SpokenPlace,
+} from './db';
 import {
   DIRECTIONS,
   MAX_DISTANCE_M,
@@ -73,6 +80,10 @@ export interface ObservationFields {
   privateNote?: string;
   spokenPlace?: SpokenPlace;
   candidates?: number[];
+  obscurity?: Obscurity;
+  embargoUntil?: string;
+  /** Embargo gezegd, maar zonder datum: de app zet de waarneming op onzeker */
+  embargoNoDate?: boolean;
 }
 
 export type Action =
@@ -122,6 +133,9 @@ const WORDS = {
     note: 'notitie',
     place: 'plek',
     or: ' of ',
+    obscurity: 'afgeschermd',
+    embargo: 'embargo tot',
+    today: 'Vandaag',
     trektel: 'Dit is een stuk uit een trektelling.',
     recent: 'Recente waarnemingen in deze sessie (#1 = meest recent):',
     said: 'Uitspraak',
@@ -138,6 +152,9 @@ const WORDS = {
     note: 'note',
     place: 'place',
     or: ' or ',
+    obscurity: 'hidden',
+    embargo: 'embargo until',
+    today: 'Today',
     trektel: 'This is a chunk from a migration count.',
     recent: 'Recent observations in this session (#1 = most recent):',
     said: 'Voice note',
@@ -206,6 +223,8 @@ function describe(obs: Observation, here: Position | undefined, language: Langua
     obs.remarks ? `${words.remarks}: "${obs.remarks}"` : undefined,
     obs.privateNote ? `${words.note}: "${obs.privateNote}"` : undefined,
     obs.spokenPlace ? `${words.place}: "${obs.spokenPlace.text}"` : undefined,
+    obs.obscurity ? `${words.obscurity}: ${obs.obscurity}` : undefined,
+    obs.embargoUntil ? `${words.embargo} ${obs.embargoUntil}` : undefined,
     farAway(obs, here, language),
   ];
   return `${timeFormat.format(obs.observedAt)} ${parts.filter(Boolean).join(', ')}`;
@@ -257,10 +276,32 @@ export function userMessage(
   transcript: string,
   trektel: boolean,
   language: Language = 'nl',
+  recordedAt?: number,
 ): string {
   const words = WORDS[language];
   const kind = trektel ? `${words.trektel}\n\n` : '';
-  return `${kind}${words.recent}\n${contextText}\n\n${words.said}: "${transcript}"`;
+  // De datum alleen bij een embargo ("embargo tot 1 maart" → welk jaar?), zodat
+  // alle andere berichten precies blijven zoals ze waren
+  const today =
+    recordedAt !== undefined && /embargo/i.test(transcript)
+      ? `${words.today}: ${spokenDate(recordedAt, language)}\n\n`
+      : '';
+  return `${kind}${words.recent}\n${contextText}\n\n${today}${words.said}: "${transcript}"`;
+}
+
+/** "zondag 22 november 2026 (2026-11-22)", in de lokale tijd */
+function spokenDate(at: number, language: Language): string {
+  const date = new Date(at);
+  const long = new Intl.DateTimeFormat(language === 'en' ? 'en-GB' : 'nl-NL', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(date);
+  const iso = [date.getFullYear(), date.getMonth() + 1, date.getDate()]
+    .map((n) => String(n).padStart(2, '0'))
+    .join('-');
+  return `${long} (${iso})`;
 }
 
 /**
@@ -283,6 +324,8 @@ export async function interpret(
     groups?: boolean;
     trektel?: boolean;
     language?: Language;
+    /** Tijdstip van de uitspraak, voor de datum bij een embargo */
+    recordedAt?: number;
   } = {},
 ): Promise<Interpretation> {
   const withGroups = options.groups ?? false;
@@ -304,7 +347,13 @@ export async function interpret(
       messages: [
         {
           role: 'user',
-          content: userMessage(contextText, transcript, options.trektel ?? false, language),
+          content: userMessage(
+            contextText,
+            transcript,
+            options.trektel ?? false,
+            language,
+            options.recordedAt,
+          ),
         },
       ],
     } satisfies Anthropic.MessageCreateParamsNonStreaming,
@@ -352,6 +401,8 @@ interface RawFields {
   place_distance_m?: number | null;
   place_direction?: string | null;
   candidate_species?: string[];
+  obscurity?: number | null;
+  embargo_until?: string | null;
 }
 
 /**
@@ -431,6 +482,34 @@ function toCandidates(
   return ids;
 }
 
+/**
+ * Afschermen en embargo (docs/plan-afschermen.md). Een onbekende afscherming
+ * valt weg; een embargo zonder geldige datum wordt "zonder datum", want het
+ * embargo zelf is wel gezegd.
+ */
+function toShielding(
+  tool: string,
+  input: RawFields,
+  warnings: string[],
+): Pick<ObservationFields, 'obscurity' | 'embargoUntil' | 'embargoNoDate'> {
+  const result: Pick<ObservationFields, 'obscurity' | 'embargoUntil' | 'embargoNoDate'> = {};
+  if (input.obscurity !== undefined && input.obscurity !== null) {
+    if (isObscurity(input.obscurity)) result.obscurity = input.obscurity;
+    else warnings.push(`${tool}: afscherming ${input.obscurity} genegeerd`);
+  }
+  const embargo = modelText(input.embargo_until);
+  if (embargo !== undefined) {
+    if (isDateString(embargo)) result.embargoUntil = embargo;
+    else {
+      if (!/zonder datum|no date/i.test(embargo)) {
+        warnings.push(`${tool}: embargo "${embargo}" is geen datum; zonder datum`);
+      }
+      result.embargoNoDate = true;
+    }
+  }
+  return result;
+}
+
 const validCode = (codes: Code[], id: number | undefined) =>
   id === undefined || codes.some((c) => c.id === id);
 
@@ -504,6 +583,7 @@ function toAction(
     remarks: modelText(input.remarks),
     privateNote: modelText(input.private_note),
     spokenPlace: toSpokenPlace(block.name, input, warnings, language),
+    ...toShielding(block.name, input, warnings),
   };
   // Weglaten wat het model niet meegaf, zodat een update alleen wijzigt wat bedoeld is
   for (const key of Object.keys(fields) as (keyof ObservationFields)[]) {
