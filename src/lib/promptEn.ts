@@ -76,6 +76,8 @@ const TOOL_DESCRIPTIONS: Record<string, string> = {
   add_observation: 'Records a new observation. One call per species.',
   update_observation:
     'Changes an earlier observation, e.g. for "no, Brambling instead of Chaffinch" or "three more". Only pass the fields that change.',
+  shield_observation:
+    'Hides an earlier observation on waarneming.nl or puts it under embargo (or removes that), e.g. for "hide that one" or "put the last one under embargo". See "Hiding".',
   delete_observation:
     'Deletes an earlier observation, e.g. for "scratch that last one" or "delete the Chaffinch".',
   undo: 'Fully reverts the previous voice note, for "undo", "go back" or "that was wrong".',
@@ -239,6 +241,8 @@ The user speaks English. All names in your tool calls (species_name, candidate_s
 - You recognise feedback about the app only by the word "feedback" (or "dev note", also garbled by speech recognition) → add_dev_note. Without that word it is not feedback, even if it is about the app ("it doesn't buzz"): then no add_dev_note.
 - Feedback in the middle of observations (especially in a migration count, where the app cuts its own chunks of a minute): carry out the observations as usual and call add_dev_note, with only the remark about the app in text. "Six Stock Doves. Feedback, the button is too small. Buzzard." = add_observation (Stock Dove) + add_dev_note (text "the button is too small") + add_observation (Common Buzzard).
 - No observation, correction or feedback (chatter, "hello", "test", questions, remarks about the app without "feedback") → don't call any tool.
+- Pets and livestock ("a cat", "the neighbours' dog", horses, cows, sheep, chickens) are not observations: don't call any tool.
+- An observation from another day or earlier today ("yesterday I saw a Kingfisher here", "this morning there was a Great Egret here") → still add_observation, but with uncertain and the time in uncertain_reason ("Said: yesterday"): the time of the voice note is then wrong. "Just now" and "a moment ago" are now: record it as usual, not uncertain.
 - The word "Fluistervink" (or the old "Thijsse") at the start addresses the app; ignore it. It is not an observation of a finch: "Fluistervink, six Woodpigeons" is only about Woodpigeons.
 
 ## Remarks
@@ -266,8 +270,8 @@ On waarneming.nl an observation can be hidden (a nest or roost of a vulnerable s
 - "Hide", "hidden", "make it private", "sensitive" → obscurity 9. "Blur", "blurred", "blur to a kilometre" → 1; "blur to five kilometres" → 5. "Don't hide it after all", "make it public again" → 0.
 - "Under embargo", "embargo it" without a date or term → embargo_until "no date". With a date or term ("embargo until 1 March", "a month's embargo", "embargo for a year") → the end date as YYYY-MM-DD, counted from today's date in the message. A vague term ("until after the breeding season") → "no date".
 - For a new observation ("a Wryneck, nest, hide it") → add_observation with obscurity 9.
-- About an earlier observation ("hide that one", "hide the last one") → update_observation on that observation, with only obscurity or embargo_until.
-- About several earlier observations ("hide all the previous ones", "set all three observations to hidden", "put my observations under embargo") → one update_observation for each intended observation in the list of recent observations. Without a number ("all", "my observations") that is every observation in the list.
+- About an earlier observation ("hide that one", "hide the last one") → shield_observation on that observation.
+- About several earlier observations ("hide all the previous ones", "set all three observations to hidden", "put my observations under embargo") → one shield_observation for each intended observation in the list of recent observations. Without a number ("all", "my observations") that is every observation in the list.
 - Hiding and embargo are not doubt: no uncertain, and not in remarks or private_note.
 
 ## Species
