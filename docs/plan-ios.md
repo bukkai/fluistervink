@@ -46,7 +46,7 @@ Elke fase is één à twee PR's en wordt in het veld getest voordat de volgende 
 - `@capacitor/ios` toevoegen en `npx cap add ios`: de map `ios/` in git, naast `android/`. Capacitor 8 gebruikt Swift Package Manager, CocoaPods is niet nodig.
 - **Toestemmingsteksten in `Info.plist`**: microfoon (`NSMicrophoneUsageDescription`) en locatie tijdens gebruik (`NSLocationWhenInUseUsageDescription`), in het Nederlands. Zonder die teksten stopt de app zodra hij erom vraagt.
 - **Eigen plugin `Trillen` in Swift**, met dezelfde naam als de Java-plugin, zodat `vibrateNative` in `native.ts` niet verandert. iOS kent geen vrije trilpatronen zoals Android, maar Core Haptics kan een reeks tikken van gekozen lengte en sterkte afspelen. De drie patronen (opgeslagen, niet begrepen, onzeker) moeten in de hand nog steeds te onderscheiden zijn; dat is de proef van deze fase.
-- **Plugin `Versie`** in Swift: het versienummer uit git, net als `android/app/build.gradle` (`0.<aantal commits> (<hash>)`).
+- **Plugin `Versie`** in Swift: het versienummer uit git, net als `android/app/build.gradle` (de laatste tag, `0.6 (<hash>)`).
 - Nagaan in de WebView: opnemen (`getUserMedia`, werkt in WKWebView sinds iOS 14.3; komt de vraag om toestemming één keer of twee keer?), de GPS (`watchPosition`), de service worker (opstarten zonder bereik), en de veilige randen boven en onder (notch, thuisbalk; `env(safe-area-inset-*)`).
 - **Klaar als:** een sessie werkt op de iPhone zoals in Safari, en de drie trilpatronen zijn zonder te kijken uit elkaar te houden.
 

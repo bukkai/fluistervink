@@ -80,10 +80,16 @@ Jijzelf: de debug-APK die je nu hebt, is met een andere sleutel ondertekend. Ver
 Alleen nodig bij wijzigingen in `android/` of `capacitor.config.ts`; webwijzigingen staan meteen in de app.
 
 1. Mergen naar `main`, dan `git tag v0.2 && git push origin v0.2` (elke tag een hoger nummer).
-2. Beide artifacts downloaden en in de Play Console een nieuwe release maken: beta naar de interne test, stable naar de gesloten test (stap 5.3 en 5.4).
+2. Beide artifacts downloaden en in de Play Console een nieuwe release maken: beta naar de interne test, stable naar de gesloten test (stap 5.3 en 5.4). Als **releasenaam** de tag (`v0.7`): Play stelt zelf de versionName voor, maar de naam van een eerdere release kan blijven hangen (de gesloten test heette tot v0.6 nog "v0.3").
 
 **Toestemmingen alleen in de beta** (18 nov): wat in `android/app/src/stable/AndroidManifest.xml` staat, haalt de stabiele build uit het manifest (nu: de microfoon in de service, voor opnemen met het scherm uit). Zo kan een native proef in de interne test, terwijl de stabiele app zelf de nieuwe toestemming niet heeft. **Maar** (gemerkt bij v0.4): de interne test laat de upload zonder vragen door, terwijl de verklaring voor de hele app geldt. Daarna weigert Play elke release die beoordeeld wordt (gesloten test, productie) met "You must let us know whether your app uses any Foreground Service permissions", tot de verklaring ook de nieuwe toestemming noemt. Een toestemming alleen in de beta scheelt dus geen verklaring; hij kan alleen uitgerold worden voordat iedereen hem heeft. De teksten staan in `docs/play-store/README.md`. Na het uploaden nagaan bij **App-bundels** in de Play Console: de stabiele mag `FOREGROUND_SERVICE_MICROPHONE` niet hebben.
 
-Het versienummer komt vanzelf uit git (`versionCode` = 2 × aantal commits, +1 voor de beta), dus het is altijd hoger dan het vorige. Play weigert een AAB met een `versionCode` die al eerder is geüpload; dat gebeurt als je de workflow twee keer op dezelfde commit draait.
+Het versienummer komt vanzelf uit git (`android/app/build.gradle`). Play kent er drie:
+
+- **versionCode**: 2 × aantal commits, +1 voor de beta, dus altijd hoger dan het vorige. Hieraan ziet Play wat nieuwer is; bij **App-bundels** staat per upload welke het is.
+- **versionName**: wat Android en Instellingen tonen, uit de laatste tag: `0.6 (8577151)` op de tag zelf, `0.6+12 (…)` bij een build twaalf commits later (lokaal of via **Run workflow** zonder tag). Tot v0.6 was het `0.<aantal commits> (<hash>)`.
+- **Releasenaam**: vrije tekst in de Play Console, alleen voor jezelf; maak hem gelijk aan de tag.
+
+Play weigert een AAB met een `versionCode` die al eerder is geüpload; dat gebeurt als je de workflow twee keer op dezelfde commit draait.
 
 Later kan het uploaden ook automatisch vanuit de workflow (met een serviceaccount van Google Cloud); voor af en toe een release is met de hand eenvoudiger.
