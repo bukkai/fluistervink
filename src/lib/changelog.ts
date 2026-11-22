@@ -41,6 +41,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         'De suggesties onder het soortveld hebben een eigen kleur en schuiven meteen in beeld, ook boven de knop Opslaan. Zoek je op de wetenschappelijke naam ("corvus"), dan staat die erbij.',
       ],
       Inspreken: [
+        'Feedback in een trektelling wordt niet meer uitgevoerd: zeg je "feedback, die buizerd had ter plaatse moeten zijn", dan gaat dat alleen naar de ontwikkelaar en blijft de buizerd zoals hij was. En een soort die lijkt op een eerdere ("graszanger" na grasmussen) wordt een nieuwe waarneming in plaats van een verbetering van de vorige.',
         'Nieuw bij Instellingen: "Scherm aan houden tijdens een sessie". Het scherm gaat dan niet vanzelf uit, zodat je met de volumeknop kunt blijven inspreken.',
         'Spreek je dezelfde soort nog eens in ("een hommel", even later weer "een hommel"), dan wordt dat altijd een nieuwe waarneming. Soms werd de tweede genegeerd omdat hij al in de lijst stond. Met "nog een hommel" telt hij op bij de vorige, zoals altijd.',
         'Vertel je iets van eerder ("gisteren zag ik hier een ijsvogel"), dan bewaart de app het als onzeker, omdat de tijd niet klopt. Huisdieren en vee ("een kat") worden geen waarneming meer.',
