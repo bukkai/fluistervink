@@ -488,7 +488,9 @@ function compare(expected, got, context) {
       const result =
         f === 'count' && g.addCount
           ? Math.max(1, (g.fields.count ?? e.before.count) + g.addCount)
-          : (g.fields[f] ?? e.before[f]);
+          : f === 'embargoUntil' && g.fields.clearEmbargo
+            ? undefined
+            : (g.fields[f] ?? e.before[f]);
       if (!same(f, result, value))
         diffs.push(`correctie: ${label(f)} ${show(f, result)}, moet ${show(f, value)}`);
     }

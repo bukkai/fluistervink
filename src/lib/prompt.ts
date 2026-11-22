@@ -116,7 +116,7 @@ const shieldProperties = {
   embargo_until: {
     anyOf: [{ type: 'string' }, { type: 'null' }],
     description:
-      'Alleen als de gebruiker een embargo noemt: de einddatum als JJJJ-MM-DD, of "zonder datum" als er geen datum of termijn bij gezegd wordt. Anders null. Zie "Afschermen".',
+      'Alleen als de gebruiker een embargo noemt: de einddatum als JJJJ-MM-DD, "zonder datum" als er geen datum of termijn bij gezegd wordt, of "geen" om een embargo weg te halen. Anders null. Zie "Afschermen".',
   },
 } as const;
 
@@ -419,6 +419,7 @@ Laat de plekvelden weg als de vogel bij de gebruiker is, of als het alleen gaat 
 Op waarneming.nl kan een waarneming afgeschermd worden (een nest of slaapplaats van een kwetsbare soort) of onder embargo, zodat hij pas later zichtbaar wordt. Alleen als de gebruiker dat zegt, vul je obscurity of embargo_until; anders zijn beide null.
 - "Afschermen", "afgeschermd", "verbergen", "verborgen" → obscurity 9. "Vervagen", "vervaagd", "op een kilometer vervagen" → 1; "op vijf kilometer vervagen" → 5. "Toch niet afschermen", "mag weer openbaar" → 0.
 - "Onder embargo", "embargo erop" zonder datum of termijn → embargo_until "zonder datum". Met een datum of termijn ("embargo tot 1 maart", "een maand embargo", "embargo van een jaar") → de einddatum als JJJJ-MM-DD, gerekend vanaf de datum van vandaag in het bericht. Een vage termijn ("tot na het broedseizoen") → "zonder datum".
+- Een embargo weghalen ("zonder embargo", "embargo eraf", "geen embargo meer") → embargo_until "geen". "Openbaar publiceren zonder embargo" → obscurity 0 en embargo_until "geen". Alleen "toch niet afschermen" laat een embargo staan (embargo_until null).
 - Bij een nieuwe waarneming ("een draaihals, nest, afschermen") → add_observation met obscurity 9.
 - Over een eerdere waarneming ("die afschermen", "de laatste verbergen") → shield_observation op die waarneming.
 - Over meer eerdere waarnemingen ("alle vorige afgeschermd", "zet alle drie de waarnemingen op afgeschermd", "mijn waarnemingen onder embargo") → een shield_observation voor elke bedoelde waarneming uit de lijst met recente waarnemingen. Zonder aantal ("alle", "mijn waarnemingen") zijn dat alle waarnemingen in de lijst.

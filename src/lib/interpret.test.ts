@@ -372,6 +372,16 @@ describe('afschermen en embargo', () => {
     expect(odd.warnings).toHaveLength(1);
   });
 
+  it('"geen" haalt een embargo weg', () => {
+    expect(add({ embargo_until: 'geen' })).toMatchObject({
+      actions: [{ fields: { clearEmbargo: true } }],
+      warnings: [],
+    });
+    expect(add({ embargo_until: 'No embargo' }).actions[0]).toMatchObject({
+      fields: { clearEmbargo: true },
+    });
+  });
+
   it('zet afscherming en embargo in de context voor het model', () => {
     const text = describeContext([observation({ obscurity: 9, embargoUntil: '2027-03-01' })]);
     expect(text).toMatch(/afgeschermd: 9, embargo tot 2027-03-01/);

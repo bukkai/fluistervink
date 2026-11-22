@@ -89,6 +89,7 @@ const NOT_A_CORRECTION: string[] = [
   'obscurity',
   'embargoUntil',
   'embargoNoDate',
+  'clearEmbargo',
 ];
 
 /** Embargo gezegd zonder datum: onzeker, zodat de gebruiker thuis de datum zet */
@@ -166,7 +167,8 @@ export async function applyActions(
   for (const action of actions) {
     switch (action.type) {
       case 'add': {
-        const { embargoNoDate, ...fields } = action.fields;
+        // Een embargo weghalen kan bij een nieuwe waarneming niet: die heeft er geen
+        const { embargoNoDate, clearEmbargo: _, ...fields } = action.fields;
         const observation: Observation = {
           id: crypto.randomUUID(),
           sessionId: utterance.sessionId,
@@ -199,8 +201,10 @@ export async function applyActions(
       case 'update': {
         const current = await db.observations.get(action.observationId);
         if (!current) break;
-        const { embargoNoDate: _, ...fields } = action.fields;
+        const { embargoNoDate: _, clearEmbargo, ...fields } = action.fields;
         const patch: Partial<Observation> = { ...fields };
+        // Als sleutel erin, zodat ongedaan maken het embargo terugzet
+        if (clearEmbargo) patch.embargoUntil = undefined;
         Object.assign(patch, codesForNewSpecies(current, patch));
         // Onder de 1 ("nog vijf eraf" bij drie): 1, maar onzeker, want er is
         // iets verkeerd verstaan of geteld. Na de twijfel hieronder gezet.

@@ -59,7 +59,7 @@ const PROPERTY_DESCRIPTIONS: Record<string, string> = {
   obscurity:
     'Only if the user says the observation should be hidden on waarneming.nl: 9 hidden ("hide", "make it private"), 1 blurred to 1 km ("blur"), 5 blurred to 5 km, 0 public again ("don\'t hide it after all"). Otherwise null. See "Hiding".',
   embargo_until:
-    'Only if the user mentions an embargo: the end date as YYYY-MM-DD, or "no date" if no date or term is given. Otherwise null. See "Hiding".',
+    'Only if the user mentions an embargo: the end date as YYYY-MM-DD, "no date" if no date or term is given, or "no embargo" to remove an embargo. Otherwise null. See "Hiding".',
   ref: 'Number of the observation in the list of recent observations (#1 = most recent).',
   add_count: 'Add this to the existing count ("three more" = 3, "two fewer" = -2).',
   text: 'Only the remark about the app, in the user\'s words, without "feedback" in front and without the observations around it.',
@@ -269,6 +269,7 @@ Leave the place fields out if the bird is where the user is, or if it is only ab
 On waarneming.nl an observation can be hidden (a nest or roost of a vulnerable species) or put under embargo, so that it only becomes visible later. Only if the user says so, fill in obscurity or embargo_until; otherwise both are null.
 - "Hide", "hidden", "make it private", "sensitive" → obscurity 9. "Blur", "blurred", "blur to a kilometre" → 1; "blur to five kilometres" → 5. "Don't hide it after all", "make it public again" → 0.
 - "Under embargo", "embargo it" without a date or term → embargo_until "no date". With a date or term ("embargo until 1 March", "a month's embargo", "embargo for a year") → the end date as YYYY-MM-DD, counted from today's date in the message. A vague term ("until after the breeding season") → "no date".
+- Removing an embargo ("without embargo", "lift the embargo", "no embargo any more") → embargo_until "no embargo". "Publish it publicly without embargo" → obscurity 0 and embargo_until "no embargo". Just "don't hide it after all" leaves an embargo in place (embargo_until null).
 - For a new observation ("a Wryneck, nest, hide it") → add_observation with obscurity 9.
 - About an earlier observation ("hide that one", "hide the last one") → shield_observation on that observation.
 - About several earlier observations ("hide all the previous ones", "set all three observations to hidden", "put my observations under embargo") → one shield_observation for each intended observation in the list of recent observations. Without a number ("all", "my observations") that is every observation in the list.

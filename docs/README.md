@@ -24,7 +24,6 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 | `plan-trektelmodus.md` | trektelmodus; gebouwd, proef met tester Maarten; met het scherm uit als proef in de beta (18 nov) |
 | `plan-tuintelling.md` | Nationale Tuinvogeltelling (29–31 jan 2027): kern gebouwd als ontwikkeloptie (21 nov); gesprekken met Vogelbescherming week van 23 nov |
 | `plan-insecten.md` | insecten inspreken: vangnet per groep met opzoeken (nu), korte lijst opvallende soorten in de prompt (april); laag 1 gebouwd als ontwikkeloptie `insecten` (22 nov) |
-| `plan-afschermen.md` | afschermen en embargo met de stem; gebouwd en proefimport goed (22 nov); embargo weghalen met de stem in #345 |
 | `plan-robuustheid.md` | edge cases die een tester zou proberen; code klaar, nog een paar gevallen op de telefoon en in de testset |
 | `plan-engels.md` | de app in het Engels; stap 1–3 en de schermen van stap 5 gedaan (ontwikkeloptie "English"); volgende: Engelse testset, na de betaalde laag |
 
@@ -44,6 +43,7 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 | `plan-ebird.md` | inspanning en export naar eBird; afgerond 16 nov (keuze "Ik gebruik eBird" bij Instellingen) |
 | `plan-soortgroepen.md` | zoogdieren, reptielen en amfibieën, dagvlinders en libellen; afgerond 16 nov (voor iedereen, standaard aan) |
 | `plan-offline.md` | offline wachtrij; afgerond, op stable sinds 18 nov |
+| `plan-afschermen.md` | afschermen en embargo met de stem, mee naar waarneming.nl; gebouwd en proefgeïmporteerd 22 nov, embargo weghalen met de stem in #345 |
 
 ## Naslag
 

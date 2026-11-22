@@ -82,6 +82,8 @@ export interface ObservationFields {
   candidates?: number[];
   obscurity?: Obscurity;
   embargoUntil?: string;
+  /** Embargo weghalen ("zonder embargo"); alleen bij een update */
+  clearEmbargo?: boolean;
   /** Embargo gezegd, maar zonder datum: de app zet de waarneming op onzeker */
   embargoNoDate?: boolean;
 }
@@ -491,8 +493,11 @@ function toShielding(
   tool: string,
   input: RawFields,
   warnings: string[],
-): Pick<ObservationFields, 'obscurity' | 'embargoUntil' | 'embargoNoDate'> {
-  const result: Pick<ObservationFields, 'obscurity' | 'embargoUntil' | 'embargoNoDate'> = {};
+): Pick<ObservationFields, 'obscurity' | 'embargoUntil' | 'embargoNoDate' | 'clearEmbargo'> {
+  const result: Pick<
+    ObservationFields,
+    'obscurity' | 'embargoUntil' | 'embargoNoDate' | 'clearEmbargo'
+  > = {};
   if (input.obscurity !== undefined && input.obscurity !== null) {
     if (isObscurity(input.obscurity)) result.obscurity = input.obscurity;
     else warnings.push(`${tool}: afscherming ${input.obscurity} genegeerd`);
@@ -500,6 +505,7 @@ function toShielding(
   const embargo = modelText(input.embargo_until);
   if (embargo !== undefined) {
     if (isDateString(embargo)) result.embargoUntil = embargo;
+    else if (/^(geen|geen embargo|no embargo)$/i.test(embargo)) result.clearEmbargo = true;
     else {
       if (!/zonder datum|no date/i.test(embargo)) {
         warnings.push(`${tool}: embargo "${embargo}" is geen datum; zonder datum`);
