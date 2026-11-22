@@ -51,6 +51,8 @@
   import Welcome from './lib/Welcome.svelte';
   import { setWelcomeDone, welcomeDone } from './lib/welcome';
   import Zeemeeuwen from './lib/Zeemeeuwen.svelte';
+  import TochEenBuizerd from './lib/TochEenBuizerd.svelte';
+  import Lifer from './lib/Lifer.svelte';
   import UpdateStatus from './lib/UpdateStatus.svelte';
 
   // Uitspraken die bij het afsluiten nog niet verwerkt waren, alsnog verwerken.
@@ -432,6 +434,8 @@
 <UpdateStatus hidden={!!active} />
 
 <Zeemeeuwen />
+<TochEenBuizerd />
+<Lifer />
 
 <style>
   header {

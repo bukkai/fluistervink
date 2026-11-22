@@ -46,6 +46,10 @@ const PATTERNS = {
   tuintelKlaar: [500, 200, 500, 200, 500],
   /** Easter egg "zeemeeuw": boos gepik */
   angry: [70, 40, 70, 40, 70, 40, 250, 80, 70, 40, 70, 40, 400],
+  /** Easter egg #tocheenbuizerd: de roep van de buizerd, een lange klagende "pieeeuw" */
+  buizerd: [700, 120, 300],
+  /** Easter egg lifer: feest, drie korte en een lange */
+  party: [80, 60, 80, 60, 80, 60, 500],
 };
 
 export type Feedback = keyof typeof PATTERNS;

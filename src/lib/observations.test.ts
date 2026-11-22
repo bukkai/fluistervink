@@ -13,6 +13,7 @@ import {
   toolResponse,
 } from '../test-helpers';
 import { ApiError } from './api';
+import { BUIZERD_ID, lifer, tochEenBuizerd } from './eastereggs.svelte';
 import { db, storeAudio, type Observation, type PositionLookup, type Utterance } from './db';
 import { interpret } from './interpret';
 import { fillMissingAreas, nameFromSession } from './area';
@@ -301,6 +302,31 @@ describe('corrigeren', () => {
     expect(await db.observations.count()).toBe(0);
     const [deleted] = await db.deletedObservations.toArray();
     expect(deleted).toMatchObject({ speciesId: VINK, deletedBy: 'voice' });
+  });
+});
+
+describe('easter eggs', () => {
+  afterEach(() => {
+    tochEenBuizerd.visible = false;
+    lifer.visible = false;
+  });
+
+  it('de buizerd komt als een waarneming toch een buizerd blijkt', async () => {
+    await say('wespendief', ['add_observation', { species_id: 349, count: 1 }]);
+    await say('nee, toch een buizerd', ['update_observation', { ref: 1, species_id: BUIZERD_ID }]);
+    expect(tochEenBuizerd.visible).toBe(true);
+    const [obs] = await listObservations(SESSION);
+    expect(obs.speciesId).toBe(BUIZERD_ID);
+  });
+
+  it('geen grap bij een gewone buizerd', async () => {
+    await say('buizerd', ['add_observation', { species_id: BUIZERD_ID, count: 1 }]);
+    expect(tochEenBuizerd.visible).toBe(false);
+  });
+
+  it('feest bij een lifer, met de soort erbij', async () => {
+    await say('keep, een lifer!', ['add_observation', { species_id: KEEP, count: 1 }]);
+    expect(lifer).toMatchObject({ visible: true, speciesId: KEEP });
   });
 });
 

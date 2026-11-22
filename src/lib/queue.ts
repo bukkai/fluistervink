@@ -27,6 +27,7 @@ import { confirmAloud, confirmCatchUp } from './spoken';
 import { TRANSCRIBE_MODEL, transcribe, transcribePromptVersionFor } from './transcribe';
 import { attachPosition } from './utterancePosition';
 import { checkZeemeeuw } from './zeemeeuw.svelte';
+import { checkEasterEggs } from './eastereggs.svelte';
 
 // Local-first verwerking: elke uitspraak wordt eerst opgeslagen (status
 // `pending`) en daarna één voor één, op volgorde, door het model gehaald.
@@ -570,6 +571,7 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
   };
 
   const saveStart = Date.now();
+  let saved = false;
   await db.transaction('rw', db.observations, db.deletedObservations, db.utterances, async () => {
     // Opnieuw ophalen: de positie kan intussen binnengekomen zijn
     const latest = await db.utterances.get(utterance.id);
@@ -621,7 +623,10 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
           }),
       error: interpretation.rejected.length ? interpretation.rejected.join('; ') : undefined,
     });
+    saved = true;
   });
+  // De buizerd of de lifer, pas als de waarneming er staat
+  if (saved) checkEasterEggs(utterance.transcript ?? '', interpretation.actions);
 }
 
 /** Afronden zonder model (feedback, niets verstaan), als de poging nog geldt. */

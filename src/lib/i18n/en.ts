@@ -863,4 +863,14 @@ export const en: Dictionary = {
   'gulls.notExist': 'There’s no such thing as a seagull.',
   'gulls.which': 'Herring Gull? Black-headed Gull? Common Gull? Great Black-backed Gull?',
   'gulls.hint': 'Tap to calm the gulls',
+
+  // Just a buzzard and the lifer
+  'egg.hint': 'Tap to carry on',
+  'buizerd.label': 'Just a buzzard',
+  'buizerd.cry': 'PEE-YOO!',
+  'buizerd.hashtag': '#justabuzzard',
+  'buizerd.message': 'It’s always a buzzard.',
+  'lifer.label': 'A lifer',
+  'lifer.shout': 'LIFER!',
+  'lifer.congrats': 'Congratulations on your new species!',
 };
