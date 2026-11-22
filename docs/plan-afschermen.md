@@ -19,13 +19,18 @@ Uit `https://waarneming.nl/api/v1/lookups/` (openbaar, 22 nov nagekeken), lijst 
 | 5 | obscured (5km) | plek vervaagd tot 5 km |
 | 9 | hidden | verborgen |
 
-Nog niet bekend (de API-documentatie en de FAQ zitten achter een botcheck, dus ingelogd nagaan):
+Uit het voorbeeldbestand van de bulkimport (`/import/observations/example/`, ingelogd opgehaald op 22 nov):
 
-1. **Wat de bulkimport in de kolom `obscurity` verwacht**: het ID (`0`, `1`, `5`, `9`), de Engelse naam of de Nederlandse tekst zoals bij `activity`. Het voorbeeldbestand (`/import/observations/example/`) heeft opzoektabellen.
-2. **Opmaak van `embargo date`** (waarschijnlijk `YYYY-mm-dd`) en of er een maximum is.
-3. Of waarneming.nl kwetsbare soorten **zelf al vervaagt**. Zo ja, dan hoeft de gebruiker dat voor die soorten niet te zeggen, en kan de uitleg dat vermelden.
+- **`obscurity` gaat op het getal**, niet op tekst: in de voorbeeldregel staat `0`. Er is geen opzoektabel voor, dus de ID's hierboven. (Anders dan `activity`, `method` e.d., die op Nederlandse tekst gaan.)
+- **`embargo date` gaat als `YYYY-mm-dd`** (voorbeeld `2026-11-18`, dezelfde opmaak als `date`).
+- De kolommen staan achteraan, na `external reference`; de volgorde maakt niet uit.
 
-Dit is werk voor de eigenaar (ingelogd), vóór het bouwen; daarna een proefimport met één afgeschermde waarneming.
+Nog niet bekend (de API-documentatie zit achter een botcheck):
+
+1. Of er een maximum is voor de embargodatum.
+2. Of waarneming.nl kwetsbare soorten **zelf al vervaagt**. Zo ja, dan hoeft de gebruiker dat voor die soorten niet te zeggen, en kan de uitleg dat vermelden.
+
+Na het bouwen een proefimport met één afgeschermde waarneming en één met embargo.
 
 ## Voorstel
 
@@ -58,7 +63,7 @@ De app controleert de waarden zoals bij de andere ID's (`validate`): een onbeken
 
 ### Export
 
-- waarneming.nl (CSV en xlsx, `waarnemingExport.ts`): de kolommen `obscurity` en `embargo date` vullen in het formaat uit punt 1 en 2 hierboven.
+- waarneming.nl (CSV en xlsx, `waarnemingExport.ts`): de kolom `obscurity` met het getal (leeg of `0` bij openbaar), `embargo date` als `YYYY-mm-dd`; in de xlsx als tekstcel zoals de datum, `obscurity` als getal zoals `number`.
 - eBird: geen kolom voor afschermen per waarneming. Een afgeschermde waarneming gaat daar dus openbaar heen. Opties onder Beslissen.
 
 ### Testset en tests
@@ -82,7 +87,7 @@ De app controleert de waarden zoals bij de andere ID's (`validate`): een onbeken
 
 ## Stappen
 
-1. Eigenaar: punt 1–3 van "Wat we weten" nagaan, ingelogd; Beslissen invullen.
+1. Eigenaar: Beslissen invullen (importwaarden zijn nagegaan op 22 nov).
 2. Datamodel, validatie, export en tests (één PR).
 3. Prompt NL en EN, testset-gevallen (één PR, met testset-run).
 4. Scherm: slotje, bewerker, gesproken bevestiging, uitleg en changelog.

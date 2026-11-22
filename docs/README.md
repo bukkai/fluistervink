@@ -30,7 +30,7 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 | `plan-andere-landen.md` | soortenlijsten van andere landen en namen in andere talen; uitgewerkt 20 nov, voor later (eerst West-Europa); proef Spanje gedaan |
 | `plan-tuintelling.md` | Nationale Tuinvogeltelling (eind jan 2027): telmodus en promotie; uitzoekwerk gedaan (geen import, overtypen); kern gebouwd als ontwikkeloptie (21 nov) |
 | `plan-robuustheid.md` | edge cases die een tester zou proberen, en hoe we ze blijvend afdekken; code klaar, nog proberen op de telefoon en testset-opnames |
-| `plan-afschermen.md` | afschermen en embargo met de stem, mee naar waarneming.nl; voorstel 22 nov (feedback van een tester), eerst ingelogd de importwaarden nagaan |
+| `plan-afschermen.md` | afschermen en embargo met de stem, mee naar waarneming.nl; voorstel 22 nov (feedback van een tester), importwaarden nagegaan (getal, datum) |
 
 ## Naslag
 
