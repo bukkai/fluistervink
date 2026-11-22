@@ -172,7 +172,7 @@ const loader = await createServer({
   optimizeDeps: { noDiscovery: true },
   server: { middlewareMode: true, hmr: false, ws: false },
 });
-const { MODEL, CONTEXT_SIZE, interpret, parseResponse } =
+const { MODEL, CONTEXT_SIZE, flyoverChunk, interpret, parseResponse } =
   await loader.ssrLoadModule('/src/lib/interpret.ts');
 const { promptVersionFor } = await loader.ssrLoadModule('/src/lib/prompt.ts');
 const { transcribe } = await loader.ssrLoadModule('/src/lib/transcribe.ts');
@@ -204,6 +204,7 @@ const model = opts.model === 'origineel' ? 'origineel' : (opts.model ?? MODEL);
 // Testset opbouwen uit de export
 
 const data = JSON.parse(readFileSync(positionals[0], 'utf8'));
+const sessionOf = new Map((data.sessions ?? []).map((s) => [s.id, s]));
 const utterances = [...data.utterances].sort((a, b) => a.recordedAt - b.recordedAt);
 const allObservations = [...data.observations, ...(data.deletedObservations ?? [])];
 const obsById = new Map(allObservations.map((o) => [o.id, o]));
@@ -406,7 +407,7 @@ async function run(item) {
     model,
     contextText,
     groups: opts.soortgroepen,
-    trektel: u.trektel,
+    trektel: flyoverChunk(u, sessionOf.get(u.sessionId)),
     language,
     recordedAt: u.recordedAt,
   });

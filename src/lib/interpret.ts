@@ -269,6 +269,18 @@ export function parseResponse(
 }
 
 /**
+ * Krijgt dit stuk de regel van de trektelling (een vogel zonder gedrag is
+ * overvliegend)? Een tuintelling neemt op in de trektelstand, maar in de tuin
+ * zit een vogel meestal: daar blijft hij ter plaatse (tuintelling 22 nov).
+ */
+export function flyoverChunk(
+  utterance: { trektel?: boolean },
+  session: { tuintelling?: boolean } | undefined,
+): boolean {
+  return !!utterance.trektel && !session?.tuintelling;
+}
+
+/**
  * Het bericht bij elke aanroep: de context en de uitspraak. Een trektelstuk
  * krijgt er een regel bij, zodat het model weet dat een vogel zonder gedrag
  * overvliegend is (de regel zelf staat in de systeemprompt, die gecachet blijft).
