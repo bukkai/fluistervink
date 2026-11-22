@@ -31,6 +31,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026-11-22',
+    topics: {
+      Inspreken: [
+        'Nieuw bij Instellingen: "Scherm aan houden tijdens een sessie". Het scherm gaat dan niet vanzelf uit, zodat je met de volumeknop kunt blijven inspreken.',
+      ],
+    },
+  },
+  {
     date: '2026-11-21',
     topics: {
       Trektelling: [
