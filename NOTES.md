@@ -29,6 +29,8 @@ Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/ro
 
 Uitgeschreven in drie draaiboeken om af te vinken (22 nov): `docs/draaiboek-thuis.md` (soortveld #233, opslaan in beeld #237, Instellingen, scherm aan houden #328, insecten #334 en zeldzame dieren, English, kinderstem #327), `docs/draaiboek-buiten.md` (oortjesmicrofoon in drie rondes, sluiterknopje, opnames voor de testset: iemand anders, radio, wind, verwijzing ver terug, Latijn, "nee, het waren duiven", beginnerswoorden) en `docs/draaiboek-telling.md` (trektelling met het scherm uit en de WebView zichtbaar #312, tuintelling #332, `walk_service_failed`). Bevindingen hier; elk punt dat werkt, ook uit het draaiboek weghalen.
 
+**Draaiboek thuis** gedaan op 22 nov (A–F; G, de kinderstem, begin december). Bevindingen bovenaan het draaiboek: soortveld (lijst achter de balk, eigen kleur, uitlijning van de groep, wetenschappelijke naam bij "corvus"), uitleg bij scherm aan houden korter, en het model dat bij meer dieren in één uitspraak na een dier buiten de lijst de rest overslaat.
+
 Achtergrond die niet in de draaiboeken staat:
 
 - **Trektelling met het scherm uit** (#289, achter `schermUit` in de beta): opnemen werkt (alle stukken, geen gat), maar Chromium zet de webcode 60 s na het vergrendelen stil: de stukken worden pas bij het ontgrendelen verwerkt (niets verloren, wel geen tril). `setRendererPriorityPolicy` (e660b27) hielp niet; #312 is de volgende proef. De service zelf laten verwerken is een plan voor later (`docs/ideeen.md`). Langere tellingen op 19 nov (17 en 12 min, alles binnen, accu 0% in 12 min); gebeld worden en Merlin openen gaan goed.

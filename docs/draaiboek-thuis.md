@@ -4,6 +4,14 @@ Proeven op de telefoon die geen buiten en geen telling nodig hebben. Op de beta,
 
 Duur: ongeveer 30 minuten, plus een kind voor ronde G.
 
+## Uitslag 22 nov
+
+A t/m F doorgelopen (17:08–17:54, beta), G geparkeerd tot begin december (neefje en nichtje). Goed: B, C, D, F. Gevonden:
+
+- **A, soortveld:** de eerste keer viel de suggestielijst achter de balk met Opslaan (later scrolde het veld wel meteen omhoog); de lijst mag een eigen kleur krijgen zodat hij opvalt. Bij "ree" staat de verzamelsoort "Gewone Pad/ Rugstreeppad" met de groep (twee woorden) niet rechts uitgelijnd. Bij "corvus" toont alleen de bovenste (Corvus monedula) de wetenschappelijke naam, de rest de Nederlandse. Vraag: waarom vult het typveld bovenaan de sessie niet aan? (Daar typ je een hele uitspraak die naar het model gaat, met aantal en gedrag.)
+- **D:** in de uitleg bij "Scherm aan houden" "zoals bij een recepten-app" weglaten.
+- **E:** in een uitspraak met meer dieren gaf het model alleen het eerste terug als dat niet in de lijst staat: "een vliegend hert, een gewoon hert" → alleen het vliegend hert; "één wolf, twee knoflookpadden, drie korenwolven" → alleen de wolf (los ingesproken gingen ze goed). "Een hommel" een tweede keer werd genegeerd ("staat al als #8"). "Een gewoon hert" → Hert onbekend, zeker.
+
 ## Voorbereiding
 
 - [ ] Beta-app bijgewerkt (de webcode komt live van de site; even helemaal afsluiten en opnieuw openen).
