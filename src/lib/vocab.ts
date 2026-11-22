@@ -1028,6 +1028,9 @@ export function searchSpecies(choices: Species[], query: string, limit = 8): Spe
   const ranked: { s: Species; name: string; rank: number }[] = [];
   for (const s of choices) {
     const label = speciesLabel(s.id);
+    // Een oude naam zonder eigen naam ("Corvus monedula", nu Coloeus
+    // monedula, de Kauw): stond bovenaan bij "corvus", tussen Nederlandse namen
+    if (s.type === 'Y' && label === s.scientific) continue;
     const name = searchable(label);
     const rank = name.startsWith(q)
       ? 0
@@ -1049,6 +1052,16 @@ export function searchSpecies(choices: Species[], query: string, limit = 8): Spe
     )
     .slice(0, limit)
     .map(({ s }) => s);
+}
+
+/**
+ * Gevonden op de wetenschappelijke naam en niet op de eigen naam ("corvus"
+ * bij de Roek): dan toont de suggestielijst de wetenschappelijke naam erbij,
+ * zodat te zien is waarom hij erin staat.
+ */
+export function matchedOnScientific(s: Species, query: string): boolean {
+  const q = searchable(query);
+  return !!q && !searchable(speciesLabel(s.id)).includes(q) && searchable(s.scientific).includes(q);
 }
 
 /**

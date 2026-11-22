@@ -202,7 +202,7 @@ export const en: Dictionary = {
     'After the buzz, the app says what it logged ("woodpigeon, 6, flying over"). Only with earbuds or a headset connected, never through the speaker. A podcast goes quieter for a moment.',
   'prefs.schermAan': 'Keep the screen on during a session',
   'prefs.schermAanHint':
-    'The screen doesn’t turn off by itself while a session is running, like in a recipe app. That way you can keep speaking with the volume button without unlocking. Uses more battery; the power button still locks the screen as usual.',
+    'The screen doesn’t turn off by itself while a session is running. That way you can keep speaking with the volume button without unlocking. Uses more battery; the power button still locks the screen as usual.',
   'prefs.zeldzaamOnzeker': 'Mark rare species as uncertain',
   'prefs.zeldzaamOnzekerHint':
     'If the app picks a species that is rare or very rare on waarneming.nl, the observation is marked uncertain, so you see it at the top when you review at home. Usually it’s a mix-up with a common species.',

@@ -37,6 +37,9 @@ export const CHANGELOG: ChangelogEntry[] = [
         'Afschermen en embargo: zeg "die afschermen", "die op vijf kilometer vervagen" of "onder embargo tot 1 maart" (ook voor alle vorige tegelijk), of kies het thuis bij de waarneming. In de lijst staat dan een slotje. De export naar waarneming.nl neemt het mee; naar eBird gaat zo\'n waarneming niet. Zeg je "onder embargo" zonder datum, dan staat hij thuis bij het nalopen klaar om de datum te kiezen.',
         'Zeg je "onbekend aantal" of "niet geteld", dan wordt het aantal "gezien niet geteld" in plaats van een exact aantal van 1. In eBird wordt dat een X.',
       ],
+      Nalopen: [
+        'De suggesties onder het soortveld hebben een eigen kleur en schuiven meteen in beeld, ook boven de knop Opslaan. Zoek je op de wetenschappelijke naam ("corvus"), dan staat die erbij.',
+      ],
       Inspreken: [
         'Nieuw bij Instellingen: "Scherm aan houden tijdens een sessie". Het scherm gaat dan niet vanzelf uit, zodat je met de volumeknop kunt blijven inspreken.',
         'Spreek je dezelfde soort nog eens in ("een hommel", even later weer "een hommel"), dan wordt dat altijd een nieuwe waarneming. Soms werd de tweede genegeerd omdat hij al in de lijst stond. Met "nog een hommel" telt hij op bij de vorige, zoals altijd.',
