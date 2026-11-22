@@ -377,7 +377,7 @@
     if (started) vibrate('recording');
   }
 
-  // Plafond per dag bereikt (5 uur spraak of 1500 keer het model, proxy): de trektelling stoppen in
+  // Plafond per dag bereikt (5 uur spraak of 500 keer het model, proxy): de trektelling stoppen in
   // plaats van stukken op te nemen die vandaag niet meer verwerkt worden
   $effect(() =>
     onDailyLimit((limit) => {

@@ -95,4 +95,4 @@ Voorstel van 22 nov, getallen nog te toetsen aan Developer na de proef (tot 1 de
 
 **Plus een absoluut budget** dat de eigenaar zelf betaalt tot de betaalde laag er is: voorstel **€50 per maand** in december en januari, met daarbovenop eenmalig **tot €200 voor het telweekend**. Wordt het maandbudget gehaald voordat de betaalde laag er is, dan geen nieuwe actie tot hij er is.
 
-**Daglimiet per installatie:** nu 5 uur spraak en 1500 modelverzoeken per dag, in het ergste geval zo'n $11 per installatie per dag (`docs/proxy.md`). Voor een openbare app ruim: een trektelling van vier uur vraagt ongeveer 240 modelverzoeken. Voorstel: vóór de productierelease het model terug naar 500 per dag (ergste geval dan ~$4,70); spraak kan op 5 uur blijven.
+**Daglimiet per installatie** (besloten 22 nov): 5 uur spraak en 500 modelverzoeken per dag (was 1500), in het ergste geval zo'n $4,70 per installatie per dag in plaats van $11 (`docs/proxy.md`). Een trektelling van vijf uur, het plafond voor spraak, vraagt hooguit 300 verzoeken en past er dus nog in.
