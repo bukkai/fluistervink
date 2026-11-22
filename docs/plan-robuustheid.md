@@ -1,6 +1,6 @@
 # Plan: robuustheid (edge cases)
 
-18 nov 2026. Status: fase 1 (#268), 2 (#273) en 3–5 (code, tests en checklists) klaar. Kwaliteitsronde 18 nov: #9 besloten, #14–#16 erbij en afgedekt (#279). Kwaliteitsronde 21 nov: #17 erbij en afgedekt. Open: proberen op de telefoon en opnames voor de testset; zie de tabel.
+18 nov 2026. Status: fase 1 (#268), 2 (#273) en 3–5 (code, tests en checklists) klaar. Kwaliteitsronde 18 nov: #9 besloten, #14–#16 erbij en afgedekt (#279). Kwaliteitsronde 21 nov: #17 erbij en afgedekt. 22 nov: uitspraken om te proberen (uit de stresstest van tester app-b726a027) en #18 erbij. Open: proberen op de telefoon en opnames voor de testset; zie de tabel.
 
 Een rondgang "wat zou een tester proberen?" langs de bestaande tests en code. Veel is al afgedekt: netwerk weg op elk moment, de wachtrij na een crash, twee tabbladen (slot en BroadcastChannel), haperende tikken met handschoenen, Merlin tijdens een trektelling, een back-up twee keer terugzetten, CSV met komma's en aanhalingstekens, soorten die het model verzint. Dit plan legt vast wat nog open staat en hoe we het blijvend afdekken, zodat het niet bij één keer nalopen blijft.
 
@@ -14,6 +14,57 @@ Wat de code en de tests niet kunnen afdekken. Op de telefoon proberen: de checkl
 | 6 | **Verwijzing buiten de context** ("die buizerd van een kwartier geleden" na 30 waarnemingen) | De app-kant is afgedekt (zie onder); sinds #303 krijgt het model 20 waarnemingen in plaats van 10. Of het model dan "niet begrepen" of onzeker kiest in plaats van de verkeerde buizerd: een paar opnames in de testset | eigenaar inspreken, daarna `npm run testset` |
 | 7 | **Stemmen of geluid van anderen** in een trektelstuk (medevogelaar, radio, wind) | Opnames voor de testset; de prompt alleen aanpassen als de testset het laat zien | eigenaar inspreken |
 | 12 | **Gebeld worden** | De code is afgedekt (zie onder); nog op de telefoon proberen, ook met Bluetooth-oortjes | eigenaar |
+| 18 | **Persoonsgegevens in feedback** (een tester sprak op 20 nov "feedback, mijn BSN-nummer is …" in; dat ging mee naar de proxy en is op 22 nov met de hand weggehaald) | Idee: in de prompt bij `add_dev_note` cijferreeksen die op een BSN, telefoonnummer of IBAN lijken weglaten, en op de privacypagina "spreek geen persoonsgegevens in". Eerst besluiten | eigenaar |
+| 19 | **Uitspraken om te proberen** (hieronder) | Inspreken in een sessie, delen, en wat goed gaat als testset-opname bewaren; wat fout gaat wordt een eigen punt in deze tabel | eigenaar inspreken |
+
+## Uitspraken om te proberen
+
+Een tester (app-b726a027) deed op 20 nov in de eerste sessie een stresstest: 27 uitspraken in 18 minuten. Wat er geprobeerd is, staat met de uitkomst in de eerste tabel; de tweede zijn nieuwe gevallen in dezelfde geest. Bij elke veldtest of kwaliteitsronde een paar langslopen (stap "Edge cases" in `docs/kwaliteitsronde.md`); wat goed gaat, bewaren als testset-opname.
+
+**Wat de tester probeerde (20 nov)**
+
+| Uitspraak | Wat er gebeurde | Stand |
+| --- | --- | --- |
+| "Een mannetje grote bonte specht ter plaatse", "winterkoning en pimpelmees ter plaatse" | goed, ook twee soorten in één zin | goed |
+| "Maak van alle voorgaande meldingen twee vogels" | drie aanpassingen | goed |
+| "Maak het laatste ongedaan" | undo | goed |
+| "Maak alle vorige meldingen afgeschermd", "onder embargo" | niet begrepen | `docs/plan-afschermen.md` |
+| "Houtsnip raamslachtoffer", dan "is dood", dan "met het raam gebotst" | goed, in drie stappen | goed |
+| "Onbekend aantal kauwtjes, alleen gehoord" | aantal 1, exact | **open:** hoort "gezien niet geteld" (telmethode 3) te zijn |
+| "Een goudhaantje, maar de kever niet de vogel" | werd de vogel Goudhaan | #334 (insecten) |
+| "Eén deltavliegen" (geen dier) | Vliegenvanger onbekend, onzeker | **open:** hoort niets te zijn |
+| "Female onbekend" | onzeker, met de vraag waar het bij hoort | goed |
+| "Een meeuw, grote meeuw, maar onbekend welke" | Meeuw onbekend, onzeker | goed |
+| BSN zonder en met "feedback" | zonder genegeerd, met bewaard en gedeeld | #18 |
+| "Zet de sessie stop", "Stop" | genegeerd | bewust: stoppen met de stem pas met het wake word |
+| "Een ijsbeer vijfduizend kilometer ten noorden van hier" | Zoogdier onbekend, onzeker; afstand genegeerd | goed |
+
+**Nieuwe gevallen**
+
+| Onderwerp | Uitspraak | Wat hoort |
+| --- | --- | --- |
+| Verwijzing op volgorde | "Maak van de tweede twee vogels" | de op één na laatste waarneming, of onzeker |
+| Uitzondering | "Verwijder alles behalve de specht" | alle andere weg, de specht blijft |
+| Dubbele undo | twee keer "ongedaan maken", dan "toch niet" | één stap terug (redo) |
+| Soort en aantal tegelijk | "Die meeuw was een zilvermeeuw, en het waren er drie" | één aanpassing met soort en aantal |
+| Ver terug | correctie op een waarneming van meer dan 20 terug | niet begrepen of onzeker, niet de verkeerde (#6) |
+| Onbekend aantal | "onbekend aantal kauwen", "een hele zwerm" | telmethode gezien niet geteld |
+| Ongeldig aantal | "nul vinken", "een halve houtduif", "min twee" | niet begrepen of onzeker (#5) |
+| Grote aantallen | "duizenden spreeuwen" tegenover "dertigduizend spreeuwen" | schatting 3000 tegenover 30.000 exact |
+| Persoonsgegevens | naam, adres of telefoonnummer, met en zonder "feedback" | zonder: niets; met: zie #18 |
+| "Feedback" als waarneming | "feedback: twee buizerds" | het model kiest; nagaan wat het doet |
+| Geluid van anderen | radio, tv, zingen of een medevogelaar op de achtergrond | geen waarnemingen (#7) |
+| Scheldwoord of kreet | "verdomme, weg is ie" | niets |
+| Verleden tijd | "gisteren zag ik hier een ijsvogel" | onzeker, met de tijd in de reden (de tijd van de opname klopt niet) |
+| Plek zonder windrichting | "vijf meter achter me", "op de kerktoren" | plek in de woorden, geen verschuiving |
+| Ander land | "in België" terwijl je in Nederland staat | opmerking, geen plek |
+| Huisdier | "een kat", "de hond van de buren" | niets, of Kat (zoogdier) als dat in de lijst staat |
+| Fictief of uitgestorven | "een dodo", "een draak" | niets |
+| Ontsnapte vogel | "een parkiet", "een pauw in de tuin" | Halsbandparkiet onzeker; pauw als exoot of niets |
+| Dubbele namen | "een uil" (vogel of nachtvlinder), "een vos" (zoogdier of dagvlinder), "een reiger" | de gewone betekenis: Uil onbekend, Vos, Blauwe Reiger onzeker |
+| Volumeknop met podcast of tijdens bellen | indrukken | opname start niet stil; zie veldchecklist |
+| Correctie in de wachtrij | offline: "drie vinken", dan "nee, keep" | na bereik eerst de vinken, dan de keep (plan-offline) |
+| Stoppen midden in een opname | Stop tijdens het inspreken | de opname wordt bewaard en verwerkt |
 
 ## Fasen
 
