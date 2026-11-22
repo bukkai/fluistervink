@@ -45,11 +45,11 @@ Ook in `checkImport` (`src/lib/export.ts`) en in de back-up.
 
 ### Inspreken
 
-`update_observation` en `add_observation` krijgen de velden `obscurity` en `embargo_until`; het model geeft ze alleen als het gezegd wordt. Voorbeelden voor de prompt (NL en EN, `prompt.ts` en `promptEn.ts`, met een nieuwe promptversie):
+`add_observation` krijgt de velden `obscurity` en `embargo_until`, en voor een eerdere waarneming is er een eigen tool `shield_observation` (ref, obscurity, embargo_until); het model geeft ze alleen als het gezegd wordt. Eerst stonden ze ook in `update_observation`, als verplichte velden vooraan; dan stopte het model soms na die velden en ging een gewone correctie verloren ("die meeuw was een zilvermeeuw, en het waren er drie": 30 van 38 goed, met de eigen tool 32 van 32; proef 22 nov). Voorbeelden voor de prompt (NL en EN, `prompt.ts` en `promptEn.ts`, met een nieuwe promptversie):
 
 - "die afschermen", "de laatste verbergen" → `obscurity` 9
 - "vervagen", "op een kilometer vervagen" → 1; "op vijf kilometer" → 5
-- "alle vorige afgeschermd" → een `update_observation` per waarneming in de context (zoals "maak van alle voorgaande twee vogels" nu al gaat)
+- "alle vorige afgeschermd" → een `shield_observation` per waarneming in de context (zoals "maak van alle voorgaande twee vogels" nu al gaat)
 - "een draaihals, nest, afschermen" → `add_observation` met `obscurity` 9
 - "onder embargo", "embargo tot volgende maand" → `embargo_until`; zonder datum onzeker, de gebruiker zet de datum thuis
 

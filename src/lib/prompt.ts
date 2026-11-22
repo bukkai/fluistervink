@@ -99,8 +99,13 @@ const fieldProperties = {
 /**
  * Afschermen en embargo voor waarneming.nl (docs/plan-afschermen.md).
  * Verplicht maar null als het niet gezegd wordt: als optionele velden kwamen
- * we boven MAX_OPTIONAL_PARAMETERS. Bij update_observation betekent null
+ * we boven MAX_OPTIONAL_PARAMETERS. Bij shield_observation betekent null
  * "niet veranderen".
+ *
+ * Voor een eerdere waarneming een eigen tool, niet in update_observation:
+ * daar stonden ze als verplichte velden vooraan, en dan stopte het model na
+ * ref, obscurity en embargo_until ("die meeuw was een zilvermeeuw, en het
+ * waren er drie" werd een lege aanpassing, proef 22 nov).
  */
 const shieldProperties = {
   obscurity: {
@@ -204,9 +209,6 @@ const addRequired = [
   'embargo_until',
 ];
 
-/** Verplicht bij update_observation, in deze volgorde */
-const updateRequired = ['ref', 'obscurity', 'embargo_until'];
-
 const buildTools = (withGroups: boolean, insects = false): Anthropic.Tool[] => {
   const fields = withGroups ? fieldPropertiesWithGroups(insects) : fieldProperties;
   const properties = requiredFirst(
@@ -234,20 +236,28 @@ const buildTools = (withGroups: boolean, insects = false): Anthropic.Tool[] => {
       strict: true,
       input_schema: {
         type: 'object',
-        properties: requiredFirst(
-          {
-            ref: refProperty,
-            ...fields,
-            add_count: {
-              type: 'integer',
-              description:
-                'Tel dit op bij het bestaande aantal ("nog drie erbij" = 3, "twee minder" = -2).',
-            },
-            ...shieldProperties,
+        properties: {
+          ref: refProperty,
+          ...fields,
+          add_count: {
+            type: 'integer',
+            description:
+              'Tel dit op bij het bestaande aantal ("nog drie erbij" = 3, "twee minder" = -2).',
           },
-          updateRequired,
-        ),
-        required: updateRequired,
+        },
+        required: ['ref'],
+        additionalProperties: false,
+      },
+    },
+    {
+      name: 'shield_observation',
+      description:
+        'Schermt een eerdere waarneming af op waarneming.nl of zet er een embargo op (of haalt dat weg), bv. bij "die afschermen" of "de laatste onder embargo". Zie "Afschermen".',
+      strict: true,
+      input_schema: {
+        type: 'object',
+        properties: { ref: refProperty, ...shieldProperties },
+        required: ['ref', 'obscurity', 'embargo_until'],
         additionalProperties: false,
       },
     },
@@ -407,8 +417,8 @@ Op waarneming.nl kan een waarneming afgeschermd worden (een nest of slaapplaats 
 - "Afschermen", "afgeschermd", "verbergen", "verborgen" → obscurity 9. "Vervagen", "vervaagd", "op een kilometer vervagen" → 1; "op vijf kilometer vervagen" → 5. "Toch niet afschermen", "mag weer openbaar" → 0.
 - "Onder embargo", "embargo erop" zonder datum of termijn → embargo_until "zonder datum". Met een datum of termijn ("embargo tot 1 maart", "een maand embargo", "embargo van een jaar") → de einddatum als JJJJ-MM-DD, gerekend vanaf de datum van vandaag in het bericht. Een vage termijn ("tot na het broedseizoen") → "zonder datum".
 - Bij een nieuwe waarneming ("een draaihals, nest, afschermen") → add_observation met obscurity 9.
-- Over een eerdere waarneming ("die afschermen", "de laatste verbergen") → update_observation op die waarneming, met alleen obscurity of embargo_until.
-- Over meer eerdere waarnemingen ("alle vorige afgeschermd", "zet alle drie de waarnemingen op afgeschermd", "mijn waarnemingen onder embargo") → een update_observation voor elke bedoelde waarneming uit de lijst met recente waarnemingen. Zonder aantal ("alle", "mijn waarnemingen") zijn dat alle waarnemingen in de lijst.
+- Over een eerdere waarneming ("die afschermen", "de laatste verbergen") → shield_observation op die waarneming.
+- Over meer eerdere waarnemingen ("alle vorige afgeschermd", "zet alle drie de waarnemingen op afgeschermd", "mijn waarnemingen onder embargo") → een shield_observation voor elke bedoelde waarneming uit de lijst met recente waarnemingen. Zonder aantal ("alle", "mijn waarnemingen") zijn dat alle waarnemingen in de lijst.
 - Afschermen en embargo zijn geen twijfel: geen uncertain, en niet in remarks of private_note.
 
 ## Soorten

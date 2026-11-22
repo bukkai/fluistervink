@@ -76,6 +76,8 @@ const TOOL_DESCRIPTIONS: Record<string, string> = {
   add_observation: 'Records a new observation. One call per species.',
   update_observation:
     'Changes an earlier observation, e.g. for "no, Brambling instead of Chaffinch" or "three more". Only pass the fields that change.',
+  shield_observation:
+    'Hides an earlier observation on waarneming.nl or puts it under embargo (or removes that), e.g. for "hide that one" or "put the last one under embargo". See "Hiding".',
   delete_observation:
     'Deletes an earlier observation, e.g. for "scratch that last one" or "delete the Chaffinch".',
   undo: 'Fully reverts the previous voice note, for "undo", "go back" or "that was wrong".',
@@ -265,8 +267,8 @@ On waarneming.nl an observation can be hidden (a nest or roost of a vulnerable s
 - "Hide", "hidden", "make it private", "sensitive" → obscurity 9. "Blur", "blurred", "blur to a kilometre" → 1; "blur to five kilometres" → 5. "Don't hide it after all", "make it public again" → 0.
 - "Under embargo", "embargo it" without a date or term → embargo_until "no date". With a date or term ("embargo until 1 March", "a month's embargo", "embargo for a year") → the end date as YYYY-MM-DD, counted from today's date in the message. A vague term ("until after the breeding season") → "no date".
 - For a new observation ("a Wryneck, nest, hide it") → add_observation with obscurity 9.
-- About an earlier observation ("hide that one", "hide the last one") → update_observation on that observation, with only obscurity or embargo_until.
-- About several earlier observations ("hide all the previous ones", "set all three observations to hidden", "put my observations under embargo") → one update_observation for each intended observation in the list of recent observations. Without a number ("all", "my observations") that is every observation in the list.
+- About an earlier observation ("hide that one", "hide the last one") → shield_observation on that observation.
+- About several earlier observations ("hide all the previous ones", "set all three observations to hidden", "put my observations under embargo") → one shield_observation for each intended observation in the list of recent observations. Without a number ("all", "my observations") that is every observation in the list.
 - Hiding and embargo are not doubt: no uncertain, and not in remarks or private_note.
 
 ## Species

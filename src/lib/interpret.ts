@@ -699,5 +699,9 @@ function toAction(
   if (block.name === 'update_observation') {
     return { type: 'update', observationId: target.id, fields, addCount: input.add_count };
   }
+  // Alleen afscherming en embargo (prompt.ts, shieldProperties)
+  if (block.name === 'shield_observation') {
+    return { type: 'update', observationId: target.id, fields };
+  }
   return t('error.unknownTool', { tool: block.name });
 }

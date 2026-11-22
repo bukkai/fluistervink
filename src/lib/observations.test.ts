@@ -657,8 +657,8 @@ describe('afschermen en embargo', () => {
     await say('houtduif', ['add_observation', { species_id: HOUTDUIF, count: 1 }]);
     await say(
       'zet alle vorige op afgeschermd',
-      ['update_observation', { ref: 1, obscurity: 9, embargo_until: null }],
-      ['update_observation', { ref: 2, obscurity: 9, embargo_until: null }],
+      ['shield_observation', { ref: 1, obscurity: 9, embargo_until: null }],
+      ['shield_observation', { ref: 2, obscurity: 9, embargo_until: null }],
     );
     const [duif, vink] = await listObservations(SESSION);
     expect(duif).toMatchObject({ obscurity: 9, uncertain: false });
@@ -671,7 +671,7 @@ describe('afschermen en embargo', () => {
   it('een embargo met datum bewaart de datum', async () => {
     await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
     await say('embargo tot 1 maart', [
-      'update_observation',
+      'shield_observation',
       { ref: 1, obscurity: null, embargo_until: '2027-03-01' },
     ]);
     const [obs] = await listObservations(SESSION);
