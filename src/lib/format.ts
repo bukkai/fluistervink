@@ -1,3 +1,4 @@
+import type { Observation } from './db';
 import { LOCALE, t } from './i18n';
 
 /**
@@ -43,4 +44,26 @@ export function formatMoment(at: number): string {
 export function formatCountdown(ms: number): string {
   const seconds = Math.max(0, Math.ceil(ms / 1000));
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+}
+
+/** "1 mrt 2027" */
+const embargoFormat = new Intl.DateTimeFormat(LOCALE, {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+});
+
+/**
+ * Afschermen en embargo voor waarneming.nl, kort: "Verborgen op
+ * waarneming.nl · embargo tot 1 mrt 2027". Leeg als hij gewoon openbaar is.
+ */
+export function shieldText(obs: Pick<Observation, 'obscurity' | 'embargoUntil'>): string {
+  const parts: string[] = [];
+  if (obs.obscurity) parts.push(t('log.shielded', { what: t(`obscurity.${obs.obscurity}`) }));
+  if (obs.embargoUntil) {
+    const [y, m, d] = obs.embargoUntil.split('-').map(Number);
+    const date = embargoFormat.format(new Date(y, m - 1, d));
+    parts.push(parts.length ? t('log.embargoAfter', { date }) : t('log.embargo', { date }));
+  }
+  return parts.join(' · ');
 }
