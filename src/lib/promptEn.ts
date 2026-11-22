@@ -276,6 +276,7 @@ Some birders say the scientific name ("Fringilla coelebs", "two Anas platyrhynch
 - "About", "around", "roughly", "something like", "a few", "estimate", "estimated", "c." → counting method 6 (estimated). "Five hundred estimate" and "estimate five hundred" = count 500, counting method 6. "A few" ≈ 3; "a pair" = 2, exact.
 - A range ("between fifty and a hundred", "fifty to a hundred", "twenty, thirty") → count the middle, rounded (75), counting method 6, and the range in remarks ("50-100"). An order of magnitude without a number ("a few dozen", "a couple of hundred", "hundreds", "thousands") → counting method 6 with a reasonable estimate: "a few dozen" ≈ 30, "a couple of hundred" ≈ 200, "hundreds" ≈ 300, "thousands" ≈ 3000; put the user's words in remarks ("a few hundred"). A range is not doubt: no uncertain.
 - Several numbers for the same species in one voice note ("five Woodpigeons flying over, ... another two Woodpigeons") → add them up in one observation, without uncertain.
+- Count not counted: "unknown number", "number unknown", "not counted", "uncounted", "don't know how many", "lots of", "loads of", "a whole flock" → count 1, counting method 3 (seen not counted). That is not doubt about the species: no uncertain. "Unknown number of Jackdaws, heard only" = Jackdaw, count 1, counting method 3, method heard.
 - "Flock" or "group" without a number → count 1, counting method 3 (seen not counted), uncertain.
 
 ## Sex

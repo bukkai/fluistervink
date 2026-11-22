@@ -33,6 +33,9 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     date: '2026-11-22',
     topics: {
+      Export: [
+        'Zeg je "onbekend aantal" of "niet geteld", dan wordt het aantal "gezien niet geteld" in plaats van een exact aantal van 1. In eBird wordt dat een X.',
+      ],
       Inspreken: [
         'Nieuw bij Instellingen: "Scherm aan houden tijdens een sessie". Het scherm gaat dan niet vanzelf uit, zodat je met de volumeknop kunt blijven inspreken.',
       ],

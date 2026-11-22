@@ -50,6 +50,8 @@ const LONG_TRAVELING_M = 8000;
 /** eBird neemt een duur tot 24 uur, exclusief */
 const MAX_DURATION_MIN = 1439;
 const MAX_COUNT = 999_999;
+/** Telmethode "gezien niet geteld": in eBird een X (aanwezig, niet geteld) */
+const NOT_COUNTED = 3;
 const CHECKLIST_COMMENT = 'Ingesproken met Fluistervink';
 
 /** De checklist zoals hij naar eBird gaat: gemeten inspanning plus wat de gebruiker invulde */
@@ -322,7 +324,9 @@ function toRow(
     'Common Name': clean(ebirdName(group[0].speciesId)),
     Genus: genus,
     Species: species.join(' '),
-    Number: String(Math.min(MAX_COUNT, count)),
+    Number: group.some((obs) => obs.countingMethodId === NOT_COUNTED)
+      ? 'X'
+      : String(Math.min(MAX_COUNT, count)),
     'Species Comments': speciesComments(group),
     'Location Name': clean(location.name),
     Latitude: location.lat?.toFixed(6) ?? '',
@@ -362,7 +366,13 @@ function speciesComments(group: Observation[]): string {
   });
   if (parts.every((part) => !part)) return '';
   return clean(
-    group.map((obs, i) => [obs.count, parts[i]].filter(Boolean).join(' ')).join('; '),
+    group
+      .map((obs, i) =>
+        [obs.countingMethodId === NOT_COUNTED ? 'niet geteld' : obs.count, parts[i]]
+          .filter(Boolean)
+          .join(' '),
+      )
+      .join('; '),
   ).slice(0, 4000);
 }
 
