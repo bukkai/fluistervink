@@ -19,8 +19,9 @@ Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/ro
 
 ## Op de telefoon proberen
 
-Uitgeschreven in drie draaiboeken om af te vinken: `docs/draaiboek-thuis.md` (A–F en H gedaan op 22 nov; nog G, de kinderstem, begin december), `docs/draaiboek-buiten.md` (oortjesmicrofoon in drie rondes, sluiterknopje, opnames voor de testset) en `docs/draaiboek-telling.md` (A, trektelling met het scherm uit, gedaan op 22 nov: werkt, elk stuk meteen verwerkt, accu 40 → 38% in 16 min; nog B, tuintelling #332, en C, `walk_service_failed`). Bevindingen hier; elk punt dat werkt, ook uit het draaiboek weghalen.
+Uitgeschreven in drie draaiboeken om af te vinken: `docs/draaiboek-thuis.md` (A–F en H gedaan op 22 nov; nog G, de kinderstem, begin december), `docs/draaiboek-buiten.md` (oortjesmicrofoon in drie rondes, sluiterknopje, opnames voor de testset) en `docs/draaiboek-telling.md` (A, trektelling met het scherm uit, gedaan op 22 nov: werkt, elk stuk meteen verwerkt, accu 40 → 38% in 16 min; B, tuintelling, gedaan op 22 nov: werkt, maar alle vogels werden overvliegend; nog C, `walk_service_failed`). Bevindingen hier; elk punt dat werkt, ook uit het draaiboek weghalen.
 
+- **Uit de tuintelling van 22 nov** (uitslag in `docs/draaiboek-telling.md`): stukken gaan als trektelstuk naar het model, dus alles wordt overvliegend; volumeknop start/stopt het tellen niet; de knop op de voorpagina pas na een herstart; aanpassen in de bewerker laat "onzeker" staan; met een podcast aan kwamen er soorten uit het gesprek binnen.
 - **Uit de trektelling van 22 nov** (uitslag bovenaan `docs/draaiboek-telling.md`): feedback in een trektelstuk werd deels uitgevoerd als correctie (aantal en gedrag van de graszanger aangepast); "graszanger verplaatsen" maakte van drie grasmussen één graszanger, met een te lange twijfelreden. Nog op te lossen.
 
 - **Oortjesmicrofoon:** twee rondes gedaan op 21 nov (Hatertse Hei), buiten git in `testset/feedback/oortjesproef/`; nog niet door de testset, dat samen met de rondes uit het draaiboek.

@@ -16,6 +16,17 @@ Gevonden in de uitspraken:
 - Goed: afschermen (kerkuil, spreeuwen op 1 km), "ongedaan maken" en daarna "doe toch maar wel" (redo), "two mistle thrushes" en "no, make that three", plekken met afstand en richting, "Corvus monedula" en "Pica pica", het BSN weggelaten bij het delen (#335).
 - Instellingen: de tuintelling hoort bij Tellen, naast de trektelling (nu nog een ontwikkeloptie; meenemen als hij voor iedereen wordt).
 
+## Uitslag 22 nov (B)
+
+Tuintelling 21:18–21:48 (beta, scherm uit), 30 stukken, plus "Nog iets inspreken" (Turkse tortel, 21:49). Klok, half uur en "Nog iets inspreken" werkten; accu 35 → 29% in 30 min. Gevonden:
+
+- **Alles werd overvliegend.** De stukken gaan als trektelstuk naar het model ("Dit is een stuk uit een trektelling"), en daar is een vogel zonder gedrag overvliegend. In de tuin hoort dat ter plaatse te zijn. De eigenaar zette het met de stem recht ("alle vogels die ik heb genoemd waren ter plaatse, behalve …"): het model zette ze allemaal op ter plaatse, onzeker omdat de uitzondering niet duidelijk was. Dat beviel.
+- **Volumeknop** start of stopt het tellen niet tijdens een tuintelling (bewust uitgezet in `ActiveSession.svelte`, `tuinTrektel`).
+- **Ontwikkeloptie aanzetten** liet de knop Tuintelling pas na een herstart op de voorpagina zien.
+- **Een onzekere waarneming aanpassen** (houtduiven naar overvliegend) en opslaan liet hem onzeker; het vinkje moet er apart af.
+- **Podcast** (21:33–21:47, Vogels-podcast aan): het model haalde soorten uit het gesprek: kwak, 4 bruine kiekendieven, lachstern, smelleken, 2 reuzensterns (zeker), kanarie, boompieper. Daarna nog vijf stukken genegeerd. Bruine kiekendief en reuzenstern staan nog in de sessie. Zie plan-tuintelling, punt 9 (tv aan).
+- Goed: de tijd liep vanaf "Begin met tellen" en stopte na precies 30 min; feedback tussen de waarnemingen werd netjes een dev note; "drie merels, o nee, twee merels en één koperwiek" ging goed.
+
 ## A. Trektelling met het scherm uit, WebView zichtbaar (#312)
 
 Tot nu toe zet Chromium de webcode een minuut na het vergrendelen stil: alles komt binnen, maar pas bij het ontgrendelen, en zonder tril. #312 laat de WebView zich in beeld melden, zodat elk stuk meteen verwerkt wordt.
