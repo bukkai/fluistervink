@@ -5,7 +5,7 @@
 
   // Barrie de Buizerd (zie eastereggs.svelte.ts): hij slaat het scherm in als
   // een sticker, krijst, en na een paar seconden of een tik is hij weg.
-  // Het plaatje is van iemand uit de Discord, met toestemming.
+  // De foto is CC0 (publiek domein); de naam Barrie komt uit de Discord.
 
   const SHOW_MS = 6000;
 
@@ -106,8 +106,9 @@
 
   .cry {
     position: absolute;
+    /* Bij de snavel: hij kijkt naar links */
     top: -8%;
-    right: -6%;
+    left: -6%;
     padding: 0.15em 0.55em;
     border: 3px solid #1d1d1d;
     border-radius: 1em;
@@ -116,7 +117,7 @@
     font-weight: 900;
     font-size: clamp(1rem, 6vmin, 1.8rem);
     white-space: nowrap;
-    rotate: 12deg;
+    rotate: -12deg;
     box-shadow: 3px 3px 0 #1d1d1d;
     animation: pop 0.3s cubic-bezier(0.3, 1.8, 0.5, 1) 0.5s both;
   }
