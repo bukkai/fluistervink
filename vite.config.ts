@@ -29,6 +29,18 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(appVersion()),
   },
+  // Twee pagina's: de voorpagina op / (index.html) en de app op /app/
+  // (app/index.html). Zie docs/ontwerp.md, Voorpagina.
+  // Alleen voor de client: de Worker heeft zijn eigen ingang (wrangler.jsonc).
+  environments: {
+    client: {
+      build: {
+        rollupOptions: {
+          input: { voorpagina: 'index.html', app: 'app/index.html' },
+        },
+      },
+    },
+  },
   plugins: [
     svelte(),
     // Draait de Worker (worker/index.ts) mee in de dev server, zodat
@@ -54,7 +66,11 @@ export default defineConfig({
       // tot er geen wandeling loopt
       registerType: 'prompt',
       workbox: {
-        // API-verzoeken nooit via de cache of de index.html-fallback laten lopen
+        // Zonder netwerk opent elk adres onder /app/ de app. De voorpagina (/)
+        // staat zelf in de cache en stuurt wie de app gebruikt door naar /app/.
+        // API-verzoeken en de losse pagina's nooit via deze fallback.
+        navigateFallback: 'app/index.html',
+        navigateFallbackAllowlist: [/^\/app\//],
         navigateFallbackDenylist: [/^\/api\//, /^\/privacy/, /^\/tuintelling/],
         // Ook afbeeldingen (de meeuwen van de zeemeeuw-grap), zodat ze offline werken
         globPatterns: ['**/*.{js,css,html,png,svg}'],
@@ -64,6 +80,11 @@ export default defineConfig({
         name: appName,
         short_name: appName,
         description: 'Spraakgestuurde vogelwaarnemingen',
+        // De app staat op /app/. id blijft het oude adres (/), anders ziet de
+        // browser een geïnstalleerde app als een andere app.
+        id: '/',
+        start_url: '/app/',
+        scope: '/',
         lang: 'nl',
         display: 'standalone',
         orientation: 'portrait',

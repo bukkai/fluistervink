@@ -7,12 +7,12 @@
   // Dezelfde tekst staat als losse pagina op /privacy (standalone), gemaakt bij
   // het bouwen (build/privacyPage.ts): dat adres staat in Google Play, en daar
   // moet hij te lezen zijn zonder de app. Links naar schermen van de app gaan
-  // dan via de voorpagina.
+  // dan naar de app op /app/.
   //
   // De Engelse versie staat in Privacy.en.svelte (ook als /privacy-en): een
   // wijziging hier hoort in dezelfde PR ook daar.
   let { standalone = false }: { standalone?: boolean } = $props();
-  const app = $derived(standalone ? '/' : '');
+  const app = $derived(standalone ? '/app/' : '');
 
   const CONTACT = 'info@fluistervink.nl';
 </script>

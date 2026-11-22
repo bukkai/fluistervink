@@ -4,43 +4,113 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#6f7587" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Fluistervink · vogels tellen met je stem</title>
+    <meta
+      name="description"
+      content="Zeg wat je ziet of hoort, Fluistervink schrijft mee. Thuis staat je lijst klaar voor waarneming.nl."
+    />
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <title>Fluistervink</title>
-    <!-- Vóór de app-code: herstelt een kapotte cache na een update (public/herstel.js) -->
-    <script src="/herstel.js"></script>
-    <!-- Laadscherm: direct zichtbaar, nog vóór de JavaScript geladen is. Zelfde
-         achtergrond als het opstartscherm van Android (background_color in
-         vite.config.ts), zodat het opstarten één vloeiende beweging is. Stijl in
-         src/splash.css. -->
-    <link rel="stylesheet" href="/src/splash.css" />
+    <!-- Wie de app al gebruikt (Android-app, geïnstalleerd, oude link), gaat
+         meteen door naar /app/, nog vóór deze pagina in beeld komt. -->
+    <script src="/naar-app.js"></script>
+    <link rel="stylesheet" href="/src/voorpagina.css" />
   </head>
   <body>
-    <div id="splash">
-      <svg viewBox="0 0 512 512" width="160" height="160" aria-hidden="true">
-        <g transform="translate(-70 -15) scale(1.65)">
-          <path
-            d="M20 400 L20 220 C60 170 100 120 150 100 C200 85 245 120 255 160 L258 190 C255 230 245 280 232 300 C222 316 205 360 195 400 Z"
-            fill="#b67a50"
-          />
-          <path
-            d="M-40 215 C30 190 60 185 90 200 C115 215 130 250 120 275 C110 300 80 330 60 400 L-40 400 Z"
-            fill="#7a5a3c"
-          />
-          <path
-            d="M35 175 C40 150 100 90 140 60 C160 47 182 50 200 62 C230 82 258 110 270 130 C276 145 268 156 255 158 C240 150 225 120 195 106 C170 96 150 100 130 120 C110 140 95 158 100 172 C110 186 160 205 172 226 C178 240 165 245 150 241 C110 232 50 210 35 185 Z"
-            fill="#6f7587"
-          />
-          <path
-            d="M240 158 C255 150 270 152 285 165 C297 172 310 178 312 186 C290 192 265 198 245 201 C235 195 232 170 240 158 Z"
-            fill="#ada99d"
-          />
-          <circle cx="184" cy="138" r="15" fill="#141414" />
-        </g>
-      </svg>
-      Fluistervink
-    </div>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
+    <header class="hero">
+      <img class="logo" src="/icon.svg" alt="" width="112" height="112" />
+      <h1>Fluistervink</h1>
+      <p class="lead">Zeg wat je ziet. Fluistervink schrijft mee.</p>
+      <p>
+        Vogels tellen zonder je verrekijker neer te leggen. Spreek je waarnemingen in zoals tegen
+        een medevogelaar; thuis staat je lijst klaar voor waarneming.nl.
+      </p>
+      <div class="actions">
+        <a class="button" href="/app/">Open de app</a>
+        <p class="note">
+          Werkt in de browser van je telefoon. De Android-app komt binnenkort in Google Play.
+        </p>
+      </div>
+    </header>
+
+    <main>
+      <section>
+        <h2>Zo klinkt het</h2>
+        <ul class="examples">
+          <li>"zes overvliegende houtduiven"</li>
+          <li>"roepje vink"</li>
+          <li>"schatting vijfhonderd spreeuwen"</li>
+          <li>"fitis of tjiftjaf"</li>
+          <li>"buizerd overvliegend, vijfhonderd meter zuid van hier"</li>
+          <li>"nee, keep in plaats van vink"</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Zo werkt het</h2>
+        <ol class="steps">
+          <li>
+            <h3>Begin met vogelen</h3>
+            <p>Een wandeling, een fietstocht, een uur in de vogelhut of in de tuin.</p>
+          </li>
+          <li>
+            <h3>Zeg wat je ziet of hoort</h3>
+            <p>
+              Tik op de microfoonknop en spreek in. De app legt tijd en plek vast en trilt als het
+              is opgeslagen, zodat je niet naar het scherm hoeft te kijken.
+            </p>
+          </li>
+          <li>
+            <h3>Thuis nalopen</h3>
+            <p>
+              Soort, aantal, gedrag en plek staan klaar. Wat onzeker was, loop je één voor één na.
+              Daarna gaat alles in één bestand naar waarneming.nl (en als je wilt naar eBird).
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Gemaakt voor buiten</h2>
+        <ul class="features">
+          <li>
+            <h3>Verbeteren met je stem</h3>
+            <p>"Nee, keep in plaats van vink", "nog drie erbij", "die laatste weg".</p>
+          </li>
+          <li>
+            <h3>Geen bereik? Gewoon doorgaan</h3>
+            <p>
+              Alles staat eerst op je telefoon. Zodra er weer verbinding is, verwerkt de app het, in
+              de volgorde waarin je het zei.
+            </p>
+          </li>
+          <li>
+            <h3>Trektellen</h3>
+            <p>Op één plek tellen met de microfoon steeds aan, zonder knop.</p>
+          </li>
+          <li>
+            <h3>Meer dan vogels</h3>
+            <p>Ook zoogdieren, reptielen en amfibieën, dagvlinders en libellen.</p>
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Je gegevens</h2>
+        <p>
+          Geen account, geen e-mailadres, geen advertenties en geen route van waar je geweest bent.
+          Alles wat je inspreekt, staat eerst op je eigen telefoon. Om het te verwerken gaat je
+          opname naar OpenAI (spraak naar tekst) en de tekst naar Anthropic (tekst naar waarneming).
+          <a href="/privacy">Lees hoe dat precies zit.</a>
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <a href="/privacy">Privacy</a>
+      <a href="/privacy-en">Privacy (English)</a>
+      <a href="https://github.com/bukkai/fluistervink">Broncode</a>
+    </footer>
   </body>
 </html>
