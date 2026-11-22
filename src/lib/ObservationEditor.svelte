@@ -74,6 +74,8 @@
   let embargoUntil = $state(original.embargoUntil ?? '');
   // svelte-ignore state_referenced_locally
   let uncertain = $state(reviewing ? false : original.uncertain);
+  /** Het vinkje "onzeker" zelf aangeklikt: dan niet meer vanzelf veranderen */
+  let uncertainTouched = false;
   /** Plek en bewaarde GPS-plek; pas bij "Opslaan" naar de database */
   let place = $state.raw<Place>({
     position: original.position,
@@ -196,6 +198,23 @@
     ));
     if (!gone) onclose(true);
   }
+
+  // Wie soort, aantal, gedrag of kleed zelf aanpast, heeft hem nagekeken: dan
+  // is hij niet meer onzeker (tuintelling 22 nov: houtduiven naar overvliegend
+  // gezet, en hij bleef onzeker). Het vinkje gaat meteen uit, zodat je het ziet
+  // en het zelf weer aan kunt zetten.
+  let fieldsChanged = $derived(
+    (selectedSpecies !== undefined && selectedSpecies.id !== original.speciesId) ||
+      count !== original.count ||
+      countingMethodId !== original.countingMethodId ||
+      activityId !== original.activityId ||
+      methodId !== original.methodId ||
+      lifeStageId !== original.lifeStageId ||
+      sex !== (original.sex === 'unknown' ? undefined : original.sex),
+  );
+  $effect(() => {
+    if (fieldsChanged && !uncertainTouched) untrack(() => (uncertain = false));
+  });
 
   /** Intussen verwijderd (met de stem): niet stil sluiten, maar zeggen */
   let gone = $state(false);
@@ -436,7 +455,7 @@
   </div>
 
   <label class="check">
-    <input type="checkbox" bind:checked={uncertain} />
+    <input type="checkbox" bind:checked={uncertain} onchange={() => (uncertainTouched = true)} />
     {original.uncertainReason
       ? t('editor.uncertainBecause', { reason: original.uncertainReason })
       : t('editor.uncertain')}

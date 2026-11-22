@@ -14,7 +14,7 @@ import { migrateAudioOnce } from './audioMigration';
 import { devNoteText } from './devNotePrefix';
 import { isEmptyTrektelChunk, utteranceFeedback, vibrate } from './feedback';
 import { INSTANCE_ID } from './instance.svelte';
-import { MODEL, interpret, type Interpretation } from './interpret';
+import { MODEL, flyoverChunk, interpret, type Interpretation } from './interpret';
 import { currentPosition } from './location.svelte';
 import { APP_VERSION, logEvent, wasHiddenSince } from './log';
 import { PLATFORM } from './native';
@@ -482,9 +482,10 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
     step = 'interpret';
     const contextStart = Date.now();
     // Positie vers uit de database: de GPS kan na het opslaan van de uitspraak binnengekomen zijn
-    const [recent, fresh] = await Promise.all([
+    const [recent, fresh, session] = await Promise.all([
       listObservations(utterance.sessionId),
       db.utterances.get(utterance.id),
+      db.sessions.get(utterance.sessionId),
     ]);
     const here = fresh?.position;
     contextMs = Date.now() - contextStart;
@@ -492,7 +493,7 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
       here,
       sessionId: utterance.sessionId,
       groups,
-      trektel: utterance.trektel,
+      trektel: flyoverChunk(utterance, session),
       language,
       recordedAt: utterance.recordedAt,
     });

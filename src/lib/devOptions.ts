@@ -33,6 +33,9 @@ export function devOptionOn(option: DevOption): boolean {
   }
 }
 
+/** Gebeurtenis op `window` na het omzetten van een ontwikkeloptie */
+export const DEV_OPTION_EVENT = 'fluistervink-dev-option';
+
 export function setDevOption(option: DevOption, on: boolean): void {
   try {
     if (on) localStorage.setItem(PREFIX + option, '1');
@@ -40,4 +43,7 @@ export function setDevOption(option: DevOption, on: boolean): void {
   } catch {
     // Geen opslag: dan blijft hij uit
   }
+  // Zodat een scherm dat de optie al gelezen had, hem meteen toont of verbergt
+  // (de knop Tuintelling verscheen pas na een herstart, 22 nov)
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event(DEV_OPTION_EVENT));
 }

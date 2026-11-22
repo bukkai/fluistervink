@@ -20,7 +20,7 @@
   import { listDevNotes } from './lib/devNotes';
   import { CHANNEL } from './lib/log';
   import { vibrate } from './lib/feedback';
-  import { devOptionOn } from './lib/devOptions';
+  import { DEV_OPTION_EVENT, devOptionOn } from './lib/devOptions';
   import { TUINTEL_WARN_MS, tuintelLeftMs, tuintelPhase } from './lib/tuintelling';
   import { instance } from './lib/instance.svelte';
   import { processQueue } from './lib/queue';
@@ -244,7 +244,12 @@
   // klok niet, dan gebeurt het bij terugkomen, met als eindtijd het eind van
   // het half uur. Wie na afloop nog iets inspreekt ("nog iets vergeten?"),
   // zet de sessie voort: dan geen klok en niet opnieuw stoppen.
-  const tuintelOn = devOptionOn('tuintelling');
+  let tuintelOn = $state(devOptionOn('tuintelling'));
+  $effect(() => {
+    const update = () => (tuintelOn = devOptionOn('tuintelling'));
+    window.addEventListener(DEV_OPTION_EVENT, update);
+    return () => window.removeEventListener(DEV_OPTION_EVENT, update);
+  });
   let tuintelPhaseNow = $derived(active ? tuintelPhase(active, now) : undefined);
   let tuintelLeftRaw = $derived(active ? tuintelLeftMs(active, now) : undefined);
   let tuintelOver = $derived(

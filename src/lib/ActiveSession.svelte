@@ -210,13 +210,20 @@
 
   // Volumeknop als inspreekknop (Android-app, instelling): elke druk is een
   // tik op de knop. Niet tijdens een trektelling: die heeft een eigen knop.
+  // Bij een tuintelling begint hij het tellen, pauzeert hij het en gaat hij
+  // verder, net als de knop op het scherm (tuintelling 22 nov).
   const volumeKeyOn = volumeKeySupported && preferenceOn('volumeknop');
   $effect(() => {
-    // Ook niet bij een tuintelling die in de trektelstand gaat: daar begint de knop het tellen
-    if (!volumeKeyOn || trektel.status !== 'idle' || tuinTrektel) return;
+    if (!volumeKeyOn || (trektel.status !== 'idle' && !tuinTrektel)) return;
     return listenVolumeKey((key) => {
-      logEvent('talk_volume_key', { key, status: recorder.status }, { sessionId: session.id });
-      talk.tap();
+      logEvent(
+        'talk_volume_key',
+        { key, status: recorder.status, tuintel: tuinTrektel ? trektel.status : undefined },
+        { sessionId: session.id },
+      );
+      if (!tuinTrektel) talk.tap();
+      else if (trektel.status === 'idle') void beginTuintel();
+      else if (trektel.status === 'running' || trektel.status === 'paused') endTrektel();
     });
   });
 

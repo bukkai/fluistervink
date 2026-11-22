@@ -10,7 +10,7 @@ import {
   REE,
   toolResponse,
 } from '../test-helpers';
-import { describeContext, userMessage, parseResponse } from './interpret';
+import { describeContext, flyoverChunk, userMessage, parseResponse } from './interpret';
 
 // parseResponse is de poortwachter tussen model en database: wat hier
 // doorkomt, voert de app uit. Het model mag geen soorten verzinnen en niet
@@ -385,6 +385,15 @@ describe('afschermen en embargo', () => {
   it('zet afscherming en embargo in de context voor het model', () => {
     const text = describeContext([observation({ obscurity: 9, embargoUntil: '2027-03-01' })]);
     expect(text).toMatch(/afgeschermd: 9, embargo tot 2027-03-01/);
+  });
+});
+
+describe('flyoverChunk', () => {
+  it('geeft de trektelregel alleen aan een trektelstuk, niet in de tuin', () => {
+    expect(flyoverChunk({ trektel: true }, {})).toBe(true);
+    expect(flyoverChunk({ trektel: true }, undefined)).toBe(true);
+    expect(flyoverChunk({ trektel: true }, { tuintelling: true })).toBe(false);
+    expect(flyoverChunk({}, {})).toBe(false);
   });
 });
 

@@ -38,6 +38,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         'Zeg je "onbekend aantal" of "niet geteld", dan wordt het aantal "gezien niet geteld" in plaats van een exact aantal van 1. In eBird wordt dat een X.',
       ],
       Nalopen: [
+        'Pas je een onzekere waarneming zelf aan (soort, aantal, gedrag of kleed), dan gaat "onzeker" er vanzelf af: je hebt hem dan nagekeken. Wil je hem toch onzeker houden, zet het vinkje dan weer aan.',
         'De suggesties onder het soortveld hebben een eigen kleur en schuiven meteen in beeld, ook boven de knop Opslaan. Zoek je op de wetenschappelijke naam ("corvus"), dan staat die erbij.',
       ],
       Inspreken: [
