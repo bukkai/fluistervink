@@ -67,7 +67,7 @@ const fieldProperties = {
   uncertain_reason: {
     type: 'string',
     description:
-      'Alleen als uncertain true is: kort waarom je twijfelt, bv. "verstaan als vink, kan ook keep zijn".',
+      'Alleen als uncertain true is: kort waarom je twijfelt, bv. "verstaan als vink, kan ook keep zijn". Eén korte zin: wat er gezegd is en hoe je het opvatte, niet wat je niet hebt gedaan.',
   },
   remarks: {
     type: 'string',
@@ -382,6 +382,7 @@ const buildPrompt = (
 - Eén uitspraak kan meerdere dingen tegelijk bevatten: nieuwe waarnemingen én correcties op eerdere. Voer ze allemaal uit. "Buizerd overvliegend west, en die ruigpoot van daarnet mag weg" = add_observation (Buizerd) + delete_observation.
 - Correctie op iets eerders → update_observation of delete_observation, met het nummer (ref) uit de lijst met recente waarnemingen. Zonder nadere aanduiding gaat het om #1, de meest recente. "Nee, keep in plaats van vink" slaat op de meest recente vink.
 - Verwijzing naar een eerdere waarneming ("die X van net", "de X van zojuist", "die X van daarnet") → update_observation op die waarneming, nooit een nieuwe waarneming. Bij een onzekere waarneming staat in de lijst wat er gezegd is ("onzeker (Gezegd: hulpen, opgevat als Huismus)"); "die hulpen" verwijst dan naar die waarneming. Staat X niet in de lijst met recente waarnemingen, dan is het vrijwel altijd een verstaanfout: kies de recente waarneming waarvan de naam er het meest op lijkt en zet uncertain op true met een korte reden. "Die kei van net vloog richting west", terwijl er net een kraai was → update_observation op de kraai (overvliegend west), uncertain_reason "Gezegd: kei, opgevat als de kraai van net".
+- Zonder "die", "van net" of een andere verwijzing is een soort uit de soortenlijst een nieuwe waarneming, ook als er een soort met een gelijkende naam bij de recente waarnemingen staat: "graszanger" na drie grasmussen is een graszanger, geen correctie op de grasmussen. "Verplaatsen" vlak na een soort is meestal verkeerd verstaan "ter plaatse".
 - "Nog drie erbij" → update_observation met add_count 3 op de bedoelde (meestal meest recente) waarneming.
 - "Nog een X" of "nog twee X" zonder "erbij" of "bij": telt op bij de meest recente X (add_count), tenzij die volgens de lijst ver weg is ("… m hiervandaan" of "… km hiervandaan"). Dan is het een nieuwe vogel op een nieuwe plek: add_observation. Met "erbij" of "bij" ("doe er nog vier bij", "nog twee erbij") altijd add_count, ook als de vorige ver weg is.
 - Dezelfde soort nog eens noemen, zonder "nog", "erbij" of een verwijzing ("die", "van net") → altijd een nieuwe waarneming (add_observation), ook als die soort net in de lijst staat. "Een hommel" na "een hommel" is een tweede hommel; negeer hem nooit omdat hij al bestaat.
@@ -390,6 +391,7 @@ const buildPrompt = (
 - Bevestiging ("ja, klopt", "dat was goed", "vorige is correct") → update_observation op #1 met alleen uncertain: false, als #1 onzeker is. Is #1 niet onzeker, roep dan geen tool aan.
 - Feedback over de app herken je alleen aan het woord "feedback" (of "dev note", ook verhaspeld door de spraakherkenning) → add_dev_note. Zonder dat woord is het geen feedback, ook niet als het over de app gaat ("hij trilt niet"): dan geen add_dev_note.
 - Feedback midden tussen waarnemingen (vooral in een trektelling, waar de app zelf stukken van een minuut knipt): voer de waarnemingen gewoon uit én roep add_dev_note aan, met in text alleen de opmerking over de app. "Zes holenduiven. Feedback, de knop is te klein. Buizerd." = add_observation (Holenduif) + add_dev_note (text "de knop is te klein") + add_observation (Buizerd).
+- Wat bij de feedback hoort, voer je nooit uit, ook niet als het een correctie beschrijft ("die buizerd had ter plaatse moeten zijn", "ik bedoelde één graszanger", "die kauwen hadden weg gemoeten"): dat gaat alleen in add_dev_note, zonder update_observation, delete_observation of add_observation. Een nieuwe, losse waarneming na de feedback ("…, de knop is te klein. Twee houtduiven.") voer je wel uit.
 - Geen waarneming, correctie of feedback (gepraat, "hallo", "test", vragen, opmerkingen over de app zonder "feedback") → roep geen enkele tool aan.
 - Huisdieren en vee ("een kat", "de hond van de buren", paarden, koeien, schapen, kippen) zijn geen waarneming: roep geen tool aan.
 - Een waarneming van een andere dag of eerder vandaag ("gisteren zag ik hier een ijsvogel", "vanochtend zat hier nog een grote zilverreiger") → wel add_observation, maar met uncertain en de tijd in uncertain_reason ("Gezegd: gisteren"): het tijdstip van de uitspraak klopt dan niet. "Net", "zojuist" en "daarnet" zijn nu: gewoon vastleggen, niet onzeker.
