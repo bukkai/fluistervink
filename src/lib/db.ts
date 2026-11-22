@@ -267,6 +267,29 @@ export type Change =
   | { type: 'update'; observationId: string; before: Partial<Observation> }
   | { type: 'delete'; observation: Observation };
 
+/** De waarden van `obscurity` bij waarneming.nl: openbaar, 1 km, 5 km, verborgen */
+export const OBSCURITIES = [0, 1, 5, 9] as const;
+export type Obscurity = (typeof OBSCURITIES)[number];
+
+export function isObscurity(value: unknown): value is Obscurity {
+  return OBSCURITIES.includes(value as Obscurity);
+}
+
+/** Een datum als YYYY-MM-DD die echt bestaat (dus geen 2026-02-30) */
+export function isDateString(value: unknown): value is string {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T12:00:00Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().startsWith(value);
+}
+
+/**
+ * Afgeschermd of onder embargo (nog niet voorbij): zo'n waarneming moet niet
+ * openbaar worden, dus gaat niet mee naar eBird, dat beide niet kent.
+ */
+export function isShielded(obs: Observation, today: string): boolean {
+  return (obs.obscurity ?? 0) > 0 || (obs.embargoUntil !== undefined && obs.embargoUntil > today);
+}
+
 export interface Observation {
   id: string;
   sessionId: string;
@@ -324,6 +347,14 @@ export interface Observation {
   privateNote?: string;
   /** Uitgevinkt in de review: niet meenemen in de export, wel bewaren */
   skipExport?: boolean;
+  /**
+   * Zichtbaarheid op waarneming.nl (ID uit hun lijst `obscurity`): 1 of 5 =
+   * plek vervaagd tot 1 of 5 km, 9 = verborgen. Leeg of 0 = openbaar. Zie
+   * docs/plan-afschermen.md.
+   */
+  obscurity?: Obscurity;
+  /** Onder embargo tot deze datum (YYYY-MM-DD, zoals de import van waarneming.nl hem wil) */
+  embargoUntil?: string;
   /** Laatst met de hand aangepast (in de review); leeg = zoals het model hem maakte */
   editedAt?: number;
   status: 'draft' | 'reviewed' | 'exported';

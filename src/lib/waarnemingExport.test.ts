@@ -58,10 +58,10 @@ describe('buildExport', () => {
 
     const lines = await csvLines();
     expect(lines[0]).toBe(
-      'date,time,scientific name,lat,lng,accuracy,number,notes,sex,is certain,activity,life stage,method,counting method,uuid',
+      'date,time,scientific name,lat,lng,accuracy,number,notes,sex,is certain,activity,life stage,method,counting method,uuid,obscurity,embargo date',
     );
     expect(lines[1]).toBe(
-      `2026-10-11,14:05,Fringilla coelebs,52.360100,4.921235,8,2,"zat op het hek, ""met ring""",M,False,,,gezien,exact aantal,${earlier.id}`,
+      `2026-10-11,14:05,Fringilla coelebs,52.360100,4.921235,8,2,"zat op het hek, ""met ring""",M,False,,,gezien,exact aantal,${earlier.id},,`,
     );
     expect(lines[2]).toMatch(/^2026-10-11,14:20,Columba palumbus,.*,6,,U,True,/);
     // Afsluitende CRLF
@@ -117,6 +117,31 @@ describe('buildExport', () => {
     expect(sheet).toContain('<c r="D2" t="n"><v>52.123457</v></c>');
     expect(sheet).toContain('<c r="F2" t="n"><v>10</v></c>');
     expect(sheet).not.toContain('52.3601');
+  });
+
+  it('zet afschermen als getal en een embargo als datum, leeg als het openbaar is', async () => {
+    const observedAt = Date.parse('2026-10-11T14:10:00');
+    const hidden = observation({ observedAt, position, obscurity: 9 });
+    const blurred = observation({ observedAt: observedAt + 1, position, obscurity: 5 });
+    const embargo = observation({
+      observedAt: observedAt + 2,
+      position,
+      embargoUntil: '2027-03-01',
+    });
+    const open = observation({ observedAt: observedAt + 3, position, obscurity: 0 });
+    await db.observations.bulkAdd([hidden, blurred, embargo, open]);
+    const lines = await csvLines();
+    expect(lines[1]).toMatch(new RegExp(`,${hidden.id},9,$`));
+    expect(lines[2]).toMatch(new RegExp(`,${blurred.id},5,$`));
+    expect(lines[3]).toMatch(new RegExp(`,${embargo.id},,2027-03-01$`));
+    expect(lines[4]).toMatch(new RegExp(`,${open.id},,$`));
+
+    const result = await buildExport([session], 'xlsx');
+    const sheet = (await unzipStored(result.file)).get('xl/worksheets/sheet1.xml')!;
+    expect(sheet).toContain('<c r="P2" t="n"><v>9</v></c>');
+    expect(sheet).toContain(
+      '<c r="Q4" t="inlineStr"><is><t xml:space="preserve">2027-03-01</t></is></c>',
+    );
   });
 
   it('maakt in de app een xlsx met dezelfde kolommen, getallen als getal', async () => {

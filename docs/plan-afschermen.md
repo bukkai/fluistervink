@@ -88,7 +88,7 @@ De app controleert de waarden zoals bij de andere ID's (`validate`): een onbeken
 ## Stappen
 
 1. ~~Eigenaar: beslissen~~ (22 nov).
-2. Datamodel, validatie, export en tests (één PR).
+2. Datamodel, export, `checkImport` en tests (één PR). De validatie van het model komt met de prompt in stap 3.
 3. Prompt NL en EN, testset-gevallen (één PR, met testset-run).
 4. Scherm: slotje, bewerker, gesproken bevestiging, uitleg en changelog.
 5. Proefimport bij waarneming.nl met een afgeschermde waarneming en een embargo.

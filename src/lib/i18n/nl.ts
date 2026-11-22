@@ -702,6 +702,10 @@ export const nl = {
     one: '1 waarneming van andere dieren niet meegenomen: eBird is alleen voor vogels.',
     other: '{n} waarnemingen van andere dieren niet meegenomen: eBird is alleen voor vogels.',
   },
+  'ebirdExport.shielded': {
+    one: '1 afgeschermde waarneming niet meegenomen: eBird kan niet afschermen.',
+    other: '{n} afgeschermde waarnemingen niet meegenomen: eBird kan niet afschermen.',
+  },
 
   // Back-up terugzetten (export.ts)
   'import.none': 'Geen nieuwe sessies gevonden.',

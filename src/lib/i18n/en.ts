@@ -709,6 +709,10 @@ export const en: Dictionary = {
     one: '1 observation of other wildlife left out: eBird is for birds only.',
     other: '{n} observations of other wildlife left out: eBird is for birds only.',
   },
+  'ebirdExport.shielded': {
+    one: '1 hidden observation left out: eBird cannot hide observations.',
+    other: '{n} hidden observations left out: eBird cannot hide observations.',
+  },
 
   // Back-up terugzetten
   'import.none': 'No new sessions found.',

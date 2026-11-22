@@ -31,12 +31,14 @@ const COLUMNS = [
   'method',
   'counting method',
   'uuid',
+  'obscurity',
+  'embargo date',
 ] as const;
 
 type Row = Record<(typeof COLUMNS)[number], string>;
 
 /** Kolommen die in een xlsx een getal zijn, zoals in het voorbeeld van waarneming.nl */
-const NUMERIC = new Set<string>(['lat', 'lng', 'accuracy', 'number']);
+const NUMERIC = new Set<string>(['lat', 'lng', 'accuracy', 'number', 'obscurity']);
 
 /**
  * CSV, of xlsx in de Android-app: een .csv krijgt daar van Android een type
@@ -209,6 +211,9 @@ function toRow(obs: Observation): Row {
     // Waarneming.nl weigert een import met een uuid die al bestaat: zo kan
     // dezelfde waarneming niet twee keer worden ingevoerd
     uuid: obs.id,
+    // Het ID uit hun lijst (geen tekst, anders dan gedrag e.d.); leeg = openbaar
+    obscurity: obs.obscurity ? String(obs.obscurity) : '',
+    'embargo date': obs.embargoUntil ?? '',
   };
 }
 
