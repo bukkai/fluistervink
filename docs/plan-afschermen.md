@@ -32,7 +32,14 @@ Nog niet bekend (de API-documentatie zit achter een botcheck):
 
 Na het bouwen een proefimport met één afgeschermde waarneming en één met embargo.
 
-**Proefimport 22 nov:** de bulkimport weigert 5 en 9 ("obscurity: '9' moet een keuze zijn uit 0, 1"). De export zet elke afscherming daarom op 1 en meldt hoeveel waarnemingen je na het importeren op de site zelf strenger moet zetten. Nog na te gaan: wat 1 op de site betekent (vervaagd tot 1 km, of iets anders), en of de embargodatum goed binnenkomt.
+**Proefimport 22 nov:** de bulkimport weigert 5 en 9 ("obscurity: '9' moet een keuze zijn uit 0, 1"). De export zet elke afscherming daarom op 1 en meldt hoeveel waarnemingen je na het importeren op de site zelf strenger moet zetten. De melding verscheen.
+
+**Tweede proefimport 22 nov** (vink, houtduif, keep, draaihals, merel):
+
+- `obscurity` 1 = **vervaagd (1km)** op de site (houtduif, ingesproken als 5 km).
+- De embargodatum komt goed binnen ("Verborgen tot"). Tijdens een embargo is de waarneming helemaal **verborgen**, ook zonder afscherming (merel: alleen embargo, toch "Vervaagd: verborgen"). Een verborgen waarneming met embargo (keep) is na het embargo dus waarschijnlijk vervaagd tot 1 km: de melding na het exporteren dekt dat.
+- **Een nest schermt de site zelf af:** de draaihals (bezet nest, zonder embargo in de app) kreeg op waarneming.nl een embargo van een half jaar (22 nov → 22 mei 2027) en validatie "Onbekend". Bij een nest hoeft de gebruiker dus niets te zeggen; de uitleg kan dat later noemen.
+- Met de stem: "openbaar publiceren zonder embargo" haalde de afscherming weg maar niet het embargo. Opgelost: `embargo_until` "geen" ("no embargo" in het Engels) haalt het embargo weg.
 
 ## Voorstel
 
@@ -93,4 +100,4 @@ De app controleert de waarden zoals bij de andere ID's (`validate`): een onbeken
 2. Datamodel, export, `checkImport` en tests (één PR). De validatie van het model komt met de prompt in stap 3.
 3. Prompt NL en EN, testset-gevallen (één PR, met testset-run). Velden `obscurity` en `embargo_until` verplicht maar null (anders boven de grens van optionele velden); de datum van vandaag staat alleen in het bericht als er "embargo" in de uitspraak zit. Promptgevallen: `testset/maak-promptgevallen-afschermen.mjs` (buiten git), 11/11 op 22 nov.
 4. Scherm: slotje, bewerker (embargodatum kiezen haalt de twijfel "zonder datum" weg), gesproken bevestiging, uitleg en changelog.
-5. Proefimport bij waarneming.nl met een afgeschermde waarneming en een embargo.
+5. ~~Proefimport bij waarneming.nl~~ (22 nov, twee keer; zie boven).

@@ -679,6 +679,36 @@ describe('afschermen en embargo', () => {
     expect(obs).not.toHaveProperty('embargoNoDate');
   });
 
+  it('"zonder embargo" haalt het embargo weg; ongedaan maken zet het terug', async () => {
+    await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    await say('die onder embargo tot 1 maart', [
+      'update_observation',
+      { ref: 1, obscurity: 9, embargo_until: '2027-03-01' },
+    ]);
+    await say('openbaar publiceren zonder embargo', [
+      'update_observation',
+      { ref: 1, obscurity: 0, embargo_until: 'geen' },
+    ]);
+    let [obs] = await listObservations(SESSION);
+    expect(obs.embargoUntil).toBeUndefined();
+    expect(obs).not.toHaveProperty('clearEmbargo');
+    expect(obs).toMatchObject({ obscurity: 0, uncertain: false });
+
+    await say('ongedaan maken', ['undo', {}]);
+    [obs] = await listObservations(SESSION);
+    expect(obs).toMatchObject({ obscurity: 9, embargoUntil: '2027-03-01' });
+  });
+
+  it('"geen" embargo bij een nieuwe waarneming doet niets', async () => {
+    await say('een vink zonder embargo', [
+      'add_observation',
+      { species_id: VINK, count: 1, obscurity: null, embargo_until: 'geen' },
+    ]);
+    const [obs] = await listObservations(SESSION);
+    expect(obs).not.toHaveProperty('clearEmbargo');
+    expect(obs.embargoUntil).toBeUndefined();
+  });
+
   it('een embargo zonder datum maakt de waarneming onzeker, met de vraag om een datum', async () => {
     await say('een vink onder embargo', [
       'add_observation',
