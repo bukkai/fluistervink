@@ -625,7 +625,7 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
     });
     saved = true;
   });
-  // Barrie de Buizerd of de lifer, pas als de waarneming er staat
+  // De buizerd of de lifer, pas als de waarneming er staat
   if (saved) checkEasterEggs(utterance.transcript ?? '', interpretation.actions);
 }
 

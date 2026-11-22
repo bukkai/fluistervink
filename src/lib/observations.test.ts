@@ -13,7 +13,7 @@ import {
   toolResponse,
 } from '../test-helpers';
 import { ApiError } from './api';
-import { barrie, BUIZERD_ID, lifer } from './eastereggs.svelte';
+import { BUIZERD_ID, lifer, tochEenBuizerd } from './eastereggs.svelte';
 import { db, storeAudio, type Observation, type PositionLookup, type Utterance } from './db';
 import { interpret } from './interpret';
 import { fillMissingAreas, nameFromSession } from './area';
@@ -307,21 +307,21 @@ describe('corrigeren', () => {
 
 describe('easter eggs', () => {
   afterEach(() => {
-    barrie.visible = false;
+    tochEenBuizerd.visible = false;
     lifer.visible = false;
   });
 
-  it('Barrie komt als een waarneming toch een buizerd blijkt', async () => {
+  it('de buizerd komt als een waarneming toch een buizerd blijkt', async () => {
     await say('wespendief', ['add_observation', { species_id: 349, count: 1 }]);
     await say('nee, toch een buizerd', ['update_observation', { ref: 1, species_id: BUIZERD_ID }]);
-    expect(barrie.visible).toBe(true);
+    expect(tochEenBuizerd.visible).toBe(true);
     const [obs] = await listObservations(SESSION);
     expect(obs.speciesId).toBe(BUIZERD_ID);
   });
 
-  it('geen Barrie bij een gewone buizerd', async () => {
+  it('geen grap bij een gewone buizerd', async () => {
     await say('buizerd', ['add_observation', { species_id: BUIZERD_ID, count: 1 }]);
-    expect(barrie.visible).toBe(false);
+    expect(tochEenBuizerd.visible).toBe(false);
   });
 
   it('feest bij een lifer, met de soort erbij', async () => {

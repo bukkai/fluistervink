@@ -51,7 +51,7 @@
   import Welcome from './lib/Welcome.svelte';
   import { setWelcomeDone, welcomeDone } from './lib/welcome';
   import Zeemeeuwen from './lib/Zeemeeuwen.svelte';
-  import Barrie from './lib/Barrie.svelte';
+  import TochEenBuizerd from './lib/TochEenBuizerd.svelte';
   import Lifer from './lib/Lifer.svelte';
   import UpdateStatus from './lib/UpdateStatus.svelte';
 
@@ -434,7 +434,7 @@
 <UpdateStatus hidden={!!active} />
 
 <Zeemeeuwen />
-<Barrie />
+<TochEenBuizerd />
 <Lifer />
 
 <style>

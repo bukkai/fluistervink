@@ -860,13 +860,12 @@ export const nl = {
   'gulls.which': 'Zilvermeeuw? Kokmeeuw? Stormmeeuw? Grote mantelmeeuw?',
   'gulls.hint': 'Tik om de meeuwen te kalmeren',
 
-  // Barrie de Buizerd en de lifer (Barrie.svelte, Lifer.svelte)
+  // Toch een buizerd en de lifer (TochEenBuizerd.svelte, Lifer.svelte)
   'egg.hint': 'Tik om verder te gaan',
-  'barrie.label': 'Toch een buizerd',
-  'barrie.name': 'Barrie de Buizerd',
-  'barrie.cry': 'PIEEEUW!',
-  'barrie.hashtag': '#tocheenbuizerd',
-  'barrie.message': 'Het is altijd een buizerd.',
+  'buizerd.label': 'Toch een buizerd',
+  'buizerd.cry': 'PIEEEUW!',
+  'buizerd.hashtag': '#tocheenbuizerd',
+  'buizerd.message': 'Het is altijd een buizerd.',
   'lifer.label': 'Een lifer',
   'lifer.shout': 'LIFER!',
   'lifer.congrats': 'Gefeliciteerd met je nieuwe soort!',

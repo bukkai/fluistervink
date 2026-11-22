@@ -7,7 +7,7 @@ import { logEvent } from './log';
 // wordt gewoon opgeslagen.
 //
 // #tocheenbuizerd: een grap uit de Discord. Elke spannende roofvogel blijkt
-// toch een buizerd te zijn, en dan komt Barrie de Buizerd. Hier: een
+// toch een buizerd te zijn, en dan komt er een krijsende buizerd. Hier: een
 // waarneming wordt een buizerd met woorden als "toch een buizerd".
 //
 // Lifer: een soort die je voor het eerst ziet. De app houdt dat niet bij; de
@@ -15,7 +15,7 @@ import { logEvent } from './log';
 
 export const BUIZERD_ID = 82;
 
-export const barrie = $state({ visible: false });
+export const tochEenBuizerd = $state({ visible: false });
 export const lifer = $state<{ visible: boolean; speciesId?: number }>({ visible: false });
 
 /**
@@ -68,7 +68,7 @@ export function liferSpecies(actions: Action[]): number | undefined {
  */
 const VIBRATE_AFTER_MS = 1000;
 
-/** Na het opslaan van een uitspraak: Barrie of de lifer, als het zo uitkomt. */
+/** Na het opslaan van een uitspraak: de buizerd of de lifer, als het zo uitkomt. */
 export function checkEasterEggs(transcript: string, actions: Action[]): void {
   if (document.hidden || !transcript) return;
   if (mentionsLifer(transcript)) {
@@ -77,7 +77,7 @@ export function checkEasterEggs(transcript: string, actions: Action[]): void {
     setTimeout(() => vibrate('party'), VIBRATE_AFTER_MS);
     logEvent('lifer');
   } else if (saysTochEenBuizerd(transcript) && makesBuizerd(actions)) {
-    barrie.visible = true;
+    tochEenBuizerd.visible = true;
     setTimeout(() => vibrate('buizerd'), VIBRATE_AFTER_MS);
     logEvent('tocheenbuizerd');
   }
