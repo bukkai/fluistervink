@@ -100,6 +100,8 @@ Voor de regel "Leuk met kinderen" op de tuintellingpagina. Liefst een jong en ee
 
 Na het mergen van #339. Feedback van tester app-b726a027; plan `docs/plan-afschermen.md`. Een eigen sessie, "Afschermen".
 
+**Uitslag 22 nov (20:29):** alles werkte. De eerste import weigerde 5 en 9 (alleen 0 of 1): opgelost in #343, met een melding om het op de site strenger te zetten. Tweede import goed: 1 = vervaagd 1 km, embargo = verborgen tot de datum, de draaihals (nest) kreeg van de site zelf een half jaar embargo. "Openbaar publiceren zonder embargo" liet het embargo staan: #345.
+
 - [ ] "een vink", dan "die afschermen" → in de lijst een slotje met "Verborgen op waarneming.nl"; de bevestiging zegt "afgeschermd".
 - [ ] "een houtduif", dan "die op vijf kilometer vervagen" → "Vervaagd tot 5 km op waarneming.nl".
 - [ ] "een keep", dan "die onder embargo tot 1 maart" → "Embargo tot 1 mrt 2027".
