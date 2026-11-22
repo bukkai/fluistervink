@@ -65,6 +65,7 @@ Daaruit maken we: Android-pictogram (`android/app/src/main/res/mipmap-*`, adapti
 
 - [ ] Productietoegang aanvragen in de Play Console (na 14 dagen, als het dashboard het toestaat).
 - [ ] Na goedkeuring: de stabiele AAB naar **Productie**. Bij het maken van die release de landen kiezen: Nederland en België. De beta blijft in de interne test.
+- [ ] Zodra de app openbaar in Play staat: #333 mergen (draft), de link naar Fluistervink in Google Play op de voorpagina. Daarvóór geeft die link wie geen tester is een "niet gevonden". Tot dan gaan nieuwe testers met de hand op de e-maillijst van de gesloten test.
 - [ ] `#uitleg` en `#privacy` nalopen op "test"-taal; `CLAUDE.md` en `NOTES.md` bijwerken. Nagelopen op 18 nov: beide schoon (alleen de gesproken bevestiging heet er een proef, en dat is hij nog). Besloten 21 nov: "(proef)" bij Trektelmodus eraf (gesproken bevestiging blijft een proef); "nog in ontwikkeling" in de vraag om te delen (welkom en startscherm) blijft tijdens de test en verandert vóór de productierelease.
 - [ ] De eerste weken Statistieken en Kosten op Developer volgen.
 
