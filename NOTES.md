@@ -29,7 +29,6 @@ Uitgeschreven in drie draaiboeken om af te vinken: `docs/draaiboek-thuis.md` (Aâ
 
 ## Met de testset nagaan
 
-- **Zelf beoordelen (#261):** vijf keer kiest het model overvliegend in een trektelstuk waar het nagelopen label ter plaatse zegt (houtduif, regenwulp, buizerd, kramsvogel, koperwiek). Zaten ze echt, of niet aangepast bij het nalopen? Zo nodig het label rechtzetten.
 - **Nog niet gemeten:** iemand anders die een vogel noemt, radio, wind zonder iets te zeggen, "die buizerd van een kwartier geleden" na veel waarnemingen (robuustheid #6, #7); een paar Latijnse namen (#157). Hiervoor opnames inspreken (draaiboek buiten).
 - **Oortjes na een gesprek** (18 nov): de microfoon ging pas na 0,65 s open en het begin van een uitspraak viel weg. Wachten op het starttikje helpt; komt het vaker voor, dan nagaan of de oortjesmicrofoon sneller of warm kan.
 - **Opletten, promptregel alleen als het vaker voorkomt:** "die houtduiven" zonder eerdere waarneming is waarschijnlijk "drie houtduiven"; bereik als schatting ("tussen de vijftig en honderd", #215); preciezere leeftijd ("juveniel, ik denk derde kalenderjaar").
