@@ -7,6 +7,7 @@ import {
   countPerSession,
   formatDuration,
   isFiledAway,
+  notForExport,
   keepSession,
 } from './sessions';
 
@@ -137,5 +138,31 @@ describe('isFiledAway', () => {
     expect(isFiledAway(ended({ ebirdExportedAt: now - 8 * DAY }), true, none, now)).toBe(true);
     // Zonder eBird telt alleen waarneming.nl
     expect(isFiledAway(ended({ ebirdExportedAt: now - 8 * DAY }), false, none, now)).toBe(false);
+  });
+});
+
+describe('tuintelling zonder export', () => {
+  const DAY = 24 * HOUR;
+  const tuin = (extra: Partial<Session>): Session => ({
+    id: 't',
+    startedAt: now - 10 * DAY,
+    endedAt: now - 10 * DAY,
+    status: 'ended',
+    tuintelling: true,
+    ...extra,
+  });
+  const none = new Set<string>();
+
+  it('vraagt geen export, tenzij klaargezet of al geëxporteerd', () => {
+    expect(notForExport(tuin({}))).toBe(true);
+    expect(notForExport(tuin({ readyAt: now }))).toBe(false);
+    expect(notForExport(tuin({ ebirdExportedAt: now }))).toBe(false);
+    expect(notForExport({ ...tuin({}), tuintelling: undefined })).toBe(false);
+  });
+
+  it('klapt een week na het stoppen weg', () => {
+    expect(isFiledAway(tuin({}), false, none, now)).toBe(true);
+    expect(isFiledAway(tuin({ endedAt: now - 2 * DAY }), false, none, now)).toBe(false);
+    expect(isFiledAway(tuin({ readyAt: now - 9 * DAY }), false, none, now)).toBe(false);
   });
 });

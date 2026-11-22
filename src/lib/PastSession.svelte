@@ -5,7 +5,7 @@
   import { db, type Session } from './db';
   import { renameSession } from './area';
   import { countSpecies, listObservations } from './observations';
-  import { deleteSessions, formatDuration, resumeSession } from './sessions';
+  import { deleteSessions, formatDuration, notForExport, resumeSession } from './sessions';
   import ChecklistAnswers from './ChecklistAnswers.svelte';
   import EbirdEffort from './EbirdEffort.svelte';
   import { sessionDurationMs } from './effort';
@@ -130,6 +130,33 @@
   }
 
   const dateFormat = new Intl.DateTimeFormat(LOCALE, { dateStyle: 'full' });
+
+  // Na een tuintelling staat de export ingeklapt: de meeste tuintellers willen
+  // niet naar waarneming.nl of eBird, maar zo zien ze wel dat het kan. Open
+  // voor wie al exporteert (eBird aan, ooit een sessie geëxporteerd, of hier
+  // eerder opengeklapt) en voor een tuintelling die al klaarstaat of weg is.
+  const EXPORT_OPEN_KEY = 'fluistervink.tuintelExportOpen';
+  function openedBefore(): boolean {
+    try {
+      return localStorage.getItem(EXPORT_OPEN_KEY) === '1';
+    } catch {
+      return false;
+    }
+  }
+  let opened = $state(openedBefore());
+  let everExported = $derived(
+    liveQuery(() => db.sessions.filter((s) => !!s.exportedAt || !!s.ebirdExportedAt).count()),
+  );
+  let exportCollapsed = $derived(notForExport(session) && !ebird && !opened && $everExported === 0);
+
+  function openExport() {
+    opened = true;
+    try {
+      localStorage.setItem(EXPORT_OPEN_KEY, '1');
+    } catch {
+      // Geen opslag: dan de volgende keer weer ingeklapt
+    }
+  }
 </script>
 
 {#snippet checklistQuestion()}
@@ -222,71 +249,84 @@
 
 <SessionLog {session} focus={listFocus} onshowonmap={(id) => (mapFocus = { id })} />
 
-<section class="card export">
-  <div class="card-head">
-    <h2>{t('past.readyTitle')}</h2>
-    {#if session.exportedAt && !exportResult}
-      <span class="badge">{t('sessions.badgeExported')}</span>
-    {:else if session.readyAt && !exportResult}
-      <span class="badge">{t('sessions.badgeReady')}</span>
-    {/if}
-  </div>
-  <div class="card-body">
-    {#if exportResult}
-      <p>{exportResult}</p>
-    {:else if session.exportedAt}
-      <p class="muted">
-        {t('past.exportedOn', {
-          date: dateFormat.format(session.exportedAt),
-          time: timeFormat.format(session.exportedAt),
-        })}
-      </p>
-    {:else if session.readyAt}
-      <p class="first">
-        {t('past.isReady')}
-      </p>
-      <div class="actions">
-        <a class="btn block" href="#sessies">{t('past.toSessions')}</a>
-        <button class="btn secondary block" onclick={() => markReady(session.id, false)}
-          >{t('past.notReadyYet')}</button
-        >
-      </div>
-    {:else if $unprocessed}
-      <p class="first">
-        {t('past.unprocessed', { n: $unprocessed })}
-      </p>
-    {:else}
-      {#if uncertainCount > 0}
-        <p class="warning">
-          {t('past.uncertainLeft', { n: uncertainCount })}
-        </p>
-      {/if}
-      <button class="btn block large" onclick={ready}
-        >{ebird ? t('past.allCorrectEbird') : t('past.allCorrect')}</button
-      >
-      <p class="muted">
-        {ebird ? t('past.readyHintEbird') : t('past.readyHint')}
-      </p>
-    {/if}
-    <div class="actions only-this">
-      <button class="btn secondary block" onclick={exportOnlyThis} disabled={!!$unprocessed}
-        >{ebird ? t('past.exportOnlyThisEbird') : t('past.exportOnlyThis')}</button
+{#if exportCollapsed}
+  <section class="card more-export">
+    <div class="card-head"><h2>{t('past.tuintelExportTitle')}</h2></div>
+    <div class="card-body">
+      <p>{t('past.tuintelExportText')}</p>
+      <button class="btn secondary block" onclick={openExport}>{t('past.tuintelExportOpen')}</button
       >
     </div>
-    <p class="muted">
-      {t('past.importHintVoor')}
-      <a href={IMPORT_URL} target="_blank" rel="noopener">waarneming.nl</a>{t('past.importHintNa')}
-    </p>
-  </div>
-</section>
+  </section>
+{:else}
+  <section class="card export">
+    <div class="card-head">
+      <h2>{t('past.readyTitle')}</h2>
+      {#if session.exportedAt && !exportResult}
+        <span class="badge">{t('sessions.badgeExported')}</span>
+      {:else if session.readyAt && !exportResult}
+        <span class="badge">{t('sessions.badgeReady')}</span>
+      {/if}
+    </div>
+    <div class="card-body">
+      {#if exportResult}
+        <p>{exportResult}</p>
+      {:else if session.exportedAt}
+        <p class="muted">
+          {t('past.exportedOn', {
+            date: dateFormat.format(session.exportedAt),
+            time: timeFormat.format(session.exportedAt),
+          })}
+        </p>
+      {:else if session.readyAt}
+        <p class="first">
+          {t('past.isReady')}
+        </p>
+        <div class="actions">
+          <a class="btn block" href="#sessies">{t('past.toSessions')}</a>
+          <button class="btn secondary block" onclick={() => markReady(session.id, false)}
+            >{t('past.notReadyYet')}</button
+          >
+        </div>
+      {:else if $unprocessed}
+        <p class="first">
+          {t('past.unprocessed', { n: $unprocessed })}
+        </p>
+      {:else}
+        {#if uncertainCount > 0}
+          <p class="warning">
+            {t('past.uncertainLeft', { n: uncertainCount })}
+          </p>
+        {/if}
+        <button class="btn block large" onclick={ready}
+          >{ebird ? t('past.allCorrectEbird') : t('past.allCorrect')}</button
+        >
+        <p class="muted">
+          {ebird ? t('past.readyHintEbird') : t('past.readyHint')}
+        </p>
+      {/if}
+      <div class="actions only-this">
+        <button class="btn secondary block" onclick={exportOnlyThis} disabled={!!$unprocessed}
+          >{ebird ? t('past.exportOnlyThisEbird') : t('past.exportOnlyThis')}</button
+        >
+      </div>
+      <p class="muted">
+        {t('past.importHintVoor')}
+        <a href={IMPORT_URL} target="_blank" rel="noopener">waarneming.nl</a>{t(
+          'past.importHintNa',
+        )}
+      </p>
+    </div>
+  </section>
 
-{#if asking && askedAtReady}
-  {@render checklistQuestion()}
-{/if}
+  {#if asking && askedAtReady}
+    {@render checklistQuestion()}
+  {/if}
 
-<!-- eBird bij de export, net onder waarneming.nl: zelfde "klaar", eigen export -->
-{#if ebird}
-  <EbirdEffort {session} />
+  <!-- eBird bij de export, net onder waarneming.nl: zelfde "klaar", eigen export -->
+  {#if ebird}
+    <EbirdEffort {session} />
+  {/if}
 {/if}
 
 <!-- Knoppen in plaats van linkjes: ook met dikke vingers of handschoenen te raken -->
@@ -451,6 +491,10 @@
 
   .export .only-this + p {
     margin-top: 0.4rem;
+  }
+
+  .more-export p {
+    margin: 0 0 0.75rem;
   }
 
   .footer {
