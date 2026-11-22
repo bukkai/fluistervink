@@ -28,7 +28,7 @@ Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/ro
 
 Elk punt na het proberen hier weghalen.
 
-- **Tuintelling** (#323, ontwikkeloptie `tuintelling`, na het mergen): knop "Tuintelling: een half uur tellen"; "drie koolmezen", "vijf koolmezen", "zes houtduiven overvliegend", "een mees". Klok in de kop, na 25 min twee trillen, na 30 min drie lange en het overzicht: Koolmees 5, houtduif bij overvliegend, mees als "Kies eerst een soort". Meteen de proeftelling bij het raam (plan, punt 9).
+- **Tuintelling** (#332, ontwikkeloptie `tuintelling`, na het mergen): proeftelling van 22 nov leidde tot de trektelstand. Proberen: "Tuintelling" starten, de kop zegt dat het half uur nog niet loopt; "Begin met tellen" → klok loopt, microfoon blijft aan, stukken per minuut; tussendoor stoppen → "Verder luisteren", klok loopt door; na 30 min drie lange trillen en het resultaat. Daar "Nog iets inspreken" → een vogel inspreken → Klaar → hij staat in het resultaat. Begintijd in het resultaat = begin van het tellen. Daarna de proef met huisgenoten/tv aan (plan, punt 9).
 - **Kinderstem** (#327, tuintellingpagina): een kind een paar soorten laten inspreken ("twee pimpelmeesjes", "een roodborstje", "nu vijf koolmezen"), liefst een jong en een ouder kind. Gaat het goed, dan blijft "Leuk met kinderen" op de pagina staan; anders die regel eruit. Delen, dan kan het ook in de testset.
 
 
