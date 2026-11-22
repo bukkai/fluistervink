@@ -75,8 +75,8 @@ export default defineConfig({
         navigateFallback: 'app/index.html',
         navigateFallbackAllowlist: [/^\/app\//],
         navigateFallbackDenylist: [/^\/api\//, /^\/privacy/, /^\/tuintelling/],
-        // Ook afbeeldingen (de meeuwen van de zeemeeuw-grap), zodat ze offline werken
-        globPatterns: ['**/*.{js,css,html,png,svg}'],
+        // Ook afbeeldingen (de meeuwen van de zeemeeuw-grap, Barrie), zodat ze offline werken
+        globPatterns: ['**/*.{js,css,html,png,jpg,svg}'],
       },
       includeAssets: ['icon.svg', 'logo.svg', 'apple-touch-icon.png'],
       manifest: {
