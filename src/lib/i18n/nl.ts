@@ -612,6 +612,12 @@ export const nl = {
   'group.3': 'Reptielen en amfibieën',
   'group.4': 'Dagvlinders',
   'group.5': 'Libellen',
+  'group.16': 'Kevers',
+  'group.15': 'Wantsen',
+  'group.17': 'Bijen, wespen en mieren',
+  'group.8': 'Nachtvlinders',
+  'group.14': 'Sprinkhanen en krekels',
+  'group.18': 'Zweefvliegen',
 
   // Zeldzaamheid (rarity.ts)
   'rarity.1': 'algemeen',
@@ -787,6 +793,7 @@ export const nl = {
   'reason.onlyNumber':
     'Alleen "{transcript}" verstaan; misschien "een …" (nieuwe waarneming). Was {count} × {species}',
   'reason.vagrant': 'Dwaalgast, niet in de vaste lijst (gezegd: "{named}")',
+  'reason.insect': 'Insect, opgezocht (gezegd: "{named}")',
   'reason.place': 'Plek gezegd: "{text}"; zet hem op de kaart',
 
   // Gesproken bevestiging (spoken.ts)

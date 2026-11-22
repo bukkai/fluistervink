@@ -619,6 +619,12 @@ export const en: Dictionary = {
   'group.3': 'Reptiles and amphibians',
   'group.4': 'Butterflies',
   'group.5': 'Dragonflies',
+  'group.16': 'Beetles',
+  'group.15': 'Bugs',
+  'group.17': 'Bees, wasps and ants',
+  'group.8': 'Moths',
+  'group.14': 'Grasshoppers and crickets',
+  'group.18': 'Hoverflies',
 
   // Zeldzaamheid
   'rarity.1': 'common',
@@ -791,6 +797,7 @@ export const en: Dictionary = {
   'reason.onlyNumber':
     'Only heard "{transcript}"; perhaps "a …" (new observation). Was {count} × {species}',
   'reason.vagrant': 'Vagrant, not in the standard list (said: "{named}")',
+  'reason.insect': 'Insect, looked up (said: "{named}")',
   'reason.place': 'Spot mentioned: "{text}"; put it on the map',
 
   // Gesproken bevestiging

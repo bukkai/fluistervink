@@ -7,6 +7,11 @@
 // docs/plan-engels.md) en de namen van eBird voor de eBird-export
 // (data/ebird-namen.json, docs/plan-ebird.md).
 //
+// Insecten (docs/plan-insecten.md, laag 1): per groep alleen een paar
+// verzamelsoorten in de prompt ("Kever onbekend", "Hommel onbekend"); de
+// volledige lijsten (soorten met een Nederlandse naam) in
+// data/soorten-insecten.json, die de app pas laadt als het nodig is.
+//
 // Met --landen ook de vogels van Spanje (data/soorten-es.json, proef van
 // docs/plan-andere-landen.md), met een zeldzaamheid uit het aantal
 // waarnemingen: ruim duizend aanroepen, een paar minuten. Niet elke week (de
@@ -103,10 +108,97 @@ const GROUPS = [
 ];
 
 /**
+ * Insectengroepen (docs/plan-insecten.md, laag 1). `catchAll`: verzamelsoorten
+ * in de prompt, waar het model een insect onder zet; de gezegde naam zoekt de
+ * app op in de volledige lijst van die groep (`findInsect` in src/lib/vocab.ts).
+ * `only`: welke soorten van de groep (zweefvliegen uit "Vliegen en muggen").
+ */
+const HOVERFLY_GENERA = [
+  'Anasimyia',
+  'Baccha',
+  'Chalcosyrphus',
+  'Cheilosia',
+  'Chrysogaster',
+  'Chrysotoxum',
+  'Criorhina',
+  'Episyrphus',
+  'Eristalinus',
+  'Eristalis',
+  'Eupeodes',
+  'Ferdinandea',
+  'Helophilus',
+  'Lejogaster',
+  'Leucozona',
+  'Melangyna',
+  'Meliscaeva',
+  'Merodon',
+  'Myathropa',
+  'Neoascia',
+  'Orthonevra',
+  'Paragus',
+  'Pipiza',
+  'Platycheirus',
+  'Rhingia',
+  'Sericomyia',
+  'Sphaerophoria',
+  'Syritta',
+  'Syrphus',
+  'Tropidia',
+  'Volucella',
+  'Xylota',
+];
+const INSECT_GROUPS = [
+  // Kever, lieveheersbeestje, meikever
+  { id: 16, file: 'kevers', catchAll: [27916, 156859, 606842] },
+  // Wants, schildwants
+  { id: 15, file: 'wantsen', catchAll: [18649, 210669] },
+  // Hommel, bij, wesp (plooivleugelwespen: limonadewespen, hoornaar), mier
+  {
+    id: 17,
+    file: 'bijen-wespen-mieren',
+    catchAll: [105323, 186200, 186244, 186216],
+    names: { 186244: 'Wesp onbekend' },
+  },
+  // Nachtvlinder (macro), mot (micro)
+  {
+    id: 8,
+    file: 'nachtvlinders',
+    catchAll: [9059, 16726],
+    names: { 9059: 'Nachtvlinder onbekend', 16726: 'Mot onbekend (microvlinder)' },
+  },
+  { id: 14, file: 'sprinkhanen', catchAll: [105325] },
+  {
+    id: 18,
+    file: 'zweefvliegen',
+    catchAll: [18628],
+    only: (s) =>
+      /zweefvlieg/i.test(s.name) || HOVERFLY_GENERA.includes(s.scientific_name.split(' ')[0]),
+  },
+];
+
+/**
+ * Heeft de soort een eigen Nederlandse naam? Alleen die zegt iemand hardop;
+ * zonder naam geeft de bron de wetenschappelijke ("Epistrophe spec.").
+ */
+const hasDutchName = (s) => {
+  const name = s.name.trim().toLowerCase();
+  return (
+    name !== s.scientific_name.trim().toLowerCase() &&
+    !name.startsWith(s.scientific_name.split(' ')[0].toLowerCase())
+  );
+};
+
+/**
  * Engelse namen die in de bron ontbreken of onhandig zijn, per soort-ID (zoals
  * `names` per groep, maar dan voor data/namen-en.json).
  */
 const NAMES_EN = {
+  156859: 'Ladybird unknown',
+  606842: 'Cockchafer unknown',
+  210669: 'Shieldbug unknown',
+  186244: 'Wasp unknown',
+  9059: 'Moth unknown',
+  16726: 'Micro moth unknown',
   1003144: 'Passerine unknown',
   255102: 'Hooded Crow',
   719494: 'White butterfly unknown',
@@ -198,6 +290,48 @@ for (const group of GROUPS) {
     ),
   );
 
+  const attrs = await get(`/species-groups/${group.id}/attributes/`);
+  attributes[group.file] = {
+    activity: pick(attrs.activity),
+    method: pick(attrs.method),
+    life_stage: pick(attrs.life_stage),
+  };
+  const attrsEn = await get(`/species-groups/${group.id}/attributes/`, 'en');
+  englishAttributes[group.file] = {
+    activity: byId(pick(attrsEn.activity)),
+    method: byId(pick(attrsEn.method)),
+    life_stage: byId(pick(attrsEn.life_stage)),
+  };
+}
+
+// Insecten: verzamelsoorten in de gewone lijsten, de rest apart
+const insects = [];
+for (const group of INSECT_GROUPS) {
+  const source = await get(`/region-lists/${5000 + group.id}/species/`);
+  const english = new Map(
+    (await get(`/region-lists/${5000 + group.id}/species/`, 'en')).map((s) => [s.species, s.name]),
+  );
+  const catchAll = source.filter((s) => group.catchAll.includes(s.species));
+  const missingIds = group.catchAll.filter((id) => !catchAll.some((s) => s.species === id));
+  if (missingIds.length)
+    console.warn(`${group.file}: verzamelsoorten niet gevonden: ${missingIds.join(', ')}`);
+  for (const s of catchAll) englishSpecies.set(s.species, english.get(s.species));
+  const asGroup = { ...group, names: group.names ?? {} };
+  species.push(...toSpecies(asGroup, catchAll));
+  allSpecies.push(...toSpecies(asGroup, catchAll));
+  const listed = source.filter(
+    (s) =>
+      !group.catchAll.includes(s.species) &&
+      TYPES.includes(s.type) &&
+      s.native &&
+      RARITIES.includes(s.rarity) &&
+      hasDutchName(s) &&
+      (group.only?.(s) ?? true),
+  );
+  for (const s of toSpecies(asGroup, listed)) {
+    const en = english.get(s.id)?.trim();
+    insects.push({ ...s, ...(en && en !== s.scientific && { en }) });
+  }
   const attrs = await get(`/species-groups/${group.id}/attributes/`);
   attributes[group.file] = {
     activity: pick(attrs.activity),
@@ -366,6 +500,11 @@ await writeFile(
   'data/soorten-nl-alle.json',
   '[\n' + allSpecies.map((s) => JSON.stringify(s)).join(',\n') + '\n]\n',
 );
+// Compact, net als soorten-nl-alle.json; los geladen door src/lib/insects.ts
+await writeFile(
+  'data/soorten-insecten.json',
+  '[\n' + insects.map((s) => JSON.stringify(s)).join(',\n') + '\n]\n',
+);
 for (const [code, list] of Object.entries(countryLists))
   await writeFile(
     `data/soorten-${code}.json`,
@@ -409,7 +548,7 @@ for (const [code, list] of Object.entries(countryLists))
   console.log(
     `${code}: ${list.filter((s) => s.prompt).length} vogels in de prompt (alle: ${list.length})`,
   );
-for (const group of GROUPS) {
+for (const group of [...GROUPS, ...INSECT_GROUPS]) {
   const a = attributes[group.file];
   const count = (list) => list.filter((s) => s.group === group.id).length;
   console.log(
@@ -417,6 +556,7 @@ for (const group of GROUPS) {
       `${a.activity.length} activiteiten, ${a.method.length} methodes, ${a.life_stage.length} kleden`,
   );
 }
+console.log(`insecten: ${insects.length} soorten in data/soorten-insecten.json`);
 
 /**
  * eBird-namen (Clements-taxonomie, Amerikaans Engels) per soort-ID van

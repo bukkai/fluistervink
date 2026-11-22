@@ -10,6 +10,8 @@ import {
   BIRDS,
   countingMethods,
   groups,
+  insectGroups,
+  insectsEnabled,
   lifeStages,
   methods,
   promptSpeciesOf,
@@ -117,29 +119,37 @@ export const MAX_CANDIDATES = 3;
 /** Groepen naast vogels (keuze 'soortgroepen' bij Instellingen) */
 const otherGroups = groups.filter((g) => g.id !== BIRDS);
 
-/** Codes van alle groepen samen, voor het schema; de app controleert per groep */
-const allGroupCodes = (field: 'activities' | 'methods' | 'lifeStages') =>
-  groups.flatMap((g) => g.codes[field]);
+/**
+ * Codes van alle groepen samen, voor het schema; de app controleert per groep.
+ * `insects`: ook die van de insectengroepen (docs/plan-insecten.md).
+ */
+const allGroupCodes = (field: 'activities' | 'methods' | 'lifeStages', insects: boolean) =>
+  [...groups, ...(insects ? insectGroups : [])].flatMap((g) => g.codes[field]);
 
 /**
  * Velden met de andere soortgroepen erbij: de codes van alle groepen, en een
  * verzamelsoort van de groep bij een onbekend dier. Zelfde volgorde van de
  * sleutels, zodat de tools zonder de optie precies gelijk blijven.
  */
-const fieldPropertiesWithGroups = {
-  ...fieldProperties,
-  unlisted_species: {
-    type: 'string',
-    description:
-      'Alleen als de gebruiker duidelijk een soort noemt die niet in de soortenlijst staat (een zeldzame dwaalgast of een zeldzaam ander dier): de naam zoals gezegd, bv. "roodkopklauwier" of "wolf". species_name en species_id zijn dan de best passende verzamelsoort van zijn groep (Vogel onbekend, Zoogdier onbekend, enz.). Zie "Soorten" en "Andere dieren".',
-  },
-  activity_id: { type: 'integer', enum: enumOf(allGroupCodes('activities')) },
-  method_id: { type: 'integer', enum: enumOf(allGroupCodes('methods')) },
-  life_stage_id: {
-    ...fieldProperties.life_stage_id,
-    anyOf: [{ type: 'integer', enum: enumOf(allGroupCodes('lifeStages')) }, { type: 'null' }],
-  },
-} as const;
+const fieldPropertiesWithGroups = (insects: boolean) =>
+  ({
+    ...fieldProperties,
+    unlisted_species: {
+      type: 'string',
+      description: insects
+        ? 'Alleen als de gebruiker duidelijk een soort noemt die niet in de soortenlijst staat (een zeldzame dwaalgast, een zeldzaam ander dier of een insect met een soortnaam): de naam zoals gezegd, bv. "roodkopklauwier", "wolf" of "aardhommel". species_name en species_id zijn dan de best passende verzamelsoort van zijn groep (Vogel onbekend, Zoogdier onbekend, Hommel onbekend, enz.). Zie "Soorten", "Andere dieren" en "Insecten".'
+        : 'Alleen als de gebruiker duidelijk een soort noemt die niet in de soortenlijst staat (een zeldzame dwaalgast of een zeldzaam ander dier): de naam zoals gezegd, bv. "roodkopklauwier" of "wolf". species_name en species_id zijn dan de best passende verzamelsoort van zijn groep (Vogel onbekend, Zoogdier onbekend, enz.). Zie "Soorten" en "Andere dieren".',
+    },
+    activity_id: { type: 'integer', enum: enumOf(allGroupCodes('activities', insects)) },
+    method_id: { type: 'integer', enum: enumOf(allGroupCodes('methods', insects)) },
+    life_stage_id: {
+      ...fieldProperties.life_stage_id,
+      anyOf: [
+        { type: 'integer', enum: enumOf(allGroupCodes('lifeStages', insects)) },
+        { type: 'null' },
+      ],
+    },
+  }) as const;
 
 const refProperty = {
   type: 'integer',
@@ -173,8 +183,8 @@ const addRequired = [
   'candidate_species',
 ];
 
-const buildTools = (withGroups: boolean): Anthropic.Tool[] => {
-  const fields = withGroups ? fieldPropertiesWithGroups : fieldProperties;
+const buildTools = (withGroups: boolean, insects = false): Anthropic.Tool[] => {
+  const fields = withGroups ? fieldPropertiesWithGroups(insects) : fieldProperties;
   const properties = requiredFirst({ ...fields, ...candidateProperty }, addRequired);
   return [
     {
@@ -291,6 +301,29 @@ Naast vogels spreekt de gebruiker ook zoogdieren, reptielen en amfibieën, dagvl
 
 ${otherGroups.map(groupCodeLines).join('\n\n')}`;
 
+/**
+ * Insecten (docs/plan-insecten.md, laag 1): alleen verzamelsoorten in de lijst;
+ * een soortnaam zoekt de app op in de groep van de gekozen verzamelsoort
+ * (`findInsect` in vocab.ts, via unlisted_species).
+ */
+const INSECT_RULES = `
+
+## Insecten
+
+De gebruiker spreekt soms ook een insect in: een kever, wants, hommel, bij, wesp, mier, nachtvlinder, mot, sprinkhaan, krekel of zweefvlieg. Daarvan staan alleen verzamelsoorten in de soortenlijst, onder "Insecten".
+- Een insect zonder soortnaam ("een hommel", "twee wespen", "een lieveheersbeestje", "een mot") → die verzamelsoort, zonder uncertain.
+- Een insect met een soortnaam ("een aardhommel", "een vliegend hert", "een kolibrievlinder", "een groene stinkwants", "een blinde bij") → de verzamelsoort van zijn groep, met de naam zoals gezegd in unlisted_species, uncertain, en in uncertain_reason letterlijk "Gezegd: aardhommel (niet in de lijst)". De app zoekt de soort zelf op in de lijst van die groep, dus de groep moet kloppen:
+  - hommel → Hommel onbekend; bij, honingbij, zandbij → Bij onbekend; wesp, hoornaar → Wesp onbekend; mier → Mier onbekend;
+  - kever, boktor, loopkever, tor, haantje (de kever) → Kever onbekend; lieveheersbeestje → Lieveheersbeestje onbekend; meikever, junikever → Meikever onbekend;
+  - wants, cicade, schuimbeestje → Wants onbekend; schildwants, stinkwants → Schildwants onbekend;
+  - nachtvlinder, uil, spanner, pijlstaart, beer (de vlinder), een rups van een nachtvlinder → Nachtvlinder onbekend; mot, microvlinder, vedermot → Mot onbekend (microvlinder);
+  - sprinkhaan, krekel, veenmol → Sprinkhaan onbekend; zweefvlieg, blinde bij → Zweefvlieg onbekend.
+- Namen die op een vogel lijken: zegt de gebruiker dat het om een insect gaat ("goudhaantje, de kever, niet de vogel", "een rietvink, de nachtvlinder"), dan is het een insect: de verzamelsoort van die groep met de naam in unlisted_species. Zonder zo'n aanwijzing is een vogelnaam een vogel: "een goudhaantje" is de Goudhaan.
+- Dagvlinders en libellen zijn geen insecten in deze zin: die staan gewoon in de lijst (zie "Andere dieren"). Een dier dat hier en daar niet bij hoort (een spin, een mug, een gewone vlieg) → roep geen tool aan.
+- Codes: elke insectengroep heeft eigen codes (hieronder); gebruik alleen die van de groep van de soort. Niets genoemd → ter plaatse en gezien van die groep. "Rups" → kleed rups, "larve" → larve/nimf, "pop" → pop. "Op het laken", "op de lamp" → op licht. Een zingende of tsjirpende sprinkhaan of krekel → baltsend / zingend, methode gehoord.
+
+${insectGroups.map(groupCodeLines).join('\n\n')}`;
+
 const speciesLines = (list: typeof species) =>
   list.map((s) => `${s.id}|${s.name}|${s.scientific}`).join('\n');
 
@@ -299,6 +332,7 @@ const aliasLines = (list: typeof aliases) =>
 
 const buildPrompt = (
   withGroups: boolean,
+  insects = false,
 ) => `Je bent de interpretatielaag van Fluistervink, een app waarmee een vogelaar tijdens het vogelen waarnemingen inspreekt. Je krijgt de tekst van één uitspraak, meestal uit spraakherkenning (dus met mogelijke verhaspelingen), plus de recente waarnemingen van deze sessie. Je antwoordt uitsluitend met tool calls; de app voert ze uit. Je kunt niets terugvragen.
 
 ## Wat je doet
@@ -409,7 +443,7 @@ Vogelaars korten leeftijd en kleed af. Spraakherkenning schrijft ze soms als cij
 
 Twijfel je over soort, aantal of welke waarneming bedoeld wordt, voer dan de meest waarschijnlijke actie uit met uncertain: true en een korte uncertain_reason. Liever een onzekere waarneming dan geen.
 
-Twijfelt de gebruiker zelf ("klinkt als een winterkoning", "lijkt op een fitis", "volgens mij een sperwer", "ik check het even in Merlin"), dan is het tóch een waarneming: add_observation met uncertain: true en de twijfel in uncertain_reason. Niet negeren; komt er later een bevestiging ("ja, het was een winterkoning"), dan gaat de twijfel eraf. Een opdracht voor later ("thuis nog terugluisteren", "even in Merlin checken") gaat in private_note.${CANDIDATE_RULES}${withGroups ? GROUP_RULES : ''}
+Twijfelt de gebruiker zelf ("klinkt als een winterkoning", "lijkt op een fitis", "volgens mij een sperwer", "ik check het even in Merlin"), dan is het tóch een waarneming: add_observation met uncertain: true en de twijfel in uncertain_reason. Niet negeren; komt er later een bevestiging ("ja, het was een winterkoning"), dan gaat de twijfel eraf. Een opdracht voor later ("thuis nog terugluisteren", "even in Merlin checken") gaat in private_note.${CANDIDATE_RULES}${withGroups ? GROUP_RULES : ''}${insects ? INSECT_RULES : ''}
 
 ## Bijnamen (bijnaam → ID|naam)
 
@@ -422,6 +456,9 @@ ${
     ? [
         `### Vogels\n${speciesLines(species)}`,
         ...otherGroups.map((g) => `### ${g.name}\n${speciesLines(promptSpeciesOf(g.id))}`),
+        ...(insects
+          ? [`### Insecten\n${speciesLines(insectGroups.flatMap((g) => promptSpeciesOf(g.id)))}`]
+          : []),
       ].join('\n\n')
     : speciesLines(species)
 }`;
@@ -440,12 +477,17 @@ const variants = new Map<string, Variant>();
  * variant, dus te cachen
  */
 export function variant(withGroups: boolean, language: Language = 'nl'): Variant {
-  const key = `${language}:${withGroups}`;
+  // Insecten alleen met de andere soortgroepen (ontwikkeloptie, insects.ts)
+  const insects = withGroups && insectsEnabled();
+  const key = `${language}:${withGroups}:${insects}`;
   let found = variants.get(key);
   if (!found) {
-    const dutchTools = buildTools(withGroups);
-    const system = language === 'en' ? buildEnglishPrompt(withGroups) : buildPrompt(withGroups);
-    const tools = language === 'en' ? englishTools(dutchTools, withGroups) : dutchTools;
+    const dutchTools = buildTools(withGroups, insects);
+    const system =
+      language === 'en'
+        ? buildEnglishPrompt(withGroups, insects)
+        : buildPrompt(withGroups, insects);
+    const tools = language === 'en' ? englishTools(dutchTools, withGroups, insects) : dutchTools;
     const version = crypto.subtle
       .digest('SHA-256', new TextEncoder().encode(system + JSON.stringify(tools)))
       .then((hash) =>

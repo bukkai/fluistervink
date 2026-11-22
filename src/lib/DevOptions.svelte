@@ -4,6 +4,7 @@
   // label; wordt een optie een keuze voor iedereen, dan blijft ze staan waar
   // ze stond. Teksten alleen in het Nederlands: alleen de eigenaar ziet ze.
   import { devOptionOn, setDevOption, type DevOption } from './devOptions';
+  import { syncInsects } from './insects';
   import { requestBluetoothMicrophone, screenOffSupported } from './native';
   import type { SettingsGroup } from './preferences';
 
@@ -31,6 +32,12 @@
       hint: 'De vogels van Spanje in plaats van die van Nederland. De proef is voorbij (docs/plan-andere-landen.md): zet dit uit, dan verdwijnt het vinkje.',
       // Alleen nog te zien als hij aan staat, zodat hij uit kan
       available: devOptionOn('spanje'),
+    },
+    {
+      option: 'insecten',
+      group: 'understanding',
+      label: 'Insecten',
+      hint: 'Met "Ook andere dieren inspreken" aan ook insecten: kevers, wantsen, hommels, bijen, wespen, mieren, nachtvlinders, sprinkhanen en zweefvliegen. "Een hommel" wordt Hommel onbekend; een soortnaam ("een aardhommel", "goudhaantje, de kever") zoekt de app op, altijd onzeker. Zonder "kever" of "insect" blijft een vogelnaam een vogel (docs/plan-insecten.md).',
     },
     {
       option: 'tuintelling',
@@ -75,6 +82,7 @@
     if (item.option === 'oortjesMicrofoon' && checked[item.option]) {
       void requestBluetoothMicrophone();
     }
+    if (item.option === 'insecten') void syncInsects();
     // De taal en het land staan vast zolang de app draait (i18n/index.ts, region.ts)
     if (item.option === 'english' || item.option === 'spanje') location.reload();
   }

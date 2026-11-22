@@ -1,6 +1,6 @@
 # Plan: insecten inspreken
 
-Voorstel van 22 nov 2026, dezelfde dag goedgekeurd; laag 1 in aanbouw. Aanleiding: een tester zei "een goudhaantje, maar de kever, niet de vogel" (20 nov, app-b726a027), en het model maakte er de vogel Goudhaan van. De eigenaar: een kever mag als kever, als dat er zo bij gezegd wordt; en opvallende kevers en wantsen (meikever, lieveheersbeestje), hommels en bijen worden best eens ingesproken. Maar er zijn heel veel insecten. Dit plan is de verstandige weg daarheen. Vervolg op `docs/plan-soortgroepen.md` (zoogdieren, reptielen en amfibieën, dagvlinders en libellen).
+Voorstel van 22 nov 2026, dezelfde dag goedgekeurd; laag 1 dezelfde dag gebouwd als ontwikkeloptie `insecten` (zie Gebouwd). Aanleiding: een tester zei "een goudhaantje, maar de kever, niet de vogel" (20 nov, app-b726a027), en het model maakte er de vogel Goudhaan van. De eigenaar: een kever mag als kever, als dat er zo bij gezegd wordt; en opvallende kevers en wantsen (meikever, lieveheersbeestje), hommels en bijen worden best eens ingesproken. Maar er zijn heel veel insecten. Dit plan is de verstandige weg daarheen. Vervolg op `docs/plan-soortgroepen.md` (zoogdieren, reptielen en amfibieën, dagvlinders en libellen).
 
 ## Wat we weten (22 nov)
 
@@ -65,6 +65,18 @@ De eigenaar is akkoord met de voorstellen:
 1. **Groepen in laag 1:** kevers, wantsen, bijen/wespen/mieren, nachtvlinders, sprinkhanen en zweefvliegen. Geen muggen en vliegen in het algemeen, geen "Insecten (overig)".
 2. **Dezelfde keuze** "Ook andere dieren inspreken" (eerst als ontwikkeloptie `insecten`).
 3. **Laag 2 in april**, na een maand meten met laag 1.
+
+## Gebouwd (22 nov)
+
+Laag 1 in één PR (de stappen 1–3 hieronder samen, omdat ze los niets doen), als ontwikkeloptie `insecten`:
+
+- Gegevens: verzamelsoorten in `soorten-nl.json` en `soorten-nl-alle.json` (13 stuks; "Wesp onbekend", "Nachtvlinder onbekend" en "Mot onbekend (microvlinder)" met een eigen naam), de volledige lijsten in `data/soorten-insecten.json` (4520 soorten), attributen per groep. Zweefvliegen: de soorten met "zweefvlieg" in de naam plus een vaste lijst geslachten (blinde bij, pendelvlieg, hommelreus).
+- Opzoeken: `findInsect` (vocab.ts) zoekt in de groep van de verzamelsoort, ook op de naam zonder "(kever) onbekend", in het meervoud, met een tikfout, en in het Engels.
+- Prompt NL en EN: een kopje "Insecten" met welke verzamelsoort bij welk woord hoort, de codes per groep, de verzamelsoorten onder "### Insecten" in de soortenlijst. Alleen als de optie aan staat (eigen variant en promptversie).
+- Soortveld: met de optie aan ook alle insecten.
+- Proef op 22 nov met 14 zinnen tegen het model: 13 goed ("goudhaantje, de kever" → Goudhaantje (kever) onbekend; "een goudhaantje" → Goudhaan; aardhommels, vliegend hert, kolibrievlinder, blinde bij, Engelse namen; "een spin" → niets). Niet goed: "een rups van de rietvink, de nachtvlinder" → Nachtvlinder onbekend (rups, onzeker) zonder op te zoeken.
+
+Nog te doen: op de telefoon proberen, testset-opnames verzamelen (zie Testset), daarna voor iedereen.
 
 ## Stappen
 

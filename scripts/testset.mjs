@@ -21,6 +21,8 @@
 //                     amfibieën, dagvlinders en libellen (in de app standaard
 //                     aan, uit te zetten bij Instellingen): andere prompt
 //                     voor model en spraakherkenning
+//   --insecten        ook insecten (ontwikkeloptie "Insecten",
+//                     docs/plan-insecten.md); alleen met de soortgroepen
 //   --land <code>     soortenlijst van een ander land ("es": ontwikkeloptie
 //                     "Spanje", docs/plan-andere-landen.md); standaard nl.
 //                     Uitspraken met een ander land in de export slaat hij
@@ -74,6 +76,7 @@ const { values: opts, positionals } = parseArgs({
     'context-nieuw': { type: 'boolean', default: false },
     laadtest: { type: 'boolean', default: false },
     soortgroepen: { type: 'boolean', default: true },
+    insecten: { type: 'boolean', default: false },
     land: { type: 'string', default: 'nl' },
   },
   allowNegative: true,
@@ -171,6 +174,11 @@ const { promptVersionFor } = await loader.ssrLoadModule('/src/lib/prompt.ts');
 const { transcribe } = await loader.ssrLoadModule('/src/lib/transcribe.ts');
 const { devNoteText } = await loader.ssrLoadModule('/src/lib/devNotePrefix.ts');
 const vocab = await loader.ssrLoadModule('/src/lib/vocab.ts');
+// Insecten (ontwikkeloptie): de lijst laden en aanzetten, zoals insects.ts in de app
+if (opts.insecten && opts.soortgroepen) {
+  vocab.registerInsects(JSON.parse(readFileSync(join(ROOT, 'data/soorten-insecten.json'), 'utf8')));
+  vocab.setInsectsEnabled(true);
+}
 const { DEFAULT_COUNTING_METHOD } = vocab;
 // Ter plaatse en gezien hebben per soortgroep een eigen ID; elk geldt als standaard
 const DEFAULTS = {

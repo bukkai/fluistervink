@@ -16,8 +16,12 @@
  * - `tuintelling`: een knop "Tuintelling" op het startscherm: een half uur
  *   tellen, daarna per soort het hoogste aantal (tuintelling.ts,
  *   docs/plan-tuintelling.md)
+ * - `insecten`: met "Ook andere dieren inspreken" ook insecten (kevers,
+ *   wantsen, hommels, bijen, wespen, nachtvlinders, sprinkhanen, zweefvliegen;
+ *   insects.ts, docs/plan-insecten.md, laag 1)
  */
-export type DevOption = 'oortjesMicrofoon' | 'schermUit' | 'english' | 'spanje' | 'tuintelling';
+export type DevOption =
+  'oortjesMicrofoon' | 'schermUit' | 'english' | 'spanje' | 'tuintelling' | 'insecten';
 
 const PREFIX = 'fluistervink.dev.';
 

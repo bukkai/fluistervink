@@ -11,6 +11,7 @@
     type SettingsGroup as Group,
   } from './preferences';
   import DevOptions, { devOptionsIn } from './DevOptions.svelte';
+  import { syncInsects } from './insects';
 
   // Eén kaart per groep; Settings.svelte zet de kaarten in volgorde, met de
   // trektelmodus en de gegevenskaarten ertussen. De eigenaar ziet in elke
@@ -59,7 +60,11 @@
           <input
             type="checkbox"
             bind:checked={checked[item.preference]}
-            onchange={() => setPreference(item.preference, checked[item.preference])}
+            onchange={() => {
+              setPreference(item.preference, checked[item.preference]);
+              // Insecten horen bij de andere dieren (insects.ts)
+              if (item.preference === 'soortgroepen') void syncInsects();
+            }}
           />
           {t(`prefs.${item.preference}`)}
         </label>

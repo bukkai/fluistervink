@@ -1,0 +1,248 @@
+{
+ "activity": [
+  {
+   "id": 95,
+   "name": "ter plaatse"
+  },
+  {
+   "id": 3185,
+   "name": "foeragerend"
+  },
+  {
+   "id": 3031,
+   "name": "baltsend / zingend"
+  },
+  {
+   "id": 3033,
+   "name": "in copula"
+  },
+  {
+   "id": 3034,
+   "name": "eileggend"
+  },
+  {
+   "id": 3037,
+   "name": "op licht"
+  },
+  {
+   "id": 3036,
+   "name": "nest"
+  },
+  {
+   "id": 3032,
+   "name": "overwinterend"
+  },
+  {
+   "id": 3039,
+   "name": "slachtoffer verkeer"
+  },
+  {
+   "id": 3040,
+   "name": "dood"
+  },
+  {
+   "id": 3276,
+   "name": "overvliegend"
+  },
+  {
+   "id": 3240,
+   "name": "nestindicerend gedrag"
+  },
+  {
+   "id": 3239,
+   "name": "zonnend"
+  },
+  {
+   "id": 3241,
+   "name": "nestbouw"
+  },
+  {
+   "id": 3242,
+   "name": "onbekend"
+  },
+  {
+   "id": 3244,
+   "name": "parasiterend"
+  },
+  {
+   "id": 3243,
+   "name": "geparasiteerd"
+  },
+  {
+   "id": 3246,
+   "name": "zwermend (aan winterverblijf)"
+  },
+  {
+   "id": 3247,
+   "name": "aangevoerd"
+  },
+  {
+   "id": 3285,
+   "name": "op windmolen"
+  },
+  {
+   "id": 3277,
+   "name": "langstrekkend noord"
+  },
+  {
+   "id": 3278,
+   "name": "langstrekkend oost"
+  },
+  {
+   "id": 3279,
+   "name": "langstrekkend west"
+  },
+  {
+   "id": 3281,
+   "name": "langstrekkend zuid"
+  }
+ ],
+ "method": [
+  {
+   "id": 497,
+   "name": "onbekend"
+  },
+  {
+   "id": 498,
+   "name": "gezien"
+  },
+  {
+   "id": 732,
+   "name": "handvangst en in collectie"
+  },
+  {
+   "id": 733,
+   "name": "handvangst en losgelaten"
+  },
+  {
+   "id": 734,
+   "name": "malaiseval"
+  },
+  {
+   "id": 735,
+   "name": "kleurval"
+  },
+  {
+   "id": 736,
+   "name": "bodemval"
+  },
+  {
+   "id": 737,
+   "name": "lichtval"
+  },
+  {
+   "id": 738,
+   "name": "andere val"
+  },
+  {
+   "id": 739,
+   "name": "uitgekweekt en in collectie"
+  },
+  {
+   "id": 740,
+   "name": "uitgekweekt en losgelaten"
+  },
+  {
+   "id": 493,
+   "name": "microscopisch onderzocht"
+  },
+  {
+   "id": 741,
+   "name": "sporen"
+  },
+  {
+   "id": 742,
+   "name": "op smeer"
+  },
+  {
+   "id": 482,
+   "name": "dood exemplaar in collectie"
+  },
+  {
+   "id": 492,
+   "name": "(e)dna barcoding"
+  },
+  {
+   "id": 743,
+   "name": "binnenshuis"
+  },
+  {
+   "id": 804,
+   "name": "Led emmer"
+  },
+  {
+   "id": 792,
+   "name": "op laken"
+  },
+  {
+   "id": 826,
+   "name": "translocatie"
+  }
+ ],
+ "life_stage": [
+  {
+   "id": 1053,
+   "name": "onbekend"
+  },
+  {
+   "id": 1056,
+   "name": "imago"
+  },
+  {
+   "id": 1055,
+   "name": "ei"
+  },
+  {
+   "id": 1057,
+   "name": "imago macropteer"
+  },
+  {
+   "id": 1058,
+   "name": "gal"
+  },
+  {
+   "id": 1059,
+   "name": "imago brachypteer"
+  },
+  {
+   "id": 1060,
+   "name": "koningin"
+  },
+  {
+   "id": 1061,
+   "name": "werkster"
+  },
+  {
+   "id": 1062,
+   "name": "larve/nimf"
+  },
+  {
+   "id": 1064,
+   "name": "exuviae"
+  },
+  {
+   "id": 1065,
+   "name": "mijn"
+  },
+  {
+   "id": 1066,
+   "name": "vervellingshuidje"
+  },
+  {
+   "id": 1081,
+   "name": "gevleugelde gyne"
+  },
+  {
+   "id": 1082,
+   "name": "ongevleugelde gyne"
+  },
+  {
+   "id": 1117,
+   "name": "pop"
+  },
+  {
+   "id": 1151,
+   "name": "imago, niet uitgekleurd"
+  }
+ ]
+}

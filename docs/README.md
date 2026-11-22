@@ -24,7 +24,7 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 | `roadmap-android.md` | vogelen zonder naar de telefoon te kijken, vijf stappen; stap 1–2 gebouwd |
 | `plan-ebird.md` | inspanning en export naar eBird; afgerond 16 nov (keuze "Ik gebruik eBird" bij Instellingen) |
 | `plan-soortgroepen.md` | zoogdieren, reptielen en amfibieën, dagvlinders en libellen inspreken; afgerond 16 nov (voor iedereen, standaard aan) |
-| `plan-insecten.md` | insecten inspreken: vangnet per groep met opzoeken (nu), korte lijst opvallende soorten in de prompt (april); goedgekeurd 22 nov, laag 1 in aanbouw |
+| `plan-insecten.md` | insecten inspreken: vangnet per groep met opzoeken (nu), korte lijst opvallende soorten in de prompt (april); goedgekeurd 22 nov; laag 1 gebouwd als ontwikkeloptie `insecten` |
 | `plan-offline.md` | offline wachtrij: zonder bereik doorvogelen, vanzelf verwerken; afgerond, op stable sinds 18 nov |
 | `plan-ios.md` | iPhone-app; voorstel, na de lancering |
 | `plan-engels.md` | de app in het Engels: één app met een taalkeuze; voorstel 19 nov, na de betaalde laag; stap 1 (woordenboek), 2 (Engelse namen) en 3 (ontwikkeloptie "English") gedaan, van 5 de schermen |

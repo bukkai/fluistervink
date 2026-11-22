@@ -28,8 +28,11 @@ import {
   activityNameIn,
   methodNameIn,
   lifeStageNameIn,
+  findInsect,
   findPromptSpecies,
   findVagrant,
+  insectsEnabled,
+  isInsectGroup,
   isPromptSpecies,
   lifeStages,
   methods,
@@ -532,13 +535,29 @@ function toAction(
   // twijfelreden ("Gezegd: wolf (niet in de lijst)", testset 18 nov): dan die.
   const said = modelText(input.unlisted_species);
   const named = said ?? saidInReason(fields.speciesId, input.uncertain_reason);
-  const vagrant = named ? findVagrant(named, withGroups, language) : undefined;
-  if (vagrant) {
+  // Een insect met een soortnaam (docs/plan-insecten.md): het model kiest de
+  // verzamelsoort van de groep ("Kever onbekend"), de app zoekt de gezegde
+  // naam op in die groep. Niet bij de dwaalgasten: "goudhaantje" is daar geen kever.
+  const insectGroup =
+    withGroups && insectsEnabled() && fields.speciesId !== undefined
+      ? groupOf(fields.speciesId)
+      : undefined;
+  const asInsect = insectGroup !== undefined && isInsectGroup(insectGroup);
+  const vagrant = named
+    ? asInsect
+      ? findInsect(named, insectGroup, language)
+      : findVagrant(named, withGroups, language)
+    : undefined;
+  if (vagrant && vagrant.id !== fields.speciesId) {
     fields.speciesId = vagrant.id;
     fields.uncertain = true;
-    fields.uncertainReason = t('reason.vagrant', { named: named ?? '' });
-  } else if (said) {
-    warnings.push(`${block.name}: "${said}" niet gevonden bij de dwaalgasten`);
+    fields.uncertainReason = t(asInsect ? 'reason.insect' : 'reason.vagrant', {
+      named: named ?? '',
+    });
+  } else if (said && !vagrant) {
+    warnings.push(
+      `${block.name}: "${said}" niet gevonden bij ${asInsect ? 'de insecten' : 'de dwaalgasten'}`,
+    );
   }
 
   const candidates = toCandidates(

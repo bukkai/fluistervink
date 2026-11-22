@@ -1,0 +1,236 @@
+{
+ "activity": [
+  {
+   "id": 94,
+   "name": "ter plaatse"
+  },
+  {
+   "id": 3188,
+   "name": "foeragerend"
+  },
+  {
+   "id": 3027,
+   "name": "op licht"
+  },
+  {
+   "id": 3026,
+   "name": "nest"
+  },
+  {
+   "id": 3023,
+   "name": "in copula"
+  },
+  {
+   "id": 3030,
+   "name": "dood"
+  },
+  {
+   "id": 3218,
+   "name": "zonnend"
+  },
+  {
+   "id": 3024,
+   "name": "eileggend"
+  },
+  {
+   "id": 3022,
+   "name": "overwinterend"
+  },
+  {
+   "id": 3021,
+   "name": "baltsend / zingend"
+  },
+  {
+   "id": 3029,
+   "name": "slachtoffer verkeer"
+  },
+  {
+   "id": 3125,
+   "name": "in braakbal"
+  },
+  {
+   "id": 3219,
+   "name": "onbekend"
+  },
+  {
+   "id": 3220,
+   "name": "vliegend"
+  },
+  {
+   "id": 3222,
+   "name": "geparasiteerd"
+  },
+  {
+   "id": 3221,
+   "name": "op/in broedsubstraat"
+  },
+  {
+   "id": 3287,
+   "name": "op windmolen"
+  }
+ ],
+ "method": [
+  {
+   "id": 472,
+   "name": "onbekend"
+  },
+  {
+   "id": 473,
+   "name": "gezien"
+  },
+  {
+   "id": 474,
+   "name": "gehoord"
+  },
+  {
+   "id": 714,
+   "name": "handvangst en in collectie"
+  },
+  {
+   "id": 715,
+   "name": "handvangst en losgelaten"
+  },
+  {
+   "id": 716,
+   "name": "malaiseval"
+  },
+  {
+   "id": 717,
+   "name": "kleurval"
+  },
+  {
+   "id": 718,
+   "name": "bodemval"
+  },
+  {
+   "id": 802,
+   "name": "raamval"
+  },
+  {
+   "id": 719,
+   "name": "lichtval"
+  },
+  {
+   "id": 720,
+   "name": "andere val"
+  },
+  {
+   "id": 721,
+   "name": "uitgekweekt en in collectie"
+  },
+  {
+   "id": 722,
+   "name": "uitgekweekt en losgelaten"
+  },
+  {
+   "id": 723,
+   "name": "sporen"
+  },
+  {
+   "id": 724,
+   "name": "op smeer"
+  },
+  {
+   "id": 725,
+   "name": "schepnet"
+  },
+  {
+   "id": 726,
+   "name": "sleepnet"
+  },
+  {
+   "id": 727,
+   "name": "klopscherm"
+  },
+  {
+   "id": 728,
+   "name": "op feromonen"
+  },
+  {
+   "id": 457,
+   "name": "dood exemplaar in collectie"
+  },
+  {
+   "id": 729,
+   "name": "in braakbal"
+  },
+  {
+   "id": 467,
+   "name": "(e)dna barcoding"
+  },
+  {
+   "id": 730,
+   "name": "binnenshuis"
+  },
+  {
+   "id": 731,
+   "name": "microscopisch onderzocht"
+  },
+  {
+   "id": 806,
+   "name": "Led emmer"
+  },
+  {
+   "id": 791,
+   "name": "op laken"
+  },
+  {
+   "id": 825,
+   "name": "translocatie"
+  }
+ ],
+ "life_stage": [
+  {
+   "id": 1039,
+   "name": "onbekend"
+  },
+  {
+   "id": 1042,
+   "name": "imago"
+  },
+  {
+   "id": 1177,
+   "name": "imago, niet uitgekleurd"
+  },
+  {
+   "id": 1041,
+   "name": "ei"
+  },
+  {
+   "id": 1043,
+   "name": "imago macropteer"
+  },
+  {
+   "id": 1044,
+   "name": "gal"
+  },
+  {
+   "id": 1045,
+   "name": "imago micropteer"
+  },
+  {
+   "id": 1046,
+   "name": "koningin"
+  },
+  {
+   "id": 1048,
+   "name": "larve/nimf"
+  },
+  {
+   "id": 1051,
+   "name": "mijn"
+  },
+  {
+   "id": 1089,
+   "name": "pop"
+  },
+  {
+   "id": 1147,
+   "name": "imago brachypteer"
+  },
+  {
+   "id": 1148,
+   "name": "larvenhuidje"
+  }
+ ]
+}
