@@ -29,6 +29,7 @@
     groupOf,
     lifeStageLabel,
     methodLabel,
+    matchedOnScientific,
     searchSpecies,
     selectableSpecies,
     speciesLabel,
@@ -106,6 +107,23 @@
   $effect(() => {
     void suggestions;
     active = -1;
+  });
+
+  // Komt de lijst net op, dan de eerste suggesties in beeld schuiven: anders
+  // vallen ze achter de balk met Opslaan (draaiboek thuis, 22 nov). Pas na
+  // het tekenen, en na het toetsenbord dat de pagina kleiner maakt.
+  let suggestionList = $state<HTMLUListElement>();
+  let hadSuggestions = false;
+  $effect(() => {
+    const has = suggestions.length > 0;
+    if (has && !hadSuggestions && document.activeElement === speciesInput) {
+      requestAnimationFrame(() =>
+        suggestionList?.children[Math.min(1, suggestions.length - 1)]?.scrollIntoView({
+          block: 'nearest',
+        }),
+      );
+    }
+    hadSuggestions = has;
   });
 
   let speciesInput = $state<HTMLInputElement>();
@@ -270,6 +288,7 @@
   </div>
   <!-- In de pagina, onder het veld: schuift mee met het toetsenbord -->
   <ul
+    bind:this={suggestionList}
     id={listId}
     class="suggestions"
     role="listbox"
@@ -286,7 +305,10 @@
         class:active={i === active}
         onclick={() => choose(speciesLabel(s.id))}
       >
-        {speciesLabel(s.id)}
+        <span class="name">
+          {speciesLabel(s.id)}
+          {#if matchedOnScientific(s, speciesName)}<i class="scientific">{s.scientific}</i>{/if}
+        </span>
         {#if groupLabel(s.id)}<span class="group">{groupLabel(s.id)}</span>{/if}
       </li>
     {/each}
@@ -473,14 +495,15 @@
     min-width: 0;
   }
 
+  /* Een eigen tint, zodat de lijst opvalt tussen de velden */
   .suggestions {
     margin: -0.3rem 0 0;
     padding: 0;
     list-style: none;
     overflow: hidden;
-    border: 1px solid var(--border);
+    border: 1px solid var(--brand);
     border-radius: var(--radius);
-    background: var(--surface);
+    background: color-mix(in srgb, var(--brand) 10%, var(--surface));
   }
 
   .suggestions li {
@@ -489,21 +512,42 @@
     justify-content: space-between;
     gap: 0.5rem;
     min-height: 48px;
-    padding: 0 0.9rem;
+    padding: 0.35rem 0.9rem;
     cursor: pointer;
   }
 
+  /* Ruimte voor de balk met Opslaan (en de grote knop van de trektelling)
+     bij het in beeld schuiven */
+  .suggestions li {
+    scroll-margin-bottom: calc(var(--talk-bar-offset, 0px) + 5rem);
+  }
+
   .suggestions li + li {
-    border-top: 1px solid var(--border);
+    border-top: 1px solid color-mix(in srgb, var(--brand) 25%, var(--surface));
   }
 
   .suggestions li.active,
   .suggestions li:hover {
-    background: var(--bg);
+    background: color-mix(in srgb, var(--brand) 22%, var(--surface));
   }
 
+  .name {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .scientific {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  /* Rechts, ook als hij over twee regels gaat ("reptielen en amfibieën") */
   .group {
+    flex-shrink: 0;
+    max-width: 45%;
     font-size: 0.85rem;
+    text-align: right;
     color: var(--muted);
   }
 

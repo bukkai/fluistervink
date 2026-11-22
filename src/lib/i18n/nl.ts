@@ -197,7 +197,7 @@ export const nl = {
     'Na het trillen zegt de app wat hij heeft vastgelegd ("houtduif, 6, overvliegend"). Alleen als er oortjes of een headset aan zitten, nooit via de luidspreker. Een podcast gaat even zachter.',
   'prefs.schermAan': 'Scherm aan houden tijdens een sessie',
   'prefs.schermAanHint':
-    'Het scherm gaat niet vanzelf uit zolang een sessie loopt, zoals bij een recepten-app. Zo kun je met de volumeknop blijven inspreken zonder te ontgrendelen. Kost meer accu; met de aan-uitknop zet je het scherm gewoon op slot.',
+    'Het scherm gaat niet vanzelf uit zolang een sessie loopt. Zo kun je met de volumeknop blijven inspreken zonder te ontgrendelen. Kost meer accu; met de aan-uitknop zet je het scherm gewoon op slot.',
   'prefs.zeldzaamOnzeker': 'Zeldzame soort wordt onzeker',
   'prefs.zeldzaamOnzekerHint':
     'Kiest de app een soort die bij waarneming.nl zeldzaam of zeer zeldzaam is, dan wordt de waarneming onzeker, zodat je hem thuis bovenaan ziet. Meestal is het een verwisseling met een gewone soort.',

@@ -20,7 +20,9 @@ import {
   lifeStageNameIn,
   methodNameIn,
   promptSpeciesOf,
+  matchedOnScientific,
   searchSpecies,
+  selectableSpecies,
   species,
   speciesNameIn,
 } from './vocab';
@@ -248,6 +250,20 @@ describe('searchSpecies', () => {
 
   it('vindt de wetenschappelijke naam', () => {
     expect(names('fringilla coelebs')).toEqual(['Vink']);
+  });
+
+  it('laat oude namen zonder eigen naam weg ("Corvus monedula")', () => {
+    const found = searchSpecies(selectableSpecies(true), 'corvus').map((s) => s.name);
+    expect(found).not.toContain('Corvus monedula');
+    expect(found).toContain('Roek');
+  });
+
+  it('weet wanneer hij op de wetenschappelijke naam vond', () => {
+    const roek = searchSpecies(allSpecies, 'corvus').find((s) => s.name === 'Roek')!;
+    expect(matchedOnScientific(roek, 'corvus')).toBe(true);
+    expect(matchedOnScientific(roek, 'roek')).toBe(false);
+    const kraai = searchSpecies(allSpecies, 'kraai').find((s) => s.name === 'Kraai onbekend')!;
+    expect(matchedOnScientific(kraai, 'kraai')).toBe(false);
   });
 
   it('geeft niets bij een leeg veld en hooguit het maximum', () => {
