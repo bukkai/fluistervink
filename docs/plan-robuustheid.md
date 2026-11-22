@@ -1,6 +1,6 @@
 # Plan: robuustheid (edge cases)
 
-18 nov 2026. Status: fase 1 (#268), 2 (#273) en 3–5 (code, tests en checklists) klaar. Kwaliteitsronde 18 nov: #9 besloten, #14–#16 erbij en afgedekt (#279). Kwaliteitsronde 21 nov: #17 erbij en afgedekt. 22 nov: uitspraken om te proberen (uit de stresstest van tester app-b726a027) en #18 erbij. Open: proberen op de telefoon en opnames voor de testset; zie de tabel.
+18 nov 2026. Status: fase 1 (#268), 2 (#273) en 3–5 (code, tests en checklists) klaar. Kwaliteitsronde 18 nov: #9 besloten, #14–#16 erbij en afgedekt (#279). Kwaliteitsronde 21 nov: #17 erbij en afgedekt. 22 nov: uitspraken om te proberen (uit de stresstest van tester app-b726a027), #18 erbij en afgedekt. Open: proberen op de telefoon en opnames voor de testset; zie de tabel.
 
 Een rondgang "wat zou een tester proberen?" langs de bestaande tests en code. Veel is al afgedekt: netwerk weg op elk moment, de wachtrij na een crash, twee tabbladen (slot en BroadcastChannel), haperende tikken met handschoenen, Merlin tijdens een trektelling, een back-up twee keer terugzetten, CSV met komma's en aanhalingstekens, soorten die het model verzint. Dit plan legt vast wat nog open staat en hoe we het blijvend afdekken, zodat het niet bij één keer nalopen blijft.
 
@@ -14,7 +14,6 @@ Wat de code en de tests niet kunnen afdekken. Op de telefoon proberen: de checkl
 | 6 | **Verwijzing buiten de context** ("die buizerd van een kwartier geleden" na 30 waarnemingen) | De app-kant is afgedekt (zie onder); sinds #303 krijgt het model 20 waarnemingen in plaats van 10. Of het model dan "niet begrepen" of onzeker kiest in plaats van de verkeerde buizerd: een paar opnames in de testset | eigenaar inspreken, daarna `npm run testset` |
 | 7 | **Stemmen of geluid van anderen** in een trektelstuk (medevogelaar, radio, wind) | Opnames voor de testset; de prompt alleen aanpassen als de testset het laat zien | eigenaar inspreken |
 | 12 | **Gebeld worden** | De code is afgedekt (zie onder); nog op de telefoon proberen, ook met Bluetooth-oortjes | eigenaar |
-| 18 | **Persoonsgegevens in feedback** (een tester sprak op 20 nov "feedback, mijn BSN-nummer is …" in; dat ging mee naar de proxy en is op 22 nov met de hand weggehaald) | Idee: in de prompt bij `add_dev_note` cijferreeksen die op een BSN, telefoonnummer of IBAN lijken weglaten, en op de privacypagina "spreek geen persoonsgegevens in". Eerst besluiten | eigenaar |
 | 19 | **Uitspraken om te proberen** (hieronder) | Inspreken in een sessie, delen, en wat goed gaat als testset-opname bewaren; wat fout gaat wordt een eigen punt in deze tabel | eigenaar inspreken |
 
 ## Uitspraken om te proberen
@@ -35,7 +34,7 @@ Een tester (app-b726a027) deed op 20 nov in de eerste sessie een stresstest: 27 
 | "Eén deltavliegen" (geen dier) | Vliegenvanger onbekend, onzeker | **open:** hoort niets te zijn |
 | "Female onbekend" | onzeker, met de vraag waar het bij hoort | goed |
 | "Een meeuw, grote meeuw, maar onbekend welke" | Meeuw onbekend, onzeker | goed |
-| BSN zonder en met "feedback" | zonder genegeerd, met bewaard en gedeeld | #18 |
+| BSN zonder en met "feedback" | zonder genegeerd, met bewaard en gedeeld | #18: gaat nu niet meer mee |
 | "Zet de sessie stop", "Stop" | genegeerd | bewust: stoppen met de stem pas met het wake word |
 | "Een ijsbeer vijfduizend kilometer ten noorden van hier" | Zoogdier onbekend, onzeker; afstand genegeerd | goed |
 
@@ -51,7 +50,7 @@ Een tester (app-b726a027) deed op 20 nov in de eerste sessie een stresstest: 27 
 | Onbekend aantal | "onbekend aantal kauwen", "een hele zwerm" | telmethode gezien niet geteld |
 | Ongeldig aantal | "nul vinken", "een halve houtduif", "min twee" | niet begrepen of onzeker (#5) |
 | Grote aantallen | "duizenden spreeuwen" tegenover "dertigduizend spreeuwen" | schatting 3000 tegenover 30.000 exact |
-| Persoonsgegevens | naam, adres of telefoonnummer, met en zonder "feedback" | zonder: niets; met: zie #18 |
+| Persoonsgegevens | naam, adres of telefoonnummer, met en zonder "feedback" | zonder: niets; met: bewaard, cijfers niet gedeeld (#18) |
 | "Feedback" als waarneming | "feedback: twee buizerds" | het model kiest; nagaan wat het doet |
 | Geluid van anderen | radio, tv, zingen of een medevogelaar op de achtergrond | geen waarnemingen (#7) |
 | Scheldwoord of kreet | "verdomme, weg is ie" | niets |
@@ -98,3 +97,4 @@ Wat af is, komt hier met de test of PR erbij, en gaat uit de tabel.
 - **#15 Microfoon komt niet terug** (kwaliteitsronde 18 nov): ging de microfoon na een weggevallen spoor niet meer aan, dan stopte de trektelling met alleen twee lange trillen. Nu staat op het scherm waarom (reden `mic` in het log). Test "gaat de microfoon niet meer aan, dan stopt de telling".
 - **#16 Plafond van het model per dag** (kwaliteitsronde 18 nov): na #278 stopte alleen het plafond voor spraak een trektelling; bij het plafond van het model ging elk stuk nog naar de spraakherkenning. Nu stoppen beide (`onDailyLimit` in `queue.ts`), en Probeer het eens zegt het in gewone taal.
 - **#17 Twee GPS-metingen kort na elkaar in een trektelling** (kwaliteitsronde 21 nov): `improveChunks` in `trektelPosition.ts` wacht per stuk zonder plek op het opzoeken van het gebied. Een betere meting die intussen binnenkwam, werd daarna door de grovere overschreven, en verbeterde niet meer. Nu slaat een stuk over als het al een even goede of betere plek heeft. Test "een grove meting die trager door de stukken loopt, overschrijft een betere niet".
+- **#18 Persoonsgegevens in feedback** (feedback 20 nov: een tester sprak een BSN in, als feedback; dat ging mee naar de proxy en is op 22 nov met de hand weggehaald): bij het delen laat de app cijferreeksen van acht of meer cijfers (BSN, telefoonnummer, rekeningnummer, IBAN) en e-mailadressen weg uit de tekst, de uitvoer van het model en de teksten bij waarnemingen, en de opname van zo'n uitspraak gaat niet mee (`src/lib/personalData.ts`, `share.ts`). Op de telefoon blijft alles staan. Aantallen ("30.000"), tijden en datums blijven. Namen en adressen zijn niet te herkennen; de privacypagina vraagt ze niet in te spreken. Gekozen voor de app in plaats van de prompt: werkt ook voor uitspraken zonder "feedback" en hangt niet af van het model. Tests in `personalData.test.ts` en `share.test.ts`.

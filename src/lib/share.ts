@@ -1,7 +1,8 @@
 import { getTester, putShared } from './api';
-import { audioBlob, audioSize, db, type Utterance } from './db';
+import { audioBlob, audioSize, db, type Observation, type Utterance } from './db';
 import { NO_SESSION } from './devNotes';
 import { APP_VERSION, CHANNEL, logEvent } from './log';
+import { hasPersonalData, redactDeep, redactText } from './personalData';
 
 // Delen met de ontwikkelaar: gestopte sessies (uitspraken, transcripten,
 // uitvoer van het model, de nagelopen waarnemingen, feedback en het log van
@@ -12,6 +13,10 @@ import { APP_VERSION, CHANNEL, logEvent } from './log';
 // Een sessie gaat opnieuw als hij veranderd is (bv. na het nalopen): de app
 // onthoudt per sessie een hash van wat er verstuurd is. Lukt het niet, dan
 // bij de volgende gelegenheid opnieuw (opstarten, weer online, ander scherm).
+//
+// Cijferreeksen en e-mailadressen (BSN, telefoonnummer) gaan niet mee, en de
+// opname van zo'n uitspraak ook niet (personalData.ts). Op de telefoon blijft
+// alles staan.
 
 const ENABLED_KEY = 'fluistervink.share';
 const AUDIO_KEY = 'fluistervink.shareAudio';
@@ -108,6 +113,27 @@ export function lastSharedAt(): number | undefined {
   return read<number | undefined>(SENT_AT_KEY, undefined);
 }
 
+/** De tekst van een uitspraak zonder persoonsgegevens (personalData.ts). */
+function sharedUtterance<U extends Pick<Utterance, 'transcript' | 'llmOutput'>>(u: U): U {
+  return {
+    ...u,
+    transcript: u.transcript && redactText(u.transcript),
+    llmOutput: redactDeep(u.llmOutput),
+  };
+}
+
+/** Idem voor de teksten bij een waarneming. */
+function sharedObservation<
+  O extends Pick<Observation, 'uncertainReason' | 'remarks' | 'privateNote'>,
+>(o: O): O {
+  return {
+    ...o,
+    uncertainReason: o.uncertainReason && redactText(o.uncertainReason),
+    remarks: o.remarks && redactText(o.remarks),
+    privateNote: o.privateNote && redactText(o.privateNote),
+  };
+}
+
 /** Alles van één sessie, in de vorm van de JSON-export (zonder opnames). */
 async function snapshot(sessionId: string) {
   const session = await db.sessions.get(sessionId);
@@ -123,12 +149,12 @@ async function snapshot(sessionId: string) {
   return {
     sessions: [session],
     utterances: utterances.map(({ audio, ...u }: Utterance) => ({
-      ...u,
+      ...sharedUtterance(u),
       audioBytes: audio && audioSize(audio),
       audioType: audio?.type,
     })),
-    observations,
-    deletedObservations,
+    observations: observations.map(sharedObservation),
+    deletedObservations: deletedObservations.map(sharedObservation),
     events,
   };
 }
@@ -170,7 +196,7 @@ async function looseSnapshot() {
   const unique = [...new Map(events.map((e) => [e.id, e])).values()].sort((a, b) => a.at - b.at);
   return {
     sessions: [],
-    utterances: notes.map(({ audio: _audio, ...u }: Utterance) => u),
+    utterances: notes.map(({ audio: _audio, ...u }: Utterance) => sharedUtterance(u)),
     observations: [],
     deletedObservations: [],
     events: unique,
@@ -242,8 +268,10 @@ async function run(): Promise<ShareResult> {
       // Opnames los, één voor één: ze veranderen nooit, dus maar één keer
       for (const u of data.utterances) {
         if (!u.audioBytes || audioSent.has(u.id)) continue;
-        const audio = (await db.utterances.get(u.id))?.audio;
-        if (!audio) continue;
+        const full = await db.utterances.get(u.id);
+        const audio = full?.audio;
+        // Persoonsgegevens in de tekst: dan staan ze ook in de opname
+        if (!audio || hasPersonalData(full.transcript)) continue;
         await putShared(`audio/${u.id}`, audioBlob(audio));
         audioSent.add(u.id);
         sent.audio = [...audioSent];

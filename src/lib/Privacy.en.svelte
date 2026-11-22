@@ -121,9 +121,12 @@
       of them, your corrections, your feedback, the log and the locations of your observations go to
       the developer; recordings only if you switch that on under
       <a href="{app}#instellingen">Settings</a>. Feedback you type outside a session goes straight
-      away, with the log of the half hour before. It is stored at Cloudflare under the name of your
-      installation. Only the developer reads it, to improve the app, and doesn’t pass it on. It is
-      kept until you ask for it to be erased (via feedback or
+      away, with the log of the half hour before. Please don’t say any personal details, such as
+      your name, address or social security number. The app leaves out long strings of digits (such
+      as an ID, phone or bank account number) and email addresses before sharing, and the recording
+      of what you said too; they stay on your phone. It is stored at Cloudflare under the name of
+      your installation. Only the developer reads it, to improve the app, and doesn’t pass it on. It
+      is kept until you ask for it to be erased (via feedback or
       <a href="mailto:{CONTACT}">{CONTACT}</a>).
     </p>
   </div>
