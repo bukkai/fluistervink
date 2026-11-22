@@ -1,6 +1,6 @@
 # Plan: insecten inspreken
 
-Voorstel van 22 nov 2026. Aanleiding: een tester zei "een goudhaantje, maar de kever, niet de vogel" (20 nov, app-b726a027), en het model maakte er de vogel Goudhaan van. De eigenaar: een kever mag als kever, als dat er zo bij gezegd wordt; en opvallende kevers en wantsen (meikever, lieveheersbeestje), hommels en bijen worden best eens ingesproken. Maar er zijn heel veel insecten. Dit plan is de verstandige weg daarheen. Vervolg op `docs/plan-soortgroepen.md` (zoogdieren, reptielen en amfibieën, dagvlinders en libellen).
+Voorstel van 22 nov 2026, dezelfde dag goedgekeurd; laag 1 in aanbouw. Aanleiding: een tester zei "een goudhaantje, maar de kever, niet de vogel" (20 nov, app-b726a027), en het model maakte er de vogel Goudhaan van. De eigenaar: een kever mag als kever, als dat er zo bij gezegd wordt; en opvallende kevers en wantsen (meikever, lieveheersbeestje), hommels en bijen worden best eens ingesproken. Maar er zijn heel veel insecten. Dit plan is de verstandige weg daarheen. Vervolg op `docs/plan-soortgroepen.md` (zoogdieren, reptielen en amfibieën, dagvlinders en libellen).
 
 ## Wat we weten (22 nov)
 
@@ -58,11 +58,13 @@ Doel: de soorten die mensen echt noemen, worden zeker herkend en niet onzeker.
 - Met de keuze uit: niets van dit alles, ook niet de verzamelsoorten.
 - Na laag 2 een run met `--soortgroepen` om te zien of de vogels gelijk blijven.
 
-## Beslissen (eigenaar)
+## Besloten (22 nov)
 
-1. **Welke groepen in laag 1?** Voorstel: kevers, wantsen, bijen/wespen/mieren, nachtvlinders, sprinkhanen, zweefvliegen. Geen muggen en vliegen in het algemeen, en geen "Insecten (overig)": die worden zelden bij naam genoemd.
-2. **Onder dezelfde keuze** "Ook andere dieren inspreken", of een eigen keuze "Ook insecten"? Voorstel: dezelfde, want minder keuzes. De keuze staat standaard aan; insecten komen alleen in beeld als je ze zegt.
-3. **Laag 2 in het voorjaar** (april) plannen, na een maand meten met laag 1? Voorstel: ja.
+De eigenaar is akkoord met de voorstellen:
+
+1. **Groepen in laag 1:** kevers, wantsen, bijen/wespen/mieren, nachtvlinders, sprinkhanen en zweefvliegen. Geen muggen en vliegen in het algemeen, geen "Insecten (overig)".
+2. **Dezelfde keuze** "Ook andere dieren inspreken" (eerst als ontwikkeloptie `insecten`).
+3. **Laag 2 in april**, na een maand meten met laag 1.
 
 ## Stappen
 
