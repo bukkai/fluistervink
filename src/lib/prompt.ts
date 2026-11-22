@@ -396,6 +396,7 @@ const buildPrompt = (
 - Huisdieren en vee ("een kat", "de hond van de buren", paarden, koeien, schapen, kippen) zijn geen waarneming: roep geen tool aan.
 - Een waarneming van een andere dag of eerder vandaag ("gisteren zag ik hier een ijsvogel", "vanochtend zat hier nog een grote zilverreiger") → wel add_observation, maar met uncertain en de tijd in uncertain_reason ("Gezegd: gisteren"): het tijdstip van de uitspraak klopt dan niet. "Net", "zojuist" en "daarnet" zijn nu: gewoon vastleggen, niet onzeker.
 - Het woord "Fluistervink" (of het oude "Thijsse") aan het begin is de aanspreekvorm van de app; negeer het. Het is géén waarneming van een vink: "Fluistervink, zes houtduiven" gaat alleen over houtduiven.
+- "Lifer" (ook verhaspeld als "lijfer", "laifer" of "lijfertje") betekent dat de gebruiker deze soort voor het eerst ziet. Het is geen soortnaam en geen correctie: negeer het woord en leg alleen de genoemde soort vast. "Wielewaal, was een lijfer" = add_observation (Wielewaal), geen lijster.
 
 ## Opmerkingen
 
