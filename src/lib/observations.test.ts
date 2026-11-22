@@ -641,6 +641,65 @@ describe('ongedaan maken', () => {
   });
 });
 
+describe('afschermen en embargo', () => {
+  it('schermt een nieuwe waarneming af zonder hem onzeker te maken', async () => {
+    await say('een draaihals, nest, afschermen', [
+      'add_observation',
+      { species_id: VINK, count: 1, obscurity: 9, embargo_until: null },
+    ]);
+    const [obs] = await listObservations(SESSION);
+    expect(obs).toMatchObject({ obscurity: 9, uncertain: false });
+    expect(obs.embargoUntil).toBeUndefined();
+  });
+
+  it('schermt eerdere af en laat hun twijfel staan; ongedaan maken zet het terug', async () => {
+    await say('vink', ['add_observation', { species_id: VINK, count: 1, uncertain: true }]);
+    await say('houtduif', ['add_observation', { species_id: HOUTDUIF, count: 1 }]);
+    await say(
+      'zet alle vorige op afgeschermd',
+      ['update_observation', { ref: 1, obscurity: 9, embargo_until: null }],
+      ['update_observation', { ref: 2, obscurity: 9, embargo_until: null }],
+    );
+    const [duif, vink] = await listObservations(SESSION);
+    expect(duif).toMatchObject({ obscurity: 9, uncertain: false });
+    expect(vink).toMatchObject({ obscurity: 9, uncertain: true });
+
+    await say('ongedaan maken', ['undo', {}]);
+    for (const obs of await listObservations(SESSION)) expect(obs.obscurity).toBeUndefined();
+  });
+
+  it('een embargo met datum bewaart de datum', async () => {
+    await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    await say('embargo tot 1 maart', [
+      'update_observation',
+      { ref: 1, obscurity: null, embargo_until: '2027-03-01' },
+    ]);
+    const [obs] = await listObservations(SESSION);
+    expect(obs).toMatchObject({ embargoUntil: '2027-03-01', uncertain: false });
+    expect(obs).not.toHaveProperty('embargoNoDate');
+  });
+
+  it('een embargo zonder datum maakt de waarneming onzeker, met de vraag om een datum', async () => {
+    await say('een vink onder embargo', [
+      'add_observation',
+      { species_id: VINK, count: 1, obscurity: null, embargo_until: 'zonder datum' },
+    ]);
+    await say('houtduif', ['add_observation', { species_id: HOUTDUIF, count: 1 }]);
+    await say('die onder embargo', [
+      'update_observation',
+      { ref: 1, obscurity: null, embargo_until: 'zonder datum' },
+    ]);
+    for (const obs of await listObservations(SESSION)) {
+      expect(obs).toMatchObject({
+        uncertain: true,
+        uncertainReason: expect.stringMatching(/embargo/i),
+      });
+      expect(obs.embargoUntil).toBeUndefined();
+      expect(obs).not.toHaveProperty('embargoNoDate');
+    }
+  });
+});
+
 describe('rare aantallen en niets om te doen', () => {
   it('"nog vijf eraf" bij drie: 1, maar onzeker met de reden', async () => {
     await say('drie vinken', ['add_observation', { species_id: VINK, count: 3 }]);

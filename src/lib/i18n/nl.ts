@@ -798,6 +798,7 @@ export const nl = {
     'Alleen "{transcript}" verstaan; misschien "een …" (nieuwe waarneming). Was {count} × {species}',
   'reason.vagrant': 'Dwaalgast, niet in de vaste lijst (gezegd: "{named}")',
   'reason.insect': 'Insect, opgezocht (gezegd: "{named}")',
+  'reason.embargoNoDate': 'Onder embargo, maar zonder datum: kies de datum',
   'reason.place': 'Plek gezegd: "{text}"; zet hem op de kaart',
 
   // Gesproken bevestiging (spoken.ts)

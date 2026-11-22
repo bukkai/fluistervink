@@ -82,7 +82,18 @@ export function isBareNo(transcript: string | undefined): boolean {
 }
 
 /** Velden die een onzekere waarneming bij een update niet zeker maken */
-const NOT_A_CORRECTION: string[] = ['remarks', 'privateNote', 'spokenPlace'];
+const NOT_A_CORRECTION: string[] = [
+  'remarks',
+  'privateNote',
+  'spokenPlace',
+  'obscurity',
+  'embargoUntil',
+  'embargoNoDate',
+];
+
+/** Embargo gezegd zonder datum: onzeker, zodat de gebruiker thuis de datum zet */
+const embargoReason = (fields: { embargoNoDate?: boolean }) =>
+  fields.embargoNoDate ? t('reason.embargoNoDate') : undefined;
 
 /**
  * Een plek die niet uit te rekenen is ("aan de overkant van de rivier") maakt
@@ -155,6 +166,7 @@ export async function applyActions(
   for (const action of actions) {
     switch (action.type) {
       case 'add': {
+        const { embargoNoDate, ...fields } = action.fields;
         const observation: Observation = {
           id: crypto.randomUUID(),
           sessionId: utterance.sessionId,
@@ -163,7 +175,7 @@ export async function applyActions(
           // Ter plaatse en gezien, in de codes van de groep van de soort
           activityId: codesFor(action.fields.speciesId).defaultActivity,
           methodId: codesFor(action.fields.speciesId).defaultMethod,
-          ...action.fields,
+          ...fields,
           uncertain: action.fields.uncertain ?? false,
           ...placeUncertainty(action.fields),
           ...accidental,
@@ -177,6 +189,7 @@ export async function applyActions(
           status: 'draft',
         };
         Object.assign(observation, withReason(observation, rareReason(observation.speciesId)));
+        Object.assign(observation, withReason(observation, embargoReason({ embargoNoDate })));
         await db.observations.add(observation);
         changes.push({ type: 'add', observationId: observation.id });
         acted = true;
@@ -186,7 +199,8 @@ export async function applyActions(
       case 'update': {
         const current = await db.observations.get(action.observationId);
         if (!current) break;
-        const patch: Partial<Observation> = { ...action.fields };
+        const { embargoNoDate: _, ...fields } = action.fields;
+        const patch: Partial<Observation> = { ...fields };
         Object.assign(patch, codesForNewSpecies(current, patch));
         // Onder de 1 ("nog vijf eraf" bij drie): 1, maar onzeker, want er is
         // iets verkeerd verstaan of geteld. Na de twijfel hieronder gezet.
@@ -254,6 +268,7 @@ export async function applyActions(
           Object.assign(patch, placeUncertainty(merged));
         }
         Object.assign(patch, withReason({ ...current, ...patch }, belowOne));
+        Object.assign(patch, withReason({ ...current, ...patch }, embargoReason(action.fields)));
         Object.assign(patch, accidental);
         // Andere soort: is die zeldzaam (instelling)?
         if (

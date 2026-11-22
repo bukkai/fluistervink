@@ -89,6 +89,6 @@ De app controleert de waarden zoals bij de andere ID's (`validate`): een onbeken
 
 1. ~~Eigenaar: beslissen~~ (22 nov).
 2. Datamodel, export, `checkImport` en tests (één PR). De validatie van het model komt met de prompt in stap 3.
-3. Prompt NL en EN, testset-gevallen (één PR, met testset-run).
+3. Prompt NL en EN, testset-gevallen (één PR, met testset-run). Velden `obscurity` en `embargo_until` verplicht maar null (anders boven de grens van optionele velden); de datum van vandaag staat alleen in het bericht als er "embargo" in de uitspraak zit. Promptgevallen: `testset/maak-promptgevallen-afschermen.mjs` (buiten git), 11/11 op 22 nov.
 4. Scherm: slotje, bewerker, gesproken bevestiging, uitleg en changelog.
 5. Proefimport bij waarneming.nl met een afgeschermde waarneming en een embargo.
