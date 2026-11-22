@@ -28,7 +28,7 @@ Een handschoen maakt de vingertop groter en minder precies, en sommige touchscre
 
 - **Primaire knoppen ruimer:** de opnameknop en "stop sessie" minstens 56–64 px; de opnameknop mag gerust veel groter.
 - **Push-to-talk** (`onpointerdown`/`onpointerup`): wat gebeurt er als de vinger tijdens het inspreken een stukje verschuift of de aanraking even wegvalt? Stopt de opname dan halverwege? Kijk naar `pointercancel`, `pointerleave` en `setPointerCapture`.
-- **Per ongeluk drukken:** een te korte of lege opname moet stil worden genegeerd (`isAccidental` in `src/lib/observations.ts`), niet als fout trillen.
+- **Per ongeluk drukken:** een te korte of lege opname moet stil worden genegeerd (`isAccidental` in `src/lib/applyActions.ts`), niet als fout trillen.
 
 ### 3. Fel zonlicht
 
@@ -70,7 +70,7 @@ Wat in de browser en in Vitest niet echt na te bootsen is (`docs/plan-robuusthei
 | Telefoon vol | Opslag bijna vol maken (grote video), dan inspreken | Drie korte trillen en "De telefoon is vol" op het scherm; een trektelling stopt met die uitleg |
 | Andermans stem | Laat iemand naast je een vogel noemen tijdens een trektelling, of zet een radio aan | Geen waarneming uit hun zin (anders: opname naar de testset) |
 | Wind | Trektelling in harde wind zonder iets te zeggen | Geen verzonnen waarnemingen (anders: opname naar de testset) |
-| Snel verplaatsen | Een stuk met de boot of de auto tijdens een sessie | Afstand voor eBird: zie de open vraag in `docs/plan-robuustheid.md` (#9) |
+| Snel verplaatsen | Een stuk met de boot of de auto tijdens een sessie | Afstand voor eBird: varen en rijden tellen niet mee (`distanceStep` in `effort.ts`, `docs/plan-robuustheid.md` #9). Klopt de afstand achteraf? |
 
 ### Feedback zonder te kijken
 
@@ -78,7 +78,7 @@ De trilpatronen staan in `src/lib/feedback.ts` en worden uitgelegd in `src/lib/H
 
 ## Werkwijze
 
-1. **Code lezen.** Begin bij `ActiveSession.svelte`, `src/app.css` (kleuren, `.btn`), `feedback.ts`, `observations.ts`, `api.ts` en `recorder.svelte.ts`. Veel netwerkvragen zijn al met de code te beantwoorden.
+1. **Code lezen.** Begin bij `ActiveSession.svelte`, `src/app.css` (kleuren, `.btn`), `feedback.ts`, `observations.ts` en `applyActions.ts`, `api.ts` en `recorder.svelte.ts`. Veel netwerkvragen zijn al met de code te beantwoorden.
 
 2. **Meten in de browser.** Start de dev-server (`preview_start` met `dev` uit `.claude/launch.json`), zet het venster op een telefoon (`resize_window` met preset `mobile`) en maak een testsessie aan, zodat het sessiescherm met een paar waarnemingen te zien is. Voer dan `scripts/meet.js` uit via `javascript_tool`. Onder de Vite-dev-server laad je het zo, zonder de inhoud over te typen:
 
