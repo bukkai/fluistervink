@@ -27,7 +27,6 @@ Voor de regel "Leuk met kinderen" op de tuintellingpagina. Liefst een jong en ee
 ## Nog over uit H
 
 - [ ] Met eBird aan: exporteren voor eBird → de melding noemt de afgeschermde waarnemingen die niet meegaan.
-- [ ] Na #345: "die zonder embargo" haalt het embargo weg.
 
 ## Afsluiten
 

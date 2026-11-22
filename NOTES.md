@@ -23,8 +23,6 @@ Uitgeschreven in drie draaiboeken om af te vinken: `docs/draaiboek-thuis.md` (A�
 
 - **Uit de trektelling van 22 nov** (uitslag bovenaan `docs/draaiboek-telling.md`): feedback in een trektelstuk werd deels uitgevoerd als correctie (aantal en gedrag van de graszanger aangepast); "graszanger verplaatsen" maakte van drie grasmussen één graszanger, met een te lange twijfelreden. Nog op te lossen.
 
-- **Soortveld** (#344): een waarneming onderaan de lijst openen en typen; met het toetsenbord open moeten de eerste suggesties boven Opslaan staan.
-- **Trektelling met het scherm uit** (#289, achter `schermUit` in de beta): opnemen werkt, maar Chromium zet de webcode 60 s na het vergrendelen stil, dus de stukken worden pas bij het ontgrendelen verwerkt (niets verloren, wel geen tril). #312 is de volgende proef; de service zelf laten verwerken staat in `docs/ideeen.md`. Bij de volgende telling ook nagaan: geen stukken zonder plek, geen ±200 m meer (#310).
 - **Oortjesmicrofoon:** twee rondes gedaan op 21 nov (Hatertse Hei), buiten git in `testset/feedback/oortjesproef/`; nog niet door de testset, dat samen met de rondes uit het draaiboek.
 
 ## Met de testset nagaan
