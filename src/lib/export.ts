@@ -3,6 +3,8 @@ import {
   audioBlob,
   audioSize,
   db,
+  isDateString,
+  isObscurity,
   type DeletedObservation,
   type Checklist,
   type Effort,
@@ -327,7 +329,10 @@ function checkImport(data: {
         optional(o.recordedPosition, isPosition) &&
         optional(o.spokenPlace, isSpokenPlace) &&
         optional(o.candidates, (c) => Array.isArray(c) && c.every(isNumber)) &&
-        optional(o.area, isArea);
+        optional(o.area, isArea) &&
+        // Gaan letterlijk in het bestand voor waarneming.nl
+        optional(o.obscurity, isObscurity) &&
+        optional(o.embargoUntil, isDateString);
       if (!ok) fail('waarneming');
     }
   }

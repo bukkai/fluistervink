@@ -93,10 +93,24 @@ describe('importJson', () => {
     ['een gezegde plek zonder tekst', { spokenPlace: { distanceM: 500 } }],
     ['een soort die geen getal is', { speciesId: 'vink' }],
     ['kandidaten met tekst', { candidates: [89, '<b>'] }],
+    ['een onbekende afscherming', { obscurity: 3 }],
+    ['een afscherming als tekst', { obscurity: '9' }],
+    ['een embargo dat geen datum is', { embargoUntil: '1 maart' }],
+    ['een embargo op een dag die niet bestaat', { embargoUntil: '2027-02-30' }],
+    ['een embargo met meer erachter', { embargoUntil: '2027-03-01",x' }],
   ])('weigert een waarneming met %s, en zet dan niets terug', async (_, fields) => {
     const file = exportFile({ observations: [{ ...observation({ id: 'o1' }), ...fields }] });
     await expect(importJson(file)).rejects.toThrow('Ongeldige export');
     expect(await db.sessions.count()).toBe(0);
+  });
+
+  it('neemt afschermen en embargo van een waarneming mee', async () => {
+    const o = { ...observation({ id: 'o1' }), obscurity: 9, embargoUntil: '2027-03-01' };
+    await importJson(exportFile({ observations: [o] }));
+    expect(await db.observations.get('o1')).toMatchObject({
+      obscurity: 9,
+      embargoUntil: '2027-03-01',
+    });
   });
 
   it('weigert een opname die geen audio is', async () => {

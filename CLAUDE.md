@@ -62,7 +62,7 @@ Doel: valideren dat herkenning en interpretatie in het veld goed genoeg werken. 
 
 - **Session:** id, start- en eindtijd, status, inspanning (duur en afstand), checklist voor eBird, klaar voor export en geëxporteerd (tijdstippen, ook voor eBird), naam (gebied van waarneming.nl; met de hand aan te passen)
 - **Utterance:** id, sessionId, tijdstip, lat/lon/nauwkeurigheid, audio, transcript, LLM-uitvoer, verwerkingsstatus
-- **Observation:** id, sessionId, utteranceId (bron), soort-ID, aantal, telmethode, activiteit/gedrag, methode (gezien/gehoord), optioneel geslacht/leeftijd/kleed, tijdstip, lat/lon/nauwkeurigheid (bij een verzette plek ook de oorspronkelijke GPS-positie), `uncertain` (met eventueel kandidaat-soorten), opmerking (voor waarneming.nl), eigen notitie (niet geëxporteerd), vlag "niet exporteren", status (concept / gereviewd / geëxporteerd)
+- **Observation:** id, sessionId, utteranceId (bron), soort-ID, aantal, telmethode, activiteit/gedrag, methode (gezien/gehoord), optioneel geslacht/leeftijd/kleed, tijdstip, lat/lon/nauwkeurigheid (bij een verzette plek ook de oorspronkelijke GPS-positie), `uncertain` (met eventueel kandidaat-soorten), opmerking (voor waarneming.nl), eigen notitie (niet geëxporteerd), vlag "niet exporteren", afscherming en embargo (voor waarneming.nl; zo'n waarneming gaat niet naar eBird), status (concept / gereviewd / geëxporteerd)
 
 Soort, activiteit, methode, kleed en telmethode worden opgeslagen als **waarneming.nl-ID's** (`data/`, `docs/waarneming-nl.md`). Die werken direct met de latere API; voor de CSV-export zet de app ze om naar wetenschappelijke naam en Nederlandse tekst. Openstaand: de mapping van gesproken termen naar velden verfijnen met de testset.
 

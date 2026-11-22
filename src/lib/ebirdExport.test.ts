@@ -181,6 +181,29 @@ describe('buildEbirdExport', () => {
     expect(result.notBirds).toHaveLength(1);
   });
 
+  it('laat afgeschermde waarnemingen en een lopend embargo eruit en telt ze', async () => {
+    await db.observations.bulkAdd([
+      observation({ position }),
+      observation({ speciesId: HOUTDUIF, position, obscurity: 9 }),
+      observation({ speciesId: KIEVIT, position, obscurity: 1 }),
+      observation({ speciesId: WINTERKONING, position, embargoUntil: '2999-01-01' }),
+      // Openbaar, of een embargo dat al voorbij is: gewoon mee
+      observation({ speciesId: KIEVIT, position, obscurity: 0, embargoUntil: '2020-01-01' }),
+    ]);
+    const result = await buildEbirdExport([session]);
+    expect(result.rows).toBe(2);
+    expect(result.shielded).toHaveLength(3);
+  });
+
+  it('meldt de afgeschermde waarnemingen na het exporteren', async () => {
+    saveFile.mockResolvedValue({});
+    await db.observations.bulkAdd([
+      observation({ position }),
+      observation({ speciesId: HOUTDUIF, position, obscurity: 9 }),
+    ]);
+    expect(await exportForEbird([session])).toContain('1 afgeschermde waarneming niet meegenomen');
+  });
+
   it('plek van de eerste uitspraak als geen waarneming een positie heeft', async () => {
     await db.observations.add(observation());
     const utterance: Utterance = {

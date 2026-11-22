@@ -1,5 +1,12 @@
 import ebirdNames from '../../data/ebird-namen.json';
-import { db, type Checklist, type EbirdProtocol, type Observation, type Session } from './db';
+import {
+  db,
+  isShielded,
+  type Checklist,
+  type EbirdProtocol,
+  type Observation,
+  type Session,
+} from './db';
 import { ebirdProtocol, sessionDurationMs } from './effort';
 import { saveFile } from './export';
 import { t } from './i18n';
@@ -150,6 +157,8 @@ export interface EbirdExport {
   excluded: Observation[];
   /** Andere dieren dan vogels: eBird neemt alleen vogels */
   notBirds: Observation[];
+  /** Afgeschermd of onder embargo: eBird kent dat niet en maakt alles openbaar */
+  shielded: Observation[];
   /** Waarom het (nog) niet kan; leeg = klaar om te exporteren */
   problems: string[];
   /** Kan wel, maar de gebruiker moet het weten */
@@ -163,6 +172,8 @@ export async function buildEbirdExport(sessions: Session[]): Promise<EbirdExport
   const exported: Observation[] = [];
   const excluded: Observation[] = [];
   const notBirds: Observation[] = [];
+  const shielded: Observation[] = [];
+  const today = isoDate(new Date());
   const problems: string[] = [];
   const warnings: string[] = [];
   const several = sessions.length > 1;
@@ -180,6 +191,8 @@ export async function buildEbirdExport(sessions: Session[]): Promise<EbirdExport
     let included = observations.filter((obs) => !obs.skipExport && getSpecies(obs.speciesId));
     notBirds.push(...included.filter((obs) => groupOf(obs.speciesId) !== BIRDS));
     included = included.filter((obs) => groupOf(obs.speciesId) === BIRDS);
+    shielded.push(...included.filter((obs) => isShielded(obs, today)));
+    included = included.filter((obs) => !isShielded(obs, today));
     if (included.length === 0) continue;
 
     const checklist = resolveChecklist(session);
@@ -219,6 +232,7 @@ export async function buildEbirdExport(sessions: Session[]): Promise<EbirdExport
     rows: rows.length,
     excluded,
     notBirds,
+    shielded,
     problems,
     warnings,
   };
@@ -263,6 +277,7 @@ export async function exportForEbird(sessions: Session[]): Promise<string | unde
     saved.folder && t('export.savedIn', { folder: saved.folder }),
     result.excluded.length && t('export.excluded', { n: result.excluded.length }),
     result.notBirds.length && t('ebirdExport.notBirds', { n: result.notBirds.length }),
+    result.shielded.length && t('ebirdExport.shielded', { n: result.shielded.length }),
   ]
     .filter(Boolean)
     .join(' ');
