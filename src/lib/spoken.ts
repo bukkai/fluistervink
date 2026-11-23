@@ -140,11 +140,25 @@ export function catchUpText(done: number, failed: number): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
+/**
+ * Zegt de tekst en legt elke poging vast, ook als hij lukt of als er geen
+ * oortjes waren: dan is na een rit te zien of de app sprak en het geluid
+ * ergens verdween, of dat hij de oortjes niet zag (23 nov, selfie-stick-knopje
+ * met twee Bluetooth-apparaten: geen stem, en niets in het log).
+ */
+async function speakAndLog(
+  text: string,
+  ids: { sessionId?: string; utteranceId?: string } = {},
+): Promise<void> {
+  const start = Date.now();
+  const { gesproken, reden } = await speakNative(text);
+  logEvent('speak', { gesproken, reden, ms: Date.now() - start, zichtbaar: !document.hidden }, ids);
+}
+
 /** Na de ene tril van het inhalen, als de instelling aan staat */
 export async function confirmCatchUp(done: number, failed: number): Promise<void> {
   if (!speechSupported || !preferenceOn('gesproken')) return;
-  const { gesproken, reden } = await speakNative(catchUpText(done, failed));
-  if (!gesproken && reden !== 'geen oortjes') logEvent('speak_failed', { reden });
+  await speakAndLog(catchUpText(done, failed));
 }
 
 /** Na het trillen: zeggen wat er is vastgelegd, als de instelling aan staat */
@@ -157,12 +171,5 @@ export async function confirmAloud(utterance: Utterance): Promise<void> {
   const current = new Map(observations.filter((o): o is Observation => !!o).map((o) => [o.id, o]));
   const text = confirmationText(utterance, current);
   if (!text) return;
-  const { gesproken, reden } = await speakNative(text);
-  if (!gesproken && reden !== 'geen oortjes') {
-    logEvent(
-      'speak_failed',
-      { reden },
-      { sessionId: utterance.sessionId, utteranceId: utterance.id },
-    );
-  }
+  await speakAndLog(text, { sessionId: utterance.sessionId, utteranceId: utterance.id });
 }

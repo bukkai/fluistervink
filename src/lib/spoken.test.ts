@@ -1,6 +1,19 @@
-import { describe, expect, it } from 'vitest';
-import type { Observation } from './db';
-import { catchUpText, confirmationText } from './spoken';
+import { describe, expect, it, vi } from 'vitest';
+import { db, type Observation } from './db';
+import { catchUpText, confirmCatchUp, confirmationText } from './spoken';
+
+const speech = vi.hoisted(() => ({
+  result: { gesproken: true } as { gesproken: boolean; reden?: string },
+}));
+vi.mock('./native', async (original) => ({
+  ...(await original<typeof import('./native')>()),
+  speechSupported: true,
+  speakNative: async () => speech.result,
+}));
+vi.mock('./preferences', async (original) => ({
+  ...(await original<typeof import('./preferences')>()),
+  preferenceOn: () => true,
+}));
 
 const HOUTDUIF = 120;
 const VINK = 193;
@@ -202,5 +215,26 @@ describe('na het inhalen (lang op bereik gewacht)', () => {
     expect(catchUpText(1, 0)).toBe('Een uitspraak verwerkt');
     expect(catchUpText(5, 1)).toBe('5 uitspraken verwerkt, 1 niet gelukt');
     expect(catchUpText(0, 2)).toBe('2 niet gelukt');
+  });
+});
+
+describe('elke spreekpoging in het log', () => {
+  async function lastSpeak() {
+    // logEvent schrijft zonder te wachten
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const events = await db.events.where('type').equals('speak').toArray();
+    return events.at(-1)?.data as Record<string, unknown> | undefined;
+  }
+
+  it('ook als het lukt', async () => {
+    speech.result = { gesproken: true };
+    await confirmCatchUp(2, 0);
+    expect(await lastSpeak()).toMatchObject({ gesproken: true });
+  });
+
+  it('ook zonder oortjes, met de reden', async () => {
+    speech.result = { gesproken: false, reden: 'geen oortjes' };
+    await confirmCatchUp(2, 0);
+    expect(await lastSpeak()).toMatchObject({ gesproken: false, reden: 'geen oortjes' });
   });
 });
