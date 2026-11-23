@@ -1,6 +1,6 @@
 # Plan: Fluistervink als iPhone-app
 
-Voorstel van 11 nov 2026, nog niet goedgekeurd. Volgt op `docs/plan-capacitor.md` (de Android-app) en komt pas na de lancering in Google Play (`docs/lancering.md`). Tot dan houden iPhone-gebruikers de PWA (Safari, "Zet op beginscherm").
+Voorstel van 11 nov 2026, bijgewerkt 23 nov. Volgt op `docs/plan-capacitor.md` (de Android-app). **Fase 0 en 1 mogen al nu**, naast de lancering in Google Play (`docs/lancering.md`): ze zijn gratis, alleen op de eigen iPhone, en raken de Android-app niet. Fase 2 tot en met 4 pas na de lancering. Tot dan houden iPhone-gebruikers de PWA (Safari, "Zet op beginscherm").
 
 ## Doel
 
@@ -43,6 +43,17 @@ Elke fase is één à twee PR's en wordt in het veld getest voordat de volgende 
 
 ### Fase 1: de schil, en trillen
 
+Eerste PR, nog zonder iOS: **Android en iOS uit elkaar houden in de webcode.** Op een paar plekken betekent `isNativeApp` nu stilzwijgend "Android". Een `isAndroidApp` (en later `isIosApp`) in `native.ts`, en elke plek nalopen:
+
+- `summaries.ts`: `platform: isNativeApp ? 'android' : 'web'` wordt `ios` op een iPhone (ook in de proxy en Statistieken toelaten).
+- `welcome.ts` (`permissionSettingsPath`), `Welcome.svelte`, `HowItWorks.svelte` en `.en.svelte`: uitleg over toestemmingen en de Android-app; op iOS de weg naar Instellingen → Fluistervink.
+- `Home.svelte` (`askMove`): de vraag om naar de stabiele app over te stappen gaat over Play.
+- `waarnemingExport.ts` kiest xlsx voor de app; nagaan of dat op iOS ook moet (fase 3).
+- `install.ts` vraagt in de app eerst Play Integrity; op iOS meteen Turnstile.
+- `db.ts`: de opmerking bij `platform` noemt alleen `web` en `android-app`.
+
+Deze PR verandert op Android niets en kan dus gewoon naar `main`. Daarna:
+
 - `@capacitor/ios` toevoegen en `npx cap add ios`: de map `ios/` in git, naast `android/`. Capacitor 8 gebruikt Swift Package Manager, CocoaPods is niet nodig.
 - **Toestemmingsteksten in `Info.plist`**: microfoon (`NSMicrophoneUsageDescription`) en locatie tijdens gebruik (`NSLocationWhenInUseUsageDescription`), in het Nederlands. Zonder die teksten stopt de app zodra hij erom vraagt.
 - **Eigen plugin `Trillen` in Swift**, met dezelfde naam als de Java-plugin, zodat `vibrateNative` in `native.ts` niet verandert. iOS kent geen vrije trilpatronen zoals Android, maar Core Haptics kan een reeks tikken van gekozen lengte en sterkte afspelen. De drie patronen (opgeslagen, niet begrepen, onzeker) moeten in de hand nog steeds te onderscheiden zijn; dat is de proef van deze fase.
@@ -65,6 +76,18 @@ Op Android houdt een foreground service met een melding de app in leven. iOS hee
 - **Bestand opslaan** (`saveFileNative`, nu `BestandPlugin.java`): op iOS het deelmenu, waarmee je het bestand naar Bestanden, Mail of AirDrop stuurt. Nagaan of het uploadveld van waarneming.nl op een iPhone een CSV accepteert; anders ook daar xlsx (`src/lib/xlsx.ts`).
 - **Scherm aan in de trektelmodus**: de Wake Lock van de browser (`trektelRecorder.svelte.ts`) werkt in Safari sinds iOS 16.4, maar in een WKWebView is dat niet zeker. Anders een kleine plugin die `isIdleTimerDisabled` zet.
 - Naar de achtergrond stopt de trektelling, net als op Android: dat blijft zo.
+
+**Plugins die op Android na 11 nov bijkwamen.** `native.ts` controleert ze met `Capacitor.isPluginAvailable`, dus zonder Swift-versie verdwijnt de functie op iOS vanzelf. Per plugin:
+
+| Android-plugin             | Wat                                         | Op iOS                                                                                                                                                                                                        |
+| -------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Snelkoppeling`            | "Begin met vogelen" op het pictogram        | Bestaat (Home Screen Quick Actions), eenvoudig. Fase 3.                                                                                                                                                       |
+| `Spreken`                  | Hardop in de oortjes                        | `AVSpeechSynthesizer`, alleen als de audio naar een headset gaat. Fase 3.                                                                                                                                     |
+| `Microfoon`                | Microfoon van de oortjes                    | Kiezen via `AVAudioSession`; geen aparte toestemming zoals "Apparaten in de buurt". Fase 3, eerst kijken of de WebView de oortjes al vanzelf gebruikt.                                                       |
+| `Knop`                     | Volumeknop als inspreekknop                 | Geen openbare manier om de volumeknop op te vangen; de bekende omwegen keurt Apple af. Niet doen.                                                                                                             |
+| `SchermUit` en trektelling | Opnemen met het scherm uit, in een service  | Hangt af van fase 2. iOS staat opnemen op de achtergrond wel toe (achtergrondmodus `audio`, rood pilletje), maar dan native, buiten de WebView. Pas als fase 2 slaagt en de trektelling op Android bevalt. |
+| `Wandeling`                | Service die de app met scherm uit levend houdt | Fase 2.                                                                                                                                                                                                       |
+| `Integriteit`              | Play Integrity                              | Keuze 3: Turnstile, later eventueel App Attest.                                                                                                                                                               |
 
 ### Fase 4: TestFlight en de App Store
 

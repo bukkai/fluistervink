@@ -33,7 +33,7 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 | --- | --- |
 | `plan-andere-landen.md` | soortenlijsten van andere landen en namen in andere talen; uitgewerkt 20 nov, eerst West-Europa; proef Spanje gedaan |
 | `plan-jaarrond-tuintelling.md` | de tuintelmodus ook voor de Jaarrond Tuintelling van Sovon (vrije duur, overvliegers mee); voorstel 22 nov, na de tuintelling van januari |
-| `plan-ios.md` | iPhone-app; voorstel, na de lancering |
+| `plan-ios.md` | iPhone-app; voorstel, fase 0–1 (eigen iPhone, gratis) mag al, de rest na de lancering |
 | `plan-marketing.md` | Fluistervink bekend maken na de lancering: in stappen vanwege de kosten, grote push rond de tuintelling; titel, filmpje en december besloten 22 nov, kostengrens een voorstel |
 
 **Afgerond, naslag:**
