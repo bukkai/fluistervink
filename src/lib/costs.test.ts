@@ -73,6 +73,16 @@ describe('summarize', () => {
     expect(summary.anthropic).toBeCloseTo(6);
   });
 
+  it('verdeelt deze maand over gebruikers, eigen sessies en de testset', () => {
+    const split = summarize(
+      [...rows, row({ day: '2026-10-11', tester: 'eigenaar', inputTokens: 10_000_000 })], // $1
+      now,
+    ).split;
+    expect(split.users).toBeCloseTo(3.5);
+    expect(split.owner).toBeCloseTo(1);
+    expect(split.testset).toBeCloseTo(4);
+  });
+
   it('geeft per tester de kosten en uitspraken van deze maand, duurste eerst', () => {
     expect(summary.perTester).toEqual([
       { tester: 'eigenaar', cost: expect.closeTo(4), utterances: 0 },
