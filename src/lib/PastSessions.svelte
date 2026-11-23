@@ -159,9 +159,9 @@
           <p>
             <strong>{t('sessions.readyForWaarneming', { n: ready.length })}</strong>
           </p>
-          <button class="btn block large" onclick={exportReady}
-            >{t('sessions.exportWaarneming')}</button
-          >
+          <button class="btn block large" onclick={exportReady}>
+            {t('sessions.exportWaarneming')}
+          </button>
         {/if}
         {#if exportResult}
           <p>{exportResult}</p>
@@ -200,18 +200,21 @@
                     <button
                       class="btn secondary"
                       onclick={() => setChecklist(session.id, { complete: true })}
-                      >{t('sessions.yes')}</button
                     >
+                      {t('sessions.yes')}
+                    </button>
                     <button
                       class="btn secondary"
                       onclick={() => setChecklist(session.id, { complete: false })}
-                      >{t('sessions.no')}</button
                     >
+                      {t('sessions.no')}
+                    </button>
                     <button
                       class="btn secondary"
                       onclick={() => setChecklist(session.id, { skipEbird: true })}
-                      >{t('sessions.notToEbird')}</button
                     >
+                      {t('sessions.notToEbird')}
+                    </button>
                   </div>
                 </li>
               {/each}
@@ -220,8 +223,10 @@
           <button
             class="btn block large"
             disabled={ebirdBusy || ebirdOpen.length > 0}
-            onclick={exportEbird}>{t('sessions.exportEbird')}</button
+            onclick={exportEbird}
           >
+            {t('sessions.exportEbird')}
+          </button>
         {/if}
         {#if ebirdResult}
           <p role="status">{ebirdResult}</p>
@@ -240,9 +245,9 @@
   {#if selecting}
     <p class="muted select-hint">{t('sessions.selectHint')}</p>
     <p class="quick">
-      <button class="link" onclick={toggleAll}
-        >{allSelected ? t('sessions.selectNone') : t('sessions.selectAll')}</button
-      >
+      <button class="link" onclick={toggleAll}>
+        {allSelected ? t('sessions.selectNone') : t('sessions.selectAll')}
+      </button>
       {#if exportedIds.length > 0}
         <button class="link" onclick={() => (selected = new Set(exportedIds))}>
           {t('sessions.selectExported')}
@@ -312,9 +317,9 @@
       <strong>{session.place?.name ?? t('common.defaultSessionName')}</strong>
       <span class="badges">
         {#if session.exportedAt}
-          <span class="badge exported"
-            >{ebird ? t('sessions.badgeWaarneming') : t('sessions.badgeExported')}</span
-          >
+          <span class="badge exported">
+            {ebird ? t('sessions.badgeWaarneming') : t('sessions.badgeExported')}
+          </span>
         {:else if session.readyAt}
           <span class="badge ready">{t('sessions.badgeReady')}</span>
         {:else if !session.ebirdExportedAt && !notForExport(session)}

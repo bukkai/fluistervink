@@ -391,9 +391,9 @@
             <tbody>
               {#each userWeeks as w (w.week)}
                 <tr>
-                  <th scope="row"
-                    >{dateFormat.format(new Date(w.week))}{w.current ? ' (nu)' : ''}</th
-                  >
+                  <th scope="row">
+                    {dateFormat.format(new Date(w.week))}{w.current ? ' (nu)' : ''}
+                  </th>
                   <td>{w.users}</td>
                   <td>{w.users ? money(w.perUser) : '–'}</td>
                   <td>{w.users ? money(w.median) : '–'}</td>
@@ -453,9 +453,9 @@
         {#if forecast !== undefined}
           <li>
             <span>Deze maand naar verwachting</span>
-            <span class:over={forecast > MONTH_BUDGET}
-              >{money(forecast)} van {money(MONTH_BUDGET)}</span
-            >
+            <span class:over={forecast > MONTH_BUDGET}>
+              {money(forecast)} van {money(MONTH_BUDGET)}
+            </span>
           </li>
         {/if}
         {#if perUserAverage}
@@ -545,11 +545,9 @@
                       <th scope="row">{dateFormat.format(new Date(w.week))}</th>
                       <td>{w.utterances}</td>
                       <td>{w.perUtterance === undefined ? '–' : money(w.perUtterance)}</td>
-                      <td
-                        >{w.cacheShare === undefined
-                          ? '–'
-                          : `${Math.round(w.cacheShare * 100)}%`}</td
-                      >
+                      <td>
+                        {w.cacheShare === undefined ? '–' : `${Math.round(w.cacheShare * 100)}%`}
+                      </td>
                     </tr>
                   {/each}
                 </tbody>
@@ -609,9 +607,9 @@
 <details class="card fold" open={newNotes.length > 0}>
   <summary class="card-head">
     <h2>Feedback van testers</h2>
-    <span class="muted"
-      >{notes ? (newNotes.length ? `${newNotes.length} nieuw` : 'niets nieuws') : ''}</span
-    >
+    <span class="muted">
+      {notes ? (newNotes.length ? `${newNotes.length} nieuw` : 'niets nieuws') : ''}
+    </span>
   </summary>
   <div class="card-body stack">
     {#if notesError}
@@ -647,8 +645,10 @@
               setProcessed(
                 newNotes.map((n) => n.id),
                 true,
-              )}>Alles verwerkt</button
+              )}
           >
+            Alles verwerkt
+          </button>
         {/if}
         {#if processedCount > 0}
           <button class="link" onclick={() => (showProcessed = !showProcessed)}>
@@ -671,9 +671,9 @@
 <details class="card fold">
   <summary class="card-head">
     <h2>Installaties</h2>
-    <span class="muted"
-      >{testers ? `${testers.length}, waarvan ${split.active.length} actief` : ''}</span
-    >
+    <span class="muted">
+      {testers ? `${testers.length}, waarvan ${split.active.length} actief` : ''}
+    </span>
   </summary>
   <div class="card-body stack">
     {#if testersError}
@@ -718,17 +718,18 @@
 </details>
 
 <details class="card fold">
-  <summary class="card-head"
-    ><h2>Gegevens</h2>
-    <span class="muted">export en import</span></summary
-  >
+  <summary class="card-head">
+    <h2>Gegevens</h2>
+    <span class="muted">export en import</span>
+  </summary>
   <div class="card-body stack">
     <label class="check">
       <input type="checkbox" bind:checked={withAudio} />
       Met opnames (groter bestand; nodig voor de testset)
     </label>
-    <button class="btn secondary block" onclick={exportData}>Alle gegevens exporteren (JSON)</button
-    >
+    <button class="btn secondary block" onclick={exportData}>
+      Alle gegevens exporteren (JSON)
+    </button>
     {#if exportMessage}
       <p class="message error">{exportMessage}</p>
     {/if}

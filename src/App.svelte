@@ -340,9 +340,9 @@
       <nav>
         <a href="#sessies">{t('menu.sessions')}</a>
         <a href="#uitleg">{t('menu.howItWorks')}</a>
-        <a href="#feedback"
-          >{unsentNotes ? t('menu.feedbackUnsent', { n: unsentNotes }) : t('menu.feedback')}</a
-        >
+        <a href="#feedback">
+          {unsentNotes ? t('menu.feedbackUnsent', { n: unsentNotes }) : t('menu.feedback')}
+        </a>
         <a href="#instellingen">{t('menu.settings')}</a>
         <a href="#privacy">{t('menu.privacy')}</a>
         {#if isOwner}
@@ -403,9 +403,9 @@
           {/if}
         </p>
       </div>
-      <button class="stop" onclick={stop}
-        >{tuintelPhaseNow === 'after' ? t('app.tuintelDone') : t('app.stop')}</button
-      >
+      <button class="stop" onclick={stop}>
+        {tuintelPhaseNow === 'after' ? t('app.tuintelDone') : t('app.stop')}
+      </button>
     </section>
     {#if askStillBirding}
       <StillBirding

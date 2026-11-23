@@ -62,9 +62,9 @@
 <section class="card">
   <div class="card-head">
     <h2>{t('ebird.title')}</h2>
-    {#if session.ebirdExportedAt && !exportResult}<span class="badge"
-        >{t('sessions.badgeExported')}</span
-      >{/if}
+    {#if session.ebirdExportedAt && !exportResult}<span class="badge">
+        {t('sessions.badgeExported')}
+      </span>{/if}
   </div>
   <div class="card-body">
     <dl>
@@ -79,11 +79,11 @@
     <div class="field">
       <label class="label" for="ebird-protocol">{t('ebird.protocol')}</label>
       <select id="ebird-protocol" value={session.checklist?.protocol ?? ''} onchange={setProtocol}>
-        <option value=""
-          >{t('ebird.protocolAutomatic', {
+        <option value="">
+          {t('ebird.protocolAutomatic', {
             protocol: PROTOCOLS.find((p) => p.value === automatic)?.label ?? '',
-          })}</option
-        >
+          })}
+        </option>
         {#each PROTOCOLS as protocol (protocol.value)}
           <option value={protocol.value}>{protocol.label}</option>
         {/each}
@@ -107,9 +107,9 @@
           {/if}
           {#if ownDistance && measuredM !== undefined}
             {t('ebird.measured', { km: km(measuredM) })}
-            <button class="link" onclick={() => setChecklist(session.id, { distanceM: undefined })}
-              >{t('ebird.backToMeasured')}</button
-            >
+            <button class="link" onclick={() => setChecklist(session.id, { distanceM: undefined })}>
+              {t('ebird.backToMeasured')}
+            </button>
           {:else if measuredM === undefined}
             {t('ebird.notMeasured')}
           {/if}
@@ -142,8 +142,10 @@
     <button
       class="btn block"
       disabled={busy || checklist.complete === undefined}
-      onclick={exportThis}>{t('sessions.exportEbird')}</button
+      onclick={exportThis}
     >
+      {t('sessions.exportEbird')}
+    </button>
     <p class="muted small">
       {#if checklist.complete === undefined}
         {t('ebird.answerFirst')}

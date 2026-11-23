@@ -112,9 +112,9 @@
   {/if}
   <button class="start" onclick={onstart}>{t('home.start')}</button>
   {#if onstarttuintel}
-    <button class="btn secondary block large" onclick={onstarttuintel}
-      >{t('home.startTuintel')}</button
-    >
+    <button class="btn secondary block large" onclick={onstarttuintel}>
+      {t('home.startTuintel')}
+    </button>
   {/if}
   {#if firstTime}
     <p class="tip">

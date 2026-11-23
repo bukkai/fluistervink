@@ -68,17 +68,19 @@
 <div class="title">
   <h2 class="page-title">{t('notes.title')}</h2>
   {#if $notes?.length}
-    <button class="btn secondary" onclick={copy}
-      >{copied ? t('notes.copied') : t('notes.copy')}</button
-    >
+    <button class="btn secondary" onclick={copy}>
+      {copied ? t('notes.copied') : t('notes.copy')}
+    </button>
   {/if}
 </div>
 
 <p class="intro">
   {t('notes.introVoor')}
   {#if sharing}{t('notes.introSharing')}{:else}{t('notes.introNotSharingVoor')}<a
-      href="#instellingen">{t('menu.settings')}</a
-    >{t('notes.introNotSharingNa')}{/if}
+      href="#instellingen"
+    >
+      {t('menu.settings')}
+    </a>{t('notes.introNotSharingNa')}{/if}
   {t('notes.introNa')}
 </p>
 

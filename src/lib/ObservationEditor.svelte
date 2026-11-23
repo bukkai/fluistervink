@@ -272,8 +272,10 @@
           type="button"
           class="play"
           onclick={() => player.toggle(utterance!.id, utterance!.audio!)}
-          aria-label={player.label(utterance.id)}>{player.symbol(utterance.id)}</button
+          aria-label={player.label(utterance.id)}
         >
+          {player.symbol(utterance.id)}
+        </button>
       {:else if utterance.audioDeletedAt}
         <span class="muted">{t('log.audioDeleted')}</span>
       {/if}
@@ -477,9 +479,9 @@
   <!-- Altijd in beeld, ook bij een lang formulier (feedback 16 nov) -->
   <div class="buttons">
     <button type="submit" class="btn" disabled={!valid}>{t('common.save')}</button>
-    <button type="button" class="btn secondary" onclick={() => onclose()}
-      >{t('editor.cancel')}</button
-    >
+    <button type="button" class="btn secondary" onclick={() => onclose()}>
+      {t('editor.cancel')}
+    </button>
   </div>
 </form>
 

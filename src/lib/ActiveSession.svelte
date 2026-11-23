@@ -542,15 +542,15 @@
          app spraak hoorde, dan sprong de stopknop steeds op en neer (Maarten) -->
     <p class="mic listening">
       <span class="ear" class:speaking={trektel.speaking}></span>
-      <span class="hearing"
-        >{trektel.status === 'paused'
+      <span class="hearing">
+        {trektel.status === 'paused'
           ? t('session.trektelPaused')
           : trektel.status !== 'running'
             ? t('session.trektelMicStarting')
             : trektel.speaking
               ? t('session.trektelHearing')
-              : t('session.trektelListening')}</span
-      >
+              : t('session.trektelListening')}
+      </span>
       <!-- Pas na het eerste stuk: "eerste stuk na 1 minuut" was onduidelijk (feedback 12 nov) -->
       {#if trektel.sent > 0}
         ·
@@ -580,13 +580,13 @@
           stroke-linecap="round"
         />
       </svg>
-      <span
-        >{trektel.status === 'starting'
+      <span>
+        {trektel.status === 'starting'
           ? t('session.micStarting')
           : tuinPhase === 'before'
             ? t('session.tuintelStart')
-            : t('session.tuintelResume')}</span
-      >
+            : t('session.tuintelResume')}
+      </span>
     </button>
     <p class="mic source">
       {tuinPhase === 'before' ? t('session.tuintelStartHint') : t('session.tuintelResumeHint')}

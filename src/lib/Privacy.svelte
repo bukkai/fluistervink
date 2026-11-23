@@ -161,12 +161,14 @@
     <h3>Wat je zelf kunt doen</h3>
     <ul>
       <li>
-        Delen aan- of uitzetten, met of zonder opnames: <a href="{app}#instellingen">Instellingen</a
-        >.
+        Delen aan- of uitzetten, met of zonder opnames: <a href="{app}#instellingen">
+          Instellingen
+        </a>.
       </li>
       <li>
-        Anonieme cijfers per sessie uitzetten: ook bij <a href="{app}#instellingen">Instellingen</a
-        >.
+        Anonieme cijfers per sessie uitzetten: ook bij <a href="{app}#instellingen">
+          Instellingen
+        </a>.
       </li>
       <li>
         Alleen de opnames wissen: onderaan bij een sessie, of alles bij
@@ -194,41 +196,49 @@
       Volgens de AVG mag je vragen wat er van jou bewaard is (ook een kopie van wat je deelde), en
       het laten verbeteren of wissen, of bezwaar maken: mail naar
       <a href="mailto:{CONTACT}">{CONTACT}</a>. Een klacht kan bij de
-      <a href="https://autoriteitpersoonsgegevens.nl/" target="_blank" rel="noopener"
-        >Autoriteit Persoonsgegevens</a
-      >.
+      <a href="https://autoriteitpersoonsgegevens.nl/" target="_blank" rel="noopener">
+        Autoriteit Persoonsgegevens
+      </a>.
     </p>
   </div>
 </section>
 
 <p class="sources">
   Bijgewerkt op 16 november 2026. Bronnen, nagekeken op 11 november 2026:
-  <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noopener"
-    >OpenAI</a
-  >,
+  <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noopener">
+    OpenAI
+  </a>,
   <a
     href="https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
     target="_blank"
-    rel="noopener">Anthropic (bewaren)</a
-  >,
+    rel="noopener"
+  >
+    Anthropic (bewaren)
+  </a>,
   <a
     href="https://privacy.claude.com/en/articles/7996868-is-my-data-used-for-model-training"
     target="_blank"
-    rel="noopener">Anthropic (training)</a
-  >,
+    rel="noopener"
+  >
+    Anthropic (training)
+  </a>,
   <a
     href="https://developers.cloudflare.com/workers/observability/logs/workers-logs/"
     target="_blank"
-    rel="noopener">Cloudflare</a
-  >,
-  <a href="https://www.cloudflare.com/turnstile-privacy-policy/" target="_blank" rel="noopener"
-    >Turnstile</a
-  >,
+    rel="noopener"
+  >
+    Cloudflare
+  </a>,
+  <a href="https://www.cloudflare.com/turnstile-privacy-policy/" target="_blank" rel="noopener">
+    Turnstile
+  </a>,
   <a
     href="https://developer.android.com/google/play/integrity/overview"
     target="_blank"
-    rel="noopener">Play Integrity</a
-  >.
+    rel="noopener"
+  >
+    Play Integrity
+  </a>.
 </p>
 
 <style>
