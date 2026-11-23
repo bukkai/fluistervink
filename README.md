@@ -55,6 +55,8 @@ npx cap open ios   # openen in Xcode, simulator of iPhone kiezen, Run ▶
 
 Native code staat in `ios/App/App/` (Swift). De plugins hebben dezelfde naam als op Android en worden geregistreerd in `AppViewController.swift`; een nieuw bestand voeg je in Xcode toe aan het target App. De versie komt uit git (`scripts/ios-versie.sh`, een buildstap in het project).
 
+De WebView komt alleen op de domeinen in `WKAppBoundDomains` (`ios/App/App/Info.plist`); alleen daar werkt de service worker, en dus opstarten zonder bereik. Een branch testen gaat zoals bij Android met `CAP_SERVER_URL`, maar zet het preview-adres dan eerst tijdelijk in die lijst.
+
 ## Stack
 
 - [Vite](https://vite.dev) als build tool en dev server
