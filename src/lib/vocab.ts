@@ -20,7 +20,7 @@ import { region, type Region } from './region';
 
 // Vaste lijsten met waarneming.nl-ID's: soorten, gedrag, methode, kleed en
 // telmethode. Zie docs/waarneming-nl.md. Naast vogels ook zoogdieren,
-// reptielen en amfibieën, dagvlinders en libellen (docs/plan-soortgroepen.md);
+// reptielen en amfibieën, dagvlinders en libellen (docs/archief/plan-soortgroepen.md);
 // die zijn nog niet in de app te kiezen.
 
 /**

@@ -97,7 +97,7 @@ const fieldProperties = {
 } as const;
 
 /**
- * Afschermen en embargo voor waarneming.nl (docs/plan-afschermen.md).
+ * Afschermen en embargo voor waarneming.nl (docs/archief/plan-afschermen.md).
  * Verplicht maar null als het niet gezegd wordt: als optionele velden kwamen
  * we boven MAX_OPTIONAL_PARAMETERS. Bij shield_observation betekent null
  * "niet veranderen".

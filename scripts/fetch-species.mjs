@@ -1,11 +1,11 @@
 // Haalt de Nederlandse soortenlijsten en de codes voor gedrag/methode/kleed op
 // bij de openbare API van waarneming.nl en schrijft ze naar data/. Eerst
 // vogels; daarnaast zoogdieren, reptielen en amfibieën, dagvlinders en
-// libellen (docs/plan-soortgroepen.md).
+// libellen (docs/archief/plan-soortgroepen.md).
 //
 // Daarnaast de Engelse namen van dezelfde soorten en codes (data/namen-en.json,
 // docs/plan-engels.md) en de namen van eBird voor de eBird-export
-// (data/ebird-namen.json, docs/plan-ebird.md).
+// (data/ebird-namen.json, docs/archief/plan-ebird.md).
 //
 // Insecten (docs/plan-insecten.md, laag 1): per groep alleen een paar
 // verzamelsoorten in de prompt ("Kever onbekend", "Hommel onbekend"); de
@@ -205,7 +205,7 @@ const NAMES_EN = {
 };
 
 /**
- * eBird-namen die niet op naam te koppelen zijn (docs/plan-ebird.md, punt 5),
+ * eBird-namen die niet op naam te koppelen zijn (docs/archief/plan-ebird.md, punt 5),
  * per soort-ID van waarneming.nl.
  */
 const EBIRD_EXCEPTIONS = {

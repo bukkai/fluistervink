@@ -11,7 +11,7 @@ import {
 } from './effort';
 import { resumeSession, startSession, stopSession } from './sessions';
 
-// Afstand en duur van een sessie, voor eBird (docs/plan-ebird.md)
+// Afstand en duur van een sessie, voor eBird (docs/archief/plan-ebird.md)
 
 /** Een meting `north` meter ten noorden van een vast punt, op `seconds` */
 function fix(north: number, accuracy = 5, seconds = 0): Position {
