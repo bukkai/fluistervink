@@ -35,6 +35,7 @@ Elk plan begint met datum en status. Een afgerond plan gaat naar `archief/`; de 
 | `plan-jaarrond-tuintelling.md` | de tuintelmodus ook voor de Jaarrond Tuintelling van Sovon (vrije duur, overvliegers mee); voorstel 22 nov, na de tuintelling van januari |
 | `plan-ios.md` | iPhone-app; voorstel, fase 0–1 (eigen iPhone, gratis) mag al, de rest na de lancering |
 | `plan-marketing.md` | Fluistervink bekend maken na de lancering: in stappen vanwege de kosten, grote push rond de tuintelling; titel, filmpje en december besloten 22 nov, kostengrens een voorstel |
+| `plan-testers.md` | na de productierelease: de huidige testers uitfaseren, een nieuwe track "Beta" met een Google Group, en een uitnodiging op het hoofdscherm voor wie de app echt gebruikt; voorstel 23 nov |
 
 **Afgerond, naslag:**
 
