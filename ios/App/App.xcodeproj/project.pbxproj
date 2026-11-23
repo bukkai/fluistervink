@@ -20,6 +20,7 @@
 		E34384BEC66B4B54B6B43255 /* TrillenPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBFB504A60474538B737BC5C /* TrillenPlugin.swift */; };
 		084552DBFE0140D7903094C3 /* VersiePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73481974266549B8B70324A3 /* VersiePlugin.swift */; };
 		9210A10344714BFAA6CD058F /* LocatiePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0770FF162A2846C382B03747 /* LocatiePlugin.swift */; };
+		D1A10C0E5F2B4E7A9C3D0B01 /* Dialogen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A10C0E5F2B4E7A9C3D0B02 /* Dialogen.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,6 +39,7 @@
 		EBFB504A60474538B737BC5C /* TrillenPlugin.swift */ = {isa = PBXFileReference; name = "TrillenPlugin.swift"; path = "TrillenPlugin.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; };
 		73481974266549B8B70324A3 /* VersiePlugin.swift */ = {isa = PBXFileReference; name = "VersiePlugin.swift"; path = "VersiePlugin.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; };
 		0770FF162A2846C382B03747 /* LocatiePlugin.swift */ = {isa = PBXFileReference; name = "LocatiePlugin.swift"; path = "LocatiePlugin.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; };
+		D1A10C0E5F2B4E7A9C3D0B02 /* Dialogen.swift */ = {isa = PBXFileReference; name = "Dialogen.swift"; path = "Dialogen.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,6 +87,7 @@
 				EBFB504A60474538B737BC5C /* TrillenPlugin.swift */,
 				73481974266549B8B70324A3 /* VersiePlugin.swift */,
 				0770FF162A2846C382B03747 /* LocatiePlugin.swift */,
+				D1A10C0E5F2B4E7A9C3D0B02 /* Dialogen.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -177,6 +180,7 @@
 				E34384BEC66B4B54B6B43255 /* TrillenPlugin.swift in Sources */,
 				084552DBFE0140D7903094C3 /* VersiePlugin.swift in Sources */,
 				9210A10344714BFAA6CD058F /* LocatiePlugin.swift in Sources */,
+				D1A10C0E5F2B4E7A9C3D0B01 /* Dialogen.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
