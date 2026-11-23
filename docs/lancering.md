@@ -73,4 +73,12 @@ Daaruit maken we: Android-pictogram (`android/app/src/main/res/mipmap-*`, adapti
 - [ ] Naam in de winkelvermelding: "Fluistervink: vogels inspreken" (`docs/play-store/README.md`).
 - [ ] Bekendheid geven in stappen, eerst in eigen kring: `docs/plan-marketing.md`.
 
+## 6. Na de productierelease: testers die er zelf voor kiezen
+
+Plan: `docs/plan-testers.md`.
+
+- [ ] De gesloten test "Stabiel" uitfaseren: geen nieuwe releases meer, lijst leeg, de testers een bedankmail (stap 1 van het plan).
+- [ ] Google Group (alleen mededelingen) en een nieuwe gesloten track "Beta" met de beta-AAB (stap 2).
+- [ ] **Uitproberen met het tweede account**, zodra "Beta" er is: eerst via de link van de interne test "Programma verlaten" (het account is daar sinds 18 nov tester), de app verwijderen en Fluistervink uit productie installeren. Dan lid worden van de groep, tester worden van "Beta" en kijken of Play de app bijwerkt naar de beta of dat verwijderen nodig is. Ook nagaan of de back-up van stabiel goed terugkomt in de beta. De uitkomst bepaalt de stappen op de kaart (stap 4 van het plan).
+
 Later, niet nodig voor de lancering: automatisch uploaden vanuit de workflow.
