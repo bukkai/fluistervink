@@ -18,6 +18,7 @@
     type SummaryRow,
   } from './stats';
   import { dayOf } from './costs';
+  import { asOwner, ownInstalls } from './testers';
 
   const DAYS = 30;
   /** Grafiek en tabel even lang, zodat elke week in de grafiek een rij heeft */
@@ -53,7 +54,10 @@
     .then((result) => (installs = result))
     .catch(() => (installs = undefined));
 
-  let counted = $derived((rows ?? []).filter((r) => withOwner || r.tester !== 'eigenaar'));
+  // Installaties van de eigenaar zelf tellen als de eigenaar (testers.ts)
+  let own = $derived(ownInstalls(installs ?? []));
+  let allRows = $derived(asOwner(rows ?? [], own));
+  let counted = $derived(allRows.filter((r) => withOwner || r.tester !== 'eigenaar'));
   let days = $derived(perDay(counted, DAYS));
   let weeks = $derived(perWeek(counted, WEEKS));
   /** Laatste weken van eerste gebruik; ouder past niet op een telefoon */
@@ -74,8 +78,8 @@
   let steps = $derived(
     installs
       ? funnel(
-          rows ?? [],
-          installs.map((t) => t.name),
+          allRows,
+          installs.filter((t) => !t.owner).map((t) => t.name),
         )
       : undefined,
   );

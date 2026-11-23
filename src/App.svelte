@@ -15,7 +15,7 @@
     type StaleCheck,
   } from './lib/sessions';
   import ActiveSession from './lib/ActiveSession.svelte';
-  import { ApiError, getAccessCode, getTester, OWNER, ping } from './lib/api';
+  import { ApiError, claimOwnInstall, getAccessCode, getTester, OWNER, ping } from './lib/api';
   import { getInstallToken } from './lib/install';
   import { listDevNotes } from './lib/devNotes';
   import { CHANNEL } from './lib/log';
@@ -151,7 +151,9 @@
   // dan bij het eerste verzoek opnieuw, zonder melding.
   let installProblem = $state<string>();
   async function ensureAccess() {
-    if (getAccessCode() || getInstallToken()) return;
+    // De eigenaar: een installatie van vóór de code als de zijne melden (api.ts)
+    if (getAccessCode()) return claimOwnInstall();
+    if (getInstallToken()) return;
     try {
       await ping();
     } catch (error) {

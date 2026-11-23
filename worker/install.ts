@@ -43,6 +43,12 @@ export interface InstallRecord {
   hidden?: boolean;
   /** Naam die de gebruiker zelf opgaf (Instellingen), zodat de eigenaar weet wie het is */
   displayName?: string;
+  /**
+   * Een installatie van de eigenaar zelf (aangemeld voordat de code erin
+   * stond): telt in Statistieken en de kosten als de eigenaar, niet als
+   * gebruiker.
+   */
+  owner?: boolean;
 }
 
 /** Een opgegeven naam: hooguit 40 tekens, geen stuurtekens. */

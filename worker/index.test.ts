@@ -365,6 +365,35 @@ describe('/api/install (aanmelden zonder code)', () => {
     expect((await register({ id: ID, turnstile: 'goed' })).status).toBe(403);
   });
 
+  it('markeert een installatie als die van de eigenaar, en weer terug', async () => {
+    turnstileAnswers();
+    const { token } = (await (await register({ id: ID, turnstile: 'goed' })).json()) as {
+      token: string;
+    };
+    const mark = (owner: '0' | '1', code: string = OWNER_CODE, name = 'app-3f9a2b1c') =>
+      call(`/api/testers?name=${name}&owner=${owner}`, { code, method: 'PATCH' });
+    const listed = async () =>
+      (
+        (await (await call('/api/testers', { code: OWNER_CODE })).json()) as {
+          testers: { name: string; owner?: boolean }[];
+        }
+      ).testers.find((t) => t.name === 'app-3f9a2b1c');
+
+    expect((await listed())?.owner).toBeUndefined();
+    expect((await mark('1')).status).toBe(200);
+    expect((await listed())?.owner).toBe(true);
+    // Twee keer is niet erg (de app meldt het vanzelf)
+    expect((await mark('1')).status).toBe(200);
+    // De installatie blijft gewoon werken
+    expect((await call('/api/ping', { code: token })).status).toBe(200);
+    expect((await mark('0')).status).toBe(200);
+    expect((await listed())?.owner).toBeUndefined();
+
+    // Alleen de eigenaar, en alleen een bestaande installatie
+    expect((await mark('1', token)).status).toBe(403);
+    expect((await mark('1', OWNER_CODE, 'app-00000000')).status).toBe(404);
+  });
+
   it('bewaart een opgegeven naam bij de installatie', async () => {
     turnstileAnswers();
     const { token } = (await (await register({ id: ID, turnstile: 'goed' })).json()) as {
