@@ -12,7 +12,13 @@ de proxy telt bij elk verzoek aan OpenAI en Anthropic het verbruik (tokens uit h
 
 ## Statistieken
 
-pagina `#statistieken` (`src/lib/Statistics.svelte`, alleen de eigenaar, in het menu naast Developer): gebruikers per dag, en per week actief, nieuw, terug en weggevallen, plus sessies en uitspraken (ook als grafiek met twee lijnen, laatste 12 weken). Geen nieuw gegeven: de proxy vat de usage-tabel samen per dag en tester (`/api/stats`, `activitySince` in `worker/usage.ts`, zonder de testset), de app rekent (`src/lib/stats.ts`). "Gebruiken" = minstens één uitspraak in een sessie. Alleen totalen op het scherm, geen namen; eigen gebruik standaard niet meegeteld. Meer (duur, regio, functies, openen zonder inspreken) pas met een anonieme samenvatting per sessie, met `#privacy` erbij.
+pagina `#statistieken` (`src/lib/Statistics.svelte`, alleen de eigenaar, in het menu naast Developer): gebruikers per dag, en per week actief, nieuw, terug en weggevallen, plus sessies en uitspraken (ook als grafiek met twee lijnen, laatste 12 weken). Geen nieuw gegeven: de proxy vat de usage-tabel samen per dag en tester (`/api/stats`, `activitySince` in `worker/usage.ts`, zonder de testset), de app rekent (`src/lib/stats.ts`). "Gebruiken" = minstens één uitspraak in een sessie. Alleen totalen op het scherm, geen namen; eigen gebruik standaard niet meegeteld. Sinds 23 nov (stap 1 van het voorstel in `NOTES.md`, nog steeds zonder nieuw gegeven) ook: **van installeren tot vaste gebruiker** (geïnstalleerd, iets ingesproken, tweede sessie, na 4 weken nog actief; `funnel`, met de installaties uit `/api/testers`), **blijven ze?** (per week van eerste gebruik het deel dat na 1, 2, 4 en 8 weken nog actief is, plus alle groepen samen; `cohorts`) en hoeveel er deze week in de Android-app en in de browser actief waren. Een percentage alleen bij een groep van minstens 5 (`MIN_GROUP`), zodat niemand te herkennen is.
+
+Op **Developer**, onder Kosten (`src/lib/stats.ts`): de **kostengrens** uit `docs/plan-marketing.md` (per actieve gebruiker per maand tegen $1 en $2, de verwachting voor deze maand tegen het budget van $55, ongeveer €50, en wat 100, 500 en 1000 actieve gebruikers zouden kosten) en het deel van de kosten van de duurste 10%; onder Meer de kosten per omgeving en per manier van aanmelden, hoe dicht installaties bij de plafonds per dag komen (`src/lib/limits.ts`, gedeeld met de proxy) en per week de kosten per uitspraak en het deel uit de cache.
+
+**Bewaartermijn:** regels per installatie blijven 13 maanden (`KEEP_MONTHS`); daarna vat de proxy ze samen in `usage_weekly` (per week, omgeving en model, alleen het aantal installaties, geen namen of sessies) en wist ze (`pruneUsage`, bij elke keer dat de eigenaar de kosten ophaalt). Staat in `#privacy`.
+
+Meer (duur, regio, functies, openen zonder inspreken) pas met een anonieme samenvatting per sessie, met `#privacy` erbij (stap 2 en 3 in `NOTES.md`).
 
 ## Delen met de ontwikkelaar
 

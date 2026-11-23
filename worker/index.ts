@@ -18,11 +18,13 @@ import {
   verifyTurnstile,
   type InstallSecrets,
 } from './install';
+import { AUDIO_SECONDS_PER_DAY, MESSAGES_PER_DAY } from '../src/lib/limits';
 import {
   activitySince,
   audioSecondsToday,
   messagesToday,
   lastUsedPerTester,
+  pruneUsage,
   recordUsage,
   sessionFrom,
   usageSince,
@@ -74,23 +76,7 @@ const PER_SECOND_MODELS = ['gpt-transcribe', 'whisper-1'];
  */
 const TRANSCRIBE_LANGUAGES = ['nl', 'en'];
 
-/**
- * Plafond op de spraakherkenning per tester per dag (docs/plan-trektelmodus.md,
- * punt 5): een trektelling houdt de microfoon uren aan, en sinds aanmelden
- * zonder code kan iedereen de app installeren. Vijf uur spraak is een hele dag
- * tellen; met de knop haal je dat nooit. De eigenaar valt erbuiten (testset).
- */
-const AUDIO_SECONDS_PER_DAY = 5 * 60 * 60;
-/**
- * Plafond op verzoeken aan het model per installatie per dag. De drukste dag
- * tot nu toe had zo'n 100 uitspraken, een trektelling van 5 uur (het plafond
- * voor spraak) hooguit 300 stukken; elke uitspraak is één verzoek. Zonder dit
- * plafond hield alleen de grens van 60 per minuut een misbruikte installatie
- * tegen, en dat kon honderden dollars per dag kosten; nu hooguit zo'n $3,30
- * (500 × 256 kB aan invoer). Was 1500 tijdens de gesloten test; verlaagd voor
- * de openbare app (`docs/plan-marketing.md`, Kostengrens per stap).
- */
-const MESSAGES_PER_DAY = 500;
+// Plafonds per installatie per dag: src/lib/limits.ts
 
 const CLAUDE_MODELS = ['claude-haiku-5-5', 'claude-sonnet-5-5', 'claude-opus-5-5'];
 
@@ -513,6 +499,8 @@ async function usage(request: Request, env: WorkerEnv, tester: string): Promise<
   if (tester !== OWNER) return json({ error: 'Alleen voor de eigenaar' }, 403);
   const from = new URL(request.url).searchParams.get('from') ?? '';
   if (!/^\d{4}-\d{2}-\d{2}$/.test(from)) return json({ error: 'Ongeldige datum' }, 400);
+  // Bewaartermijn: wat ouder is dan 13 maanden alleen nog per week, zonder installatie
+  await pruneUsage(env.USAGE);
   return json({ rows: await usageSince(env.USAGE, from) });
 }
 
