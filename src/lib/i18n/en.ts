@@ -61,7 +61,7 @@ export const en: Dictionary = {
   'home.toSessions': 'Go to sessions',
   'home.shareTitle': 'Share with the developer?',
   'home.shareText':
-    'Fluistervink is still being developed. After each session, may the app send the developer what you said (as text), what the app made of it, your corrections and feedback, and the locations of your observations? Not the recordings, unless you switch that on in Settings. Only the developer can read it; you can switch it off at any time.',
+    'Fluistervink is new and gets better from what you say. After each session, may the app send the developer what you said (as text), what the app made of it, your corrections and feedback, and the locations of your observations? Not the recordings, unless you switch that on in Settings. Only the developer can read it; you can switch it off at any time.',
   'home.privacyLink': 'More about privacy',
   'home.shareYes': 'Yes, share',
   'home.shareNo': 'Rather not',
@@ -105,7 +105,7 @@ export const en: Dictionary = {
   'welcome.tryNothingSaved': 'Nothing is saved.',
   'welcome.shareTitle': 'Will you help?',
   'welcome.shareLead':
-    'Fluistervink is still being developed, by a single developer, Stephan. What you say and correct shows where the app still gets things wrong.',
+    'Fluistervink is new, and the work of a single developer, Stephan. What you say and correct shows where the app still gets things wrong.',
   'welcome.shareText':
     'After each session, may the app send the developer what you said (as text), what the app made of it, your corrections and feedback, and the locations of your observations? Not the recordings, unless you switch that on in Settings. Only the developer can read it, and you can switch it off at any time.',
   'welcome.asking': 'One moment…',
