@@ -1558,8 +1558,8 @@ describe('bewaartermijn van het verbruik', () => {
   });
 });
 
-describe('omzetten van de usage-tabel van vóór 23 nov', () => {
-  it('neemt alle regels mee, met lege labels, en telt daarna gewoon door', async () => {
+describe('usage-tabel van vóór 23 nov (beta en stable delen de database)', () => {
+  it('laat de oude tabel staan, telt hem mee, en de oude code kan er nog in schrijven', async () => {
     const db = memoryD1();
     db.exec(`CREATE TABLE usage (
       day TEXT NOT NULL, tester TEXT NOT NULL, channel TEXT NOT NULL, session TEXT NOT NULL,
@@ -1568,8 +1568,6 @@ describe('omzetten van de usage-tabel van vóór 23 nov', () => {
       cache_write_tokens INTEGER NOT NULL DEFAULT 0, cache_read_tokens INTEGER NOT NULL DEFAULT 0,
       audio_seconds REAL NOT NULL DEFAULT 0,
       PRIMARY KEY (day, tester, channel, session, model))`);
-    db.exec(`INSERT INTO usage VALUES ('2026-11-20', 'anna', 'stable', 's', 'gpt-transcribe',
-      3, 0, 0, 0, 0, 90)`);
     const at = new Date('2026-11-23T12:00:00Z');
     const key = { tester: 'anna', channel: 'stable', session: 's', model: 'gpt-transcribe' };
     await recordUsage(
@@ -1578,11 +1576,19 @@ describe('omzetten van de usage-tabel van vóór 23 nov', () => {
       { audioSeconds: 30 },
       at,
     );
+    // Zo schrijft de code van stable (van vóór deze wijziging)
+    db.exec(`INSERT INTO usage (day, tester, channel, session, model, requests, audio_seconds)
+      VALUES ('2026-11-23', 'anna', 'stable', 's', 'gpt-transcribe', 1, 60)
+      ON CONFLICT (day, tester, channel, session, model) DO UPDATE SET
+        requests = requests + 1, audio_seconds = audio_seconds + excluded.audio_seconds`);
 
     const all = await usageSince(db as never, '2000-01-01');
-    expect(all).toEqual([
-      expect.objectContaining({ day: '2026-11-20', kind: '', requests: 3, audioSeconds: 90 }),
-      expect.objectContaining({ day: '2026-11-23', kind: 'knop', version: 'abc1234', requests: 1 }),
-    ]);
+    expect(all).toHaveLength(2);
+    expect(all).toContainEqual(
+      expect.objectContaining({ kind: '', requests: 1, audioSeconds: 60 }),
+    );
+    expect(all).toContainEqual(
+      expect.objectContaining({ kind: 'knop', version: 'abc1234', requests: 1, audioSeconds: 30 }),
+    );
   });
 });
