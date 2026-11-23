@@ -1,4 +1,4 @@
-import { transcribe as transcribeAudio, type Timing } from './api';
+import { transcribe as transcribeAudio, type Timing, type UsageKind } from './api';
 import { translate, type Language } from './i18n';
 import {
   aliases,
@@ -136,13 +136,21 @@ export async function transcribe(
     sessionId,
     groups = false,
     language = 'nl',
-  }: { model?: string; sessionId?: string; groups?: boolean; language?: Language } = {},
+    kind,
+  }: {
+    model?: string;
+    sessionId?: string;
+    groups?: boolean;
+    language?: Language;
+    kind?: UsageKind;
+  } = {},
 ): Promise<{ text: string; confidence?: number; timing: Timing }> {
   const { data, timing } = await transcribeAudio(audio, {
     model,
     prompt: promptFor(groups, language),
     sessionId,
     language,
+    kind,
   });
   return { text: data.text.trim(), confidence: data.confidence, timing };
 }

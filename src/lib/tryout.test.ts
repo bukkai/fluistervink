@@ -78,12 +78,17 @@ describe('tryUtterance', () => {
     expect((await tryUtterance(audio, false)).lines).toEqual([]);
   });
 
-  it('stuurt geen sessie mee', async () => {
+  it('stuurt geen sessie mee, wel dat het om proberen gaat', async () => {
     heard('Een vink.');
     answer(['add_observation', { species_name: 'Vink', species_id: VINK, count: 1 }]);
     await tryUtterance(audio, false);
+    expect(vi.mocked(transcribe).mock.calls[0][1]).toMatchObject({ kind: 'proberen' });
     expect(vi.mocked(transcribe).mock.calls[0][1]?.sessionId).toBeUndefined();
-    expect(vi.mocked(createMessage).mock.calls[0][1]).toBeUndefined();
+    expect(vi.mocked(createMessage).mock.calls[0][1]).toEqual({
+      sessionId: undefined,
+      kind: 'proberen',
+      language: 'nl',
+    });
   });
 });
 

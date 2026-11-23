@@ -2,7 +2,7 @@ import { t, type Language } from './i18n';
 import type Anthropic from '@anthropic-ai/sdk';
 import { timeFormat } from './format';
 import { distanceMeters } from './geo';
-import { createMessage, type Timing } from './api';
+import { createMessage, type Timing, type UsageKind } from './api';
 import {
   isDateString,
   isObscurity,
@@ -338,6 +338,8 @@ export async function interpret(
     groups?: boolean;
     trektel?: boolean;
     language?: Language;
+    /** Wat voor uitspraak, voor het verbruik per functie (Developer) */
+    kind?: UsageKind;
     /** Tijdstip van de uitspraak, voor de datum bij een embargo */
     recordedAt?: number;
   } = {},
@@ -371,7 +373,7 @@ export async function interpret(
         },
       ],
     } satisfies Anthropic.MessageCreateParamsNonStreaming,
-    options.sessionId,
+    { sessionId: options.sessionId, kind: options.kind, language },
   );
 
   if (response.stop_reason === 'refusal') {

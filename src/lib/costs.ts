@@ -11,6 +11,12 @@ export interface UsageRow {
   /** Id van de sessie; leeg als er geen bij hoort (testset) */
   session: string;
   model: string;
+  /** Soort uitspraak (knop, trektel, tuintelling, proberen); leeg van vóór 23 nov of zonder */
+  kind?: string;
+  /** Versie van de app (korte commit); leeg van vóór 23 nov */
+  version?: string;
+  /** Taal van de uitspraak (nl, en); leeg van vóór 23 nov */
+  language?: string;
   requests: number;
   inputTokens: number;
   outputTokens: number;

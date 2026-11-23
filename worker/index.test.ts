@@ -93,7 +93,22 @@ function memoryD1() {
       return { results: db.prepare(sql).all(...values) };
     },
   });
-  return { prepare: (sql: string) => statement(sql) };
+  return {
+    prepare: (sql: string) => statement(sql),
+    /** Zoals D1: alles in één transactie, of niets */
+    async batch(statements: ReturnType<typeof statement>[]) {
+      db.exec('BEGIN');
+      try {
+        for (const s of statements) await s.run();
+        db.exec('COMMIT');
+      } catch (error) {
+        db.exec('ROLLBACK');
+        throw error;
+      }
+      return [];
+    },
+    exec: (sql: string) => db.exec(sql),
+  };
 }
 
 let kv: ReturnType<typeof memoryKv>;
@@ -1196,6 +1211,29 @@ describe('/api/usage (verbruik)', () => {
     expect(await rows()).toEqual([expect.objectContaining({ session: '', requests: 2 })]);
   });
 
+  it('telt per soort uitspraak, versie en taal, alleen met bekende waarden', async () => {
+    upstream.mockImplementation(async () =>
+      Response.json(message({ input_tokens: 1, output_tokens: 1 })),
+    );
+    const send = (headers: Record<string, string>) =>
+      call('/api/messages', {
+        method: 'POST',
+        headers: { 'X-Session': 'sessie-1', ...headers },
+        body: JSON.stringify({ model: 'claude-haiku-5-5', max_tokens: 10, messages: [] }),
+      });
+    await send({ 'X-Kind': 'trektel', 'X-App-Version': 'a1b2c3d', 'X-Language': 'en' });
+    await send({ 'X-Kind': 'trektel', 'X-App-Version': 'a1b2c3d', 'X-Language': 'en' });
+    await send({ 'X-Kind': '<script>', 'X-App-Version': 'x'.repeat(40), 'X-Language': 'fr' });
+    const result = await rows();
+    expect(result).toHaveLength(2);
+    expect(result).toContainEqual(
+      expect.objectContaining({ kind: 'trektel', version: 'a1b2c3d', language: 'en', requests: 2 }),
+    );
+    expect(result).toContainEqual(
+      expect.objectContaining({ kind: '', version: '', language: '', requests: 1 }),
+    );
+  });
+
   it('telt niets als OpenAI of Anthropic een fout geeft', async () => {
     upstream.mockResolvedValue(Response.json({ error: { message: 'kapot' } }, { status: 500 }));
     await transcribe('gpt-transcribe');
@@ -1517,5 +1555,34 @@ describe('bewaartermijn van het verbruik', () => {
     ]);
     // Nog een keer: niets meer te doen
     expect(await pruneUsage(db, new Date('2027-12-15T12:00:00Z'))).toBe(0);
+  });
+});
+
+describe('omzetten van de usage-tabel van vóór 23 nov', () => {
+  it('neemt alle regels mee, met lege labels, en telt daarna gewoon door', async () => {
+    const db = memoryD1();
+    db.exec(`CREATE TABLE usage (
+      day TEXT NOT NULL, tester TEXT NOT NULL, channel TEXT NOT NULL, session TEXT NOT NULL,
+      model TEXT NOT NULL, requests INTEGER NOT NULL DEFAULT 0,
+      input_tokens INTEGER NOT NULL DEFAULT 0, output_tokens INTEGER NOT NULL DEFAULT 0,
+      cache_write_tokens INTEGER NOT NULL DEFAULT 0, cache_read_tokens INTEGER NOT NULL DEFAULT 0,
+      audio_seconds REAL NOT NULL DEFAULT 0,
+      PRIMARY KEY (day, tester, channel, session, model))`);
+    db.exec(`INSERT INTO usage VALUES ('2026-11-20', 'anna', 'stable', 's', 'gpt-transcribe',
+      3, 0, 0, 0, 0, 90)`);
+    const at = new Date('2026-11-23T12:00:00Z');
+    const key = { tester: 'anna', channel: 'stable', session: 's', model: 'gpt-transcribe' };
+    await recordUsage(
+      db as never,
+      { ...key, kind: 'knop', version: 'abc1234', language: 'nl' },
+      { audioSeconds: 30 },
+      at,
+    );
+
+    const all = await usageSince(db as never, '2000-01-01');
+    expect(all).toEqual([
+      expect.objectContaining({ day: '2026-11-20', kind: '', requests: 3, audioSeconds: 90 }),
+      expect.objectContaining({ day: '2026-11-23', kind: 'knop', version: 'abc1234', requests: 1 }),
+    ]);
   });
 });

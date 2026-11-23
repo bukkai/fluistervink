@@ -30,6 +30,7 @@
   import {
     COST_PER_USER_HIGH,
     COST_PER_USER_OK,
+    costPerKind,
     costPerUserWeek,
     costSplit,
     limitPeaks,
@@ -37,6 +38,8 @@
     monthForecast,
     topShare,
     unitCostPerWeek,
+    utterancesPerLanguage,
+    versionsInUse,
   } from './stats';
   import { AUDIO_SECONDS_PER_DAY, MESSAGES_PER_DAY } from './limits';
   import { ACTIVE_DAYS, lastSeen, splitActive } from './testers';
@@ -230,6 +233,17 @@
       .join(' · ');
   const unitWeeks = $derived(unitCostPerWeek(usageRows, startOfLastMonth(new Date())));
   const peaks = $derived(limitPeaks(usageRows));
+  // Stap 2: per functie, versie en taal (labels die de app sinds 23 nov meestuurt)
+  const kinds = $derived(costPerKind(usageRows));
+  const KIND_NAMES: Record<string, string> = {
+    knop: 'Knop',
+    trektel: 'Trektelling',
+    tuintelling: 'Tuintelling',
+    proberen: 'Probeer het eens',
+    '': 'Onbekend',
+  };
+  const versions = $derived(versionsInUse(usageRows));
+  const languages = $derived(utterancesPerLanguage(usageRows));
   const hours = (seconds: number) =>
     `${(seconds / 3600).toLocaleString('nl-NL', { maximumFractionDigits: 1 })} u`;
   const maxTesterCost = $derived(Math.max(...(costs?.perTester.map((t) => t.cost) ?? []), 0));
@@ -399,6 +413,35 @@
           omgevingen.
         </p>
       {/if}
+      {#if kinds.length}
+        <h3>Per functie, deze maand</h3>
+        <div class="table">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Functie</th>
+                <th scope="col">Uitspr.</th>
+                <th scope="col">Kosten</th>
+                <th scope="col">Per uitspr.</th>
+              </tr>
+            </thead>
+            <tbody>
+              {#each kinds as k (k.kind)}
+                <tr>
+                  <th scope="row">{KIND_NAMES[k.kind] ?? k.kind}</th>
+                  <td>{k.utterances}</td>
+                  <td>{money(k.cost)}</td>
+                  <td>{k.perUtterance === undefined ? '–' : money(k.perUtterance)}</td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        </div>
+        <p class="hint">
+          Zonder de eigenaar en de testset. Onbekend: van vóór 23 november of een oudere versie van
+          de app. Tuintelling telt ook met de knop ingesproken uitspraken.
+        </p>
+      {/if}
       <h3>Kostengrens</h3>
       <ul class="amounts">
         {#if perUserAverage}
@@ -471,6 +514,18 @@
             één installatie op één dag; {peaks.hits === 0
               ? 'niemand raakte een plafond'
               : `${peaks.hits}× een plafond geraakt`}. Zonder de eigenaar.
+          </p>
+          <p class="hint">
+            Versies de laatste 7 dagen: {versions.length
+              ? versions
+                  .map(
+                    (v) =>
+                      `${v.version} (${count(v.installs, 'installatie', 'installaties')}, tot ${dateFormat.format(new Date(v.lastDay))})`,
+                  )
+                  .join(' · ')
+              : '–'}. Uitspraken per taal deze maand: {Object.entries(languages)
+              .map(([language, n]) => `${language || 'onbekend'} ${n}`)
+              .join(' · ') || '–'}. Zonder de eigenaar en de testset.
           </p>
           {#if unitWeeks.length}
             <h3>Per uitspraak, per week</h3>

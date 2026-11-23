@@ -35,6 +35,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     topics: {
       'Over de app': [
         'Hoeveel je liet verwerken (aantal uitspraken en hun duur) bewaart de server nu 13 maanden; daarna alleen nog als totaal per week, zonder te zien van wie. Zie Privacy.',
+        'Bij dat verbruik telt de server nu ook wat voor uitspraak het was (knop, trektelling, tuintelling of "Probeer het eens"), in welke taal, en met welke versie van de app. Niet wat je zei. Zie Privacy.',
       ],
     },
   },

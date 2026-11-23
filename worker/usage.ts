@@ -17,20 +17,50 @@ export type Usage = Pick<
   'inputTokens' | 'outputTokens' | 'cacheWriteTokens' | 'cacheReadTokens' | 'audioSeconds'
 >;
 
-const SCHEMA = `CREATE TABLE IF NOT EXISTS usage (
+/**
+ * Sinds 23 nov ook per soort uitspraak (`kind`: knop, trektel, tuintelling,
+ * proberen), versie van de app en taal; leeg als de app het niet meestuurde
+ * (oudere versies, de testset). Alleen labels, geen inhoud.
+ */
+const columns = (table: string) => `${table} (
   day TEXT NOT NULL,
   tester TEXT NOT NULL,
   channel TEXT NOT NULL,
   session TEXT NOT NULL,
   model TEXT NOT NULL,
+  kind TEXT NOT NULL DEFAULT '',
+  version TEXT NOT NULL DEFAULT '',
+  language TEXT NOT NULL DEFAULT '',
   requests INTEGER NOT NULL DEFAULT 0,
   input_tokens INTEGER NOT NULL DEFAULT 0,
   output_tokens INTEGER NOT NULL DEFAULT 0,
   cache_write_tokens INTEGER NOT NULL DEFAULT 0,
   cache_read_tokens INTEGER NOT NULL DEFAULT 0,
   audio_seconds REAL NOT NULL DEFAULT 0,
-  PRIMARY KEY (day, tester, channel, session, model)
+  PRIMARY KEY (day, tester, channel, session, model, kind, version, language)
 )`;
+const SCHEMA = `CREATE TABLE IF NOT EXISTS ${columns('usage')}`;
+
+const OLD_COLUMNS = `day, tester, channel, session, model, requests, input_tokens,
+  output_tokens, cache_write_tokens, cache_read_tokens, audio_seconds`;
+
+/**
+ * Een tabel van vóór 23 nov (zonder `kind`) omzetten: SQLite kan de sleutel
+ * niet uitbreiden, dus een nieuwe tabel, alles erin, de oude weg. In één
+ * batch, dus helemaal of niet. Doen twee instanties het tegelijk, dan raakt
+ * hooguit van een paar regels uit die seconden het label kwijt, niet de getallen.
+ */
+async function migrate(db: D1Database): Promise<void> {
+  const { results } = await db.prepare(`PRAGMA table_info(usage)`).all<{ name: string }>();
+  if (results.some((column) => column.name === 'kind')) return;
+  await db.batch([
+    db.prepare(`DROP TABLE IF EXISTS usage_new`),
+    db.prepare(`CREATE TABLE ${columns('usage_new')}`),
+    db.prepare(`INSERT INTO usage_new (${OLD_COLUMNS}) SELECT ${OLD_COLUMNS} FROM usage`),
+    db.prepare(`DROP TABLE usage`),
+    db.prepare(`ALTER TABLE usage_new RENAME TO usage`),
+  ]);
+}
 
 /**
  * Wat er na de bewaartermijn van een week overblijft: totalen per omgeving en
@@ -63,6 +93,7 @@ function ensureTable(db: D1Database): Promise<unknown> {
     promise = db
       .prepare(SCHEMA)
       .run()
+      .then(() => migrate(db))
       .then(() => db.prepare(WEEKLY_SCHEMA).run());
     // Mislukt het, dan bij het volgende verzoek opnieuw
     promise.catch(() => ready.delete(db));
@@ -91,20 +122,49 @@ export function sessionFrom(request: Request): string {
   return SESSION_ID.test(session) ? session : '';
 }
 
+const KINDS = ['knop', 'trektel', 'tuintelling', 'proberen'];
+/** Versie van de app: een korte commit, eventueel met "+" (`appVersion` in vite.config.ts) */
+const VERSION = /^[\w.+-]{1,32}$/;
+
+/**
+ * Soort uitspraak, versie en taal uit de headers van de app (`usageHeaders` in
+ * src/lib/api.ts). Alleen bekende waarden; al het andere telt als leeg, zodat
+ * niemand willekeurige tekst in de tabel kan zetten.
+ */
+export function labelsFrom(request: Request): { kind: string; version: string; language: string } {
+  const kind = request.headers.get('X-Kind') ?? '';
+  const version = request.headers.get('X-App-Version') ?? '';
+  const language = request.headers.get('X-Language') ?? '';
+  return {
+    kind: KINDS.includes(kind) ? kind : '',
+    version: VERSION.test(version) ? version : '',
+    language: language === 'nl' || language === 'en' ? language : '',
+  };
+}
+
 /** Telt één verzoek op bij de regel van vandaag. */
 export async function recordUsage(
   db: D1Database,
-  key: { tester: string; channel: string; session: string; model: string },
+  key: {
+    tester: string;
+    channel: string;
+    session: string;
+    model: string;
+    kind?: string;
+    version?: string;
+    language?: string;
+  },
   usage: Partial<Usage>,
   now = new Date(),
 ): Promise<void> {
   await ensureTable(db);
   await db
     .prepare(
-      `INSERT INTO usage (day, tester, channel, session, model, requests, input_tokens,
-         output_tokens, cache_write_tokens, cache_read_tokens, audio_seconds)
-       VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
-       ON CONFLICT (day, tester, channel, session, model) DO UPDATE SET
+      `INSERT INTO usage (day, tester, channel, session, model, kind, version, language,
+         requests, input_tokens, output_tokens, cache_write_tokens, cache_read_tokens,
+         audio_seconds)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
+       ON CONFLICT (day, tester, channel, session, model, kind, version, language) DO UPDATE SET
          requests = requests + 1,
          input_tokens = input_tokens + excluded.input_tokens,
          output_tokens = output_tokens + excluded.output_tokens,
@@ -118,6 +178,9 @@ export async function recordUsage(
       key.channel,
       key.session,
       key.model,
+      key.kind ?? '',
+      key.version ?? '',
+      key.language ?? '',
       usage.inputTokens ?? 0,
       usage.outputTokens ?? 0,
       usage.cacheWriteTokens ?? 0,
@@ -170,7 +233,7 @@ export async function usageSince(db: D1Database, from: string): Promise<UsageRow
   await ensureTable(db);
   const { results } = await db
     .prepare(
-      `SELECT day, tester, channel, session, model, requests,
+      `SELECT day, tester, channel, session, model, kind, version, language, requests,
          input_tokens AS inputTokens, output_tokens AS outputTokens,
          cache_write_tokens AS cacheWriteTokens, cache_read_tokens AS cacheReadTokens,
          audio_seconds AS audioSeconds

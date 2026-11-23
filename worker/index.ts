@@ -26,6 +26,7 @@ import {
   lastUsedPerTester,
   pruneUsage,
   recordUsage,
+  labelsFrom,
   sessionFrom,
   usageSince,
   type Usage,
@@ -249,10 +250,16 @@ type Meter = (model: string, usage: Partial<Usage>) => void;
 /**
  * Telt in D1 (worker/usage.ts) na het antwoord, zodat de app er niet op
  * wacht; lukt het niet, dan mislukt de uitspraak daar niet door. De app stuurt
- * het id van de sessie mee in `X-Session`.
+ * het id van de sessie mee in `X-Session`, en de soort uitspraak, versie en
+ * taal in `X-Kind`, `X-App-Version` en `X-Language` (`labelsFrom`).
  */
 function meter(request: Request, env: WorkerEnv, ctx: ExecutionContext, tester: string): Meter {
-  const key = { tester, channel: env.CHANNEL, session: sessionFrom(request) };
+  const key = {
+    tester,
+    channel: env.CHANNEL,
+    session: sessionFrom(request),
+    ...labelsFrom(request),
+  };
   return (model, usage) =>
     ctx.waitUntil(
       recordUsage(env.USAGE, { ...key, model }, usage).catch((error) =>

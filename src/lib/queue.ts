@@ -5,9 +5,10 @@ import {
   storeAudio,
   type PositionLookup,
   type ProcessingMetrics,
+  type Session,
   type Utterance,
 } from './db';
-import { ApiError } from './api';
+import { ApiError, type UsageKind } from './api';
 import { applyActions } from './applyActions';
 import { fillMissingAreas, nameFromSession } from './area';
 import { migrateAudioOnce } from './audioMigration';
@@ -496,6 +497,7 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
       groups,
       trektel: flyoverChunk(utterance, session),
       language,
+      kind: usageKind(utterance, session),
       recordedAt: utterance.recordedAt,
     });
     if (interpretation.warnings.length) {
@@ -646,14 +648,25 @@ async function finishWithout(
   });
 }
 
+/**
+ * Wat voor uitspraak, voor het verbruik per functie dat de proxy telt: een
+ * tuintelling (ook met de knop), een stuk uit een trektelling, of de knop.
+ */
+export function usageKind(utterance: Utterance, session: Session | undefined): UsageKind {
+  if (session?.tuintelling) return 'tuintelling';
+  return utterance.trektel ? 'trektel' : 'knop';
+}
+
 /** Zet de opname om in tekst en slaat het transcript op. */
 async function transcribeUtterance(utterance: Utterance): Promise<Utterance> {
   const groups = preferenceOn('soortgroepen');
   const language = utterance.language ?? 'nl';
+  const session = await db.sessions.get(utterance.sessionId);
   const { text, confidence, timing } = await transcribe(audioBlob(utterance.audio!), {
     sessionId: utterance.sessionId,
     groups,
     language,
+    kind: usageKind(utterance, session),
   });
   const changes = {
     transcript: text,

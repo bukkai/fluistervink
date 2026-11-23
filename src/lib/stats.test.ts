@@ -3,6 +3,7 @@ import type { UsageRow } from './costs';
 import {
   addDays,
   cohorts,
+  costPerKind,
   costPerUserWeek,
   costSplit,
   funnel,
@@ -12,6 +13,8 @@ import {
   perWeek,
   topShare,
   unitCostPerWeek,
+  utterancesPerLanguage,
+  versionsInUse,
   weekOf,
   type ActivityRow,
 } from './stats';
@@ -295,5 +298,51 @@ describe('limitPeaks', () => {
       now,
     );
     expect(peaks).toEqual({ messages: 500, audioSeconds: 3600, hits: 1 });
+  });
+});
+
+describe('per soort uitspraak, versie en taal', () => {
+  const rows = [
+    use('2026-11-03', 'app-a', { kind: 'knop', version: 'aaa1111', language: 'nl' }),
+    use('2026-11-03', 'app-a', {
+      kind: 'trektel',
+      version: 'aaa1111',
+      language: 'nl',
+      requests: 2,
+      audioSeconds: 600,
+    }),
+    use('2026-11-07', 'app-b', {
+      kind: 'proberen',
+      session: '',
+      version: 'bbb2222',
+      language: 'en',
+    }),
+    use('2026-11-07', 'app-c', { version: 'bbb2222' }),
+    // De testset en de eigenaar tellen niet mee
+    use('2026-11-07', 'eigenaar', { kind: 'knop', version: 'ccc3333', audioSeconds: 6000 }),
+    use('2026-11-07', 'eigenaar', { session: '', audioSeconds: 6000 }),
+  ];
+
+  it('rekent de kosten per functie, duurste eerst', () => {
+    const kinds = costPerKind(rows, now);
+    expect(kinds.map((k) => [k.kind, k.utterances])).toEqual([
+      ['trektel', 2],
+      ['knop', 1],
+      ['proberen', 1],
+      ['', 1],
+    ]);
+    // Tien minuten spraak over twee stukken
+    expect(kinds[0].perUtterance).toBeCloseTo(0.0225);
+  });
+
+  it('telt installaties per versie, nieuwste eerst', () => {
+    expect(versionsInUse(rows, 7, now)).toEqual([
+      { version: 'bbb2222', installs: 2, lastDay: '2026-11-07' },
+      { version: 'aaa1111', installs: 1, lastDay: '2026-11-03' },
+    ]);
+  });
+
+  it('telt uitspraken per taal', () => {
+    expect(utterancesPerLanguage(rows, now)).toEqual({ nl: 3, en: 1, '': 1 });
   });
 });
