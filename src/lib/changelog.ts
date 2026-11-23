@@ -33,6 +33,9 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     date: '2026-11-23',
     topics: {
+      Inspreken: [
+        'Druk je op Stop terwijl je nog aan het inspreken bent, dan wordt die laatste uitspraak nu gewoon bewaard en verwerkt. Hij ging verloren.',
+      ],
       'Over de app': [
         'Hoeveel je liet verwerken (aantal uitspraken en hun duur) bewaart de server nu 13 maanden; daarna alleen nog als totaal per week, zonder te zien van wie. Zie Privacy.',
         'Na een sessie stuurt de app anonieme cijfers: hoe lang hij duurde, hoeveel uitspraken en waarnemingen, hoeveel daarvan niet begrepen of onzeker waren, en of je hebt geëxporteerd. Niet waar, wanneer, welke soorten of wat je zei, en niet van welke telefoon. Uit te zetten bij Instellingen; zie Privacy.',
