@@ -51,7 +51,7 @@ Elk plan begint met datum en status. Een afgerond plan gaat naar `archief/`; de 
 - `waarneming-nl.md`: importformaat, soortenlijst en codes van waarneming.nl.
 - `proxy.md`: de proxy: toegang, kosten, statistieken en wat testers delen.
 - `kwaliteitsronde.md`: de periodieke ronde over de hele codebase, met logboek.
-- `draaiboek-thuis.md`, `draaiboek-buiten.md`, `draaiboek-telling.md`: proeven op de telefoon om af te vinken: thuis aan tafel (gedaan 22 nov, op de kinderstem na), buiten met oortjes en testset-opnames, trektelling met het scherm uit en tuintelling. `draaiboek-release.md`: wat er vóór de laatste release naar stable nog op de telefoon moet (thuis een kwartier, buiten een half uur).
+- `draaiboek-thuis.md`, `draaiboek-buiten.md`: proeven op de telefoon om af te vinken, alleen wat nog moet: thuis de kinderstem, buiten de oortjesmicrofoon en testset-opnames. `draaiboek-release.md`: wat er vóór de laatste release naar stable nog op de telefoon moet (thuis gedaan, nog buiten een half uur).
 - `beheer.md`: API-sleutels, weetjes bij het bouwen van de Android-app, de branch-regel op `main`, twee sessies tegelijk.
 
 ## Archief
@@ -64,5 +64,6 @@ Afgerond, alleen nog om terug te lezen.
 - `archief/plan-soortgroepen.md`: zoogdieren, reptielen en amfibieën, dagvlinders en libellen (afgerond 16 nov).
 - `archief/plan-offline.md`: de offline wachtrij (op stable sinds 18 nov).
 - `archief/plan-afschermen.md`: afschermen en embargo met de stem, mee naar waarneming.nl (afgerond 22 nov).
+- `archief/draaiboek-telling.md`: trektelling met het scherm uit en tuintelling op de telefoon (afgerond 23 nov).
 - `archief/werklog-2026.md`: de oude stand uit `NOTES.md` (13 okt – 22 nov).
 - `archief/kwaliteitsronde-logboek.md`: oudere regels uit het logboek van de kwaliteitsronde (24 okt – 11 nov).

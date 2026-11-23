@@ -1,6 +1,6 @@
 # Draaiboek 2: buiten wandelen
 
-Proeven die buiten moeten: de oortjesmicrofoon vergelijken, het sluiterknopje en opnames voor de testset die nu ontbreken. Op de beta, met oortjes. Vink af wat werkt; schrijf bij een afwijking op wat je zag en spreek het in als feedback. Na afloop alles delen, `npm run feedback -- pull`, en pas dan de testset (per sessie). Een punt dat werkt, gaat uit `NOTES.md`; als alles af is, gaat dit draaiboek naar `docs/archief/`.
+Proeven die buiten moeten: de oortjesmicrofoon vergelijken en opnames voor de testset die nu ontbreken. Het sluiterknopje (was B) is gedaan op 23 nov: met het scherm uit en een podcast aan kwam elke druk binnen als volume omhoog. Op de beta, met oortjes. Vink af wat werkt; schrijf bij een afwijking op wat je zag en spreek het in als feedback. Na afloop alles delen, `npm run feedback -- pull`, en pas dan de testset (per sessie). Een punt dat werkt, gaat uit `NOTES.md`; als alles af is, gaat dit draaiboek naar `docs/archief/`.
 
 Duur: ongeveer een uur. Liefst een rustige plek en een plek met wind of verkeer.
 
@@ -8,7 +8,7 @@ Duur: ongeveer een uur. Liefst een rustige plek en een plek met wind of verkeer.
 
 - [ ] Accu van telefoon en oortjes noteren: telefoon …%, oortjes …%.
 - [ ] Oortjes gekoppeld, een podcast klaar op de telefoon.
-- [ ] Sluiterknopje gekoppeld (als het er is).
+- [ ] XM5: Speak-to-Chat uit in de Sony-app. Op 23 nov stuurde hij steeds zelf "pauze" (vermoedelijk Speak-to-Chat, nog niet zeker) en dat startte of stopte een opname.
 - [ ] Ontwikkeloptie `schermUit` uit, `oortjesMicrofoon` per ronde zoals hieronder.
 
 ## De twaalf zinnen
@@ -30,7 +30,7 @@ Dezelfde zinnen in elke ronde van deel A, zodat de rondes te vergelijken zijn. R
 
 ## A. Oortjesmicrofoon: drie rondes (#267)
 
-Beslist of de telling in de service (`TrektelOpname`) de oortjes gaat gebruiken. Twee oortjesrondes met de telefoon in de hand zijn al gedaan (21 nov, `testset/feedback/oortjesproef/`). Elke ronde een eigen sessie, na de ronde stoppen en delen. Elke zin met de knop in de app (scherm aan), één zin per opname.
+Beslist of de telling in de service (`TrektelOpname`) de oortjes gaat gebruiken. Twee oortjesrondes met de telefoon in de hand zijn al gedaan (21 nov, `testset/feedback/oortjesproef/`), en op 23 nov twee fietsrondes met de oortjesmicrofoon (`NOTES.md`), maar zonder de twaalf zinnen, dus niet te vergelijken. Elke ronde een eigen sessie, na de ronde stoppen en delen. Elke zin met de knop in de app (scherm aan), één zin per opname.
 
 **Ronde 1: telefoonmicrofoon.** Ontwikkeloptie `oortjesMicrofoon` uit, oortjes mogen in.
 
@@ -57,17 +57,7 @@ Beslist of de telling in de service (`TrektelOpname`) de oortjes gaat gebruiken.
 
 Thuis: testset per sessie (de vier rondes met de twaalf zinnen) en vergelijken. Wint de oortjesmicrofoon duidelijk, dan wordt het native werk (`setPreferredDevice` in `TrektelOpname`).
 
-## B. Sluiterknopje met het scherm uit (#284)
-
-Een Bluetooth-sluiterknopje stuurt volume omhoog en zou dus via de volumeknop moeten werken. Gewone sessie.
-
-- [ ] Scherm aan: knopje indrukken → opname start, nog eens → stopt. "Een koolmees."
-- [ ] Scherm uit (op slot): hetzelfde. Tril bij start en einde voelbaar.
-- [ ] Met een podcast aan op de telefoon: werkt het nog? Gaat de podcast er niet van harder?
-- [ ] Sessie delen. Log: `talk_volume_key`, `screen_off_started` met `via: volume_up`.
-- [ ] Bevalt het, dan Maarten aanraden voor op het stuur.
-
-## C. Opnames voor de testset (robuustheid #6, #7; #157)
+## B. Opnames voor de testset (robuustheid #6, #7; #157)
 
 Gevallen die de testset nog niet heeft. Eén sessie "Testset lastig". Achteraf bij het nalopen het juiste label zetten: wat er had moeten gebeuren, ook als dat "niets" is.
 
