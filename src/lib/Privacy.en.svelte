@@ -72,8 +72,9 @@
     <p>
       Everything first passes through Fluistervink’s own server. It only keeps what you share
       (below) and how much you had processed (number of voice notes and their duration per day and
-      session, without what you said; that is kept), for the costs and to see how many people use
-      the app. The server’s log (when, and whether something went wrong) is kept for a few days.
+      session, without what you said; for 13 months, after that only as a weekly total that no
+      longer shows whose it was), for the costs and to see how many people use the app. The server’s
+      log (when, and whether something went wrong) is kept for a few days.
     </p>
     <dl>
       <dt>OpenAI</dt>

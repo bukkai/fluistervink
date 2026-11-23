@@ -1,6 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import type { UsageRow } from './costs';
-import { addDays, costPerUserWeek, perDay, perWeek, weekOf, type ActivityRow } from './stats';
+import {
+  addDays,
+  cohorts,
+  costPerUserWeek,
+  costSplit,
+  funnel,
+  limitPeaks,
+  monthForecast,
+  perDay,
+  perWeek,
+  topShare,
+  unitCostPerWeek,
+  weekOf,
+  type ActivityRow,
+} from './stats';
 
 const row = (day: string, tester: string, sessions = 1, utterances = 5): ActivityRow => ({
   day,
@@ -130,5 +144,156 @@ describe('costPerUserWeek', () => {
     );
     expect(weeks[0].users).toBe(1);
     expect(weeks[0].cost).toBeCloseTo(cent + 0.5);
+  });
+});
+
+/** Een regel uit de usage-tabel; standaard één uitspraak van een minuut */
+const use = (day: string, tester: string, extra: Partial<UsageRow> = {}): UsageRow => ({
+  day,
+  tester,
+  channel: 'stable',
+  session: 's',
+  model: 'gpt-transcribe',
+  requests: 1,
+  inputTokens: 0,
+  outputTokens: 0,
+  cacheWriteTokens: 0,
+  cacheReadTokens: 0,
+  audioSeconds: 60,
+  ...extra,
+});
+
+describe('cohorts', () => {
+  it('rekent per week van eerste gebruik het deel dat later nog actief is', () => {
+    // Week van 28 sep: anna en bert beginnen; anna komt een week later terug, bert na vier
+    const result = cohorts(
+      [
+        row('2026-09-28', 'anna'),
+        row('2026-09-29', 'bert'),
+        row('2026-10-05', 'anna'),
+        row('2026-10-26', 'bert'),
+        row('2026-11-03', 'cor'),
+      ],
+      now,
+    );
+    expect(result.map((c) => [c.week, c.size])).toEqual([
+      ['2026-11-02', 1],
+      ['2026-09-28', 2],
+    ]);
+    // 1 week: anna; 2 weken: niemand; 4 weken (26 okt): bert; 8 weken: nog niet om
+    expect(result[1].retained).toEqual([0.5, 0, 0.5, undefined]);
+    // Deze week begonnen: nog niets te zeggen
+    expect(result[0].retained).toEqual([undefined, undefined, undefined, undefined]);
+  });
+});
+
+describe('funnel', () => {
+  it('telt van installeren tot blijven, alleen voor installaties', () => {
+    const result = funnel(
+      [
+        row('2026-09-01', 'app-a', 1),
+        row('2026-10-01', 'app-a', 1), // na 4 weken nog actief
+        row('2026-09-01', 'app-b', 2), // twee sessies, daarna niet meer
+        row('2026-11-07', 'app-c', 1), // te kort geleden begonnen
+        row('2026-09-01', 'anna', 3), // oude testercode: geen installatie
+        row('2026-09-01', 'eigenaar', 3),
+      ],
+      ['app-a', 'app-b', 'app-c', 'app-d', 'eigenaar'],
+      now,
+    );
+    expect(result).toEqual({ installed: 4, used: 3, returned: 2, eligible: 2, stayed: 1 });
+  });
+});
+
+describe('monthForecast', () => {
+  it('rekent de maand door naar het eind', () => {
+    // 8 november: $8 na 8 dagen wordt $30 in een maand van 30 dagen
+    expect(monthForecast(8, now)).toBe(30);
+  });
+});
+
+describe('topShare', () => {
+  it('geeft het deel van de duurste 10%, zonder eigenaar en testset', () => {
+    const rows = [
+      ...Array.from({ length: 9 }, (_, i) => use('2026-11-03', `app-${i}`)),
+      use('2026-11-03', 'app-duur', { audioSeconds: 60 * 11 }),
+      use('2026-11-03', 'eigenaar', { audioSeconds: 6000 }),
+      use('2026-11-03', 'app-0', { session: '', audioSeconds: 6000 }),
+      use('2026-10-03', 'app-0', { audioSeconds: 6000 }),
+    ];
+    const result = topShare(rows, now)!;
+    expect(result.users).toBe(10);
+    expect(result.top).toBe(1);
+    expect(result.share).toBeCloseTo(11 / 20);
+  });
+
+  it('geeft niets zonder kosten', () => {
+    expect(topShare([], now)).toBeUndefined();
+  });
+});
+
+describe('costSplit', () => {
+  it('verdeelt de kosten van deze maand over omgeving en aanmelding', () => {
+    const split = costSplit(
+      [
+        use('2026-11-03', 'app-a'),
+        use('2026-11-03', 'app-b', { channel: 'beta' }),
+        use('2026-11-03', 'eigenaar', { channel: 'beta' }),
+        use('2026-11-03', 'app-a', { session: '' }),
+      ],
+      new Map([
+        ['app-a', 'play'],
+        ['app-b', 'turnstile'],
+      ]),
+      now,
+    );
+    expect(split.channel).toEqual({ stable: 0.0045, beta: 0.009 });
+    expect(split.via).toEqual({ play: 0.0045, turnstile: 0.0045, eigenaar: 0.0045 });
+  });
+});
+
+describe('unitCostPerWeek', () => {
+  it('rekent kosten per uitspraak en het deel uit de cache', () => {
+    const weeks = unitCostPerWeek(
+      [
+        use('2026-11-03', 'app-a', { requests: 2, audioSeconds: 120 }),
+        use('2026-11-03', 'app-a', {
+          model: 'claude-haiku-5-5',
+          requests: 2,
+          audioSeconds: 0,
+          inputTokens: 1000,
+          cacheReadTokens: 3000,
+        }),
+        use('2026-11-03', 'eigenaar', { session: '' }),
+      ],
+      '2026-10-01',
+      now,
+    );
+    expect(weeks).toHaveLength(1);
+    expect(weeks[0].week).toBe('2026-11-02');
+    expect(weeks[0].utterances).toBe(2);
+    expect(weeks[0].cacheShare).toBe(0.75);
+    // 2 minuten spraak plus 1000 × $0,10 en 3000 × $0,01 per miljoen tokens
+    expect(weeks[0].perUtterance).toBeCloseTo((0.009 + 0.0001 + 0.00003) / 2);
+  });
+});
+
+describe('limitPeaks', () => {
+  it('geeft de drukste dag per installatie en hoe vaak een plafond geraakt werd', () => {
+    const peaks = limitPeaks(
+      [
+        use('2026-11-03', 'app-a', { model: 'claude-haiku-5-5', requests: 120, audioSeconds: 0 }),
+        use('2026-11-03', 'app-a', { audioSeconds: 3600 }),
+        use('2026-11-04', 'app-b', { model: 'claude-haiku-5-5', requests: 500, audioSeconds: 0 }),
+        use('2026-11-04', 'eigenaar', {
+          model: 'claude-haiku-5-5',
+          requests: 900,
+          audioSeconds: 0,
+        }),
+        use('2026-10-04', 'app-c', { audioSeconds: 20000 }),
+      ],
+      now,
+    );
+    expect(peaks).toEqual({ messages: 500, audioSeconds: 3600, hits: 1 });
   });
 });

@@ -33,6 +33,25 @@ const SCHEMA = `CREATE TABLE IF NOT EXISTS usage (
 )`;
 
 /**
+ * Wat er na de bewaartermijn van een week overblijft: totalen per omgeving en
+ * model, zonder installatie of sessie (`pruneUsage`). Genoeg voor de kosten
+ * door de jaren heen, niet meer te herleiden tot iemand.
+ */
+const WEEKLY_SCHEMA = `CREATE TABLE IF NOT EXISTS usage_weekly (
+  week TEXT NOT NULL,
+  channel TEXT NOT NULL,
+  model TEXT NOT NULL,
+  testers INTEGER NOT NULL DEFAULT 0,
+  requests INTEGER NOT NULL DEFAULT 0,
+  input_tokens INTEGER NOT NULL DEFAULT 0,
+  output_tokens INTEGER NOT NULL DEFAULT 0,
+  cache_write_tokens INTEGER NOT NULL DEFAULT 0,
+  cache_read_tokens INTEGER NOT NULL DEFAULT 0,
+  audio_seconds REAL NOT NULL DEFAULT 0,
+  PRIMARY KEY (week, channel, model)
+)`;
+
+/**
  * De tabel maakt de Worker zelf aan (één keer per instantie), zodat er bij het
  * deployen geen migratiestap nodig is.
  */
@@ -41,7 +60,10 @@ const ready = new WeakMap<D1Database, Promise<unknown>>();
 function ensureTable(db: D1Database): Promise<unknown> {
   let promise = ready.get(db);
   if (!promise) {
-    promise = db.prepare(SCHEMA).run();
+    promise = db
+      .prepare(SCHEMA)
+      .run()
+      .then(() => db.prepare(WEEKLY_SCHEMA).run());
     // Mislukt het, dan bij het volgende verzoek opnieuw
     promise.catch(() => ready.delete(db));
     ready.set(db, promise);
@@ -177,4 +199,53 @@ export async function activitySince(db: D1Database, from: string): Promise<Activ
     .bind(from)
     .all<ActivityRow>();
   return results;
+}
+
+/** Hoe lang regels per installatie blijven: 13 maanden, zodat een heel jaar te vergelijken is. */
+export const KEEP_MONTHS = 13;
+
+/** De eerste dag die nog per installatie bewaard blijft. */
+export function keepFrom(now = new Date()): string {
+  const day = dayOf(now);
+  const date = new Date(`${day.slice(0, 7)}-01T00:00:00Z`);
+  date.setUTCMonth(date.getUTCMonth() - KEEP_MONTHS);
+  return date.toISOString().slice(0, 10);
+}
+
+/**
+ * Regels van vóór de bewaartermijn samenvatten per week (maandag), omgeving en
+ * model, zonder installatie en sessie, en daarna wissen. Draait als de
+ * eigenaar de kosten ophaalt; is er niets ouds, dan doet het niets.
+ */
+export async function pruneUsage(db: D1Database, now = new Date()): Promise<number> {
+  await ensureTable(db);
+  const before = keepFrom(now);
+  const { results } = await db
+    .prepare(`SELECT COUNT(*) AS old FROM usage WHERE day < ?`)
+    .bind(before)
+    .all<{ old: number }>();
+  const old = results[0]?.old ?? 0;
+  if (!old) return 0;
+  // Maandag van de week: zondag telt als laatste dag (weekday 0 = zondag)
+  await db
+    .prepare(
+      `INSERT INTO usage_weekly (week, channel, model, testers, requests, input_tokens,
+         output_tokens, cache_write_tokens, cache_read_tokens, audio_seconds)
+       SELECT date(day, '-6 days', 'weekday 1') AS week, channel, model,
+         COUNT(DISTINCT tester), SUM(requests), SUM(input_tokens), SUM(output_tokens),
+         SUM(cache_write_tokens), SUM(cache_read_tokens), SUM(audio_seconds)
+       FROM usage WHERE day < ? GROUP BY week, channel, model
+       ON CONFLICT (week, channel, model) DO UPDATE SET
+         testers = testers + excluded.testers,
+         requests = requests + excluded.requests,
+         input_tokens = input_tokens + excluded.input_tokens,
+         output_tokens = output_tokens + excluded.output_tokens,
+         cache_write_tokens = cache_write_tokens + excluded.cache_write_tokens,
+         cache_read_tokens = cache_read_tokens + excluded.cache_read_tokens,
+         audio_seconds = audio_seconds + excluded.audio_seconds`,
+    )
+    .bind(before)
+    .run();
+  await db.prepare(`DELETE FROM usage WHERE day < ?`).bind(before).run();
+  return old;
 }

@@ -3,7 +3,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import worker from './index';
 import { installName, integrityNonce, putInstall, signInstallToken } from './install';
-import { recordUsage } from './usage';
+import { keepFrom, pruneUsage, recordUsage, usageSince } from './usage';
 
 // De proxy in Node, met een nep-KV in het geheugen, D1 als SQLite in het
 // geheugen (zodat de echte SQL getest wordt) en een nagebootste fetch
@@ -1486,5 +1486,36 @@ describe('/api/billing (echte rekening)', () => {
   it('is alleen voor de eigenaar', async () => {
     expect((await call('/api/billing')).status).toBe(403);
     expect(upstream).not.toHaveBeenCalled();
+  });
+});
+
+describe('bewaartermijn van het verbruik', () => {
+  it('houdt 13 maanden per installatie', () => {
+    expect(keepFrom(new Date('2027-12-15T12:00:00Z'))).toBe('2026-11-01');
+  });
+
+  it('vat oudere regels per week samen, zonder installatie, en wist ze', async () => {
+    const db = memoryD1() as never;
+    const key = (tester: string) => ({
+      tester,
+      channel: 'stable',
+      session: 's',
+      model: 'gpt-transcribe',
+    });
+    // Vrijdag 2 en zaterdag 3 oktober 2026: dezelfde week (maandag 28 sep)
+    await recordUsage(db, key('anna'), { audioSeconds: 60 }, new Date('2026-10-02T12:00:00Z'));
+    await recordUsage(db, key('bert'), { audioSeconds: 30 }, new Date('2026-10-03T12:00:00Z'));
+    await recordUsage(db, key('anna'), { audioSeconds: 10 }, new Date('2027-11-20T12:00:00Z'));
+
+    expect(await pruneUsage(db, new Date('2027-12-15T12:00:00Z'))).toBe(2);
+    expect((await usageSince(db, '2000-01-01')).map((r) => r.day)).toEqual(['2027-11-20']);
+    const { results } = await (db as ReturnType<typeof memoryD1>)
+      .prepare('SELECT * FROM usage_weekly')
+      .all();
+    expect(results).toEqual([
+      expect.objectContaining({ week: '2026-09-28', testers: 2, requests: 2, audio_seconds: 90 }),
+    ]);
+    // Nog een keer: niets meer te doen
+    expect(await pruneUsage(db, new Date('2027-12-15T12:00:00Z'))).toBe(0);
   });
 });

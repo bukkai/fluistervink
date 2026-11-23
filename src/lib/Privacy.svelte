@@ -78,8 +78,9 @@
     <p>
       Alles gaat eerst langs de eigen server van Fluistervink. Die bewaart alleen wat je deelt
       (hieronder) en hoeveel je liet verwerken (aantal uitspraken en hun duur per dag en sessie,
-      zonder wat je zei; dat blijft bewaard), voor de kosten en om te zien hoeveel mensen de app
-      gebruiken. Het logboek van de server (wanneer, en of er iets misging) blijft een paar dagen.
+      zonder wat je zei; 13 maanden, daarna alleen nog als totaal per week, zonder te zien van wie),
+      voor de kosten en om te zien hoeveel mensen de app gebruiken. Het logboek van de server
+      (wanneer, en of er iets misging) blijft een paar dagen.
     </p>
     <dl>
       <dt>OpenAI</dt>

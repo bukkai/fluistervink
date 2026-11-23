@@ -5,6 +5,7 @@
 // alleen thuis nalopen telt niet mee.
 
 import { dayOf, rowCost, type UsageRow } from './costs';
+import { AUDIO_SECONDS_PER_DAY, MESSAGES_PER_DAY } from './limits';
 
 /** Gebruik per dag en tester, zoals de proxy het samenvat. */
 export interface ActivityRow {
@@ -176,4 +177,266 @@ export function costPerUserWeek(rows: UsageRow[], from: string, now = new Date()
     });
   }
   return weeks;
+}
+
+// --- Stap 1 van "Statistieken en Developer uitbreiden" (22 nov): meer uit wat
+// de proxy al telt, zonder nieuw gegeven. Zie docs/proxy.md, Statistieken.
+
+/**
+ * Kleinste groep waarvan Statistieken een percentage laat zien: kleiner is één
+ * persoon te herkennen ("die ene van de week van 9 nov is gestopt").
+ */
+export const MIN_GROUP = 5;
+
+/** Weken na de eerste week waarin we kijken of iemand nog vogelt */
+export const RETENTION_WEEKS = [1, 2, 4, 8] as const;
+
+export interface Cohort {
+  /** Maandag van de week van het eerste gebruik */
+  week: string;
+  size: number;
+  /**
+   * Per week in `RETENTION_WEEKS` het deel (0–1) dat die week actief was;
+   * `undefined` als die week nog niet voorbij is.
+   */
+  retained: (number | undefined)[];
+}
+
+/**
+ * Blijven gebruikers? Per week van het eerste gebruik: welk deel na 1, 2, 4
+ * en 8 weken nog actief was (in precies die week). Nieuwste eerst. `rows`
+ * moet vanaf het begin zijn, anders lijkt iedereen nieuw.
+ */
+export function cohorts(rows: ActivityRow[], now = new Date()): Cohort[] {
+  const firstWeek = new Map<string, string>();
+  const active = new Map<string, Set<string>>();
+  for (const row of [...rows].sort((a, b) => a.day.localeCompare(b.day))) {
+    const week = weekOf(row.day);
+    if (!firstWeek.has(row.tester)) firstWeek.set(row.tester, week);
+    if (!active.has(week)) active.set(week, new Set());
+    active.get(week)!.add(row.tester);
+  }
+  const groups = new Map<string, string[]>();
+  for (const [tester, week] of firstWeek) groups.set(week, [...(groups.get(week) ?? []), tester]);
+
+  const thisWeek = weekOf(dayOf(now));
+  return [...groups.entries()]
+    .sort(([a], [b]) => b.localeCompare(a))
+    .map(([week, testers]) => ({
+      week,
+      size: testers.length,
+      retained: RETENTION_WEEKS.map((offset) => {
+        const later = addDays(week, 7 * offset);
+        // Alleen weken die helemaal om zijn
+        if (later >= thisWeek) return undefined;
+        const seen = active.get(later);
+        return testers.filter((t) => seen?.has(t)).length / testers.length;
+      }),
+    }));
+}
+
+/** Van installeren tot vaste gebruiker */
+export interface Funnel {
+  /** Aangemeld (zonder de eigenaar) */
+  installed: number;
+  /** Minstens één uitspraak in een sessie */
+  used: number;
+  /** Minstens twee sessies */
+  returned: number;
+  /** Eerste gebruik minstens vier weken geleden: zij tellen voor `stayed` */
+  eligible: number;
+  /** Van `eligible`: vier weken of later na het eerste gebruik nog actief */
+  stayed: number;
+}
+
+/** Dagen na het eerste gebruik waarna iemand als blijver telt */
+export const STAY_DAYS = 28;
+
+/**
+ * Waar haken mensen af: geïnstalleerd, eerste uitspraak, tweede sessie, en na
+ * vier weken nog actief. `installs` zijn de namen van de installaties; wie
+ * wel gebruik heeft maar geen installatie (oude testercodes) telt niet mee.
+ */
+export function funnel(rows: ActivityRow[], installs: string[], now = new Date()): Funnel {
+  const names = new Set(installs.filter((name) => name !== 'eigenaar'));
+  const perTester = new Map<string, { first: string; last: string; sessions: number }>();
+  for (const row of rows) {
+    if (!names.has(row.tester)) continue;
+    const seen = perTester.get(row.tester);
+    if (!seen) perTester.set(row.tester, { first: row.day, last: row.day, sessions: row.sessions });
+    else {
+      if (row.day < seen.first) seen.first = row.day;
+      if (row.day > seen.last) seen.last = row.day;
+      seen.sessions += row.sessions;
+    }
+  }
+  const today = dayOf(now);
+  const all = [...perTester.values()];
+  const eligible = all.filter((t) => addDays(t.first, STAY_DAYS) <= today);
+  return {
+    installed: names.size,
+    used: all.length,
+    returned: all.filter((t) => t.sessions >= 2).length,
+    eligible: eligible.length,
+    stayed: eligible.filter((t) => t.last >= addDays(t.first, STAY_DAYS)).length,
+  };
+}
+
+/**
+ * Grenzen voor de kosten per actieve gebruiker per maand (docs/plan-marketing.md,
+ * Kostengrens per stap): eronder mag de volgende stap, ertussen gaat de betaalde
+ * laag voor, erboven eerst de kosten omlaag.
+ */
+export const COST_PER_USER_OK = 1;
+export const COST_PER_USER_HIGH = 2;
+/** Maandbudget tot de betaalde laag er is: €50, in dollars zoals de rest */
+export const MONTH_BUDGET = 55;
+
+/** De dagen van deze maand: verstreken (tot en met vandaag) en in totaal. */
+function monthDays(now: Date): { elapsed: number; total: number } {
+  const [year, month, day] = dayOf(now).split('-').map(Number);
+  return { elapsed: day, total: new Date(Date.UTC(year, month, 0)).getUTCDate() };
+}
+
+/** Wat deze maand naar verwachting kost, als het zo doorgaat als tot nu toe. */
+export function monthForecast(thisMonth: number, now = new Date()): number {
+  const { elapsed, total } = monthDays(now);
+  return (thisMonth / elapsed) * total;
+}
+
+/** Kosten van een sessieregel zonder de eigenaar en de testset, of `undefined` */
+function userCost(row: UsageRow): number | undefined {
+  if (!row.session || row.tester === 'eigenaar') return undefined;
+  return rowCost(row);
+}
+
+/**
+ * Hoe de kosten van deze maand verdeeld zijn over gebruikers (zonder de
+ * eigenaar en de testset): het deel van de duurste 10% (minstens één).
+ */
+export function topShare(
+  rows: UsageRow[],
+  now = new Date(),
+): { users: number; top: number; share: number } | undefined {
+  const month = dayOf(now).slice(0, 7);
+  const perTester = new Map<string, number>();
+  for (const row of rows) {
+    if (!row.day.startsWith(month)) continue;
+    const cost = userCost(row);
+    if (cost === undefined) continue;
+    perTester.set(row.tester, (perTester.get(row.tester) ?? 0) + cost);
+  }
+  const costs = [...perTester.values()].sort((a, b) => b - a);
+  const total = costs.reduce((sum, c) => sum + c, 0);
+  if (!total) return undefined;
+  const top = Math.max(1, Math.ceil(costs.length / 10));
+  return {
+    users: costs.length,
+    top,
+    share: costs.slice(0, top).reduce((s, c) => s + c, 0) / total,
+  };
+}
+
+/**
+ * Kosten van deze maand per groep (zonder de testset; de eigenaar wel, die
+ * zit op de beta): per omgeving en per manier van aanmelden.
+ */
+export function costSplit(
+  rows: UsageRow[],
+  via: Map<string, 'play' | 'turnstile'>,
+  now = new Date(),
+): { channel: Record<string, number>; via: Record<string, number> } {
+  const month = dayOf(now).slice(0, 7);
+  const split = { channel: {} as Record<string, number>, via: {} as Record<string, number> };
+  for (const row of rows) {
+    if (!row.session || !row.day.startsWith(month)) continue;
+    const cost = rowCost(row);
+    if (cost === undefined) continue;
+    split.channel[row.channel] = (split.channel[row.channel] ?? 0) + cost;
+    const how = row.tester === 'eigenaar' ? 'eigenaar' : (via.get(row.tester) ?? 'onbekend');
+    split.via[how] = (split.via[how] ?? 0) + cost;
+  }
+  return split;
+}
+
+export interface UnitCostWeek {
+  week: string;
+  utterances: number;
+  cost: number;
+  /** Dollars per uitspraak; `undefined` zonder uitspraken */
+  perUtterance?: number;
+  /** Deel van de invoer aan het model dat uit de cache kwam (0–1) */
+  cacheShare?: number;
+}
+
+const isTranscribe = (model: string) => model.includes('transcribe') || model === 'whisper-1';
+
+/**
+ * Kosten per uitspraak en cachegebruik per week, nieuwste eerst: maakt een
+ * nieuwe promptversie het duurder? Alle sessies, ook die van de eigenaar
+ * (het gaat om de prompt, niet om de gebruiker); zonder de testset.
+ */
+export function unitCostPerWeek(rows: UsageRow[], from: string, now = new Date()): UnitCostWeek[] {
+  const weeks = new Map<
+    string,
+    { utterances: number; cost: number; cached: number; input: number }
+  >();
+  for (const row of rows) {
+    if (!row.session) continue;
+    const week = weekOf(row.day);
+    const w = weeks.get(week) ?? { utterances: 0, cost: 0, cached: 0, input: 0 };
+    w.cost += rowCost(row) ?? 0;
+    if (isTranscribe(row.model)) w.utterances += row.requests;
+    else {
+      w.cached += row.cacheReadTokens;
+      w.input += row.inputTokens + row.cacheReadTokens + row.cacheWriteTokens;
+    }
+    weeks.set(week, w);
+  }
+  const result: UnitCostWeek[] = [];
+  for (let week = weekOf(dayOf(now)); week >= weekOf(from); week = addDays(week, -7)) {
+    const w = weeks.get(week);
+    if (!w) continue;
+    result.push({
+      week,
+      utterances: w.utterances,
+      cost: w.cost,
+      perUtterance: w.utterances ? w.cost / w.utterances : undefined,
+      cacheShare: w.input ? w.cached / w.input : undefined,
+    });
+  }
+  return result;
+}
+
+export interface LimitPeaks {
+  /** Meeste verzoeken aan het model door één installatie op één dag */
+  messages: number;
+  /** Meeste seconden spraak door één installatie op één dag */
+  audioSeconds: number;
+  /** Keren (installatie × dag) dat een plafond bereikt werd */
+  hits: number;
+}
+
+/**
+ * Hoe dicht gebruikers bij de plafonds per dag komen (src/lib/limits.ts),
+ * deze maand, zonder de eigenaar (die valt erbuiten).
+ */
+export function limitPeaks(rows: UsageRow[], now = new Date()): LimitPeaks {
+  const month = dayOf(now).slice(0, 7);
+  const perDay = new Map<string, { messages: number; audio: number }>();
+  for (const row of rows) {
+    if (row.tester === 'eigenaar' || !row.day.startsWith(month)) continue;
+    const key = `${row.day}/${row.tester}`;
+    const d = perDay.get(key) ?? { messages: 0, audio: 0 };
+    if (row.model.startsWith('claude-')) d.messages += row.requests;
+    d.audio += row.audioSeconds;
+    perDay.set(key, d);
+  }
+  const days = [...perDay.values()];
+  return {
+    messages: Math.max(0, ...days.map((d) => d.messages)),
+    audioSeconds: Math.max(0, ...days.map((d) => d.audio)),
+    hits: days.filter((d) => d.messages >= MESSAGES_PER_DAY || d.audio >= AUDIO_SECONDS_PER_DAY)
+      .length,
+  };
 }
