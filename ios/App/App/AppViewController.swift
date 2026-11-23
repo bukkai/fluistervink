@@ -8,5 +8,6 @@ class AppViewController: CAPBridgeViewController {
     override open func capacitorDidLoad() {
         bridge?.registerPluginInstance(TrillenPlugin())
         bridge?.registerPluginInstance(VersiePlugin())
+        bridge?.registerPluginInstance(LocatiePlugin())
     }
 }

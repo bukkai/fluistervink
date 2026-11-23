@@ -4,7 +4,7 @@
 // telefoon dat midden in de eerste waarneming.
 
 import { t } from './i18n';
-import { isAndroidApp, isIosApp } from './native';
+import { geolocation, isAndroidApp, isIosApp } from './native';
 
 const WELCOME_DONE_KEY = 'fluistervink.welcomeDone';
 
@@ -44,8 +44,9 @@ export async function askPermissions(): Promise<PermissionResult> {
     })
     .catch(() => false);
   const location = await new Promise<boolean>((resolve) => {
-    if (!('geolocation' in navigator)) return resolve(false);
-    navigator.geolocation.getCurrentPosition(
+    const geo = geolocation();
+    if (!geo) return resolve(false);
+    geo.getCurrentPosition(
       () => resolve(true),
       (error) => resolve(error.code !== error.PERMISSION_DENIED),
       { timeout: 15_000, maximumAge: Infinity },

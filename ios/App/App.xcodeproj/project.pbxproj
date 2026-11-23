@@ -19,6 +19,7 @@
 		EF1902B472074B0789CACE7F /* AppViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D32EFCE5984C798D89C212 /* AppViewController.swift */; };
 		E34384BEC66B4B54B6B43255 /* TrillenPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBFB504A60474538B737BC5C /* TrillenPlugin.swift */; };
 		084552DBFE0140D7903094C3 /* VersiePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73481974266549B8B70324A3 /* VersiePlugin.swift */; };
+		9210A10344714BFAA6CD058F /* LocatiePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0770FF162A2846C382B03747 /* LocatiePlugin.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +37,7 @@
 		B7D32EFCE5984C798D89C212 /* AppViewController.swift */ = {isa = PBXFileReference; name = "AppViewController.swift"; path = "AppViewController.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; };
 		EBFB504A60474538B737BC5C /* TrillenPlugin.swift */ = {isa = PBXFileReference; name = "TrillenPlugin.swift"; path = "TrillenPlugin.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; };
 		73481974266549B8B70324A3 /* VersiePlugin.swift */ = {isa = PBXFileReference; name = "VersiePlugin.swift"; path = "VersiePlugin.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; };
+		0770FF162A2846C382B03747 /* LocatiePlugin.swift */ = {isa = PBXFileReference; name = "LocatiePlugin.swift"; path = "LocatiePlugin.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,6 +84,7 @@
 				B7D32EFCE5984C798D89C212 /* AppViewController.swift */,
 				EBFB504A60474538B737BC5C /* TrillenPlugin.swift */,
 				73481974266549B8B70324A3 /* VersiePlugin.swift */,
+				0770FF162A2846C382B03747 /* LocatiePlugin.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -173,6 +176,7 @@
 				EF1902B472074B0789CACE7F /* AppViewController.swift in Sources */,
 				E34384BEC66B4B54B6B43255 /* TrillenPlugin.swift in Sources */,
 				084552DBFE0140D7903094C3 /* VersiePlugin.swift in Sources */,
+				9210A10344714BFAA6CD058F /* LocatiePlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
