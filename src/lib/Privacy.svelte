@@ -116,7 +116,9 @@
         de eerste keer openen of er een echte browser achter zit, onder andere aan je IP-adres,
         volgens Cloudflare alleen om robots tegen te houden. Daarna heet je installatie bijvoorbeeld
         "app-3f9a2b1c", zonder iets wat naar jou verwijst, tenzij je bij
-        <a href="{app}#instellingen">Instellingen</a> je naam invult (niet verplicht).
+        <a href="{app}#instellingen">Instellingen</a> je naam invult (niet verplicht). Bij die naam staat
+        ook of het een iPhone, een Android-toestel of een computer is (dat stuurt je browser zelf mee),
+        zodat ik zie hoeveel mensen welk soort toestel gebruiken; het merk, het model en de versie niet.
       </dd>
     </dl>
   </div>

@@ -35,6 +35,11 @@ export interface InstallRecord {
   registeredAt: number;
   /** Hoe de app bewees dat hij echt is */
   via: 'play' | 'turnstile';
+  /**
+   * Soort toestel, uit de User-Agent (deviceOf). Ontbreekt bij installaties
+   * van vóór 23 nov 2026 tot hun eerstvolgende verzoek (fillDevice).
+   */
+  device?: Device;
   blocked?: boolean;
   /**
    * Afgesloten én uit de lijst op Developer gehaald. Het record blijft wel
@@ -105,17 +110,48 @@ async function hmac(text: string, secret: string): Promise<string> {
   return base64url(new Uint8Array(signature));
 }
 
-export async function getInstall(kv: KVNamespace, id: string): Promise<InstallRecord | null> {
+export async function getInstall(
+  kv: KVNamespace,
+  id: string,
+  { fresh = false } = {},
+): Promise<InstallRecord | null> {
   // Een minuut in de cache van de edge: dit gebeurt bij elk verzoek, en
-  // afsluiten hoeft niet op de seconde
-  const { metadata } = await kv.getWithMetadata<InstallRecord>(KEY_PREFIX + id, {
-    cacheTtl: 60,
-  });
+  // afsluiten hoeft niet op de seconde. Vóór het bijschrijven zonder cache,
+  // zodat een net afgesloten installatie niet weer opengaat.
+  const { metadata } = await kv.getWithMetadata<InstallRecord>(
+    KEY_PREFIX + id,
+    fresh ? undefined : { cacheTtl: 60 },
+  );
   return metadata;
 }
 
 export async function putInstall(kv: KVNamespace, id: string, record: InstallRecord) {
   await kv.put(KEY_PREFIX + id, '', { metadata: record });
+}
+
+/** Soort toestel, voor Statistieken: hoeveel mensen een iPhone gebruiken. */
+export type Device = 'ios' | 'android' | 'computer';
+
+/**
+ * Het soort toestel uit de User-Agent, grof: meer bewaart de proxy niet. Een
+ * iPad geeft zich in Safari uit als Mac en telt dan als computer.
+ */
+export function deviceOf(userAgent: string | null): Device | undefined {
+  if (!userAgent) return undefined;
+  if (/iPhone|iPad|iPod/.test(userAgent)) return 'ios';
+  if (/Android/.test(userAgent)) return 'android';
+  return 'computer';
+}
+
+/**
+ * Zet het toestel bij een installatie die het nog niet heeft (aangemeld
+ * vóór 23 nov 2026). Leest eerst zonder cache, zodat de rest van het record
+ * (afgesloten, naam) niet met een oude versie wordt overschreven.
+ */
+export async function fillDevice(kv: KVNamespace, id: string, device: Device): Promise<void> {
+  const record = await getInstall(kv, id, { fresh: true });
+  if (!record || record.device || record.blocked) return;
+  await putInstall(kv, id, { ...record, device });
 }
 
 /**

@@ -371,6 +371,8 @@ export interface Tester {
   invitedAt?: number;
   /** Hoe een installatie bewees dat hij echt is */
   via?: 'play' | 'turnstile';
+  /** Soort toestel (worker/install.ts, deviceOf); ontbreekt bij oude installaties tot hun volgende verzoek */
+  device?: 'ios' | 'android' | 'computer';
   blocked?: boolean;
   /** Naam die een installatie zelf opgaf */
   displayName?: string;

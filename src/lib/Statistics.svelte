@@ -83,20 +83,44 @@
         )
       : undefined,
   );
-  /** Actief deze week, per manier van aanmelden (Play = Android-app) */
+  /**
+   * Actief deze week, per manier van aanmelden (Play = Android-app), en in de
+   * browser per soort toestel: hoeveel mensen een iPhone gebruiken.
+   */
   let byVia = $derived.by(() => {
     if (!installs) return undefined;
-    const via = new Map(installs.map((t) => [t.name, t.via]));
+    const byName = new Map(installs.map((t) => [t.name, t]));
     const thisWeek = weekOf(dayOf(new Date()));
     const active = new Set(counted.filter((r) => weekOf(r.day) === thisWeek).map((r) => r.tester));
     let play = 0;
     let browser = 0;
+    const devices = { ios: 0, android: 0, computer: 0, unknown: 0 };
     for (const tester of active) {
-      if (via.get(tester) === 'play') play++;
-      else if (via.get(tester) === 'turnstile') browser++;
+      const install = byName.get(tester);
+      if (install?.via === 'play') play++;
+      else if (install?.via === 'turnstile') {
+        browser++;
+        devices[install.device ?? 'unknown']++;
+      }
     }
-    return { play, browser };
+    return { play, browser, devices };
   });
+  /** "3 iPhone, 1 Android", alleen wat er is */
+  let browserDevices = $derived(
+    byVia
+      ? (
+          [
+            ['ios', 'iPhone'],
+            ['android', 'Android'],
+            ['computer', 'computer'],
+            ['unknown', 'onbekend'],
+          ] as const
+        )
+          .filter(([key]) => byVia.devices[key])
+          .map(([key, label]) => `${byVia.devices[key]} ${label}`)
+          .join(', ')
+      : '',
+  );
   const percent = (part: number, whole: number) =>
     whole ? `${Math.round((part / whole) * 100)}%` : '–';
   let maxUsers = $derived(Math.max(1, ...days.map((d) => d.users)));
@@ -176,7 +200,9 @@
       <p class="muted hint">
         Vorige week {weeks[1].active} actief, waarvan {weeks[0].returning} deze week terug.
         {#if byVia}
-          Deze week {byVia.play} in de Android-app en {byVia.browser} in de browser.
+          Deze week {byVia.play} in de Android-app en {byVia.browser} in de browser{browserDevices
+            ? ` (${browserDevices})`
+            : ''}.
         {/if}
       </p>
     </div>

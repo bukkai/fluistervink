@@ -110,7 +110,9 @@
         time you open the app whether there’s a real browser behind it, among other things from your
         IP address, according to Cloudflare only to keep robots out. After that your installation is
         called something like "app-3f9a2b1c", with nothing that points to you, unless you fill in
-        your name under <a href="{app}#instellingen">Settings</a> (optional).
+        your name under <a href="{app}#instellingen">Settings</a> (optional). With that name it also notes
+        whether it’s an iPhone, an Android device or a computer (your browser sends that itself), so I
+        can see how many people use which kind of device; not the brand, model or version.
       </dd>
     </dl>
   </div>
