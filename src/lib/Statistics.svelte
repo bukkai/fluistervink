@@ -2,17 +2,20 @@
   // Statistieken, alleen voor de eigenaar: hoeveel mensen de app gebruiken en
   // of ze terugkomen (src/lib/stats.ts). Alleen totalen, geen namen: wie wat
   // deed staat al op Developer, hier gaat het om de trend.
-  import { listActivity, listTesters, type Tester } from './api';
+  import { listActivity, listSummaries, listTesters, type Tester } from './api';
   import {
     cohorts,
     funnel,
     MIN_GROUP,
+    addDays,
     perDay,
+    perSessionWeek,
     perWeek,
     RETENTION_WEEKS,
     STAY_DAYS,
     weekOf,
     type ActivityRow,
+    type SummaryRow,
   } from './stats';
   import { dayOf } from './costs';
 
@@ -34,6 +37,17 @@
     .catch((e) => (error = `Ophalen mislukt: ${e instanceof Error ? e.message : e}`));
   // Installaties: voor de trechter en Play tegenover browser. Mislukt dat, dan
   // ontbreken alleen die twee.
+  // Anonieme cijfers per sessie (summaries.ts), de laatste 12 weken. Mislukt
+  // het ophalen, dan ontbreekt alleen die kaart.
+  let summaries = $state<SummaryRow[]>();
+  listSummaries(addDays(dayOf(new Date()), -7 * 12))
+    .then((result) => (summaries = result))
+    .catch(() => (summaries = undefined));
+  let sessionWeeks = $derived(perSessionWeek(summaries ?? []));
+  let allSessions = $derived(sessionWeeks.at(-1));
+  /** Een deel als percentage, alleen bij een groep van minstens MIN_GROUP sessies */
+  const pct = (share: number, sessions: number) =>
+    sessions >= MIN_GROUP ? `${Math.round(share * 100)}%` : '–';
   let installs = $state<Tester[]>();
   listTesters()
     .then((result) => (installs = result))
@@ -248,6 +262,91 @@
       </p>
     </div>
   </section>
+
+  {#if summaries?.length && allSessions}
+    <section class="card">
+      <div class="card-head">
+        <h2>Hoe sessies gaan</h2>
+        <span class="muted">anoniem, laatste 12 weken</span>
+      </div>
+      <div class="card-body table">
+        <dl class="facts">
+          <div>
+            <dt>Sessies</dt>
+            <dd>{allSessions.sessions}</dd>
+          </div>
+          <div>
+            <dt>Duur (mediaan)</dt>
+            <dd>{allSessions.minutes} min</dd>
+          </div>
+          <div>
+            <dt>Uitspraken per sessie</dt>
+            <dd>{Math.round(allSessions.utterances)}</dd>
+          </div>
+          <div>
+            <dt>Niet begrepen</dt>
+            <dd>{pct(allSessions.notUnderstood, allSessions.sessions)}</dd>
+          </div>
+          <div>
+            <dt>Met de stem verbeterd</dt>
+            <dd>{pct(allSessions.corrections, allSessions.sessions)}</dd>
+          </div>
+          <div>
+            <dt>Mislukt</dt>
+            <dd>{pct(allSessions.failed, allSessions.sessions)}</dd>
+          </div>
+          <div>
+            <dt>Onzeker</dt>
+            <dd>{pct(allSessions.uncertain, allSessions.sessions)}</dd>
+          </div>
+          <div>
+            <dt>Nagelopen</dt>
+            <dd>{pct(allSessions.reviewed, allSessions.sessions)}</dd>
+          </div>
+          <div>
+            <dt>Geëxporteerd</dt>
+            <dd>{pct(allSessions.exported, allSessions.sessions)}</dd>
+          </div>
+          <div>
+            <dt>Op bereik gewacht</dt>
+            <dd>{pct(allSessions.offline, allSessions.sessions)}</dd>
+          </div>
+          <div>
+            <dt>In de Android-app</dt>
+            <dd>{pct(allSessions.android, allSessions.sessions)}</dd>
+          </div>
+        </dl>
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Week van</th>
+              <th scope="col">Sessies</th>
+              <th scope="col">Niet begr.</th>
+              <th scope="col">Onzeker</th>
+              <th scope="col">Geëxp.</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each sessionWeeks.slice(0, -1) as w (w.week)}
+              <tr>
+                <th scope="row">{shortFormat.format(date(w.week))}</th>
+                <td>{w.sessions}</td>
+                <td>{pct(w.notUnderstood, w.sessions)}</td>
+                <td>{pct(w.uncertain, w.sessions)}</td>
+                <td>{pct(w.exported, w.sessions)}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+        <p class="muted hint">
+          Van wie anonieme cijfers deelt, zonder te zien van wie. Een sessie komt binnen als hij
+          geëxporteerd is, of een week na het stoppen; de week is die van binnenkomst. Niet
+          begrepen, verbeterd en mislukt: van de uitspraken. Onzeker en nagelopen: van de
+          waarnemingen. De rest: van de sessies. Een percentage pas bij {MIN_GROUP} sessies.
+        </p>
+      </div>
+    </section>
+  {/if}
 
   <section class="card">
     <div class="card-head">
@@ -550,6 +649,24 @@
 
   .table {
     overflow-x: auto;
+  }
+
+  .facts {
+    margin: 0 0 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem 1rem;
+  }
+
+  .facts dt {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .facts dd {
+    margin: 0;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
   }
 
   .steps {

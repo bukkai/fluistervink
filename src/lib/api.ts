@@ -3,6 +3,7 @@
 // keer ingevuld bij Instellingen en daarna in localStorage bewaard, samen met
 // de naam die de proxy erbij teruggeeft.
 
+import type { SummaryRow } from './stats';
 import { language, t } from './i18n';
 import type { Billing, UsageRow } from './costs';
 import { forgetInstallToken, getInstallToken, register } from './install';
@@ -288,6 +289,23 @@ export async function createMessage<T = unknown>(
  * Deelt een bestand met de ontwikkelaar (zie share.ts): `sessions/<id>` of
  * `audio/<id>`. De proxy bewaart het onder de naam van de tester.
  */
+/**
+ * Anonieme cijfers van één sessie (summaries.ts). De proxy bewaart ze zonder
+ * installatie; van de eigenaar niet.
+ */
+export async function sendSummary(summary: object): Promise<void> {
+  await request('/api/summaries', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(summary),
+  });
+}
+
+/** Anonieme cijfers per sessie vanaf `from`, alleen voor de eigenaar (Statistieken). */
+export async function listSummaries(from: string): Promise<SummaryRow[]> {
+  return (await request<{ rows: SummaryRow[] }>(`/api/summaries?from=${from}`)).rows;
+}
+
 export async function putShared(path: string, body: Blob): Promise<void> {
   await request(`/api/feedback/${path}`, {
     method: 'PUT',

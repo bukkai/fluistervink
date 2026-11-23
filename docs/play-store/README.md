@@ -38,6 +38,7 @@ Verder: versleuteld onderweg ja; geen accounts; verwijderen aanvragen ja, via `h
 **Nagekeken op 11 nov 2026** (kwaliteitsronde, tegen `#privacy` en de code op `82c1b73`): het formulier in de Play Console hoeft niet aangepast. Wat er sinds 9 nov bij kwam, valt onder wat er al staat:
 
 - Het scherm Statistieken (hoeveel installaties de app gebruiken, per dag en week) rekent met het verbruik dat de proxy al telde: dat is **App interactions → Analytics**, met het installatie-id onder **Device or other IDs → Analytics**.
+- **23 nov:** de soort uitspraak, taal en versie bij het verbruik, en de anonieme cijfers per sessie (`src/lib/summaries.ts`, zonder installatie bewaard) vallen ook onder **App interactions → Analytics**, dat al als Required staat. Het formulier hoeft niet aangepast.
 - Trektelmodus, volumeknop, snelkoppeling, tegel, samenvatting en exportherinnering sturen geen nieuwe gegevens. De gesproken bevestiging (ontwikkeloptie) spreekt op de telefoon zelf.
 - Losse feedback gaat nu meteen weg in plaats van bij de volgende ronde, nog steeds alleen na toestemming: **Other user-generated content**.
 

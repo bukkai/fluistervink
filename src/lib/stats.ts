@@ -514,3 +514,114 @@ export function utterancesPerLanguage(rows: UsageRow[], now = new Date()): Recor
   }
   return result;
 }
+
+// --- Stap 3 (23 nov): anonieme cijfers per sessie (summaries.ts), zonder
+// installatie. Per week waarin ze binnenkwamen: tot een week na het stoppen.
+
+/** Wat de app per sessie stuurt (summaries.ts); hier, zodat de proxy het type kan gebruiken zonder browsercode */
+export interface SessionSummary {
+  /** Duur, afgerond op 5 minuten */
+  minutes: number;
+  utterances: number;
+  observations: number;
+  /** Aantal verschillende soorten, niet welke */
+  species: number;
+  /** Waarnemingen die (nog) onzeker zijn */
+  uncertain: number;
+  /** Uitspraken zonder waarneming (niet begrepen of niets in gezegd) */
+  notUnderstood: number;
+  /** Uitspraken die een eerdere waarneming veranderden, wisten of terugdraaiden */
+  corrections: number;
+  /** Uitspraken die mislukten */
+  failed: number;
+  /** Waarnemingen die nagelopen of geëxporteerd zijn */
+  reviewed: number;
+  /** Ergens op bereik gewacht */
+  offline: boolean;
+  trektel: boolean;
+  tuintelling: boolean;
+  exported: 'none' | 'waarneming' | 'ebird' | 'both';
+  platform: 'android' | 'web';
+}
+
+/** Een samenvatting zoals de proxy hem teruggeeft (worker/summaries.ts) */
+export interface SummaryRow {
+  week: string;
+  cohort: string;
+  platform: string;
+  minutes: number;
+  utterances: number;
+  observations: number;
+  species: number;
+  uncertain: number;
+  notUnderstood: number;
+  corrections: number;
+  failed: number;
+  reviewed: number;
+  offline: boolean;
+  trektel: boolean;
+  tuintelling: boolean;
+  exported: string;
+}
+
+export interface SessionStats {
+  /** Maandag van de week, of `alle` */
+  week: string;
+  sessions: number;
+  /** Mediaan van de duur in minuten */
+  minutes: number;
+  /** Gemiddeld per sessie */
+  utterances: number;
+  /** Delen (0–1): van de uitspraken, de waarnemingen of de sessies */
+  notUnderstood: number;
+  corrections: number;
+  failed: number;
+  uncertain: number;
+  reviewed: number;
+  exported: number;
+  offline: number;
+  android: number;
+}
+
+const median = (values: number[]) => {
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  if (!sorted.length) return 0;
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+};
+
+function sessionStats(week: string, rows: SummaryRow[]): SessionStats {
+  const sum = (key: keyof SummaryRow) => rows.reduce((s, r) => s + (r[key] as number), 0);
+  const share = (part: number, whole: number) => (whole ? part / whole : 0);
+  const utterances = sum('utterances');
+  const observations = sum('observations');
+  return {
+    week,
+    sessions: rows.length,
+    minutes: median(rows.map((r) => r.minutes)),
+    utterances: share(utterances, rows.length),
+    notUnderstood: share(sum('notUnderstood'), utterances),
+    corrections: share(sum('corrections'), utterances),
+    failed: share(sum('failed'), utterances),
+    uncertain: share(sum('uncertain'), observations),
+    reviewed: share(sum('reviewed'), observations),
+    exported: share(rows.filter((r) => r.exported !== 'none').length, rows.length),
+    offline: share(rows.filter((r) => r.offline).length, rows.length),
+    android: share(rows.filter((r) => r.platform === 'android').length, rows.length),
+  };
+}
+
+/**
+ * Per week de cijfers van de sessies die binnenkwamen, nieuwste eerst, plus
+ * alles samen (`alle`) als laatste. Alleen weken met samenvattingen.
+ */
+export function perSessionWeek(rows: SummaryRow[]): SessionStats[] {
+  const weeks = new Map<string, SummaryRow[]>();
+  for (const row of rows) weeks.set(row.week, [...(weeks.get(row.week) ?? []), row]);
+  return [
+    ...[...weeks.entries()]
+      .sort(([a], [b]) => b.localeCompare(a))
+      .map(([week, list]) => sessionStats(week, list)),
+    ...(rows.length ? [sessionStats('alle', rows)] : []),
+  ];
+}

@@ -240,6 +240,9 @@ export const nl = {
   'share.failed': 'Versturen mislukt: {error}',
   'share.lastSent': 'Laatst verstuurd: {date}.',
   'share.nothingSent': 'Nog niets verstuurd.',
+  'share.anon': 'Anonieme cijfers per sessie delen',
+  'share.anonHint':
+    'Alleen getallen, zoals de duur, het aantal uitspraken en of je hebt geëxporteerd. Niet waar, wanneer, welke soorten of wat je zei, en niet van welke telefoon.',
 
   // Opnames (RecordingSettings.svelte, recordings.ts)
   'recordings.title': 'Opnames',
