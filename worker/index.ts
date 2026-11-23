@@ -4,6 +4,8 @@ import { declaredTooLarge, json, MAX_AUDIO_BYTES, OWNER, readBody, tooLarge } fr
 import { feedback, testerUsage } from './feedback';
 import {
   cleanDisplayName,
+  deviceOf,
+  fillDevice,
   findInstall,
   getInstall,
   INSTALL_ID,
@@ -103,7 +105,7 @@ export default {
       }
     }
 
-    const tester = await authorize(request, env);
+    const tester = await authorize(request, env, ctx);
     if (!tester) {
       return json({ error: 'Ongeldige of ontbrekende toegangscode of installatie' }, 401);
     }
@@ -226,7 +228,8 @@ async function install(request: Request, env: WorkerEnv): Promise<Response> {
     // met dezelfde naam zouden gedeelde gegevens en verbruik door elkaar halen.
     // De app kiest dan een nieuw id (install.ts).
     if (await findInstall(env.TESTERS, name)) return json({ error: 'Id al in gebruik' }, 409);
-    await putInstall(env.TESTERS, id, { name, registeredAt: Date.now(), via });
+    const device = deviceOf(request.headers.get('User-Agent'));
+    await putInstall(env.TESTERS, id, { name, registeredAt: Date.now(), via, device });
   }
   console.log({ tester: name, path: '/api/install', via });
   return json({ token: await signInstallToken(id, env.INSTALL_SECRET), tester: name });
@@ -576,11 +579,12 @@ async function testers(request: Request, env: WorkerEnv, tester: string): Promis
   if (request.method === 'GET') {
     const installs = (await listInstalls(env.TESTERS))
       .filter((t) => !t.hidden)
-      .map(({ name, registeredAt, via, blocked, displayName, owner }) => ({
+      .map(({ name, registeredAt, via, device, blocked, displayName, owner }) => ({
         name,
         source: 'install' as const,
         invitedAt: registeredAt,
         via,
+        device,
         blocked: blocked || undefined,
         displayName,
         owner: owner || undefined,
@@ -669,7 +673,11 @@ async function area(request: Request): Promise<Response> {
  * constante tijd (via SHA-256-hashes van gelijke lengte), zodat hij niet via
  * responstijden te raden is.
  */
-async function authorize(request: Request, env: WorkerEnv): Promise<string | null> {
+async function authorize(
+  request: Request,
+  env: WorkerEnv,
+  ctx: ExecutionContext,
+): Promise<string | null> {
   const header = request.headers.get('Authorization') ?? '';
   const code = header.startsWith('Bearer ') ? header.slice(7) : '';
   if (!code) return null;
@@ -679,7 +687,17 @@ async function authorize(request: Request, env: WorkerEnv): Promise<string | nul
     const id = await verifyInstallToken(code, env.INSTALL_SECRET);
     if (!id) return null;
     try {
-      if ((await getInstall(env.TESTERS, id))?.blocked) return null;
+      const record = await getInstall(env.TESTERS, id);
+      if (record?.blocked) return null;
+      // Installaties van vóór het toestel: alsnog, eenmalig, na het antwoord
+      const device = deviceOf(request.headers.get('User-Agent'));
+      if (record && !record.device && device) {
+        ctx.waitUntil(
+          fillDevice(env.TESTERS, id, device).catch((error) =>
+            console.error('Toestel niet bij te schrijven', error),
+          ),
+        );
+      }
     } catch (error) {
       // KV even niet te lezen: het token zelf is geldig
       console.error('Installatie niet te lezen', error);

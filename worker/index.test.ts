@@ -2,7 +2,14 @@
 import { DatabaseSync } from 'node:sqlite';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import worker from './index';
-import { installName, integrityNonce, putInstall, signInstallToken } from './install';
+import {
+  deviceOf,
+  getInstall,
+  installName,
+  integrityNonce,
+  putInstall,
+  signInstallToken,
+} from './install';
 import { keepFrom, pruneUsage, recordUsage, usageSince } from './usage';
 
 // De proxy in Node, met een nep-KV in het geheugen, D1 als SQLite in het
@@ -392,6 +399,75 @@ describe('/api/install (aanmelden zonder code)', () => {
     // Alleen de eigenaar, en alleen een bestaande installatie
     expect((await mark('1', token)).status).toBe(403);
     expect((await mark('1', OWNER_CODE, 'app-00000000')).status).toBe(404);
+  });
+
+  const IPHONE =
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1';
+
+  it('herkent het soort toestel grof aan de User-Agent', () => {
+    expect(deviceOf(IPHONE)).toBe('ios');
+    expect(
+      deviceOf(
+        'Mozilla/5.0 (Linux; Android 14; Pixel 8; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/130.0 Mobile Safari/537.36',
+      ),
+    ).toBe('android');
+    expect(
+      deviceOf(
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15',
+      ),
+    ).toBe('computer');
+    expect(deviceOf(null)).toBeUndefined();
+    expect(deviceOf('')).toBeUndefined();
+  });
+
+  it('bewaart bij het aanmelden het soort toestel, en toont het de eigenaar', async () => {
+    turnstileAnswers();
+    const response = await call('/api/install', {
+      code: null,
+      method: 'POST',
+      headers: { 'User-Agent': IPHONE },
+      body: JSON.stringify({ id: ID, turnstile: 'goed' }),
+    });
+    expect(response.status).toBe(200);
+    const { testers } = (await (await call('/api/testers', { code: OWNER_CODE })).json()) as {
+      testers: { name: string; device?: string }[];
+    };
+    expect(testers.find((t) => t.name === 'app-3f9a2b1c')?.device).toBe('ios');
+  });
+
+  it('schrijft het toestel alsnog bij een oude installatie bij, en verder niets', async () => {
+    await putInstall(testersKv as never, ID, {
+      name: 'app-3f9a2b1c',
+      registeredAt: 1000,
+      via: 'turnstile',
+      displayName: 'Maarten',
+    });
+    const token = await signInstallToken(ID, INSTALL_SECRET);
+    const ping = () => call('/api/ping', { code: token, headers: { 'User-Agent': IPHONE } });
+
+    expect((await ping()).status).toBe(200);
+    expect(await getInstall(testersKv as never, ID)).toEqual({
+      name: 'app-3f9a2b1c',
+      registeredAt: 1000,
+      via: 'turnstile',
+      displayName: 'Maarten',
+      device: 'ios',
+    });
+  });
+
+  it('schrijft geen toestel bij een afgesloten installatie (die blijft dicht)', async () => {
+    await putInstall(testersKv as never, ID, {
+      name: 'app-3f9a2b1c',
+      registeredAt: 1000,
+      via: 'turnstile',
+      blocked: true,
+    });
+    const token = await signInstallToken(ID, INSTALL_SECRET);
+    expect(
+      (await call('/api/ping', { code: token, headers: { 'User-Agent': IPHONE } })).status,
+    ).toBe(401);
+    expect((await getInstall(testersKv as never, ID))?.device).toBeUndefined();
+    expect((await getInstall(testersKv as never, ID))?.blocked).toBe(true);
   });
 
   it('bewaart een opgegeven naam bij de installatie', async () => {
