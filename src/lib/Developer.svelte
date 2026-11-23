@@ -222,6 +222,8 @@
     return 'boven de grens: eerst de kosten omlaag of de betaalde laag';
   });
   const forecast = $derived(costs ? monthForecast(costs.thisMonth) : undefined);
+  /** Alleen gebruikers: wat de app kost zonder jouw testen */
+  const usersForecast = $derived(costs ? monthForecast(costs.split.users) : undefined);
   const concentration = $derived(topShare(usageRows));
   const costParts = $derived(
     costSplit(usageRows, new Map((testers ?? []).flatMap((t) => (t.via ? [[t.name, t.via]] : [])))),
@@ -349,6 +351,10 @@
           <dd>{money(costs.lastMonth)}</dd>
         </div>
       </dl>
+      <p class="hint">
+        Deze maand: gebruikers {money(costs.split.users)} · jouw sessies {money(costs.split.owner)} ·
+        testset {money(costs.split.testset)}.
+      </p>
       {#if costs.perTester.length}
         <h3>Duurste testers, deze maand</h3>
         <ul class="bars">
@@ -458,6 +464,12 @@
             >
           </li>
         {/if}
+        {#if usersForecast !== undefined}
+          <li>
+            <span class="muted">waarvan gebruikers</span>
+            <span class="muted">{money(usersForecast)}</span>
+          </li>
+        {/if}
         {#if perUserAverage}
           {#each [100, 500, 1000] as users (users)}
             <li>
@@ -471,7 +483,8 @@
         {#if costVerdict}Gemiddeld {costVerdict}.{/if}
         Grenzen {money(COST_PER_USER_OK)} en {money(COST_PER_USER_HIGH)} per actieve gebruiker per maand,
         budget {money(MONTH_BUDGET)} (ongeveer €50) per maand tot de betaalde laag er is (docs/plan-marketing.md).
-        De verwachting rekent deze maand door met alles, ook de testset.
+        De verwachting rekent deze maand door met alles, ook je eigen sessies en de testset (zoals de
+        rekening); daaronder alleen gebruikers.
         {#if concentration}
           {concentration.top === 1
             ? 'De duurste gebruiker'

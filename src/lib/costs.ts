@@ -81,6 +81,14 @@ export interface SessionCost {
   utterances: number;
 }
 
+export type CostGroup = 'users' | 'owner' | 'testset';
+
+/** Bij wie een regel hoort: de testset is de eigenaar zonder sessie */
+export function costGroup(row: UsageRow): CostGroup {
+  if (row.tester !== 'eigenaar') return 'users';
+  return row.session ? 'owner' : 'testset';
+}
+
 export interface CostSummary {
   today: number;
   thisMonth: number;
@@ -88,6 +96,11 @@ export interface CostSummary {
   /** Deze maand */
   openai: number;
   anthropic: number;
+  /**
+   * Deze maand verdeeld: gebruikers (ook "Probeer het eens"), de eigen sessies
+   * van de eigenaar, en de testset (de eigenaar zonder sessie). Samen `thisMonth`.
+   */
+  split: Record<CostGroup, number>;
   /** Deze maand, duurste eerst */
   perTester: { tester: string; cost: number; utterances: number }[];
   /** Gemiddeld per opgenomen uitspraak in een sessie, deze maand */
@@ -125,6 +138,7 @@ export function summarize(rows: UsageRow[], now = new Date()): CostSummary {
     lastMonth: 0,
     openai: 0,
     anthropic: 0,
+    split: { users: 0, owner: 0, testset: 0 },
     perTester: [],
     topSessions: [],
     unknownModels: [],
@@ -147,6 +161,7 @@ export function summarize(rows: UsageRow[], now = new Date()): CostSummary {
     if (row.day.startsWith(lastMonth)) summary.lastMonth += cost;
     if (row.day.startsWith(month)) {
       summary.thisMonth += cost;
+      summary.split[costGroup(row)] += cost;
       if (isTranscription(row)) summary.openai += cost;
       else summary.anthropic += cost;
       const tester = testers.get(row.tester) ?? { cost: 0, utterances: 0 };
