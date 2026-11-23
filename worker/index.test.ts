@@ -401,6 +401,27 @@ describe('/api/install (aanmelden zonder code)', () => {
     expect((await mark('1', OWNER_CODE, 'app-00000000')).status).toBe(404);
   });
 
+  it('zet een eerdere wijziging niet terug als de lijst van KV achterloopt', async () => {
+    turnstileAnswers();
+    await register({ id: ID, turnstile: 'goed' });
+    // KV's list kan tot een minuut een oude stand geven; get is wel vers
+    const stale = await testersKv.list();
+    const list = testersKv.list;
+    testersKv.list = async ({ prefix = '' } = {}) => ({
+      ...stale,
+      keys: stale.keys.filter((k) => k.name.startsWith(prefix)),
+    });
+    try {
+      await call('/api/testers?name=app-3f9a2b1c&owner=1', { code: OWNER_CODE, method: 'PATCH' });
+      await call('/api/testers?name=app-3f9a2b1c', { code: OWNER_CODE, method: 'DELETE' });
+    } finally {
+      testersKv.list = list;
+    }
+    expect(await getInstall(testersKv as never, ID, { fresh: true })).toEqual(
+      expect.objectContaining({ owner: true, blocked: true }),
+    );
+  });
+
   const IPHONE =
     'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1';
 

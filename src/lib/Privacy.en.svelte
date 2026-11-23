@@ -18,19 +18,24 @@
   <div class="card-body">
     <h3>In short</h3>
     <ul>
-      <li>Everything you say is stored on your own phone first.</li>
       <li>
-        To process it, your recording goes to OpenAI (speech to text) and the text to Anthropic
-        (text to observation). They don’t train their models on it.
+        What you say is stored on your own phone. No account, no ads and no track of where you’ve
+        been.
       </li>
       <li>
-        You only share with the developer if you say yes to that, and recordings only if you switch
-        that on separately.
+        To turn your voice into an observation, the recording goes to OpenAI and the text to
+        Anthropic. They don’t train their models on it.
       </li>
       <li>
-        No account, no ads, no track of where you’ve been. Without sharing, the developer only sees
-        how much the app is used, plus anonymous numbers per session (can be switched off), not what
-        you say or where you are.
+        You only share with the developer if you say yes to that. Otherwise the developer only sees
+        how much the app is used and a few anonymous numbers per session, never what you said or
+        where you were.
+      </li>
+      <li>You can switch everything off and delete it yourself.</li>
+      <li>
+        Fluistervink is a personal project of Stephan Muller, who is responsible for your data.
+        Questions or having something erased: <a href="mailto:{CONTACT}">{CONTACT}</a>, or send
+        feedback in the app.
       </li>
     </ul>
   </div>
@@ -38,45 +43,10 @@
 
 <section class="card">
   <div class="card-body">
-    <h3>Who makes Fluistervink</h3>
+    <h3>Processing your voice</h3>
     <p>
-      Fluistervink is a personal project of Stephan Muller, who is responsible for what happens to
-      your data. Questions, access to your data or having something erased: email
-      <a href="mailto:{CONTACT}">{CONTACT}</a>, or send feedback in the app.
-    </p>
-  </div>
-</section>
-
-<section class="card">
-  <div class="card-body">
-    <h3>On your phone</h3>
-    <p>
-      Recordings, text, time and location of each voice note, your observations, the duration and
-      distance of a session and a log of what the app did are kept in the storage of the app (or the
-      browser) on your phone, until you delete them. A backup under
-      <a href="{app}#instellingen">Settings</a> is a file on your phone (in the Android app in Downloads)
-      that goes nowhere, unless you put it somewhere yourself.
-    </p>
-    <p>
-      In the Android app, Fluistervink shows a notification during a session, so the app keeps
-      working with the screen off and keeps following your location. Only the location at the start
-      of a voice note is kept, no track, plus the distance walked as a single number. After "Stop"
-      the following ends. The spoken confirmation (if you switch it on) uses your phone’s
-      text-to-speech; Fluistervink doesn’t send that text anywhere.
-    </p>
-  </div>
-</section>
-
-<section class="card">
-  <div class="card-body">
-    <h3>What the app sends</h3>
-    <p>
-      Everything first passes through Fluistervink’s own server. It only keeps what you share
-      (below) and how much you had processed (number of voice notes and their duration per day and
-      session, with the kind of voice note, the language and the app version, without what you said;
-      for 13 months, after that only as a weekly total that no longer shows whose it was), for the
-      costs and to see how many people use the app. The server’s log (when, and whether something
-      went wrong) is kept for a few days.
+      Two services turn what you say into an observation. This goes through Fluistervink’s own
+      server, so without your IP address or name.
     </p>
     <dl>
       <dt>OpenAI</dt>
@@ -90,30 +60,6 @@
         more" works), with how far they are from you. No recording and no coordinates. Anthropic
         deletes it within 30 days and doesn’t train on it.
       </dd>
-      <dt>Waarneming.nl</dt>
-      <dd>
-        The coordinates of an observation, to look up the name of the area, via Fluistervink’s
-        server (so without your IP address or name).
-      </dd>
-      <dt>OpenStreetMap</dt>
-      <dd>Map tiles, when you look at a map: their server sees which area that is.</dd>
-      <dt>Google</dt>
-      <dd>
-        The first time you open the app, Google Play confirms that it’s the real app on a real
-        device (Play Integrity), with a random number for this installation, without observations.
-        Nothing else, except what you do yourself: installing the app from Google Play, opening a
-        link to a place in Google Maps, or putting an export in Google Drive.
-      </dd>
-      <dt>Cloudflare</dt>
-      <dd>
-        In the browser, or if Google Play doesn’t confirm it, Cloudflare Turnstile checks the first
-        time you open the app whether there’s a real browser behind it, among other things from your
-        IP address, according to Cloudflare only to keep robots out. After that your installation is
-        called something like "app-3f9a2b1c", with nothing that points to you, unless you fill in
-        your name under <a href="{app}#instellingen">Settings</a> (optional). With that name it also notes
-        whether it’s an iPhone, an Android device or a computer (your browser sends that itself), so I
-        can see how many people use which kind of device; not the brand, model or version.
-      </dd>
     </dl>
   </div>
 </section>
@@ -124,32 +70,19 @@
     <p>
       If you say yes to sharing, then after each session your voice notes as text, what the app made
       of them, your corrections, your feedback, the log and the locations of your observations go to
-      the developer; recordings only if you switch that on under
+      the developer. Recordings only if you switch that on separately under
       <a href="{app}#instellingen">Settings</a>. Feedback you type outside a session goes straight
-      away, with the log of the half hour before. Please don’t say any personal details, such as
-      your name, address or social security number. The app leaves out long strings of digits (such
-      as an ID, phone or bank account number) and email addresses before sharing, and the recording
-      of what you said too; they stay on your phone. It is stored at Cloudflare under the name of
-      your installation. Only the developer reads it, to improve the app, and doesn’t pass it on. It
-      is kept until you ask for it to be erased (via feedback or
-      <a href="mailto:{CONTACT}">{CONTACT}</a>).
+      away, with the log of the half hour before.
     </p>
-  </div>
-</section>
-
-<section class="card">
-  <div class="card-body">
-    <h3>Anonymous numbers per session</h3>
     <p>
-      Separately from the sharing above, the app sends a handful of numbers after a session: how
-      long it lasted (to 5 minutes), how many voice notes, observations and different species, how
-      many of those were uncertain, not understood, corrected by voice or failed, whether it waited
-      for a connection, whether it was a migration or garden count, whether you reviewed and
-      exported, and whether it was the Android app. This happens when you export the session, or a
-      week after stopping. Not where, when, which species or what you said. The server stores it
-      without your installation, only with the week in which it started, so it can’t be traced back
-      to you. This lets the developer see how well the app works in the field. On by default; switch
-      it off under <a href="{app}#instellingen">Settings</a>.
+      If you happen to say a long number (such as a phone or bank account number) or an email
+      address, the app leaves it out before anything is shared, and the recording of that voice note
+      too. It stays on your phone.
+    </p>
+    <p>
+      Only the developer reads it, to improve the app, and doesn’t pass it on. It is stored at
+      Cloudflare under the name of your installation and kept until you ask for it to be erased (via
+      feedback or <a href="mailto:{CONTACT}">{CONTACT}</a>).
     </p>
   </div>
 </section>
@@ -187,6 +120,89 @@
 
 <section class="card">
   <div class="card-body">
+    <h3>All the details</h3>
+    <p class="muted">For those who want to know exactly.</p>
+
+    <details>
+      <summary>What is stored on your phone</summary>
+      <p>
+        Recordings, text, time and location of each voice note, your observations, the duration and
+        distance of a session and a log of what the app did are kept in the storage of the app (or
+        the browser) on your phone, until you delete them. A backup under
+        <a href="{app}#instellingen">Settings</a> is a file on your phone (in the Android app in Downloads)
+        that goes nowhere, unless you put it somewhere yourself.
+      </p>
+      <p>
+        In the Android app, Fluistervink shows a notification during a session, so the app keeps
+        working with the screen off and keeps following your location. Only the location at the
+        start of a voice note is kept, no track, plus the distance walked as a single number. After
+        "Stop" the following ends. The spoken confirmation (if you switch it on) uses your phone’s
+        text-to-speech; Fluistervink doesn’t send that text anywhere.
+      </p>
+    </details>
+
+    <details>
+      <summary>Fluistervink’s server</summary>
+      <p>
+        Everything the app sends first passes through Fluistervink’s own server. It only keeps what
+        you share and how much you had processed, for the costs and to see how many people use the
+        app: the number of voice notes and their duration per day and session, with the kind of
+        voice note, the language and the app version, without what you said. That is kept for 13
+        months, after that only as a weekly total that no longer shows whose it was. The server’s
+        log (when, and whether something went wrong) is kept for a few days.
+      </p>
+    </details>
+
+    <details>
+      <summary>Anonymous numbers per session</summary>
+      <p>
+        Separately from sharing, the app sends a handful of numbers after a session: how long it
+        lasted (to 5 minutes), how many voice notes, observations and different species, how many of
+        those were uncertain, not understood, corrected by voice or failed, whether it waited for a
+        connection, whether it was a migration or garden count, whether you reviewed and exported,
+        and whether it was the Android app. This happens when you export the session, or a week
+        after stopping. Not where, when, which species or what you said. The server stores it
+        without your installation, only with the week in which it started, so it can’t be traced
+        back to you. This lets the developer see how well the app works in the field. On by default;
+        switch it off under <a href="{app}#instellingen">Settings</a>.
+      </p>
+    </details>
+
+    <details>
+      <summary>Map, area name and opening the app for the first time</summary>
+      <dl>
+        <dt>Waarneming.nl</dt>
+        <dd>
+          The coordinates of an observation, to look up the name of the area, via Fluistervink’s
+          server (so without your IP address or name).
+        </dd>
+        <dt>OpenStreetMap</dt>
+        <dd>Map tiles, when you look at a map: their server sees which area that is.</dd>
+        <dt>Google</dt>
+        <dd>
+          The first time you open the app, Google Play confirms that it’s the real app on a real
+          device (Play Integrity), with a random number for this installation, without observations.
+          Nothing else, except what you do yourself: installing the app from Google Play, opening a
+          link to a place in Google Maps, or putting an export in Google Drive.
+        </dd>
+        <dt>Cloudflare</dt>
+        <dd>
+          In the browser, or if Google Play doesn’t confirm it, Cloudflare Turnstile checks the
+          first time you open the app whether there’s a real browser behind it, among other things
+          from your IP address, according to Cloudflare only to keep robots out. After that your
+          installation is called something like "app-3f9a2b1c", with nothing that points to you,
+          unless you fill in your name under <a href="{app}#instellingen">Settings</a> (optional). With
+          that name it also notes whether it’s an iPhone, an Android device or a computer (your browser
+          sends that itself), so the developer can see how many people use which kind of device; not the
+          brand, model or version.
+        </dd>
+      </dl>
+    </details>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-body">
     <h3>Your rights</h3>
     <p>
       Under the GDPR you may ask what is stored about you (including a copy of what you shared),
@@ -201,7 +217,7 @@
 </section>
 
 <p class="sources">
-  Updated on 16 November 2026. Sources, checked on 11 November 2026:
+  Updated on 23 November 2026. Sources, checked on 11 November 2026:
   <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noopener">
     OpenAI
   </a>,
@@ -273,6 +289,27 @@
 
   dd {
     margin: 0.1rem 0 0;
+  }
+
+  .muted {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  details {
+    border-top: 1px solid var(--border);
+    margin-top: 0.5rem;
+  }
+
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+    padding: 0.6rem 0;
+  }
+
+  details > p,
+  details > dl {
+    margin-bottom: 0.6rem;
   }
 
   a {
