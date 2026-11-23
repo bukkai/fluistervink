@@ -27,7 +27,21 @@
     type SessionCost,
   } from './costs';
   import { db } from './db';
-  import { costPerUserWeek } from './stats';
+  import {
+    COST_PER_USER_HIGH,
+    COST_PER_USER_OK,
+    costPerKind,
+    costPerUserWeek,
+    costSplit,
+    limitPeaks,
+    MONTH_BUDGET,
+    monthForecast,
+    topShare,
+    unitCostPerWeek,
+    utterancesPerLanguage,
+    versionsInUse,
+  } from './stats';
+  import { AUDIO_SECONDS_PER_DAY, MESSAGES_PER_DAY } from './limits';
   import { ACTIVE_DAYS, lastSeen, splitActive } from './testers';
   import { describeImport, exportAllJson, importJson, saveFile } from './export';
 
@@ -198,6 +212,40 @@
     const week = full.reduce((sum, w) => sum + w.cost, 0) / users;
     return { week, month: (week * 52) / 12, weeks: full.length };
   });
+  // Kostengrens per stap (docs/plan-marketing.md): wat het gemiddelde per
+  // maand betekent voor de volgende stap
+  const costVerdict = $derived.by(() => {
+    if (!perUserAverage) return undefined;
+    const month = perUserAverage.month;
+    if (month < COST_PER_USER_OK) return 'onder de grens: de volgende stap mag';
+    if (month < COST_PER_USER_HIGH) return 'tussen de grenzen: de betaalde laag gaat voor';
+    return 'boven de grens: eerst de kosten omlaag of de betaalde laag';
+  });
+  const forecast = $derived(costs ? monthForecast(costs.thisMonth) : undefined);
+  const concentration = $derived(topShare(usageRows));
+  const costParts = $derived(
+    costSplit(usageRows, new Map((testers ?? []).flatMap((t) => (t.via ? [[t.name, t.via]] : [])))),
+  );
+  const splitText = (parts: Record<string, number>, names: Record<string, string>) =>
+    Object.entries(parts)
+      .sort(([, a], [, b]) => b - a)
+      .map(([key, cost]) => `${names[key] ?? key} ${money(cost)}`)
+      .join(' · ');
+  const unitWeeks = $derived(unitCostPerWeek(usageRows, startOfLastMonth(new Date())));
+  const peaks = $derived(limitPeaks(usageRows));
+  // Stap 2: per functie, versie en taal (labels die de app sinds 23 nov meestuurt)
+  const kinds = $derived(costPerKind(usageRows));
+  const KIND_NAMES: Record<string, string> = {
+    knop: 'Knop',
+    trektel: 'Trektelling',
+    tuintelling: 'Tuintelling',
+    proberen: 'Probeer het eens',
+    '': 'Onbekend',
+  };
+  const versions = $derived(versionsInUse(usageRows));
+  const languages = $derived(utterancesPerLanguage(usageRows));
+  const hours = (seconds: number) =>
+    `${(seconds / 3600).toLocaleString('nl-NL', { maximumFractionDigits: 1 })} u`;
   const maxTesterCost = $derived(Math.max(...(costs?.perTester.map((t) => t.cost) ?? []), 0));
 
   async function remove(tester: Tester) {
@@ -365,6 +413,74 @@
           omgevingen.
         </p>
       {/if}
+      {#if kinds.length}
+        <h3>Per functie, deze maand</h3>
+        <div class="table">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Functie</th>
+                <th scope="col">Uitspr.</th>
+                <th scope="col">Kosten</th>
+                <th scope="col">Per uitspr.</th>
+              </tr>
+            </thead>
+            <tbody>
+              {#each kinds as k (k.kind)}
+                <tr>
+                  <th scope="row">{KIND_NAMES[k.kind] ?? k.kind}</th>
+                  <td>{k.utterances}</td>
+                  <td>{money(k.cost)}</td>
+                  <td>{k.perUtterance === undefined ? '–' : money(k.perUtterance)}</td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        </div>
+        <p class="hint">
+          Zonder de eigenaar en de testset. Onbekend: van vóór 23 november of een oudere versie van
+          de app. Tuintelling telt ook met de knop ingesproken uitspraken.
+        </p>
+      {/if}
+      <h3>Kostengrens</h3>
+      <ul class="amounts">
+        {#if perUserAverage}
+          <li>
+            <span>Per actieve gebruiker per maand</span>
+            <span>{money(perUserAverage.month)}</span>
+          </li>
+        {/if}
+        {#if forecast !== undefined}
+          <li>
+            <span>Deze maand naar verwachting</span>
+            <span class:over={forecast > MONTH_BUDGET}
+              >{money(forecast)} van {money(MONTH_BUDGET)}</span
+            >
+          </li>
+        {/if}
+        {#if perUserAverage}
+          {#each [100, 500, 1000] as users (users)}
+            <li>
+              <span class="muted">Bij {users} actieve gebruikers</span>
+              <span class="muted">{money(perUserAverage.month * users)} per maand</span>
+            </li>
+          {/each}
+        {/if}
+      </ul>
+      <p class="hint">
+        {#if costVerdict}Gemiddeld {costVerdict}.{/if}
+        Grenzen {money(COST_PER_USER_OK)} en {money(COST_PER_USER_HIGH)} per actieve gebruiker per maand,
+        budget {money(MONTH_BUDGET)} (ongeveer €50) per maand tot de betaalde laag er is (docs/plan-marketing.md).
+        De verwachting rekent deze maand door met alles, ook de testset.
+        {#if concentration}
+          {concentration.top === 1
+            ? 'De duurste gebruiker'
+            : `De duurste ${concentration.top} gebruikers`} van de {concentration.users}
+          {concentration.top === 1 ? 'maakte' : 'maakten'} deze maand {Math.round(
+            concentration.share * 100,
+          )}% van de kosten.
+        {/if}
+      </p>
       {#if costs.unknownModels.length}
         <p class="message error">
           Geen prijs voor {costs.unknownModels.join(', ')}; die tellen niet mee. Vul de prijstabel
@@ -383,6 +499,68 @@
               ? ` · ${money(costs.perSession)} per sessie`
               : ''}
           </p>
+          <p class="hint">
+            Deze maand per omgeving: {splitText(costParts.channel, {
+              stable: 'stabiel',
+              beta: 'beta',
+            }) || '–'}. Per aanmelding: {splitText(costParts.via, {
+              play: 'Android-app',
+              turnstile: 'browser',
+            }) || '–'}. Zonder de testset.
+          </p>
+          <p class="hint">
+            Dicht bij het plafond, deze maand: hooguit {peaks.messages} van {MESSAGES_PER_DAY} verzoeken
+            aan het model en {hours(peaks.audioSeconds)} van {hours(AUDIO_SECONDS_PER_DAY)} spraak door
+            één installatie op één dag; {peaks.hits === 0
+              ? 'niemand raakte een plafond'
+              : `${peaks.hits}× een plafond geraakt`}. Zonder de eigenaar.
+          </p>
+          <p class="hint">
+            Versies de laatste 7 dagen: {versions.length
+              ? versions
+                  .map(
+                    (v) =>
+                      `${v.version} (${count(v.installs, 'installatie', 'installaties')}, tot ${dateFormat.format(new Date(v.lastDay))})`,
+                  )
+                  .join(' · ')
+              : '–'}. Uitspraken per taal deze maand: {Object.entries(languages)
+              .map(([language, n]) => `${language || 'onbekend'} ${n}`)
+              .join(' · ') || '–'}. Zonder de eigenaar en de testset.
+          </p>
+          {#if unitWeeks.length}
+            <h3>Per uitspraak, per week</h3>
+            <div class="table">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Week van</th>
+                    <th scope="col">Uitspr.</th>
+                    <th scope="col">Per uitspr.</th>
+                    <th scope="col">Cache</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {#each unitWeeks as w (w.week)}
+                    <tr>
+                      <th scope="row">{dateFormat.format(new Date(w.week))}</th>
+                      <td>{w.utterances}</td>
+                      <td>{w.perUtterance === undefined ? '–' : money(w.perUtterance)}</td>
+                      <td
+                        >{w.cacheShare === undefined
+                          ? '–'
+                          : `${Math.round(w.cacheShare * 100)}%`}</td
+                      >
+                    </tr>
+                  {/each}
+                </tbody>
+              </table>
+            </div>
+            <p class="hint">
+              Alle sessies, ook de eigenaar; zonder de testset. Cache: deel van de invoer aan het
+              model dat uit de cache kwam. Springt de prijs per uitspraak omhoog na een nieuwe
+              promptversie, kijk dan daar.
+            </p>
+          {/if}
           {#if costs.topSessions.length}
             <h3>Duurste sessies</h3>
             <ul class="amounts">
@@ -679,6 +857,11 @@
 
   .bar-label .muted {
     font-size: 0.85rem;
+  }
+
+  .amounts .over {
+    color: var(--red);
+    font-weight: 600;
   }
 
   .amounts .muted {

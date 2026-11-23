@@ -3,7 +3,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import worker from './index';
 import { installName, integrityNonce, putInstall, signInstallToken } from './install';
-import { recordUsage } from './usage';
+import { keepFrom, pruneUsage, recordUsage, usageSince } from './usage';
 
 // De proxy in Node, met een nep-KV in het geheugen, D1 als SQLite in het
 // geheugen (zodat de echte SQL getest wordt) en een nagebootste fetch
@@ -93,7 +93,22 @@ function memoryD1() {
       return { results: db.prepare(sql).all(...values) };
     },
   });
-  return { prepare: (sql: string) => statement(sql) };
+  return {
+    prepare: (sql: string) => statement(sql),
+    /** Zoals D1: alles in één transactie, of niets */
+    async batch(statements: ReturnType<typeof statement>[]) {
+      db.exec('BEGIN');
+      try {
+        for (const s of statements) await s.run();
+        db.exec('COMMIT');
+      } catch (error) {
+        db.exec('ROLLBACK');
+        throw error;
+      }
+      return [];
+    },
+    exec: (sql: string) => db.exec(sql),
+  };
 }
 
 let kv: ReturnType<typeof memoryKv>;
@@ -1196,6 +1211,29 @@ describe('/api/usage (verbruik)', () => {
     expect(await rows()).toEqual([expect.objectContaining({ session: '', requests: 2 })]);
   });
 
+  it('telt per soort uitspraak, versie en taal, alleen met bekende waarden', async () => {
+    upstream.mockImplementation(async () =>
+      Response.json(message({ input_tokens: 1, output_tokens: 1 })),
+    );
+    const send = (headers: Record<string, string>) =>
+      call('/api/messages', {
+        method: 'POST',
+        headers: { 'X-Session': 'sessie-1', ...headers },
+        body: JSON.stringify({ model: 'claude-haiku-5-5', max_tokens: 10, messages: [] }),
+      });
+    await send({ 'X-Kind': 'trektel', 'X-App-Version': 'a1b2c3d', 'X-Language': 'en' });
+    await send({ 'X-Kind': 'trektel', 'X-App-Version': 'a1b2c3d', 'X-Language': 'en' });
+    await send({ 'X-Kind': '<script>', 'X-App-Version': 'x'.repeat(40), 'X-Language': 'fr' });
+    const result = await rows();
+    expect(result).toHaveLength(2);
+    expect(result).toContainEqual(
+      expect.objectContaining({ kind: 'trektel', version: 'a1b2c3d', language: 'en', requests: 2 }),
+    );
+    expect(result).toContainEqual(
+      expect.objectContaining({ kind: '', version: '', language: '', requests: 1 }),
+    );
+  });
+
   it('telt niets als OpenAI of Anthropic een fout geeft', async () => {
     upstream.mockResolvedValue(Response.json({ error: { message: 'kapot' } }, { status: 500 }));
     await transcribe('gpt-transcribe');
@@ -1486,5 +1524,148 @@ describe('/api/billing (echte rekening)', () => {
   it('is alleen voor de eigenaar', async () => {
     expect((await call('/api/billing')).status).toBe(403);
     expect(upstream).not.toHaveBeenCalled();
+  });
+});
+
+describe('bewaartermijn van het verbruik', () => {
+  it('houdt 13 maanden per installatie', () => {
+    expect(keepFrom(new Date('2027-12-15T12:00:00Z'))).toBe('2026-11-01');
+  });
+
+  it('vat oudere regels per week samen, zonder installatie, en wist ze', async () => {
+    const db = memoryD1() as never;
+    const key = (tester: string) => ({
+      tester,
+      channel: 'stable',
+      session: 's',
+      model: 'gpt-transcribe',
+    });
+    // Vrijdag 2 en zaterdag 3 oktober 2026: dezelfde week (maandag 28 sep)
+    await recordUsage(db, key('anna'), { audioSeconds: 60 }, new Date('2026-10-02T12:00:00Z'));
+    await recordUsage(db, key('bert'), { audioSeconds: 30 }, new Date('2026-10-03T12:00:00Z'));
+    await recordUsage(db, key('anna'), { audioSeconds: 10 }, new Date('2027-11-20T12:00:00Z'));
+
+    expect(await pruneUsage(db, new Date('2027-12-15T12:00:00Z'))).toBe(2);
+    expect((await usageSince(db, '2000-01-01')).map((r) => r.day)).toEqual(['2027-11-20']);
+    const { results } = await (db as ReturnType<typeof memoryD1>)
+      .prepare('SELECT * FROM usage_weekly')
+      .all();
+    expect(results).toEqual([
+      expect.objectContaining({ week: '2026-09-28', testers: 2, requests: 2, audio_seconds: 90 }),
+    ]);
+    // Nog een keer: niets meer te doen
+    expect(await pruneUsage(db, new Date('2027-12-15T12:00:00Z'))).toBe(0);
+  });
+});
+
+describe('usage-tabel van vóór 23 nov (beta en stable delen de database)', () => {
+  it('laat de oude tabel staan, telt hem mee, en de oude code kan er nog in schrijven', async () => {
+    const db = memoryD1();
+    db.exec(`CREATE TABLE usage (
+      day TEXT NOT NULL, tester TEXT NOT NULL, channel TEXT NOT NULL, session TEXT NOT NULL,
+      model TEXT NOT NULL, requests INTEGER NOT NULL DEFAULT 0,
+      input_tokens INTEGER NOT NULL DEFAULT 0, output_tokens INTEGER NOT NULL DEFAULT 0,
+      cache_write_tokens INTEGER NOT NULL DEFAULT 0, cache_read_tokens INTEGER NOT NULL DEFAULT 0,
+      audio_seconds REAL NOT NULL DEFAULT 0,
+      PRIMARY KEY (day, tester, channel, session, model))`);
+    const at = new Date('2026-11-23T12:00:00Z');
+    const key = { tester: 'anna', channel: 'stable', session: 's', model: 'gpt-transcribe' };
+    await recordUsage(
+      db as never,
+      { ...key, kind: 'knop', version: 'abc1234', language: 'nl' },
+      { audioSeconds: 30 },
+      at,
+    );
+    // Zo schrijft de code van stable (van vóór deze wijziging)
+    db.exec(`INSERT INTO usage (day, tester, channel, session, model, requests, audio_seconds)
+      VALUES ('2026-11-23', 'anna', 'stable', 's', 'gpt-transcribe', 1, 60)
+      ON CONFLICT (day, tester, channel, session, model) DO UPDATE SET
+        requests = requests + 1, audio_seconds = audio_seconds + excluded.audio_seconds`);
+
+    const all = await usageSince(db as never, '2000-01-01');
+    expect(all).toHaveLength(2);
+    expect(all).toContainEqual(
+      expect.objectContaining({ kind: '', requests: 1, audioSeconds: 60 }),
+    );
+    expect(all).toContainEqual(
+      expect.objectContaining({ kind: 'knop', version: 'abc1234', requests: 1, audioSeconds: 30 }),
+    );
+  });
+});
+
+describe('/api/summaries (anonieme cijfers per sessie)', () => {
+  const summary = {
+    minutes: 60,
+    utterances: 10,
+    observations: 8,
+    species: 5,
+    uncertain: 1,
+    notUnderstood: 1,
+    corrections: 1,
+    failed: 0,
+    reviewed: 8,
+    offline: false,
+    trektel: false,
+    tuintelling: false,
+    exported: 'waarneming',
+    platform: 'android',
+  };
+  const post = (body: unknown, code?: string) =>
+    call('/api/summaries', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      ...(code ? { code } : {}),
+    });
+  const list = async () =>
+    (
+      (await (await call('/api/summaries?from=2000-01-01', { code: OWNER_CODE })).json()) as {
+        rows: Record<string, unknown>[];
+      }
+    ).rows;
+
+  it('bewaart zonder installatie, alleen met de week waarin die begon', async () => {
+    await putInstall(testersKv as never, ANNA_ID, {
+      name: ANNA,
+      // Woensdag 11 november 2026
+      registeredAt: Date.parse('2026-11-11T12:00:00Z'),
+      via: 'play',
+    });
+    const log = vi.spyOn(console, 'log');
+    const response = await post(summary);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ ok: true, stored: true });
+    const rows = await list();
+    expect(rows).toEqual([
+      expect.objectContaining({ ...summary, cohort: '2026-11-09', week: expect.any(String) }),
+    ]);
+    expect(JSON.stringify(rows)).not.toContain(ANNA);
+    // Ook het log koppelt de cijfers niet aan de installatie
+    expect(log.mock.calls.flat().some((c) => JSON.stringify(c).includes('/api/summaries'))).toBe(
+      false,
+    );
+    log.mockRestore();
+  });
+
+  it('weigert onbekende velden, vrije tekst en onzinwaarden', async () => {
+    for (const body of [
+      { ...summary, note: 'hallo' },
+      { ...summary, exported: 'ergens' },
+      { ...summary, minutes: -5 },
+      { ...summary, utterances: 1.5 },
+      { ...summary, offline: 'ja' },
+      { ...summary, platform: undefined },
+      [summary],
+      'tekst',
+    ]) {
+      expect((await post(body)).status).toBe(400);
+    }
+    expect(await list()).toEqual([]);
+  });
+
+  it('bewaart niets van de eigenaar, en alleen de eigenaar kan ophalen', async () => {
+    expect(await (await post(summary, OWNER_CODE)).json()).toEqual({ ok: true, stored: false });
+    expect(await list()).toEqual([]);
+    expect((await call('/api/summaries?from=2000-01-01')).status).toBe(403);
   });
 });

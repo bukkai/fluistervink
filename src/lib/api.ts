@@ -3,6 +3,7 @@
 // keer ingevuld bij Instellingen en daarna in localStorage bewaard, samen met
 // de naam die de proxy erbij teruggeeft.
 
+import type { SummaryRow } from './stats';
 import { language, t } from './i18n';
 import type { Billing, UsageRow } from './costs';
 import { forgetInstallToken, getInstallToken, register } from './install';
@@ -218,23 +219,44 @@ export interface TranscribeOptions {
   model?: string;
   /** Tekst die de herkenning stuurt, bv. een lijst soortnamen */
   prompt?: string;
-  /** Sessie waar de uitspraak bij hoort, voor het verbruik (zie sessionHeader) */
+  /** Sessie waar de uitspraak bij hoort, voor het verbruik (zie usageHeaders) */
   sessionId?: string;
   /** Taal van de uitspraak; de proxy laat alleen 'nl' en 'en' door */
+  language?: 'nl' | 'en';
+  /** Wat voor uitspraak, voor het verbruik (zie usageHeaders) */
+  kind?: UsageKind;
+}
+
+/**
+ * Wat voor uitspraak het is, voor de kosten per functie op Developer: met de
+ * knop, een stuk uit een trektelling of tuintelling, of "Probeer het eens".
+ */
+export type UsageKind = 'knop' | 'trektel' | 'tuintelling' | 'proberen';
+
+/** Waar een verzoek bij hoort, voor het verbruik dat de proxy telt */
+export interface UsageTag {
+  sessionId?: string;
+  kind?: UsageKind;
   language?: 'nl' | 'en';
 }
 
 /**
- * De proxy telt het verbruik per sessie (kostenoverzicht op Developer).
- * Alleen het id; zonder (testset) telt het als "geen sessie".
+ * De proxy telt het verbruik per sessie, soort uitspraak, taal en versie van
+ * de app (Developer, docs/proxy.md). Alleen labels, geen inhoud; zonder sessie
+ * (testset, proberen) telt het als "geen sessie".
  */
-function sessionHeader(sessionId: string | undefined): HeadersInit {
-  return sessionId ? { 'X-Session': sessionId } : {};
+function usageHeaders({ sessionId, kind, language }: UsageTag): Record<string, string> {
+  return {
+    'X-App-Version': __APP_VERSION__,
+    ...(sessionId ? { 'X-Session': sessionId } : {}),
+    ...(kind ? { 'X-Kind': kind } : {}),
+    ...(language ? { 'X-Language': language } : {}),
+  };
 }
 
 export async function transcribe(
   audio: Blob,
-  { model, prompt, sessionId, language }: TranscribeOptions = {},
+  { model, prompt, sessionId, language, kind }: TranscribeOptions = {},
 ): Promise<{ data: { text: string; model: string; confidence?: number }; timing: Timing }> {
   const form = new FormData();
   // OpenAI herkent het formaat aan de extensie: "audio/webm;codecs=opus" → .webm
@@ -246,7 +268,7 @@ export async function transcribe(
   if (language && language !== 'nl') form.set('language', language);
   return timedRequest(
     '/api/transcribe',
-    { method: 'POST', headers: sessionHeader(sessionId), body: form },
+    { method: 'POST', headers: usageHeaders({ sessionId, kind, language }), body: form },
     transcribeTimeout(audio.size),
   );
 }
@@ -254,11 +276,11 @@ export async function transcribe(
 /** Stuurt een verzoek door naar de Messages API van Anthropic. */
 export async function createMessage<T = unknown>(
   params: object,
-  sessionId?: string,
+  usage: UsageTag = {},
 ): Promise<{ data: T; timing: Timing }> {
   return timedRequest('/api/messages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...sessionHeader(sessionId) },
+    headers: { 'Content-Type': 'application/json', ...usageHeaders(usage) },
     body: JSON.stringify(params),
   });
 }
@@ -267,6 +289,23 @@ export async function createMessage<T = unknown>(
  * Deelt een bestand met de ontwikkelaar (zie share.ts): `sessions/<id>` of
  * `audio/<id>`. De proxy bewaart het onder de naam van de tester.
  */
+/**
+ * Anonieme cijfers van één sessie (summaries.ts). De proxy bewaart ze zonder
+ * installatie; van de eigenaar niet.
+ */
+export async function sendSummary(summary: object): Promise<void> {
+  await request('/api/summaries', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(summary),
+  });
+}
+
+/** Anonieme cijfers per sessie vanaf `from`, alleen voor de eigenaar (Statistieken). */
+export async function listSummaries(from: string): Promise<SummaryRow[]> {
+  return (await request<{ rows: SummaryRow[] }>(`/api/summaries?from=${from}`)).rows;
+}
+
 export async function putShared(path: string, body: Blob): Promise<void> {
   await request(`/api/feedback/${path}`, {
     method: 'PUT',

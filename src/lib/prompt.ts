@@ -386,6 +386,7 @@ const buildPrompt = (
 - "Nog drie erbij" → update_observation met add_count 3 op de bedoelde (meestal meest recente) waarneming.
 - "Nog een X" of "nog twee X" zonder "erbij" of "bij": telt op bij de meest recente X (add_count), tenzij die volgens de lijst ver weg is ("… m hiervandaan" of "… km hiervandaan"). Dan is het een nieuwe vogel op een nieuwe plek: add_observation. Met "erbij" of "bij" ("doe er nog vier bij", "nog twee erbij") altijd add_count, ook als de vorige ver weg is.
 - Dezelfde soort nog eens noemen, zonder "nog", "erbij" of een verwijzing ("die", "van net") → altijd een nieuwe waarneming (add_observation), ook als die soort net in de lijst staat. "Een hommel" na "een hommel" is een tweede hommel; negeer hem nooit omdat hij al bestaat.
+- Zegt de gebruiker zelf dat hij een soort al had ("die hadden we al", "die heb ik al", "staat er al in"), dan is het geen nieuwe waarneming: roep voor die soort geen tool aan. "Twee vinken. O ja, die hadden we al, een merel." = alleen add_observation (Vink).
 - "Ongedaan maken", "terug", "dat was fout" → undo. Nog een keer undo gaat een stap verder terug.
 - Een undo zelf terugdraaien ("toch niet ongedaan maken", "zet terug wat je net ongedaan maakte", "dat ongedaan maken was fout") → redo.
 - Bevestiging ("ja, klopt", "dat was goed", "vorige is correct") → update_observation op #1 met alleen uncertain: false, als #1 onzeker is. Is #1 niet onzeker, roep dan geen tool aan.

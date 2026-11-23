@@ -46,11 +46,15 @@ export function describeAdd(action: Extract<Action, { type: 'add' }>): TryLine {
 export async function tryUtterance(audio: Blob, groups: boolean): Promise<TryResult> {
   const startedAt = Date.now();
   try {
-    const { text: transcript } = await transcribe(audio, { groups, language });
+    const { text: transcript } = await transcribe(audio, { groups, language, kind: 'proberen' });
     let lines: TryLine[] = [];
     if (transcript) {
       // Geen eerdere waarnemingen: verwijzingen ("nog drie") kunnen hier niet
-      const { actions } = await interpret(transcript, [], { groups, language });
+      const { actions } = await interpret(transcript, [], {
+        groups,
+        language,
+        kind: 'proberen',
+      });
       lines = actions.flatMap((action) => (action.type === 'add' ? [describeAdd(action)] : []));
     }
     logEvent('tryout', { ms: Date.now() - startedAt, observations: lines.length });

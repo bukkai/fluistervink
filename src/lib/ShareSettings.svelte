@@ -12,11 +12,14 @@
     shareEnabled,
     shareNow,
   } from './share';
+  import { anonStatsEnabled, setAnonStatsEnabled } from './summaries';
 
   // De eigenaar heeft geen naam nodig: die is te herkennen aan zijn code
   let { showName = true }: { showName?: boolean } = $props();
 
   let sharing = $state(shareEnabled());
+  // Los van het delen hierboven: zonder installatie, standaard aan (summaries.ts)
+  let anon = $state(anonStatsEnabled());
   let sharingAudio = $state(shareAudio());
   let sharedAt = $state(lastSharedAt());
   let shareStatus = $state<'idle' | 'busy' | 'error'>('idle');
@@ -98,6 +101,11 @@
             : t('share.nothingSent'))}
       </p>
     {/if}
+    <label class="check anon">
+      <input type="checkbox" bind:checked={anon} onchange={() => setAnonStatsEnabled(anon)} />
+      {t('share.anon')}
+    </label>
+    <p class="hint">{t('share.anonHint')}</p>
     {#if showName}
       <form class="name stack" onsubmit={saveName}>
         <label>
@@ -119,6 +127,12 @@
 <style>
   .hint a {
     color: inherit;
+  }
+
+  /* Anoniem los van het delen erboven */
+  .anon {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
   }
 
   /* De naam los van de keuzes erboven */

@@ -36,6 +36,7 @@
     shareChoiceMade,
     shareEnabled,
   } from './lib/share';
+  import { scheduleSummaries } from './lib/summaries';
   import DevNotes from './lib/DevNotes.svelte';
   import Developer from './lib/Developer.svelte';
   import Changelog from './lib/Changelog.svelte';
@@ -62,7 +63,11 @@
   // Sessies en feedback delen met de ontwikkelaar (share.ts): bij het
   // opstarten, bij elke schermwissel (bv. klaar met nalopen) en bij weer online
   scheduleShare();
-  window.addEventListener('online', () => scheduleShare());
+  scheduleSummaries();
+  window.addEventListener('online', () => {
+    scheduleShare();
+    scheduleSummaries();
+  });
 
   // liveQuery draait opnieuw zodra de data in IndexedDB verandert, en is
   // direct bruikbaar als Svelte-store ($sessions).
@@ -108,6 +113,7 @@
   const onHashChange = () => {
     hash = location.hash;
     scheduleShare();
+    scheduleSummaries();
     // De bevestiging na het stoppen alleen tonen tot je dat scherm verlaat
     if (justStopped && !hash.endsWith(justStopped)) justStopped = undefined;
     menuOpen = false;

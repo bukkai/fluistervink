@@ -245,6 +245,9 @@ export const en: Dictionary = {
   'share.failed': 'Sending failed: {error}',
   'share.lastSent': 'Last sent: {date}.',
   'share.nothingSent': 'Nothing sent yet.',
+  'share.anon': 'Share anonymous numbers per session',
+  'share.anonHint':
+    'Only numbers, such as the duration, the number of voice notes and whether you exported. Not where, when, which species or what you said, and not from which phone.',
 
   // Opnames
   'recordings.title': 'Recordings',

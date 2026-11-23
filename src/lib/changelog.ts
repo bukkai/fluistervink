@@ -31,6 +31,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026-11-23',
+    topics: {
+      'Over de app': [
+        'Hoeveel je liet verwerken (aantal uitspraken en hun duur) bewaart de server nu 13 maanden; daarna alleen nog als totaal per week, zonder te zien van wie. Zie Privacy.',
+        'Na een sessie stuurt de app anonieme cijfers: hoe lang hij duurde, hoeveel uitspraken en waarnemingen, hoeveel daarvan niet begrepen of onzeker waren, en of je hebt geëxporteerd. Niet waar, wanneer, welke soorten of wat je zei, en niet van welke telefoon. Uit te zetten bij Instellingen; zie Privacy.',
+        'Bij dat verbruik telt de server nu ook wat voor uitspraak het was (knop, trektelling, tuintelling of "Probeer het eens"), in welke taal, en met welke versie van de app. Niet wat je zei. Zie Privacy.',
+      ],
+    },
+  },
+  {
     date: '2026-11-22',
     topics: {
       Export: [

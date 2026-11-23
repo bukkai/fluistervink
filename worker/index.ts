@@ -18,12 +18,16 @@ import {
   verifyTurnstile,
   type InstallSecrets,
 } from './install';
+import { AUDIO_SECONDS_PER_DAY, MESSAGES_PER_DAY } from '../src/lib/limits';
+import { checkSummary, storeSummary, summariesSince } from './summaries';
 import {
   activitySince,
   audioSecondsToday,
   messagesToday,
   lastUsedPerTester,
+  pruneUsage,
   recordUsage,
+  labelsFrom,
   sessionFrom,
   usageSince,
   type Usage,
@@ -74,23 +78,7 @@ const PER_SECOND_MODELS = ['gpt-transcribe', 'whisper-1'];
  */
 const TRANSCRIBE_LANGUAGES = ['nl', 'en'];
 
-/**
- * Plafond op de spraakherkenning per tester per dag (docs/plan-trektelmodus.md,
- * punt 5): een trektelling houdt de microfoon uren aan, en sinds aanmelden
- * zonder code kan iedereen de app installeren. Vijf uur spraak is een hele dag
- * tellen; met de knop haal je dat nooit. De eigenaar valt erbuiten (testset).
- */
-const AUDIO_SECONDS_PER_DAY = 5 * 60 * 60;
-/**
- * Plafond op verzoeken aan het model per installatie per dag. De drukste dag
- * tot nu toe had zo'n 100 uitspraken, een trektelling van 5 uur (het plafond
- * voor spraak) hooguit 300 stukken; elke uitspraak is één verzoek. Zonder dit
- * plafond hield alleen de grens van 60 per minuut een misbruikte installatie
- * tegen, en dat kon honderden dollars per dag kosten; nu hooguit zo'n $3,30
- * (500 × 256 kB aan invoer). Was 1500 tijdens de gesloten test; verlaagd voor
- * de openbare app (`docs/plan-marketing.md`, Kostengrens per stap).
- */
-const MESSAGES_PER_DAY = 500;
+// Plafonds per installatie per dag: src/lib/limits.ts
 
 const CLAUDE_MODELS = ['claude-haiku-5-5', 'claude-sonnet-5-5', 'claude-opus-5-5'];
 
@@ -119,8 +107,9 @@ export default {
     if (!tester) {
       return json({ error: 'Ongeldige of ontbrekende toegangscode of installatie' }, 401);
     }
-    // In Workers Logs (observability), om gebruik per tester te kunnen zien
-    console.log({ tester, path: pathname });
+    // In Workers Logs (observability), om gebruik per tester te kunnen zien. Niet
+    // bij de anonieme cijfers: dan zou het log ze toch aan een installatie koppelen.
+    if (pathname !== '/api/summaries') console.log({ tester, path: pathname });
 
     try {
       if (pathname === '/api/ping' && request.method === 'GET') {
@@ -152,6 +141,9 @@ export default {
       }
       if (pathname === '/api/stats' && request.method === 'GET') {
         return await stats(request, env, tester);
+      }
+      if (pathname === '/api/summaries') {
+        return await summaries(request, env, tester);
       }
       if (pathname === '/api/billing' && request.method === 'GET') {
         return await billing(env, tester);
@@ -263,10 +255,16 @@ type Meter = (model: string, usage: Partial<Usage>) => void;
 /**
  * Telt in D1 (worker/usage.ts) na het antwoord, zodat de app er niet op
  * wacht; lukt het niet, dan mislukt de uitspraak daar niet door. De app stuurt
- * het id van de sessie mee in `X-Session`.
+ * het id van de sessie mee in `X-Session`, en de soort uitspraak, versie en
+ * taal in `X-Kind`, `X-App-Version` en `X-Language` (`labelsFrom`).
  */
 function meter(request: Request, env: WorkerEnv, ctx: ExecutionContext, tester: string): Meter {
-  const key = { tester, channel: env.CHANNEL, session: sessionFrom(request) };
+  const key = {
+    tester,
+    channel: env.CHANNEL,
+    session: sessionFrom(request),
+    ...labelsFrom(request),
+  };
   return (model, usage) =>
     ctx.waitUntil(
       recordUsage(env.USAGE, { ...key, model }, usage).catch((error) =>
@@ -513,7 +511,34 @@ async function usage(request: Request, env: WorkerEnv, tester: string): Promise<
   if (tester !== OWNER) return json({ error: 'Alleen voor de eigenaar' }, 403);
   const from = new URL(request.url).searchParams.get('from') ?? '';
   if (!/^\d{4}-\d{2}-\d{2}$/.test(from)) return json({ error: 'Ongeldige datum' }, 400);
+  // Bewaartermijn: wat ouder is dan 13 maanden alleen nog per week, zonder installatie
+  await pruneUsage(env.USAGE);
   return json({ rows: await usageSince(env.USAGE, from) });
+}
+
+/**
+ * Anonieme cijfers per sessie (worker/summaries.ts). `POST` voor elke
+ * installatie: bewaard zonder installatie, alleen met de week waarin die
+ * begon; van de eigenaar niet (die test). `GET ?from=…` alleen de eigenaar.
+ */
+async function summaries(request: Request, env: WorkerEnv, tester: string): Promise<Response> {
+  if (request.method === 'GET') {
+    if (tester !== OWNER) return json({ error: 'Alleen voor de eigenaar' }, 403);
+    const from = new URL(request.url).searchParams.get('from') ?? '';
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(from)) return json({ error: 'Ongeldige datum' }, 400);
+    return json({ rows: await summariesSince(env.USAGE, from) });
+  }
+  if (request.method !== 'POST') return json({ error: 'Niet gevonden' }, 404);
+  if (!(await withinLimit(env, tester, 'summary'))) {
+    return json({ error: 'Te veel verzoeken achter elkaar; probeer het zo opnieuw' }, 429);
+  }
+  const summary = checkSummary(await request.json().catch(() => null));
+  if (!summary) return json({ error: 'Ongeldige samenvatting' }, 400);
+  // De app verwacht altijd JSON (zonder denkt hij aan de inlogpagina van een wifi)
+  if (tester === OWNER) return json({ ok: true, stored: false });
+  const install = tester.startsWith('app-') ? await findInstall(env.TESTERS, tester) : null;
+  await storeSummary(env.USAGE, summary, install?.registeredAt);
+  return json({ ok: true, stored: true });
 }
 
 /**

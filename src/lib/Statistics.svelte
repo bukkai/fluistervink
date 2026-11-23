@@ -2,8 +2,22 @@
   // Statistieken, alleen voor de eigenaar: hoeveel mensen de app gebruiken en
   // of ze terugkomen (src/lib/stats.ts). Alleen totalen, geen namen: wie wat
   // deed staat al op Developer, hier gaat het om de trend.
-  import { listActivity } from './api';
-  import { perDay, perWeek, type ActivityRow } from './stats';
+  import { listActivity, listSummaries, listTesters, type Tester } from './api';
+  import {
+    cohorts,
+    funnel,
+    MIN_GROUP,
+    addDays,
+    perDay,
+    perSessionWeek,
+    perWeek,
+    RETENTION_WEEKS,
+    STAY_DAYS,
+    weekOf,
+    type ActivityRow,
+    type SummaryRow,
+  } from './stats';
+  import { dayOf } from './costs';
 
   const DAYS = 30;
   /** Grafiek en tabel even lang, zodat elke week in de grafiek een rij heeft */
@@ -21,10 +35,66 @@
   listActivity('2026-01-01')
     .then((result) => (rows = result))
     .catch((e) => (error = `Ophalen mislukt: ${e instanceof Error ? e.message : e}`));
+  // Installaties: voor de trechter en Play tegenover browser. Mislukt dat, dan
+  // ontbreken alleen die twee.
+  // Anonieme cijfers per sessie (summaries.ts), de laatste 12 weken. Mislukt
+  // het ophalen, dan ontbreekt alleen die kaart.
+  let summaries = $state<SummaryRow[]>();
+  listSummaries(addDays(dayOf(new Date()), -7 * 12))
+    .then((result) => (summaries = result))
+    .catch(() => (summaries = undefined));
+  let sessionWeeks = $derived(perSessionWeek(summaries ?? []));
+  let allSessions = $derived(sessionWeeks.at(-1));
+  /** Een deel als percentage, alleen bij een groep van minstens MIN_GROUP sessies */
+  const pct = (share: number, sessions: number) =>
+    sessions >= MIN_GROUP ? `${Math.round(share * 100)}%` : '–';
+  let installs = $state<Tester[]>();
+  listTesters()
+    .then((result) => (installs = result))
+    .catch(() => (installs = undefined));
 
   let counted = $derived((rows ?? []).filter((r) => withOwner || r.tester !== 'eigenaar'));
   let days = $derived(perDay(counted, DAYS));
   let weeks = $derived(perWeek(counted, WEEKS));
+  /** Laatste weken van eerste gebruik; ouder past niet op een telefoon */
+  const COHORTS = 12;
+  let cohortRows = $derived(cohorts(counted).slice(0, COHORTS));
+  /**
+   * Alle groepen samen, per week na het begin: telt alleen groepen waarvoor die
+   * week al om is. Zo is er al een cijfer voordat één week groot genoeg is.
+   */
+  let cohortTotal = $derived(
+    RETENTION_WEEKS.map((_, i) => {
+      const done = cohorts(counted).filter((c) => c.retained[i] !== undefined);
+      const size = done.reduce((sum, c) => sum + c.size, 0);
+      const kept = done.reduce((sum, c) => sum + c.retained[i]! * c.size, 0);
+      return { size, share: size ? kept / size : undefined };
+    }),
+  );
+  let steps = $derived(
+    installs
+      ? funnel(
+          rows ?? [],
+          installs.map((t) => t.name),
+        )
+      : undefined,
+  );
+  /** Actief deze week, per manier van aanmelden (Play = Android-app) */
+  let byVia = $derived.by(() => {
+    if (!installs) return undefined;
+    const via = new Map(installs.map((t) => [t.name, t.via]));
+    const thisWeek = weekOf(dayOf(new Date()));
+    const active = new Set(counted.filter((r) => weekOf(r.day) === thisWeek).map((r) => r.tester));
+    let play = 0;
+    let browser = 0;
+    for (const tester of active) {
+      if (via.get(tester) === 'play') play++;
+      else if (via.get(tester) === 'turnstile') browser++;
+    }
+    return { play, browser };
+  });
+  const percent = (part: number, whole: number) =>
+    whole ? `${Math.round((part / whole) * 100)}%` : '–';
   let maxUsers = $derived(Math.max(1, ...days.map((d) => d.users)));
   // Oudste week eerst, voor de grafiek
   let chartWeeks = $derived([...weeks].reverse());
@@ -101,9 +171,182 @@
       </dl>
       <p class="muted hint">
         Vorige week {weeks[1].active} actief, waarvan {weeks[0].returning} deze week terug.
+        {#if byVia}
+          Deze week {byVia.play} in de Android-app en {byVia.browser} in de browser.
+        {/if}
       </p>
     </div>
   </section>
+
+  {#if steps}
+    <section class="card">
+      <div class="card-head"><h2>Van installeren tot vaste gebruiker</h2></div>
+      <div class="card-body">
+        <ol class="steps">
+          <li>
+            <span>Geïnstalleerd</span>
+            <strong>{steps.installed}</strong>
+          </li>
+          <li>
+            <span>Iets ingesproken</span>
+            <strong>{steps.used}</strong>
+            <span class="muted">{percent(steps.used, steps.installed)}</span>
+          </li>
+          <li>
+            <span>Tweede sessie</span>
+            <strong>{steps.returned}</strong>
+            <span class="muted">{percent(steps.returned, steps.used)}</span>
+          </li>
+          <li>
+            <span>Na {STAY_DAYS / 7} weken nog actief</span>
+            <strong>{steps.stayed}</strong>
+            <span class="muted">
+              {steps.eligible >= MIN_GROUP ? percent(steps.stayed, steps.eligible) : '–'}
+            </span>
+          </li>
+        </ol>
+        <p class="muted hint">
+          Elk percentage van de stap ervoor. De laatste stap telt alleen wie minstens {STAY_DAYS /
+            7} weken geleden begon ({steps.eligible}), met een percentage vanaf {MIN_GROUP}. Zonder
+          de eigenaar en zonder testers van vóór het aanmelden zonder code.
+        </p>
+      </div>
+    </section>
+  {/if}
+
+  <section class="card">
+    <div class="card-head">
+      <h2>Blijven ze?</h2>
+      <span class="muted">per week van eerste gebruik</span>
+    </div>
+    <div class="card-body table">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Begonnen</th>
+            <th scope="col">Aantal</th>
+            {#each RETENTION_WEEKS as offset (offset)}
+              <th scope="col">{offset} wk</th>
+            {/each}
+          </tr>
+        </thead>
+        <tbody>
+          {#each cohortRows as c (c.week)}
+            <tr>
+              <th scope="row">{shortFormat.format(date(c.week))}</th>
+              <td>{c.size}</td>
+              {#each c.retained as share, i (i)}
+                <td>
+                  {share === undefined || c.size < MIN_GROUP ? '–' : `${Math.round(share * 100)}%`}
+                </td>
+              {/each}
+            </tr>
+          {/each}
+          <tr class="total">
+            <th scope="row">Alle</th>
+            <td></td>
+            {#each cohortTotal as total, i (i)}
+              <td>
+                {total.share === undefined || total.size < MIN_GROUP
+                  ? '–'
+                  : `${Math.round(total.share * 100)}%`}
+              </td>
+            {/each}
+          </tr>
+        </tbody>
+      </table>
+      <p class="muted hint">
+        Welk deel in precies die week na de eerste week nog iets insprak. Een percentage alleen bij
+        minstens {MIN_GROUP} mensen, en alleen voor weken die om zijn. Alle: de groepen samen waarvoor
+        die week al om is.
+      </p>
+    </div>
+  </section>
+
+  {#if summaries?.length && allSessions}
+    <section class="card">
+      <div class="card-head">
+        <h2>Hoe sessies gaan</h2>
+        <span class="muted">anoniem, laatste 12 weken</span>
+      </div>
+      <div class="card-body table">
+        <dl class="facts">
+          <div>
+            <dt>Sessies</dt>
+            <dd>{allSessions.sessions}</dd>
+          </div>
+          <div>
+            <dt>Duur (mediaan)</dt>
+            <dd>{allSessions.minutes} min</dd>
+          </div>
+          <div>
+            <dt>Uitspraken per sessie</dt>
+            <dd>{Math.round(allSessions.utterances)}</dd>
+          </div>
+          <div>
+            <dt>Niet begrepen</dt>
+            <dd>{pct(allSessions.notUnderstood, allSessions.sessions)}</dd>
+          </div>
+          <div>
+            <dt>Met de stem verbeterd</dt>
+            <dd>{pct(allSessions.corrections, allSessions.sessions)}</dd>
+          </div>
+          <div>
+            <dt>Mislukt</dt>
+            <dd>{pct(allSessions.failed, allSessions.sessions)}</dd>
+          </div>
+          <div>
+            <dt>Onzeker</dt>
+            <dd>{pct(allSessions.uncertain, allSessions.sessions)}</dd>
+          </div>
+          <div>
+            <dt>Nagelopen</dt>
+            <dd>{pct(allSessions.reviewed, allSessions.sessions)}</dd>
+          </div>
+          <div>
+            <dt>Geëxporteerd</dt>
+            <dd>{pct(allSessions.exported, allSessions.sessions)}</dd>
+          </div>
+          <div>
+            <dt>Op bereik gewacht</dt>
+            <dd>{pct(allSessions.offline, allSessions.sessions)}</dd>
+          </div>
+          <div>
+            <dt>In de Android-app</dt>
+            <dd>{pct(allSessions.android, allSessions.sessions)}</dd>
+          </div>
+        </dl>
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Week van</th>
+              <th scope="col">Sessies</th>
+              <th scope="col">Niet begr.</th>
+              <th scope="col">Onzeker</th>
+              <th scope="col">Geëxp.</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each sessionWeeks.slice(0, -1) as w (w.week)}
+              <tr>
+                <th scope="row">{shortFormat.format(date(w.week))}</th>
+                <td>{w.sessions}</td>
+                <td>{pct(w.notUnderstood, w.sessions)}</td>
+                <td>{pct(w.uncertain, w.sessions)}</td>
+                <td>{pct(w.exported, w.sessions)}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+        <p class="muted hint">
+          Van wie anonieme cijfers deelt, zonder te zien van wie. Een sessie komt binnen als hij
+          geëxporteerd is, of een week na het stoppen; de week is die van binnenkomst. Niet
+          begrepen, verbeterd en mislukt: van de uitspraken. Onzeker en nagelopen: van de
+          waarnemingen. De rest: van de sessies. Een percentage pas bij {MIN_GROUP} sessies.
+        </p>
+      </div>
+    </section>
+  {/if}
 
   <section class="card">
     <div class="card-head">
@@ -368,6 +611,10 @@
     fill: color-mix(in srgb, var(--brand) 18%, transparent);
   }
 
+  tr.total {
+    font-weight: 600;
+  }
+
   tr.selected {
     background: color-mix(in srgb, var(--brand) 18%, transparent);
     font-weight: 600;
@@ -402,6 +649,44 @@
 
   .table {
     overflow-x: auto;
+  }
+
+  .facts {
+    margin: 0 0 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem 1rem;
+  }
+
+  .facts dt {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .facts dd {
+    margin: 0;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .steps li {
+    display: grid;
+    grid-template-columns: 1fr auto 3.5rem;
+    gap: 0.5rem;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--border);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .steps li span:last-child,
+  .steps strong {
+    text-align: right;
   }
 
   table {
