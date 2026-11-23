@@ -44,6 +44,17 @@ Een branch testen vóór het mergen: `CAP_SERVER_URL=<preview-adres van Cloudfla
 
 Native code staat in `android/app/src/main/java/nl/hegmus/fluistervink/` (Java, zoals de `MainActivity` die Capacitor aanmaakt). De webcode praat er alleen mee via `src/lib/native.ts`.
 
+## iOS-app (proef)
+
+Een proef, nog niet in de App Store (`docs/plan-ios.md`). Eenmalig: Xcode uit de Mac App Store installeren, met de iOS-simulator, en `sudo xcode-select -s /Applications/Xcode.app`. Voor een eigen iPhone volstaat een gratis Apple-account: meld je aan in Xcode (Settings → Accounts) en kies bij het target App onder Signing & Capabilities je Personal Team. Een app die zo is geïnstalleerd, werkt 7 dagen. Op de iPhone ontwikkelaarsmodus aanzetten (Instellingen → Privacy en beveiliging), na de eerste keer aansluiten.
+
+```bash
+npx cap sync ios   # config en plugins naar ios/ kopiëren
+npx cap open ios   # openen in Xcode, simulator of iPhone kiezen, Run ▶
+```
+
+Native code staat in `ios/App/App/` (Swift). De plugins hebben dezelfde naam als op Android en worden geregistreerd in `AppViewController.swift`; een nieuw bestand voeg je in Xcode toe aan het target App. De versie komt uit git (`scripts/ios-versie.sh`, een buildstap in het project).
+
 ## Stack
 
 - [Vite](https://vite.dev) als build tool en dev server
