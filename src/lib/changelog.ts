@@ -41,6 +41,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         'Na een sessie stuurt de app anonieme cijfers: hoe lang hij duurde, hoeveel uitspraken en waarnemingen, hoeveel daarvan niet begrepen of onzeker waren, en of je hebt geëxporteerd. Niet waar, wanneer, welke soorten of wat je zei, en niet van welke telefoon. Uit te zetten bij Instellingen; zie Privacy.',
         'Bij dat verbruik telt de server nu ook wat voor uitspraak het was (knop, trektelling, tuintelling of "Probeer het eens"), in welke taal, en met welke versie van de app. Niet wat je zei. Zie Privacy.',
         'De server onthoudt bij je installatie ook of het een iPhone, een Android-toestel of een computer is. Niet het merk, het model of de versie. Zie Privacy.',
+        'De pagina Privacy is overzichtelijker: bovenaan kort wat er met je gegevens gebeurt, de details staan ingeklapt eronder. Er is niets weggelaten.',
       ],
     },
   },
