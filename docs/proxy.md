@@ -18,7 +18,9 @@ Op **Developer**, onder Kosten (`src/lib/stats.ts`): de **kostengrens** uit `doc
 
 **Bewaartermijn:** regels per installatie blijven 13 maanden (`KEEP_MONTHS`); daarna vat de proxy ze samen in `usage_weekly` (per week, omgeving en model, alleen het aantal installaties, geen namen of sessies) en wist ze (`pruneUsage`, bij elke keer dat de eigenaar de kosten ophaalt). Staat in `#privacy`.
 
-Meer (duur, regio, functies, openen zonder inspreken) pas met een anonieme samenvatting per sessie, met `#privacy` erbij (stap 2 en 3 in `NOTES.md`).
+**Stap 2** (23 nov): de app stuurt bij elk verzoek aan spraakherkenning en model ook de soort uitspraak (`X-Kind`: knop, trektel, tuintelling, proberen; `usageKind` in `src/lib/queue.ts`, "Probeer het eens" in `tryout.ts`), de taal (`X-Language`) en de versie van de app (`X-App-Version`, de korte commit) mee (`usageHeaders` in `src/lib/api.ts`). De proxy neemt alleen bekende waarden over (`labelsFrom` in `worker/usage.ts`) en telt ze in een eigen tabel `usage_labeled`, met `kind`, `version` en `language` in de sleutel; leeg van de testset en van oudere versies. De oude tabel `usage` blijft zoals hij was: beta en stable delen deze database, en de code van stable schrijft daar met de oude sleutel tot zijn release. Lezen gaat via de view `usage_all` (de oude tabel met lege labels plus de nieuwe); elk verzoek staat maar in één van de twee. `usage` kan weg als stable ook deze code heeft en er niets meer in komt (na de bewaartermijn vanzelf leeg). Developer toont daarmee de kosten per functie (deze maand, zonder eigenaar en testset), de versies in gebruik (laatste 7 dagen, aantal installaties) en de uitspraken per taal. "Probeer het eens" heeft geen sessie; met `kind` is het nu te onderscheiden van de testset.
+
+Meer (duur, regio, openen zonder inspreken, nalopen, exporteren) pas met een anonieme samenvatting per sessie, met `#privacy` erbij (stap 3 in `NOTES.md`).
 
 ## Delen met de ontwikkelaar
 

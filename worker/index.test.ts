@@ -93,7 +93,22 @@ function memoryD1() {
       return { results: db.prepare(sql).all(...values) };
     },
   });
-  return { prepare: (sql: string) => statement(sql) };
+  return {
+    prepare: (sql: string) => statement(sql),
+    /** Zoals D1: alles in één transactie, of niets */
+    async batch(statements: ReturnType<typeof statement>[]) {
+      db.exec('BEGIN');
+      try {
+        for (const s of statements) await s.run();
+        db.exec('COMMIT');
+      } catch (error) {
+        db.exec('ROLLBACK');
+        throw error;
+      }
+      return [];
+    },
+    exec: (sql: string) => db.exec(sql),
+  };
 }
 
 let kv: ReturnType<typeof memoryKv>;
@@ -1196,6 +1211,29 @@ describe('/api/usage (verbruik)', () => {
     expect(await rows()).toEqual([expect.objectContaining({ session: '', requests: 2 })]);
   });
 
+  it('telt per soort uitspraak, versie en taal, alleen met bekende waarden', async () => {
+    upstream.mockImplementation(async () =>
+      Response.json(message({ input_tokens: 1, output_tokens: 1 })),
+    );
+    const send = (headers: Record<string, string>) =>
+      call('/api/messages', {
+        method: 'POST',
+        headers: { 'X-Session': 'sessie-1', ...headers },
+        body: JSON.stringify({ model: 'claude-haiku-5-5', max_tokens: 10, messages: [] }),
+      });
+    await send({ 'X-Kind': 'trektel', 'X-App-Version': 'a1b2c3d', 'X-Language': 'en' });
+    await send({ 'X-Kind': 'trektel', 'X-App-Version': 'a1b2c3d', 'X-Language': 'en' });
+    await send({ 'X-Kind': '<script>', 'X-App-Version': 'x'.repeat(40), 'X-Language': 'fr' });
+    const result = await rows();
+    expect(result).toHaveLength(2);
+    expect(result).toContainEqual(
+      expect.objectContaining({ kind: 'trektel', version: 'a1b2c3d', language: 'en', requests: 2 }),
+    );
+    expect(result).toContainEqual(
+      expect.objectContaining({ kind: '', version: '', language: '', requests: 1 }),
+    );
+  });
+
   it('telt niets als OpenAI of Anthropic een fout geeft', async () => {
     upstream.mockResolvedValue(Response.json({ error: { message: 'kapot' } }, { status: 500 }));
     await transcribe('gpt-transcribe');
@@ -1517,5 +1555,40 @@ describe('bewaartermijn van het verbruik', () => {
     ]);
     // Nog een keer: niets meer te doen
     expect(await pruneUsage(db, new Date('2027-12-15T12:00:00Z'))).toBe(0);
+  });
+});
+
+describe('usage-tabel van vóór 23 nov (beta en stable delen de database)', () => {
+  it('laat de oude tabel staan, telt hem mee, en de oude code kan er nog in schrijven', async () => {
+    const db = memoryD1();
+    db.exec(`CREATE TABLE usage (
+      day TEXT NOT NULL, tester TEXT NOT NULL, channel TEXT NOT NULL, session TEXT NOT NULL,
+      model TEXT NOT NULL, requests INTEGER NOT NULL DEFAULT 0,
+      input_tokens INTEGER NOT NULL DEFAULT 0, output_tokens INTEGER NOT NULL DEFAULT 0,
+      cache_write_tokens INTEGER NOT NULL DEFAULT 0, cache_read_tokens INTEGER NOT NULL DEFAULT 0,
+      audio_seconds REAL NOT NULL DEFAULT 0,
+      PRIMARY KEY (day, tester, channel, session, model))`);
+    const at = new Date('2026-11-23T12:00:00Z');
+    const key = { tester: 'anna', channel: 'stable', session: 's', model: 'gpt-transcribe' };
+    await recordUsage(
+      db as never,
+      { ...key, kind: 'knop', version: 'abc1234', language: 'nl' },
+      { audioSeconds: 30 },
+      at,
+    );
+    // Zo schrijft de code van stable (van vóór deze wijziging)
+    db.exec(`INSERT INTO usage (day, tester, channel, session, model, requests, audio_seconds)
+      VALUES ('2026-11-23', 'anna', 'stable', 's', 'gpt-transcribe', 1, 60)
+      ON CONFLICT (day, tester, channel, session, model) DO UPDATE SET
+        requests = requests + 1, audio_seconds = audio_seconds + excluded.audio_seconds`);
+
+    const all = await usageSince(db as never, '2000-01-01');
+    expect(all).toHaveLength(2);
+    expect(all).toContainEqual(
+      expect.objectContaining({ kind: '', requests: 1, audioSeconds: 60 }),
+    );
+    expect(all).toContainEqual(
+      expect.objectContaining({ kind: 'knop', version: 'abc1234', requests: 1, audioSeconds: 30 }),
+    );
   });
 });

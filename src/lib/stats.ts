@@ -440,3 +440,77 @@ export function limitPeaks(rows: UsageRow[], now = new Date()): LimitPeaks {
       .length,
   };
 }
+
+// --- Stap 2 (23 nov): per soort uitspraak, versie en taal, zoals de app ze
+// meestuurt (`usageHeaders` in api.ts). Regels van vóór 23 nov hebben lege labels.
+
+/** Een gewone gebruiker: niet de eigenaar, en niet de testset (geen sessie en geen soort) */
+const fromUser = (row: UsageRow) => row.tester !== 'eigenaar' && (!!row.session || !!row.kind);
+
+export interface KindCost {
+  /** knop, trektel, tuintelling, proberen; leeg = onbekend (oudere versie) */
+  kind: string;
+  utterances: number;
+  cost: number;
+  perUtterance?: number;
+}
+
+/**
+ * Kosten per functie deze maand, duurste eerst: wat kost een trektelling
+ * tegenover de knop? Voor wat er achter de betaalde laag hoort. Zonder de
+ * eigenaar en de testset; "Probeer het eens" (zonder sessie) wel.
+ */
+export function costPerKind(rows: UsageRow[], now = new Date()): KindCost[] {
+  const month = dayOf(now).slice(0, 7);
+  const kinds = new Map<string, { utterances: number; cost: number }>();
+  for (const row of rows) {
+    if (!row.day.startsWith(month) || !fromUser(row)) continue;
+    const k = kinds.get(row.kind ?? '') ?? { utterances: 0, cost: 0 };
+    k.cost += rowCost(row) ?? 0;
+    if (isTranscribe(row.model)) k.utterances += row.requests;
+    kinds.set(row.kind ?? '', k);
+  }
+  return [...kinds.entries()]
+    .map(([kind, k]) => ({
+      kind,
+      ...k,
+      perUtterance: k.utterances ? k.cost / k.utterances : undefined,
+    }))
+    .sort((a, b) => b.cost - a.cost);
+}
+
+/**
+ * Welke versies van de app de laatste `days` dagen in gebruik waren, met het
+ * aantal installaties: zitten na een release de meesten al op de nieuwe? Een
+ * installatie die van versie wisselde, telt bij elk mee. Zonder de eigenaar.
+ */
+export function versionsInUse(
+  rows: UsageRow[],
+  days = 7,
+  now = new Date(),
+): { version: string; installs: number; lastDay: string }[] {
+  const from = addDays(dayOf(now), -(days - 1));
+  const versions = new Map<string, { testers: Set<string>; lastDay: string }>();
+  for (const row of rows) {
+    if (row.day < from || !row.version || !fromUser(row)) continue;
+    const v = versions.get(row.version) ?? { testers: new Set<string>(), lastDay: row.day };
+    v.testers.add(row.tester);
+    if (row.day > v.lastDay) v.lastDay = row.day;
+    versions.set(row.version, v);
+  }
+  return [...versions.entries()]
+    .map(([version, v]) => ({ version, installs: v.testers.size, lastDay: v.lastDay }))
+    .sort((a, b) => b.lastDay.localeCompare(a.lastDay) || b.installs - a.installs);
+}
+
+/** Uitspraken per taal deze maand (nl, en; leeg = onbekend), zonder de eigenaar en de testset */
+export function utterancesPerLanguage(rows: UsageRow[], now = new Date()): Record<string, number> {
+  const month = dayOf(now).slice(0, 7);
+  const result: Record<string, number> = {};
+  for (const row of rows) {
+    if (!row.day.startsWith(month) || !fromUser(row) || !isTranscribe(row.model)) continue;
+    const language = row.language ?? '';
+    result[language] = (result[language] ?? 0) + row.requests;
+  }
+  return result;
+}
