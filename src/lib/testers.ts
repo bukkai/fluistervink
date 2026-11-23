@@ -1,4 +1,4 @@
-import type { Tester } from './api';
+import { OWNER, type Tester } from './api';
 
 // De lijst met installaties op Developer: wie de laatste tijd actief was
 // bovenaan, de rest achter "Toon meer".
@@ -20,12 +20,26 @@ export function lastSeen(tester: Tester): number | undefined {
  * Actieve installaties (niet afgesloten, iets gedeeld, en gezien in de laatste
  * `ACTIVE_DAYS` dagen), en de rest; allebei met de laatst geziene bovenaan.
  * Wie nog niets deelde staat ook bij de rest: daar valt voor de eigenaar
- * (nog) niets aan te zien.
+ * (nog) niets aan te zien. Zijn eigen installaties ook.
  */
 export function splitActive(testers: Tester[], now = Date.now()) {
   const since = now - ACTIVE_DAYS * 24 * 60 * 60 * 1000;
   const sorted = [...testers].sort((a, b) => (lastSeen(b) ?? 0) - (lastSeen(a) ?? 0));
   const isActive = (t: Tester) =>
-    !t.blocked && t.usage !== undefined && (lastSeen(t) ?? 0) >= since;
+    !t.blocked && !t.owner && t.usage !== undefined && (lastSeen(t) ?? 0) >= since;
   return { active: sorted.filter(isActive), inactive: sorted.filter((t) => !isActive(t)) };
+}
+
+/** Namen van de installaties van de eigenaar zelf (aangemeld vóór de code) */
+export function ownInstalls(testers: Tester[]): Set<string> {
+  return new Set(testers.filter((t) => t.owner).map((t) => t.name));
+}
+
+/**
+ * Verbruik of activiteit van een installatie van de eigenaar op naam van de
+ * eigenaar, zodat Statistieken en de kosten hem net zo weglaten.
+ */
+export function asOwner<T extends { tester: string }>(rows: T[], own: Set<string>): T[] {
+  if (!own.size) return rows;
+  return rows.map((row) => (own.has(row.tester) ? { ...row, tester: OWNER } : row));
 }

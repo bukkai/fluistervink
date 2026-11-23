@@ -568,6 +568,7 @@ async function billing(env: WorkerEnv, tester: string): Promise<Response> {
  * - GET /api/testers               alle installaties, met verbruik
  * - DELETE /api/testers?name=…     installatie afsluiten
  * - DELETE /api/testers?name=…&hide=1  afgesloten installatie uit de lijst halen
+ * - PATCH /api/testers?name=…&owner=1  installatie van de eigenaar zelf (0: toch niet)
  */
 async function testers(request: Request, env: WorkerEnv, tester: string): Promise<Response> {
   if (tester !== OWNER) return json({ error: 'Alleen voor de eigenaar' }, 403);
@@ -575,13 +576,14 @@ async function testers(request: Request, env: WorkerEnv, tester: string): Promis
   if (request.method === 'GET') {
     const installs = (await listInstalls(env.TESTERS))
       .filter((t) => !t.hidden)
-      .map(({ name, registeredAt, via, blocked, displayName }) => ({
+      .map(({ name, registeredAt, via, blocked, displayName, owner }) => ({
         name,
         source: 'install' as const,
         invitedAt: registeredAt,
         via,
         blocked: blocked || undefined,
         displayName,
+        owner: owner || undefined,
       }));
     const usage = await testerUsage(env);
     // Zonder D1 toch de lijst, alleen zonder "laatst gebruikt"
@@ -610,6 +612,20 @@ async function testers(request: Request, env: WorkerEnv, tester: string): Promis
     if (hide && !record.blocked) return json({ error: 'Eerst afsluiten' }, 409);
     await putInstall(env.TESTERS, id, { ...record, blocked: true, hidden: hide || undefined });
     return json({ ok: true });
+  }
+  if (request.method === 'PATCH') {
+    // Een installatie van de eigenaar zelf: met de hand op Developer, of
+    // vanzelf als de app met de code nog een installatie van vroeger heeft
+    const params = new URL(request.url).searchParams;
+    const name = params.get('name') ?? '';
+    const found = name.startsWith('app-') ? await findInstall(env.TESTERS, name) : undefined;
+    if (!found) return json({ error: 'Niet gevonden' }, 404);
+    const { id, ...record } = found;
+    const owner = params.get('owner') === '1';
+    if (!!record.owner !== owner) {
+      await putInstall(env.TESTERS, id, { ...record, owner: owner || undefined });
+    }
+    return json({ ok: true, owner });
   }
   return json({ error: 'Niet gevonden' }, 404);
 }

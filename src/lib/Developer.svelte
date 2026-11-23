@@ -10,6 +10,7 @@
     hideTester,
     listSharedNotes,
     listTesters,
+    markOwnInstall,
     listUsage,
     markNotesProcessed,
     removeTester,
@@ -42,7 +43,7 @@
     versionsInUse,
   } from './stats';
   import { AUDIO_SECONDS_PER_DAY, MESSAGES_PER_DAY } from './limits';
-  import { ACTIVE_DAYS, lastSeen, splitActive } from './testers';
+  import { ACTIVE_DAYS, asOwner, lastSeen, ownInstalls, splitActive } from './testers';
   import { describeImport, exportAllJson, importJson, saveFile } from './export';
 
   let testers = $state<Tester[]>();
@@ -119,8 +120,10 @@
 
   // Verbruik zoals de proxy het telt (worker/usage.ts), in dollars met de
   // prijstabel in costs.ts. Vanaf het begin van de vorige maand.
-  let costs = $state<CostSummary>();
-  let usageRows = $state<UsageRow[]>([]);
+  let rawUsage = $state<UsageRow[]>();
+  // Installaties van de eigenaar zelf tellen als de eigenaar (testers.ts)
+  const usageRows = $derived(asOwner(rawUsage ?? [], ownInstalls(testers ?? [])));
+  const costs = $derived<CostSummary | undefined>(rawUsage && summarize(usageRows));
   let costsError = $state('');
   // De echte rekening (worker/billing.ts), als controle op de prijstabel
   let billing = $state<Billing>();
@@ -130,10 +133,10 @@
 
   async function loadCosts() {
     try {
-      usageRows = await listUsage(startOfLastMonth(new Date()));
-      costs = summarize(usageRows);
+      rawUsage = await listUsage(startOfLastMonth(new Date()));
       costsError = '';
-      const sessions = await db.sessions.bulkGet(costs.topSessions.map((w) => w.session));
+      const top = summarize(rawUsage).topSessions;
+      const sessions = await db.sessions.bulkGet(top.map((w) => w.session));
       sessionNames = Object.fromEntries(
         sessions.flatMap((session) => (session?.place ? [[session.id, session.place.name]] : [])),
       );
@@ -257,6 +260,15 @@
       await loadTesters();
     } catch (error) {
       testersError = `Afsluiten mislukt: ${error instanceof Error ? error.message : error}`;
+    }
+  }
+
+  async function toggleOwn(tester: Tester) {
+    try {
+      await markOwnInstall(tester.name, !tester.owner);
+      await loadTesters();
+    } catch (error) {
+      testersError = `Aanpassen mislukt: ${error instanceof Error ? error.message : error}`;
     }
   }
 
@@ -707,9 +719,13 @@
                 {tester.invitedAt ? `· ${dateFormat.format(tester.invitedAt)}` : ''}
                 · {tester.via === 'play' ? 'Play' : 'browser'}
                 {tester.blocked ? '· afgesloten' : ''}
+                {tester.owner ? '· van mij' : ''}
               </span>
               <span class="usage muted">{usageText(tester)}</span>
             </span>
+            <button class="link" onclick={() => toggleOwn(tester)}>
+              {tester.owner ? 'Niet van mij' : 'Van mij'}
+            </button>
             {#if tester.blocked}
               <button class="link danger" onclick={() => hide(tester)}>Verwijderen</button>
             {:else}
@@ -723,7 +739,8 @@
           {showInactive ? 'Toon minder' : `Toon meer (${split.inactive.length})`}
         </button>
         <p class="hint">
-          Onder "Toon meer": afgesloten, nog niets gedeeld, of meer dan {ACTIVE_DAYS} dagen niet gebruikt.
+          Onder "Toon meer": afgesloten, van mij, nog niets gedeeld, of meer dan {ACTIVE_DAYS} dagen niet
+          gebruikt.
         </p>
       {/if}
     {/if}

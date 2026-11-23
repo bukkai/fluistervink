@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Tester } from './api';
-import { lastSeen, splitActive } from './testers';
+import { asOwner, lastSeen, ownInstalls, splitActive } from './testers';
 
 const now = Date.parse('2026-11-11T12:00:00Z');
 const daysAgo = (n: number) => now - n * 24 * 60 * 60 * 1000;
@@ -39,5 +39,35 @@ describe('lijst met installaties', () => {
     );
     expect(active.map((t) => t.name)).toEqual(['vandaag', 'nieuw']);
     expect(inactive.map((t) => t.name)).toEqual(['niets gedeeld', 'afgesloten', 'oud', 'onbekend']);
+  });
+});
+
+describe('installaties van de eigenaar', () => {
+  const testers = [
+    { name: 'app-11111111', source: 'install', owner: true },
+    { name: 'app-22222222', source: 'install' },
+  ] as Tester[];
+
+  it('telt hun verbruik als dat van de eigenaar', () => {
+    const own = ownInstalls(testers);
+    expect([...own]).toEqual(['app-11111111']);
+    const rows = [
+      { tester: 'app-11111111', day: '2026-11-01' },
+      { tester: 'app-22222222', day: '2026-11-01' },
+    ];
+    expect(asOwner(rows, own).map((r) => r.tester)).toEqual(['eigenaar', 'app-22222222']);
+    // De rijen zelf blijven zoals ze waren
+    expect(rows[0].tester).toBe('app-11111111');
+  });
+
+  it('zet ze bij de rest, niet bij de actieve', () => {
+    const now = Date.parse('2026-11-23T12:00:00Z');
+    const used = { sessions: 1, utterances: 1, notes: 0, lastActivity: now };
+    const { active, inactive } = splitActive(
+      testers.map((t) => ({ ...t, usage: used })),
+      now,
+    );
+    expect(active.map((t) => t.name)).toEqual(['app-22222222']);
+    expect(inactive.map((t) => t.name)).toEqual(['app-11111111']);
   });
 });

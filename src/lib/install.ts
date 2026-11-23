@@ -25,6 +25,15 @@ export function forgetInstallToken(): void {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+/**
+ * Naam van de installatie op dit toestel ("app-3f9a2b1c"), als de app zich
+ * ooit heeft aangemeld; zelfde als installName in worker/install.ts.
+ */
+export function existingInstallName(): string | undefined {
+  const id = localStorage.getItem(ID_KEY);
+  return id ? `app-${id.slice(0, 8)}` : undefined;
+}
+
 function installId(): string {
   let id = localStorage.getItem(ID_KEY);
   if (!id) {
