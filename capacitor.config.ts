@@ -15,6 +15,20 @@ const config: CapacitorConfig = {
   server: {
     url: process.env.CAP_SERVER_URL || 'https://fluistervink.stephanmullernl.workers.dev',
   },
+  // iOS (docs/plan-ios.md): de WebView loopt anders door onder de statusbalk
+  // en het Dynamic Island; zo houdt iOS de veilige randen zelf vrij, zonder
+  // viewport-fit=cover in de webcode (die ook Android en Safari raakt). De
+  // randen krijgen de achtergrondkleur van de app (--bg).
+  //
+  // Een WebView in een iOS-app krijgt alleen een service worker (en dus
+  // opstarten zonder bereik) op "App-Bound Domains": de lijst WKAppBoundDomains
+  // in ios/App/App/Info.plist. De WebView komt dan ook nergens anders; een
+  // preview van een branch moet er dus eerst bij.
+  ios: {
+    contentInset: 'always',
+    backgroundColor: '#f4f1ed',
+    limitsNavigationsToAppBoundDomains: true,
+  },
 };
 
 export default config;

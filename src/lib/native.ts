@@ -18,6 +18,103 @@ export const isIosApp = isNativeApp && Capacitor.getPlatform() === 'ios';
 /** Waar de app draait, voor het log en de export */
 export const PLATFORM = isNativeApp ? `${Capacitor.getPlatform()}-app` : 'web';
 
+/** Een plek zoals LocatiePlugin.swift hem geeft */
+interface NativeFix {
+  lat: number;
+  lon: number;
+  nauwkeurigheid: number;
+  /** ms sinds 1970, zoals `GeolocationPosition.timestamp` */
+  tijd: number;
+}
+
+interface LocatieOptions {
+  maxLeeftijd?: number;
+  timeout?: number;
+}
+
+interface LocatiePlugin {
+  huidige(options: LocatieOptions): Promise<NativeFix>;
+  volg(
+    options: LocatieOptions,
+    callback: (fix: NativeFix | null, error?: unknown) => void,
+  ): Promise<string>;
+  stopVolgen(options: { id: string }): Promise<void>;
+}
+
+const Locatie = registerPlugin<LocatiePlugin>('Locatie');
+
+/**
+ * De GPS voor de webcode, met dezelfde vorm als `navigator.geolocation`. In
+ * de iOS-app uit CoreLocation (LocatiePlugin.swift): de WebView vraagt anders
+ * na elke start opnieuw om toestemming, met het adres van de site erin.
+ * Elders die van de browser. Undefined als er geen GPS is. Een functie, zodat
+ * hij pas bij gebruik kiest (de tests zetten `navigator.geolocation` later).
+ */
+export function geolocation(): Geolocation | undefined {
+  if (isIosApp && Capacitor.isPluginAvailable('Locatie')) return nativeGeolocation;
+  return 'geolocation' in navigator ? navigator.geolocation : undefined;
+}
+
+function toGeolocationPosition(fix: NativeFix): GeolocationPosition {
+  const coords = {
+    latitude: fix.lat,
+    longitude: fix.lon,
+    accuracy: fix.nauwkeurigheid,
+    altitude: null,
+    altitudeAccuracy: null,
+    heading: null,
+    speed: null,
+  };
+  const position = { coords, timestamp: fix.tijd };
+  return { ...position, coords: { ...coords, toJSON: () => coords }, toJSON: () => position };
+}
+
+function toGeolocationError(error: unknown): GeolocationPositionError {
+  const { code, message } = (error ?? {}) as { code?: string; message?: string };
+  return {
+    code: Number(code) || 2,
+    message: message ?? String(error),
+    PERMISSION_DENIED: 1,
+    POSITION_UNAVAILABLE: 2,
+    TIMEOUT: 3,
+  };
+}
+
+/** Lopende watchPosition's: ons nummer → het id van de plugin */
+const nativeWatches = new Map<number, Promise<string | undefined>>();
+let nextWatch = 1;
+
+const nativeGeolocation: Geolocation = {
+  getCurrentPosition(success, error, options) {
+    Locatie.huidige({ maxLeeftijd: options?.maximumAge, timeout: options?.timeout }).then(
+      (fix) => success(toGeolocationPosition(fix)),
+      (e) => error?.(toGeolocationError(e)),
+    );
+  },
+  watchPosition(success, error, options) {
+    const id = nextWatch++;
+    nativeWatches.set(
+      id,
+      Locatie.volg({ maxLeeftijd: options?.maximumAge }, (fix, e) => {
+        if (!nativeWatches.has(id)) return;
+        if (fix) success(toGeolocationPosition(fix));
+        else error?.(toGeolocationError(e));
+      }).catch((e) => {
+        error?.(toGeolocationError(e));
+        return undefined;
+      }),
+    );
+    return id;
+  },
+  clearWatch(id) {
+    const pluginId = nativeWatches.get(id);
+    nativeWatches.delete(id);
+    void pluginId?.then((pid) => {
+      if (pid) void Locatie.stopVolgen({ id: pid }).catch(() => {});
+    });
+  },
+};
+
 interface TrillenPlugin {
   patroon(options: { patroon: number[] }): Promise<{ ok: boolean }>;
 }

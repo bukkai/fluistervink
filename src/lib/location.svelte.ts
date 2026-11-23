@@ -1,6 +1,7 @@
 import { t } from './i18n';
 import type { Position, PositionLookup } from './db';
 import { logEvent } from './log';
+import { geolocation } from './native';
 
 // GPS tijdens een sessie. Een losse meting duurt vaak 5–20 seconden voordat
 // hij nauwkeurig is; daarom houden we de GPS warm zolang er een sessie
@@ -33,7 +34,8 @@ let slowTimer: ReturnType<typeof setTimeout> | undefined;
 
 export function startTracking(): void {
   if (watchId !== undefined) return;
-  if (!('geolocation' in navigator)) {
+  const geo = geolocation();
+  if (!geo) {
     gps.status = 'unavailable';
     return;
   }
@@ -44,7 +46,7 @@ export function startTracking(): void {
     gps.slow = true;
     logEvent('gps_slow', { afterMs: Date.now() - startedAt, online: navigator.onLine });
   }, SLOW_MS);
-  watchId = navigator.geolocation.watchPosition(
+  watchId = geo.watchPosition(
     (fix) => {
       gps.latest = toPosition(fix);
       gps.slow = false;
@@ -65,7 +67,7 @@ export function startTracking(): void {
 }
 
 export function stopTracking(): void {
-  if (watchId !== undefined) navigator.geolocation.clearWatch(watchId);
+  if (watchId !== undefined) geolocation()?.clearWatch(watchId);
   watchId = undefined;
   clearTimeout(slowTimer);
   slowTimer = undefined;
@@ -97,16 +99,19 @@ export async function currentPosition(): Promise<PositionLookup> {
   if (latest && start - latest.fixedAt <= FRESH_MS) return result('recent', latest);
 
   let error: string | undefined;
-  const fresh = await new Promise<Position | undefined>((resolve) =>
-    navigator.geolocation.getCurrentPosition(
-      (fix) => resolve(toPosition(fix)),
-      (e) => {
-        error = e.message || `code ${e.code}`;
-        resolve(undefined);
-      },
-      { enableHighAccuracy: true, maximumAge: FRESH_MS, timeout: MAX_WAIT_MS },
-    ),
-  );
+  const geo = geolocation();
+  const fresh =
+    geo &&
+    (await new Promise<Position | undefined>((resolve) =>
+      geo.getCurrentPosition(
+        (fix) => resolve(toPosition(fix)),
+        (e) => {
+          error = e.message || `code ${e.code}`;
+          resolve(undefined);
+        },
+        { enableHighAccuracy: true, maximumAge: FRESH_MS, timeout: MAX_WAIT_MS },
+      ),
+    ));
   if (fresh) return result('fresh', fresh);
   return latest ? result('last_known', latest, error) : result('none', undefined, error);
 }
@@ -120,11 +125,12 @@ export function positionNow(): Promise<Position> {
   if (gps.latest && Date.now() - gps.latest.fixedAt <= FRESH_MS)
     return Promise.resolve($state.snapshot(gps.latest));
   return new Promise((resolve, reject) => {
-    if (!('geolocation' in navigator)) {
+    const geo = geolocation();
+    if (!geo) {
       reject(new Error(t('location.unsupported')));
       return;
     }
-    navigator.geolocation.getCurrentPosition(
+    geo.getCurrentPosition(
       (fix) => resolve(toPosition(fix)),
       (error) => {
         logEvent('gps_error', {
