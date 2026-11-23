@@ -2,7 +2,7 @@
   // Engelse versie van HowItWorks.svelte (ontwikkeloptie "English",
   // docs/plan-engels.md). Een wijziging aan de Nederlandse pagina hoort in
   // dezelfde PR ook hier. Houd de trilpatronen gelijk met feedback.ts.
-  import { isNativeApp } from './native';
+  import { isAndroidApp, isIosApp } from './native';
 </script>
 
 <a class="back" href="#/">Back</a>
@@ -51,7 +51,7 @@
       say "on the other side of the river", it becomes uncertain and you place it on the map at
       home.
     </p>
-    {#if isNativeApp}
+    {#if isAndroidApp}
       <p>
         In the Android app the volume button can also start and stop a recording (you can switch
         that off in Settings). Switch on "Keep the screen on" in Settings and the screen won’t turn
@@ -116,13 +116,13 @@
       says why. Without signal it simply keeps counting; after 2 hours without signal you also get
       two long buzzes, but then the count carries on.
     </p>
-    {#if isNativeApp}
+    {#if isAndroidApp}
       <p>
         While a session is running, there’s a notification at the top and the app keeps working with
         the screen off. Do let go of the button first: turning the screen off while speaking stops
         the recording.
       </p>
-    {:else}
+    {:else if !isIosApp}
       <p>
         Feel nothing? Switch on touch vibration in your phone’s settings. The app only buzzes while
         it’s on screen; on an iPhone not at all.

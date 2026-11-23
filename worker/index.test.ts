@@ -1655,12 +1655,18 @@ describe('/api/summaries (anonieme cijfers per sessie)', () => {
       { ...summary, utterances: 1.5 },
       { ...summary, offline: 'ja' },
       { ...summary, platform: undefined },
+      { ...summary, platform: 'windows' },
       [summary],
       'tekst',
     ]) {
       expect((await post(body)).status).toBe(400);
     }
     expect(await list()).toEqual([]);
+  });
+
+  it('neemt ook sessies uit de iOS-app aan', async () => {
+    expect((await post({ ...summary, platform: 'ios' })).status).toBe(200);
+    expect(await list()).toEqual([expect.objectContaining({ platform: 'ios' })]);
   });
 
   it('bewaart niets van de eigenaar, en alleen de eigenaar kan ophalen', async () => {

@@ -1,6 +1,6 @@
 import { logEvent } from './log';
 import {
-  isNativeApp,
+  isAndroidApp,
   startSessionService,
   stopSessionService,
   sessionServiceStatus,
@@ -19,7 +19,7 @@ import {
 let lastLogged = '';
 
 export async function syncSessionService(sessionId: string | undefined): Promise<void> {
-  if (!isNativeApp) return;
+  if (!isAndroidApp) return;
   if (!sessionId) {
     await stopSessionService();
     if (lastLogged) logEvent('walk_service_stopped');

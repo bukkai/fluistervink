@@ -9,7 +9,7 @@
   import type { Session } from './db';
   import { exportReminder, reminderText, snooze, snoozedAt } from './exportReminder';
   import { CHANNEL } from './log';
-  import { isNativeApp } from './native';
+  import { isAndroidApp } from './native';
   import { preferenceOn } from './preferences';
   import type { StaleCheck } from './sessions';
   import MoveToStable from './MoveToStable.svelte';
@@ -54,7 +54,7 @@
 
   // Wie de beta-app uit Play heeft (interne test), vragen over te stappen naar
   // de gewone app (MoveToStable.svelte). De eigenaar blijft op de beta.
-  let askMove = $derived(CHANNEL === 'beta' && isNativeApp && !isOwner && !later.move);
+  let askMove = $derived(CHANNEL === 'beta' && isAndroidApp && !isOwner && !later.move);
 
   // Herinnering aan de export (instelling, standaard aan; exportReminder.ts)
   let snoozed = $state(snoozedAt());

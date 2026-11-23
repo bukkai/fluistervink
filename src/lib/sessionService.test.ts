@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // alleen een regel als de uitkomst verandert (niet bij elke opname).
 
 const native = vi.hoisted(() => ({
-  isNativeApp: true,
+  isAndroidApp: true,
   startSessionService: vi.fn(),
   stopSessionService: vi.fn(),
   sessionServiceStatus: vi.fn(),

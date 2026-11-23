@@ -92,6 +92,7 @@ export const nl = {
   'welcome.permissionsMissing':
     'Zonder microfoon kun je niets inspreken, zonder locatie komen je waarnemingen niet op de kaart. Aanzetten kan alsnog bij {path}.',
   'welcome.settingsPathApp': 'Instellingen van je telefoon → Apps → Fluistervink → Rechten',
+  'welcome.settingsPathIos': 'Instellingen van je iPhone → Apps → Fluistervink',
   'welcome.settingsPathBrowser': 'Chrome: tik op het icoontje links van het adres → Rechten',
   'welcome.tryTitle': 'Probeer het eens',
   'welcome.tryLead': 'Zeg iets alsof je buiten staat, bijvoorbeeld',

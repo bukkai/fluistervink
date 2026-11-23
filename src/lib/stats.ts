@@ -541,7 +541,7 @@ export interface SessionSummary {
   trektel: boolean;
   tuintelling: boolean;
   exported: 'none' | 'waarneming' | 'ebird' | 'both';
-  platform: 'android' | 'web';
+  platform: 'android' | 'ios' | 'web';
 }
 
 /** Een samenvatting zoals de proxy hem teruggeeft (worker/summaries.ts) */

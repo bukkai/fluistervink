@@ -3,7 +3,7 @@
   // wat AI er wel en niet in doet. Kort en zonder technische termen. Houd de
   // trilpatronen gelijk met feedback.ts. De Engelse versie staat in
   // HowItWorks.en.svelte: een wijziging hier hoort in dezelfde PR ook daar.
-  import { isNativeApp } from './native';
+  import { isAndroidApp, isIosApp } from './native';
 </script>
 
 <a class="back" href="#/">Terug</a>
@@ -51,7 +51,7 @@
       Met een afstand én windrichting zet de app de vogel zelf op de kaart. Zeg je alleen "aan de
       overkant van de rivier", dan wordt hij onzeker en zet je hem thuis op de kaart.
     </p>
-    {#if isNativeApp}
+    {#if isAndroidApp}
       <p>
         In de Android-app kan ook de volumeknop de opname starten en stoppen (uit te zetten bij
         Instellingen). Zet bij Instellingen "Scherm aan houden" aan, dan gaat het scherm tijdens een
@@ -119,12 +119,12 @@
       bereik telt hij gewoon door; na 2 uur zonder bereik komen er ook twee lange trillen, maar dan
       loopt de telling door.
     </p>
-    {#if isNativeApp}
+    {#if isAndroidApp}
       <p>
         Zolang een sessie loopt, staat er een melding bovenin en werkt de app door met het scherm
         uit. Laat de knop wel eerst los: scherm uit tijdens het inspreken stopt de opname.
       </p>
-    {:else}
+    {:else if !isIosApp}
       <p>
         Voel je niets? Zet trillen bij aanraken aan in de instellingen van je telefoon. De app trilt
         alleen als hij op het scherm staat; op een iPhone helemaal niet.
