@@ -1,6 +1,6 @@
 # Plan: testers die er zelf voor kiezen
 
-23 nov 2026. Status: voorstel, na de productierelease.
+23 nov 2026. Status: voorstel, open vragen beantwoord op 24 nov; uitvoeren na de productierelease.
 
 ## Waarom
 
@@ -27,7 +27,7 @@ Hergebruik "Stabiel" **niet** voor de nieuwe testers: wie zich daar ooit heeft a
 
 ## Stap 2: een nieuwe track met een Google Group
 
-1. Een Google Group aanmaken, bv. `fluistervink-testers@googlegroups.com`. Instellingen: iedereen mag lid worden, ledenlijst alleen zichtbaar voor de eigenaar, berichten alleen van de eigenaar. Zo is de groep ook een mailinglijst voor nieuws aan de testers.
+1. Een Google Group aanmaken, bv. `fluistervink-testers@googlegroups.com`. Instellingen: iedereen mag lid worden, ledenlijst alleen zichtbaar voor de eigenaar, berichten alleen van de eigenaar. De groep is alleen voor mededelingen aan de testers; feedback blijft op Discord.
 2. In de Play Console een nieuwe **gesloten test** "Beta" met die groep als testers. Daar komt de beta-AAB, naast de interne test van de eigenaar. De interne test blijft, want die wordt niet door Google beoordeeld; de nieuwe track wel (uren tot dagen).
 3. Bij elke tag: beta-AAB naar de interne test én naar "Beta", stabiele AAB naar Productie. Aanpassen in `docs/google-play.md` (stap 5 en 6) en `docs/omgevingen.md`.
 4. `MoveToStable.svelte` weghalen of beperken: anders vraagt de beta-app de nieuwe testers meteen weer om weg te gaan. Het eenvoudigst: weghalen, want de eerste testers zijn dan al over.
@@ -57,13 +57,13 @@ Dat telt de app zelf uit de eigen database; er gaat niets naar de proxy. Een iPh
 **Wat er staat** (teksten in `src/lib/i18n/nl.ts` en `en.ts`, hele zinnen):
 
 - Kop: "Wil je nieuwe dingen eerder uitproberen?"
-- Kort wat een tester is: je krijgt Fluistervink Beta, met nieuwe dingen voordat iedereen ze krijgt. Soms gaat er iets mis; je feedback (via het menu) helpt.
+- Kort wat een tester is: je krijgt Fluistervink Beta, met nieuwe dingen voordat iedereen ze krijgt. Soms gaat er iets mis; je feedback (via Discord of Feedback in het menu) helpt.
 - Wat er gebeurt met je gegevens: de beta is een aparte plek. Maak eerst een back-up bij Instellingen en zet die in de beta terug. Wat al bij waarneming.nl staat, blijft daar.
 - Stappen: (1) back-up maken, (2) lid worden van de groep (link), (3) via de deelnamelink van "Beta" tester worden (link), (4) Play werkt de app bij naar de beta, of anders opnieuw installeren, (5) back-up terugzetten.
 - Terug naar de gewone app kan, maar alleen door de beta te verwijderen en Fluistervink opnieuw te installeren, weer met een back-up ertussen.
 - Knoppen: "Nee, dank je" en "Later".
 
-Eerst nagaan op een tweede account: werkt Play de stabiele app gewoon bij naar de beta (hoger `versionCode`, zelfde sleutel), of moet je hem eerst verwijderen? Dat bepaalt stap 4 van de kaart.
+Eerst nagaan op het tweede account (zie Besloten): werkt Play de stabiele app gewoon bij naar de beta (hoger `versionCode`, zelfde sleutel), of moet je hem eerst verwijderen? Dat bepaalt stap 4 van de kaart.
 
 **Aanzetten:** de kaart eerst als ontwikkeloptie voor de eigenaar (die is zelf op de beta, dus de voorwaarde `CHANNEL === 'stable'` geldt dan niet), om tekst en uiterlijk te bekijken. Daarna aan voor stabiel met een PR naar `main` en `npm run release`. De webcode komt live van de site, dus er is geen nieuwe app-versie nodig. Een regel in `src/lib/changelog.ts` is niet nodig: de kaart is zelf de mededeling.
 
@@ -71,8 +71,9 @@ Eerst nagaan op een tweede account: werkt Play de stabiele app gewoon bij naar d
 
 **Timing:** de Nationale Tuinvogeltelling (29–31 jan) brengt veel nieuwe gebruikers. De drempel van 5 sessies houdt die er grotendeels buiten; de kaart kan dus gewoon in januari aan.
 
-## Open vragen
+## Besloten (24 nov)
 
-- Blijft Discord voor de feedback van testers, of wordt de groep ook het gesprek? Voorstel: de groep alleen voor mededelingen, feedback in de app.
-- Hoeveel testers wil de eigenaar? De kaart kan uit zodra het er genoeg zijn (bv. 10–15).
-- Kan een tester de eigen gegevens van stabiel later zonder back-up meenemen naar de beta? Niet eenvoudig (ander adres, andere opslag in de WebView); voorlopig de back-up.
+- **Feedback via Discord**, zoals nu; de groep is alleen voor mededelingen. De kaart en de welkomstmail van de groep noemen Discord (link) naast Feedback in het menu.
+- **Aantal:** een handjevol actieve testers is genoeg, zeg 5. Niet iedereen die lid wordt, blijft actief, dus de kaart blijft aan tot er een stuk of 8–10 lid zijn en gaat dan uit (een PR die hem uitzet, plus release). Valt het aantal actieve testers later terug, dan kan hij weer aan.
+- **Gegevens meenemen zonder back-up:** niet nodig voor nu; de back-up volstaat.
+- **Uitproberen met het tweede account:** na de productierelease, als de track "Beta" er is. Dat account is sinds 18 nov tester van de interne test, en daar wint de beta altijd; eerst "Programma verlaten" via de link van de interne test, de app verwijderen en Fluistervink uit productie installeren. Daarna lid worden van de groep, tester worden van "Beta" en kijken of Play de app bijwerkt of dat verwijderen nodig is. Ook nagaan: komt de back-up van stabiel goed terug in de beta.
