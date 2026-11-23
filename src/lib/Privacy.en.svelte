@@ -144,12 +144,12 @@
     <details>
       <summary>Fluistervink’s server</summary>
       <p>
-        Everything the app sends first passes through its own server. It only keeps what you share
-        and how much you had processed, for the costs and to see how many people use the app: the
-        number of voice notes and their duration per day and session, with the kind of voice note,
-        the language and the app version, without what you said. That is kept for 13 months, after
-        that only as a weekly total that no longer shows whose it was. The server’s log (when, and
-        whether something went wrong) is kept for a few days.
+        Everything the app sends first passes through Fluistervink’s own server. It only keeps what
+        you share and how much you had processed, for the costs and to see how many people use the
+        app: the number of voice notes and their duration per day and session, with the kind of
+        voice note, the language and the app version, without what you said. That is kept for 13
+        months, after that only as a weekly total that no longer shows whose it was. The server’s
+        log (when, and whether something went wrong) is kept for a few days.
       </p>
     </details>
 
