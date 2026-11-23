@@ -55,7 +55,7 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 - `waarneming-nl.md`: importformaat, soortenlijst en codes van waarneming.nl.
 - `proxy.md`: de proxy: toegang, kosten, statistieken en wat testers delen.
 - `kwaliteitsronde.md`: de periodieke ronde over de hele codebase, met logboek.
-- `draaiboek-thuis.md`, `draaiboek-buiten.md`, `draaiboek-telling.md`: proeven op de telefoon om af te vinken: thuis aan tafel (gedaan 22 nov, op de kinderstem na), buiten met oortjes en testset-opnames, trektelling met het scherm uit en tuintelling.
+- `draaiboek-thuis.md`, `draaiboek-buiten.md`, `draaiboek-telling.md`: proeven op de telefoon om af te vinken: thuis aan tafel (gedaan 22 nov, op de kinderstem na), buiten met oortjes en testset-opnames, trektelling met het scherm uit en tuintelling. `draaiboek-release.md`: wat er vóór de laatste release naar stable nog op de telefoon moet (thuis een kwartier, buiten een half uur).
 - `beheer.md`: API-sleutels, weetjes bij het bouwen van de Android-app, de branch-regel op `main`, twee sessies tegelijk.
 
 ## Archief

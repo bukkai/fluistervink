@@ -21,6 +21,8 @@ Waar de rest staat: ontwerp en afspraken in `CLAUDE.md`, de richting in `docs/ro
 
 ## Op de telefoon proberen
 
+- **Vóór de release naar stable:** `docs/draaiboek-release.md` (thuis R: Android na #359, statistieken, nalopen; buiten S: de prompt-fixes #342–#356 in een gewone sessie, en het knopje voor #361). Daarna `npm run release`, testers mailen.
+
 Uitgeschreven in drie draaiboeken om af te vinken: `docs/draaiboek-thuis.md` (A–F en H gedaan op 22 nov; nog G, de kinderstem, begin december), `docs/draaiboek-buiten.md` (oortjesmicrofoon in drie rondes, sluiterknopje, opnames voor de testset) en `docs/draaiboek-telling.md` (A, trektelling met het scherm uit, gedaan op 22 nov: werkt, elk stuk meteen verwerkt, accu 40 → 38% in 16 min; B, tuintelling, gedaan op 22 nov: werkt, bevindingen opgelost in #347–#349; nog C, `walk_service_failed`). Bevindingen hier; elk punt dat werkt, ook uit het draaiboek weghalen.
 
 - **Op de beta nalopen (gemerged 22 nov, fixes uit de draaiboeken):** #342 dezelfde soort nog eens is een nieuwe waarneming; #344 soortveld (suggesties in beeld, eigen kleur, wetenschappelijke naam); #346 feedback wordt nooit uitgevoerd, een andere soort zonder "die"/"van net" is nieuw; #347 tuintelling: vogels ter plaatse in plaats van overvliegend, volumeknop start en stopt het tellen, knop op de voorpagina meteen na aanzetten, aanpassen in de bewerker maakt zeker; #348 zin dat radio of tv beter uit kan; #349 export na een tuintelling ingeklapt ("Ook doorgeven aan waarneming.nl of eBird?"). Bij de volgende tuintelling of trektelling meenemen.
