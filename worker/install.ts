@@ -42,8 +42,10 @@ export interface InstallRecord {
   device?: Device;
   blocked?: boolean;
   /**
-   * Afgesloten én uit de lijst op Developer gehaald. Het record blijft wel
-   * staan: zonder zou het token van die installatie weer werken.
+   * Uit de lijst op Developer gehaald. Afgesloten: voorgoed (het record blijft
+   * wel staan, zonder zou het token weer werken). Niet afgesloten: opgeruimd
+   * omdat hij nooit iets deed (`isUnused`); hij werkt nog en staat weer in de
+   * lijst zodra hij iets doet.
    */
   hidden?: boolean;
   /** Naam die de gebruiker zelf opgaf (Instellingen), zodat de eigenaar weet wie het is */

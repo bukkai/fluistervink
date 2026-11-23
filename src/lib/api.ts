@@ -404,6 +404,15 @@ export async function hideTester(name: string): Promise<void> {
   await request(`/api/testers?name=${encodeURIComponent(name)}&hide=1`, { method: 'DELETE' });
 }
 
+/**
+ * Installaties die nooit iets deden uit de lijst halen (`isUnused`); ze blijven
+ * werken. Geeft de namen van wat opgeruimd is.
+ */
+export async function cleanupTesters(): Promise<string[]> {
+  return (await request<{ cleaned: string[] }>('/api/testers?cleanup=1', { method: 'POST' }))
+    .cleaned;
+}
+
 /** Een installatie van de eigenaar zelf, of (`false`) toch niet. */
 export async function markOwnInstall(name: string, owner: boolean): Promise<void> {
   await request(`/api/testers?name=${encodeURIComponent(name)}&owner=${owner ? 1 : 0}`, {

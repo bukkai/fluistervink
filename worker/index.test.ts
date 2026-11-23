@@ -1142,6 +1142,73 @@ describe('/api/feedback/notes (feedback inzien)', () => {
     expect((await list())?.lastUsed).toBe('2026-11-03');
   });
 
+  it('ruimt ongebruikte installaties op; ze blijven werken en komen terug als ze iets doen', async () => {
+    const DAY = 24 * 60 * 60 * 1000;
+    const install = (id: string, extra: Record<string, unknown> = {}) =>
+      putInstall(testersKv as never, id, {
+        name: installName(id),
+        registeredAt: Date.now() - 3 * DAY,
+        via: 'turnstile',
+        ...extra,
+      });
+    const OUD = 'c0000000-0000-4000-8000-00000000000c';
+    const NIEUW = 'd0000000-0000-4000-8000-00000000000d';
+    const NAAM = 'e0000000-0000-4000-8000-00000000000e';
+    await install(ANNA_ID); // spreekt in, zonder delen
+    await install(OUD);
+    await install(NIEUW, { registeredAt: Date.now() - 60 * 1000 });
+    await install(NAAM, { displayName: 'Kees' });
+    const names = async () =>
+      (
+        (await (await call('/api/testers', { code: OWNER_CODE })).json()) as {
+          testers: { name: string }[];
+        }
+      ).testers
+        .map((t) => t.name)
+        .sort();
+    await names(); // maakt de tabel aan
+    const spoke = (tester: string) =>
+      (env.USAGE as ReturnType<typeof memoryD1>)
+        .prepare(
+          `INSERT INTO usage (day, tester, channel, session, model) VALUES ('2026-11-03', ?, 'beta', 's1', 'm')`,
+        )
+        .bind(tester)
+        .run();
+    await spoke(ANNA);
+    const cleanup = () => call('/api/testers?cleanup=1', { code: OWNER_CODE, method: 'POST' });
+
+    // Alleen voor de eigenaar
+    expect((await call('/api/testers?cleanup=1', { method: 'POST' })).status).toBe(403);
+
+    expect(await (await cleanup()).json()).toEqual({ cleaned: [installName(OUD)] });
+    expect(await names()).toEqual([ANNA, installName(NIEUW), installName(NAAM)].sort());
+    // Het token werkt nog
+    const token = await signInstallToken(OUD, INSTALL_SECRET);
+    expect((await call('/api/ping', { code: token })).status).toBe(200);
+    // Tweede keer: niets meer
+    expect(await (await cleanup()).json()).toEqual({ cleaned: [] });
+
+    // Komt terug zodra hij iets inspreekt
+    await spoke(installName(OUD));
+    expect(await names()).toContain(installName(OUD));
+  });
+
+  it('ruimt niets op als het verbruik niet te lezen is', async () => {
+    await putInstall(testersKv as never, ANNA_ID, {
+      name: ANNA,
+      registeredAt: 1000,
+      via: 'turnstile',
+    });
+    env.USAGE = {
+      prepare: () => {
+        throw new Error('D1 weg');
+      },
+    };
+    const response = await call('/api/testers?cleanup=1', { code: OWNER_CODE, method: 'POST' });
+    expect(response.ok).toBe(false);
+    expect((await getInstall(testersKv as never, ANNA_ID))?.hidden).toBeUndefined();
+  });
+
   it('telt per tester sessies, uitspraken, feedback en de laatste actie', async () => {
     await share('w2', {
       sessions: [{ startedAt: 4000, endedAt: 5000 }],

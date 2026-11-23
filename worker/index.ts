@@ -20,6 +20,7 @@ import {
   verifyTurnstile,
   type InstallSecrets,
 } from './install';
+import { hasActivity, isUnused } from '../src/lib/unusedInstalls';
 import { AUDIO_SECONDS_PER_DAY, MESSAGES_PER_DAY } from '../src/lib/limits';
 import { checkSummary, storeSummary, summariesSince } from './summaries';
 import {
@@ -566,42 +567,72 @@ async function billing(env: WorkerEnv, tester: string): Promise<Response> {
 }
 
 /**
+ * Alle installaties zoals de eigenaar ze ziet, met wat ze deelden en de laatste
+ * dag met een uitspraak. `strict`: een fout bij het verbruik niet overslaan.
+ */
+async function installList(env: WorkerEnv, { strict = false } = {}) {
+  const installs = (await listInstalls(env.TESTERS)).map(
+    ({ name, registeredAt, via, device, blocked, hidden, displayName, owner }) => ({
+      name,
+      source: 'install' as const,
+      invitedAt: registeredAt,
+      via,
+      device,
+      blocked: blocked || undefined,
+      hidden: hidden || undefined,
+      displayName,
+      owner: owner || undefined,
+    }),
+  );
+  const usage = await testerUsage(env);
+  // Zonder D1 toch de lijst, alleen zonder "laatst gebruikt"
+  const lastUsed = await lastUsedPerTester(env.USAGE).catch((error) => {
+    if (strict) throw error;
+    console.error('Laatst gebruikt niet te lezen', error);
+    return new Map<string, string>();
+  });
+  return installs.map((t) => ({
+    ...t,
+    usage: usage.get(t.name),
+    lastUsed: lastUsed.get(t.name),
+  }));
+}
+
+/**
  * Installaties beheren vanuit de app (alleen de eigenaar).
  *
  * - GET /api/testers               alle installaties, met verbruik
  * - DELETE /api/testers?name=…     installatie afsluiten
  * - DELETE /api/testers?name=…&hide=1  afgesloten installatie uit de lijst halen
  * - PATCH /api/testers?name=…&owner=1  installatie van de eigenaar zelf (0: toch niet)
+ * - POST /api/testers?cleanup=1     ongebruikte installaties uit de lijst (`isUnused`)
  */
 async function testers(request: Request, env: WorkerEnv, tester: string): Promise<Response> {
   if (tester !== OWNER) return json({ error: 'Alleen voor de eigenaar' }, 403);
 
   if (request.method === 'GET') {
-    const installs = (await listInstalls(env.TESTERS))
-      .filter((t) => !t.hidden)
-      .map(({ name, registeredAt, via, device, blocked, displayName, owner }) => ({
-        name,
-        source: 'install' as const,
-        invitedAt: registeredAt,
-        via,
-        device,
-        blocked: blocked || undefined,
-        displayName,
-        owner: owner || undefined,
-      }));
-    const usage = await testerUsage(env);
-    // Zonder D1 toch de lijst, alleen zonder "laatst gebruikt"
-    const lastUsed = await lastUsedPerTester(env.USAGE).catch((error) => {
-      console.error('Laatst gebruikt niet te lezen', error);
-      return new Map<string, string>();
-    });
-    return json({
-      testers: installs.map((t) => ({
-        ...t,
-        usage: usage.get(t.name),
-        lastUsed: lastUsed.get(t.name),
-      })),
-    });
+    // Opgeruimd en sindsdien iets gedaan: weer in de lijst
+    const shown = (await installList(env)).filter(
+      ({ hidden, ...t }) => !hidden || (!t.blocked && hasActivity(t)),
+    );
+    return json({ testers: shown.map(({ hidden: _, ...t }) => t) });
+  }
+  if (request.method === 'POST' && new URL(request.url).searchParams.get('cleanup') === '1') {
+    // Ongebruikte installaties uit de lijst; ze blijven werken. Zonder het
+    // verbruik (D1) niets opruimen: dan is "nooit iets ingesproken" niet te zien.
+    const unused = (await installList(env, { strict: true })).filter(
+      (t) => !t.hidden && isUnused(t),
+    );
+    const cleaned: string[] = [];
+    for (const { name } of unused) {
+      // Vers gelezen, zodat een wijziging van net niet verloren gaat
+      const found = await findInstall(env.TESTERS, name);
+      if (!found) continue;
+      const { id, ...record } = found;
+      await putInstall(env.TESTERS, id, { ...record, hidden: true });
+      cleaned.push(name);
+    }
+    return json({ cleaned });
   }
   if (request.method === 'DELETE') {
     const params = new URL(request.url).searchParams;
