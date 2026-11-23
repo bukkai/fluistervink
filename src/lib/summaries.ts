@@ -11,7 +11,7 @@
 
 import { ApiError, sendSummary } from './api';
 import { db } from './db';
-import { isNativeApp } from './native';
+import { isAndroidApp, isIosApp } from './native';
 import type { SessionSummary } from './stats';
 
 const ENABLED_KEY = 'fluistervink.anonStats';
@@ -99,7 +99,7 @@ export async function summarize(sessionId: string): Promise<SessionSummary | und
     trektel: spoken.some((u) => u.trektel),
     tuintelling: !!session.tuintelling,
     exported,
-    platform: isNativeApp ? 'android' : 'web',
+    platform: isAndroidApp ? 'android' : isIosApp ? 'ios' : 'web',
   };
 }
 

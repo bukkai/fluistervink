@@ -1,6 +1,6 @@
 import { language, t } from './i18n';
 import { logEvent } from './log';
-import { isNativeApp, playIntegrityToken } from './native';
+import { isAndroidApp, playIntegrityToken } from './native';
 
 // Aanmelden zonder toegangscode (docs/plan-laagdrempelig.md). Bij de eerste
 // keer openen maakt de app een id voor deze installatie en vraagt de proxy om
@@ -78,7 +78,7 @@ async function registerOnce(): Promise<{ token: string; tester: string }> {
   const config = (await call('GET')) as { turnstileSiteKey?: string; playProjectNumber?: string };
   const id = installId();
 
-  if (isNativeApp) {
+  if (isAndroidApp) {
     const integrity = await playIntegrityToken(integrityNonce(id), config.playProjectNumber);
     if (integrity) {
       try {

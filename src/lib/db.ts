@@ -233,7 +233,7 @@ export interface TranscriptionMetrics {
 export interface ProcessingMetrics {
   /** Commit van de app die de uitspraak verwerkte */
   appVersion: string;
-  /** `web` of `android-app` (sinds de Android-app) */
+  /** `web`, `android-app` (sinds de Android-app) of `ios-app` */
   platform?: string;
   model: string;
   /** Korte hash van systeemprompt en tools; verandert bij elke promptwijziging */

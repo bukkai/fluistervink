@@ -4,7 +4,7 @@
 // telefoon dat midden in de eerste waarneming.
 
 import { t } from './i18n';
-import { isNativeApp } from './native';
+import { isAndroidApp, isIosApp } from './native';
 
 const WELCOME_DONE_KEY = 'fluistervink.welcomeDone';
 
@@ -55,6 +55,8 @@ export async function askPermissions(): Promise<PermissionResult> {
 }
 
 /** Waar je een geweigerde toestemming alsnog aanzet */
-export const permissionSettingsPath = isNativeApp
+export const permissionSettingsPath = isAndroidApp
   ? t('welcome.settingsPathApp')
-  : t('welcome.settingsPathBrowser');
+  : isIosApp
+    ? t('welcome.settingsPathIos')
+    : t('welcome.settingsPathBrowser');

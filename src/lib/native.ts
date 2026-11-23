@@ -1,12 +1,19 @@
 import { Capacitor, registerPlugin, type PluginListenerHandle } from '@capacitor/core';
 import { language } from './i18n';
 
-// Het enige bestand dat weet of de app in de Android-app draait (Capacitor) of
-// in de browser. Elke native functie heeft een terugval op de web-API, zodat
-// de PWA (ook op een iPhone) gewoon blijft werken. Zie docs/plan-capacitor.md.
+// Het enige bestand dat weet of de app in de Android-app of de iOS-app draait
+// (Capacitor) of in de browser. Elke native functie heeft een terugval op de
+// web-API, zodat de PWA (ook op een iPhone) gewoon blijft werken. Zie
+// docs/plan-capacitor.md en docs/plan-ios.md.
 
-/** In de Android-app, niet in de browser */
+/** In een app (Android of iOS), niet in de browser */
 export const isNativeApp = Capacitor.isNativePlatform();
+
+/** In de Android-app: voor wat alleen Android kan of alleen over Android gaat (Play, meldingen) */
+export const isAndroidApp = isNativeApp && Capacitor.getPlatform() === 'android';
+
+/** In de iOS-app (proef, docs/plan-ios.md) */
+export const isIosApp = isNativeApp && Capacitor.getPlatform() === 'ios';
 
 /** Waar de app draait, voor het log en de export */
 export const PLATFORM = isNativeApp ? `${Capacitor.getPlatform()}-app` : 'web';
@@ -52,7 +59,7 @@ const Wandeling = registerPlugin<WandelingPlugin>('Wandeling');
  * tril na het verwerken toch komt. In de browser bestaat dit niet.
  */
 export async function startSessionService(): Promise<SessionServiceResult> {
-  if (!isNativeApp) return { ok: false, reden: 'web' };
+  if (!isAndroidApp) return { ok: false, reden: 'web' };
   try {
     return await Wandeling.start();
   } catch (error) {
@@ -61,11 +68,11 @@ export async function startSessionService(): Promise<SessionServiceResult> {
 }
 
 export async function stopSessionService(): Promise<void> {
-  if (isNativeApp) await Wandeling.stop().catch(() => {});
+  if (isAndroidApp) await Wandeling.stop().catch(() => {});
 }
 
 export async function sessionServiceStatus(): Promise<{ draait: boolean; fout?: string }> {
-  if (!isNativeApp) return { draait: false };
+  if (!isAndroidApp) return { draait: false };
   return Wandeling.status().catch((error) => ({ draait: false, fout: String(error) }));
 }
 
@@ -78,6 +85,9 @@ interface BestandPlugin {
 }
 
 const Bestand = registerPlugin<BestandPlugin>('Bestand');
+
+/** Slaat deze app bestanden zelf op (BestandPlugin.java)? Op iOS nog niet (plan-ios.md, fase 3) */
+export const nativeFileSaveSupported = isNativeApp && Capacitor.isPluginAvailable('Bestand');
 
 /** Uitkomst van opslaan: false als de gebruiker annuleerde, anders waar het staat */
 export type SaveResult = false | { folder?: string };
@@ -138,7 +148,7 @@ export async function playIntegrityToken(
   nonce: string,
   project?: string,
 ): Promise<string | undefined> {
-  if (!isNativeApp) return undefined;
+  if (!isAndroidApp) return undefined;
   try {
     return (await Integriteit.verklaring({ nonce, project })).token;
   } catch {

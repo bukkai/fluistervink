@@ -97,6 +97,7 @@ export const en: Dictionary = {
   'welcome.permissionsMissing':
     'Without the microphone you can’t speak anything in, and without location your observations won’t be on the map. You can still switch them on under {path}.',
   'welcome.settingsPathApp': 'your phone’s Settings → Apps → Fluistervink → Permissions',
+  'welcome.settingsPathIos': 'your iPhone’s Settings → Apps → Fluistervink',
   'welcome.settingsPathBrowser': 'Chrome: tap the icon to the left of the address → Permissions',
   'welcome.tryTitle': 'Give it a try',
   'welcome.tryLead': 'Say something as if you were outside, for example',

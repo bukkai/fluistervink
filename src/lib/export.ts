@@ -18,7 +18,7 @@ import {
 import { getTester, type Area } from './api';
 import { APP_VERSION, CHANNEL, logEvent, type LogEvent } from './log';
 import { DIRECTIONS } from './spokenPlace';
-import { PLATFORM, isNativeApp, saveFileNative, type SaveResult } from './native';
+import { PLATFORM, nativeFileSaveSupported, saveFileNative, type SaveResult } from './native';
 
 // Ruwe export van alle gegevens, als vangnet tijdens de ontwikkeling, en het
 // terugzetten ervan. Standaard zonder audio, alleen de grootte; met
@@ -88,7 +88,7 @@ export async function exportAllJson({
  * opgeslagen, zonder map.
  */
 export async function saveFile(blob: Blob, filename: string): Promise<SaveResult> {
-  if (isNativeApp) return saveFileNative(blob, filename);
+  if (nativeFileSaveSupported) return saveFileNative(blob, filename);
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

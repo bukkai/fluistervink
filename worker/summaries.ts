@@ -53,7 +53,7 @@ const COUNTS = [
 ] as const;
 const FLAGS = ['offline', 'trektel', 'tuintelling'] as const;
 const EXPORTED = ['none', 'waarneming', 'ebird', 'both'];
-const PLATFORMS = ['android', 'web'];
+const PLATFORMS = ['android', 'ios', 'web'];
 
 const count = (value: unknown, max: number) =>
   Number.isInteger(value) && (value as number) >= 0 && (value as number) <= max;

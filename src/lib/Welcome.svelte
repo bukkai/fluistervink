@@ -6,7 +6,7 @@
   // staat). Zie welcome.ts. Houd de trilpatronen gelijk met HowItWorks.
   import { tick, untrack } from 'svelte';
   import { t } from './i18n';
-  import { isNativeApp } from './native';
+  import { isAndroidApp } from './native';
   import { recorder } from './recorder.svelte';
   import TryOut from './TryOut.svelte';
   import {
@@ -110,7 +110,7 @@
       <strong>{t('welcome.location')}</strong>{t('welcome.permissionsLeadAfter')}
     </p>
     <p class="hint">
-      {t('welcome.permissionsHint')}{#if isNativeApp}
+      {t('welcome.permissionsHint')}{#if isAndroidApp}
         {' '}{t('welcome.permissionsHintApp')}{/if}
     </p>
     {#if permissions}

@@ -6,7 +6,7 @@
   import { onMount } from 'svelte';
   import { backupStatus, lastBackupAt, makeBackup, type BackupStatus } from './backup';
   import { describeImport, importJson } from './export';
-  import { isNativeApp } from './native';
+  import { nativeFileSaveSupported } from './native';
 
   let backedUpAt = $state(lastBackupAt());
   let status = $state<BackupStatus>();
@@ -71,7 +71,7 @@
   <div class="card-head"><h2>{t('backup.title')}</h2></div>
   <div class="card-body stack">
     <p class="hint">
-      {isNativeApp ? t('backup.hintNative') : t('backup.hint')}
+      {nativeFileSaveSupported ? t('backup.hintNative') : t('backup.hint')}
     </p>
     <p class="hint" class:warn={status && status.sinceBackup > 0 && status.sessions > 0}>
       {#if backedUpAt}
