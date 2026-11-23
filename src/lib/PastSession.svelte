@@ -164,9 +164,9 @@
     <div class="card-head"><h2>{t('past.forEbird')}</h2></div>
     <div class="card-body">
       <ChecklistAnswers {session} onanswer={() => (answered = true)} />
-      <button class="btn secondary block" onclick={closeQuestion}
-        >{answered ? t('past.done') : t('past.notNow')}</button
-      >
+      <button class="btn secondary block" onclick={closeQuestion}>
+        {answered ? t('past.done') : t('past.notNow')}
+      </button>
     </div>
   </section>
 {/snippet}
@@ -224,8 +224,9 @@
       <dt>{t('past.observations')}</dt>
       <dd>
         {$observations.length}
-        {#if uncertainCount > 0}<small>{t('past.uncertainCount', { n: uncertainCount })}</small
-          >{/if}
+        {#if uncertainCount > 0}<small>
+            {t('past.uncertainCount', { n: uncertainCount })}
+          </small>{/if}
       </dd>
     </div>
   </dl>
@@ -254,8 +255,9 @@
     <div class="card-head"><h2>{t('past.tuintelExportTitle')}</h2></div>
     <div class="card-body">
       <p>{t('past.tuintelExportText')}</p>
-      <button class="btn secondary block" onclick={openExport}>{t('past.tuintelExportOpen')}</button
-      >
+      <button class="btn secondary block" onclick={openExport}>
+        {t('past.tuintelExportOpen')}
+      </button>
     </div>
   </section>
 {:else}
@@ -284,9 +286,9 @@
         </p>
         <div class="actions">
           <a class="btn block" href="#sessies">{t('past.toSessions')}</a>
-          <button class="btn secondary block" onclick={() => markReady(session.id, false)}
-            >{t('past.notReadyYet')}</button
-          >
+          <button class="btn secondary block" onclick={() => markReady(session.id, false)}>
+            {t('past.notReadyYet')}
+          </button>
         </div>
       {:else if $unprocessed}
         <p class="first">
@@ -298,17 +300,17 @@
             {t('past.uncertainLeft', { n: uncertainCount })}
           </p>
         {/if}
-        <button class="btn block large" onclick={ready}
-          >{ebird ? t('past.allCorrectEbird') : t('past.allCorrect')}</button
-        >
+        <button class="btn block large" onclick={ready}>
+          {ebird ? t('past.allCorrectEbird') : t('past.allCorrect')}
+        </button>
         <p class="muted">
           {ebird ? t('past.readyHintEbird') : t('past.readyHint')}
         </p>
       {/if}
       <div class="actions only-this">
-        <button class="btn secondary block" onclick={exportOnlyThis} disabled={!!$unprocessed}
-          >{ebird ? t('past.exportOnlyThisEbird') : t('past.exportOnlyThis')}</button
-        >
+        <button class="btn secondary block" onclick={exportOnlyThis} disabled={!!$unprocessed}>
+          {ebird ? t('past.exportOnlyThisEbird') : t('past.exportOnlyThis')}
+        </button>
       </div>
       <p class="muted">
         {t('past.importHintVoor')}
@@ -336,9 +338,9 @@
     <button class="btn secondary block" onclick={resume}>{t('past.resume')}</button>
   {/if}
   {#if $recordings?.count}
-    <button class="btn secondary block danger-text" onclick={removeRecordings}
-      >{t('past.deleteRecordings')}</button
-    >
+    <button class="btn secondary block danger-text" onclick={removeRecordings}>
+      {t('past.deleteRecordings')}
+    </button>
   {/if}
   <button class="btn secondary block danger-text" onclick={remove}>{t('past.delete')}</button>
 </div>

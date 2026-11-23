@@ -70,8 +70,10 @@
     version: APP_VERSION,
   })}{#if appVersion}<br />{t('settings.androidApp', { version: appVersion })}{/if}<br /><a
     class="link"
-    href="#nieuw">{t('update.whatsNew')}</a
+    href="#nieuw"
   >
+    {t('update.whatsNew')}
+  </a>
 </p>
 
 <details class="owner-code">

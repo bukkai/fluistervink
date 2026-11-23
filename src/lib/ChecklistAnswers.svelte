@@ -26,13 +26,17 @@
     <button
       class="btn secondary"
       aria-pressed={checklist.complete === true}
-      onclick={() => answer(true)}>{t('sessions.yes')}</button
+      onclick={() => answer(true)}
     >
+      {t('sessions.yes')}
+    </button>
     <button
       class="btn secondary"
       aria-pressed={checklist.complete === false}
-      onclick={() => answer(false)}>{t('sessions.no')}</button
+      onclick={() => answer(false)}
     >
+      {t('sessions.no')}
+    </button>
   </div>
   <span class="muted small">
     {t('checklist.completeHint')}
@@ -46,14 +50,18 @@
       class="btn secondary"
       aria-label={t('checklist.fewer')}
       disabled={checklist.observers <= 1}
-      onclick={() => setChecklist(session.id, { observers: checklist.observers - 1 })}>−</button
+      onclick={() => setChecklist(session.id, { observers: checklist.observers - 1 })}
     >
+      −
+    </button>
     <output aria-live="polite">{checklist.observers}</output>
     <button
       class="btn secondary"
       aria-label={t('checklist.more')}
-      onclick={() => setChecklist(session.id, { observers: checklist.observers + 1 })}>+</button
+      onclick={() => setChecklist(session.id, { observers: checklist.observers + 1 })}
     >
+      +
+    </button>
   </div>
 </div>
 

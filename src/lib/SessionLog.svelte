@@ -322,17 +322,19 @@
               <button
                 class="play"
                 onclick={() => player.toggle(u.id, u.audio!)}
-                aria-label={player.label(u.id)}>{player.symbol(u.id)}</button
+                aria-label={player.label(u.id)}
               >
+                {player.symbol(u.id)}
+              </button>
             {/if}
             <span class="muted">{timeFormat.format(u.recordedAt)}</span>
             “{u.transcript}”
           </div>
           <div class="unclear-actions">
             <button class="btn" onclick={() => rescue(u.id)}>{t('log.rescue')}</button>
-            <button class="btn secondary" onclick={() => dismissUtterance(u.id)}
-              >{t('log.dismiss')}</button
-            >
+            <button class="btn secondary" onclick={() => dismissUtterance(u.id)}>
+              {t('log.dismiss')}
+            </button>
           </div>
         </li>
       {/each}
@@ -400,16 +402,16 @@
                   <span class="details">{details(obs)}</span>
                 {/if}
                 {#if obs.uncertain}
-                  <span class="reason"
-                    >{obs.uncertainReason
+                  <span class="reason">
+                    {obs.uncertainReason
                       ? t('log.uncertainBecause', { reason: obs.uncertainReason })
-                      : t('log.uncertain')}</span
-                  >
+                      : t('log.uncertain')}
+                  </span>
                 {/if}
                 {#if original}
-                  <span class="voice"
-                    >{t('log.changedByVoice', { was: wasText(obs, original) })}</span
-                  >
+                  <span class="voice">
+                    {t('log.changedByVoice', { was: wasText(obs, original) })}
+                  </span>
                 {/if}
                 {#if shieldText(obs)}
                   <span class="shield">
@@ -444,14 +446,18 @@
                   <button
                     class="to-map"
                     onclick={() => onshowonmap(obs.id)}
-                    aria-label={t('log.showOnMap')}>±{Math.round(obs.position.accuracy)} m</button
+                    aria-label={t('log.showOnMap')}
                   >
+                    ±{Math.round(obs.position.accuracy)} m
+                  </button>
                 {:else if obs.position}
                   <a
                     href={mapsUrl(obs.position.lat, obs.position.lon)}
                     target="_blank"
-                    rel="noopener">±{Math.round(obs.position.accuracy)} m</a
+                    rel="noopener"
                   >
+                    ±{Math.round(obs.position.accuracy)} m
+                  </a>
                 {/if}
                 {#if obs.position}
                   {#if obs.placedByVoice}
@@ -466,12 +472,12 @@
                 {/if}
                 <span class="end">
                   {#if obs.uncertain}
-                    <button class="small discard" onclick={() => deleteObservation(obs.id)}
-                      >{t('log.discard')}</button
-                    >
-                    <button class="small confirm" onclick={() => confirmObservation(obs.id)}
-                      >{t('log.confirm')}</button
-                    >
+                    <button class="small discard" onclick={() => deleteObservation(obs.id)}>
+                      {t('log.discard')}
+                    </button>
+                    <button class="small confirm" onclick={() => confirmObservation(obs.id)}>
+                      {t('log.confirm')}
+                    </button>
                   {/if}
                   <!-- Exporteren kan alleen bij een afgelopen sessie -->
                   {#if session.status === 'ended'}
@@ -510,9 +516,9 @@
             <div class="muted">{details(obs)}</div>
             <div class="muted">{t(`log.deletedBy.${obs.deletedBy}`)}</div>
           </div>
-          <button class="small" onclick={() => restoreObservation(obs.id)}
-            >{t('log.restore')}</button
-          >
+          <button class="small" onclick={() => restoreObservation(obs.id)}>
+            {t('log.restore')}
+          </button>
         </li>
       {/each}
     </ul>
@@ -522,11 +528,11 @@
 {#if $utterances?.length}
   <!-- Vooral voor de ontwikkelfase; open als er iets misging of nog wacht -->
   <details class="card fold" open={failed > 0 || queued > 0}>
-    <summary
-      >{failed
+    <summary>
+      {failed
         ? t('log.utterancesFailed', { n: $utterances.length, failed })
-        : t('log.utterances', { n: $utterances.length })}</summary
-    >
+        : t('log.utterances', { n: $utterances.length })}
+    </summary>
     <ul class="plain">
       {#each $utterances as u (u.id)}
         <li class="utterance">
@@ -535,8 +541,10 @@
               <button
                 class="play"
                 onclick={() => player.toggle(u.id, u.audio!)}
-                aria-label={player.label(u.id)}>{player.symbol(u.id)}</button
+                aria-label={player.label(u.id)}
               >
+                {player.symbol(u.id)}
+              </button>
             {/if}
             {#if u.audioDeletedAt}
               <span class="muted">{t('log.audioDeleted')}</span>
@@ -544,17 +552,17 @@
             {#if u.transcript !== undefined}
               “{u.transcript}”
             {:else}
-              <span class="muted"
-                >{t('log.recordingOf', { duration: seconds(u.audioDurationMs ?? 0) })}</span
-              >
+              <span class="muted">
+                {t('log.recordingOf', { duration: seconds(u.audioDurationMs ?? 0) })}
+              </span>
             {/if}
             <span class="status {u.status} {u.result}">{statusLabel(u)}</span>
             {#if duration(u)}
-              <span class="status"
-                >· {u.metrics?.wasHidden
+              <span class="status">
+                · {u.metrics?.wasHidden
                   ? t('log.inBackground', { duration: duration(u) ?? '' })
-                  : duration(u)}</span
-              >
+                  : duration(u)}
+              </span>
             {/if}
           </div>
           {#if u.error}

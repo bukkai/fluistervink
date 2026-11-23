@@ -167,8 +167,8 @@
             {#each result.lines as line, i (i)}
               <li>
                 {line.text}{#if line.uncertain}<span class="uncertain">
-                    · {t('tryout.uncertain')}</span
-                  >{/if}
+                    · {t('tryout.uncertain')}
+                  </span>{/if}
               </li>
             {/each}
           </ul>

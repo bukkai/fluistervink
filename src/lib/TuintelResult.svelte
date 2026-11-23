@@ -76,8 +76,9 @@
   <div class="card-head">
     <h2>{t('tuintel.title')}</h2>
     {#if counted}
-      <button class="link" onclick={copy}>{copied ? t('tuintel.copied') : t('tuintel.copy')}</button
-      >
+      <button class="link" onclick={copy}>
+        {copied ? t('tuintel.copied') : t('tuintel.copy')}
+      </button>
     {/if}
   </div>
   <div class="card-body">
@@ -120,15 +121,15 @@
       <div class="forgot">
         <h3>{t('tuintel.forgotTitle')}</h3>
         <p>{t('tuintel.forgotText')}</p>
-        <button class="btn secondary block" onclick={addForgotten}
-          >{t('tuintel.forgotButton')}</button
-        >
+        <button class="btn secondary block" onclick={addForgotten}>
+          {t('tuintel.forgotButton')}
+        </button>
       </div>
     {/if}
 
-    <a class="btn block" href={TUINTEL_FORM_URL} target="_blank" rel="noopener"
-      >{t('tuintel.open')}</a
-    >
+    <a class="btn block" href={TUINTEL_FORM_URL} target="_blank" rel="noopener">
+      {t('tuintel.open')}
+    </a>
   </div>
 </section>
 

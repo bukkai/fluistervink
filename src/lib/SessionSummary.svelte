@@ -50,8 +50,9 @@
   <section class="card">
     <div class="card-head">
       <h2>{t('summary.title')}</h2>
-      <button class="link" onclick={copy}>{copied ? t('summary.copied') : t('summary.copy')}</button
-      >
+      <button class="link" onclick={copy}>
+        {copied ? t('summary.copied') : t('summary.copy')}
+      </button>
     </div>
     <div class="card-body">
       {#if reviewed}

@@ -77,21 +77,21 @@
     <ul class="how">
       <li>
         <span class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"
-            ><path
+          <svg viewBox="0 0 24 24">
+            <path
               d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Zm-7 9a7 7 0 0 0 14 0M12 19v2"
-            /></svg
-          >
+            />
+          </svg>
         </span>
         <span>{t('welcome.howTalk')} <em>{t('welcome.howTalkExample')}</em></span>
       </li>
       <li>
         <span class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"
-            ><rect x="8" y="3" width="8" height="18" rx="2" /><path
+          <svg viewBox="0 0 24 24">
+            <rect x="8" y="3" width="8" height="18" rx="2" /><path
               d="M4 8v8M20 8v8M1.5 10v4M22.5 10v4"
-            /></svg
-          >
+            />
+          </svg>
         </span>
         <span>{t('welcome.howTrill')}</span>
       </li>

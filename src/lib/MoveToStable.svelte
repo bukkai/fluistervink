@@ -31,9 +31,10 @@
         komt in Downloads. Alles al geëxporteerd: deze stap kun je overslaan.
       </li>
       <li>
-        Open <a class="link" href={INTERNAL_TEST_URL} target="_blank" rel="noopener"
-          >de link van de beta</a
-        > en tik op "Programma verlaten". Anders krijg je bij stap 4 van Google Play gewoon weer de beta.
+        Open <a class="link" href={INTERNAL_TEST_URL} target="_blank" rel="noopener">
+          de link van de beta
+        </a> en tik op "Programma verlaten". Anders krijg je bij stap 4 van Google Play gewoon weer de
+        beta.
       </li>
       <li>
         Open <a class="link" href={CLOSED_TEST_URL} target="_blank" rel="noopener">deze link</a> en tik

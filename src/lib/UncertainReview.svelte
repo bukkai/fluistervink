@@ -79,11 +79,11 @@
   <section class="card review" aria-live="polite">
     <div class="card-head">
       <h2>{t('review.title')}</h2>
-      <span class="muted"
-        >{todo.length > 0
+      <span class="muted">
+        {todo.length > 0
           ? t('review.left', { n: todo.length })
-          : t('review.skippedCount', { n: uncertain.length })}</span
-      >
+          : t('review.skippedCount', { n: uncertain.length })}
+      </span>
     </div>
     <div class="card-body">
       {#if current && editing}
@@ -118,8 +118,10 @@
               <button
                 class="play"
                 onclick={() => player.toggle(source!.id, source!.audio!)}
-                aria-label={player.label(source.id)}>{player.symbol(source.id)}</button
+                aria-label={player.label(source.id)}
               >
+                {player.symbol(source.id)}
+              </button>
             {:else if source.audioDeletedAt}
               <span class="muted">{t('log.audioDeleted')}</span>
             {/if}
@@ -129,20 +131,20 @@
         {#if current.candidates?.length}
           <div class="candidates" role="group" aria-label={t('review.whichSpecies')}>
             {#each current.candidates as candidate (candidate)}
-              <button class="btn secondary" onclick={() => chooseCandidate(current.id, candidate)}
-                >{speciesLabel(candidate)}</button
-              >
+              <button class="btn secondary" onclick={() => chooseCandidate(current.id, candidate)}>
+                {speciesLabel(candidate)}
+              </button>
             {/each}
           </div>
         {/if}
         <div class="buttons">
-          <button class="btn secondary discard" onclick={() => deleteObservation(current.id)}
-            >{t('log.discard')}</button
-          >
+          <button class="btn secondary discard" onclick={() => deleteObservation(current.id)}>
+            {t('log.discard')}
+          </button>
           <button class="btn secondary" onclick={openEditor}>{t('review.edit')}</button>
-          <button class="btn" onclick={() => confirmObservation(current.id)}
-            >{t('log.confirm')}</button
-          >
+          <button class="btn" onclick={() => confirmObservation(current.id)}>
+            {t('log.confirm')}
+          </button>
         </div>
         <p class="skip">
           <button class="link" onclick={skip}>{t('review.skip')}</button>
@@ -151,9 +153,9 @@
         <p>
           {t('review.skipped', { n: uncertain.length })}
         </p>
-        <button class="btn secondary block" onclick={() => (skipped = [])}
-          >{t('review.again')}</button
-        >
+        <button class="btn secondary block" onclick={() => (skipped = [])}>
+          {t('review.again')}
+        </button>
       {/if}
     </div>
   </section>

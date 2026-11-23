@@ -157,14 +157,14 @@
     <h3>What you can do yourself</h3>
     <ul>
       <li>
-        Switch sharing on or off, with or without recordings: <a href="{app}#instellingen"
-          >Settings</a
-        >.
+        Switch sharing on or off, with or without recordings: <a href="{app}#instellingen">
+          Settings
+        </a>.
       </li>
       <li>
-        Switch off anonymous numbers per session: also under <a href="{app}#instellingen"
-          >Settings</a
-        >.
+        Switch off anonymous numbers per session: also under <a href="{app}#instellingen">
+          Settings
+        </a>.
       </li>
       <li>
         Delete only the recordings: at the bottom of a session, or all of them under
@@ -191,41 +191,49 @@
       have it corrected or erased, or object: email
       <a href="mailto:{CONTACT}">{CONTACT}</a>. You can lodge a complaint with the Dutch data
       protection authority, the
-      <a href="https://autoriteitpersoonsgegevens.nl/" target="_blank" rel="noopener"
-        >Autoriteit Persoonsgegevens</a
-      >.
+      <a href="https://autoriteitpersoonsgegevens.nl/" target="_blank" rel="noopener">
+        Autoriteit Persoonsgegevens
+      </a>.
     </p>
   </div>
 </section>
 
 <p class="sources">
   Updated on 16 November 2026. Sources, checked on 11 November 2026:
-  <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noopener"
-    >OpenAI</a
-  >,
+  <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noopener">
+    OpenAI
+  </a>,
   <a
     href="https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
     target="_blank"
-    rel="noopener">Anthropic (retention)</a
-  >,
+    rel="noopener"
+  >
+    Anthropic (retention)
+  </a>,
   <a
     href="https://privacy.claude.com/en/articles/7996868-is-my-data-used-for-model-training"
     target="_blank"
-    rel="noopener">Anthropic (training)</a
-  >,
+    rel="noopener"
+  >
+    Anthropic (training)
+  </a>,
   <a
     href="https://developers.cloudflare.com/workers/observability/logs/workers-logs/"
     target="_blank"
-    rel="noopener">Cloudflare</a
-  >,
-  <a href="https://www.cloudflare.com/turnstile-privacy-policy/" target="_blank" rel="noopener"
-    >Turnstile</a
-  >,
+    rel="noopener"
+  >
+    Cloudflare
+  </a>,
+  <a href="https://www.cloudflare.com/turnstile-privacy-policy/" target="_blank" rel="noopener">
+    Turnstile
+  </a>,
   <a
     href="https://developer.android.com/google/play/integrity/overview"
     target="_blank"
-    rel="noopener">Play Integrity</a
-  >.
+    rel="noopener"
+  >
+    Play Integrity
+  </a>.
 </p>
 
 <style>
