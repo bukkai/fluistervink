@@ -253,11 +253,17 @@
     `${(seconds / 3600).toLocaleString('nl-NL', { maximumFractionDigits: 1 })} u`;
   const maxTesterCost = $derived(Math.max(...(costs?.perTester.map((t) => t.cost) ?? []), 0));
 
+  // De lijst na een wijziging hier bijwerken, niet opnieuw ophalen: de proxy
+  // leest hem uit KV, en die geeft tot een minuut een oude stand terug.
+  function changeTester(name: string, change: Partial<Tester>) {
+    testers = testers?.map((t) => (t.name === name ? { ...t, ...change } : t));
+  }
+
   async function remove(tester: Tester) {
     if (!confirm(`${who(tester.name)} afsluiten? De app werkt daarna niet meer.`)) return;
     try {
       await removeTester(tester.name);
-      await loadTesters();
+      changeTester(tester.name, { blocked: true });
     } catch (error) {
       testersError = `Afsluiten mislukt: ${error instanceof Error ? error.message : error}`;
     }
@@ -266,7 +272,7 @@
   async function toggleOwn(tester: Tester) {
     try {
       await markOwnInstall(tester.name, !tester.owner);
-      await loadTesters();
+      changeTester(tester.name, { owner: !tester.owner || undefined });
     } catch (error) {
       testersError = `Aanpassen mislukt: ${error instanceof Error ? error.message : error}`;
     }
@@ -276,7 +282,7 @@
     if (!confirm(`${who(tester.name)} uit de lijst halen? Hij blijft afgesloten.`)) return;
     try {
       await hideTester(tester.name);
-      await loadTesters();
+      testers = testers?.filter((t) => t.name !== tester.name);
     } catch (error) {
       testersError = `Verwijderen mislukt: ${error instanceof Error ? error.message : error}`;
     }

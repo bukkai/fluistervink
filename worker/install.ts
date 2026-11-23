@@ -156,7 +156,9 @@ export async function fillDevice(kv: KVNamespace, id: string, device: Device): P
 
 /**
  * De installatie met deze naam ("app-3f9a2b1c"), via het begin van het id:
- * één verzoek, zonder alle installaties langs te gaan.
+ * zonder alle installaties langs te gaan. `list` kan tot een minuut achterlopen,
+ * dus de gegevens zelf daarna vers: anders zet een tweede wijziging kort na de
+ * eerste die eerste terug (bv. "van mij" en daarna afsluiten).
  */
 export async function findInstall(
   kv: KVNamespace,
@@ -164,7 +166,10 @@ export async function findInstall(
 ): Promise<(InstallRecord & { id: string }) | null> {
   const page = await kv.list<InstallRecord>({ prefix: KEY_PREFIX + name.slice('app-'.length) });
   const key = page.keys.find((k) => k.metadata?.name === name);
-  return key?.metadata ? { ...key.metadata, id: key.name.slice(KEY_PREFIX.length) } : null;
+  if (!key) return null;
+  const id = key.name.slice(KEY_PREFIX.length);
+  const record = await getInstall(kv, id, { fresh: true });
+  return record ? { ...record, id } : null;
 }
 
 /** Alle installaties, met hun id. */
