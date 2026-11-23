@@ -5,7 +5,7 @@
 // geweigerd, zodat niemand vrije tekst in de tabel kan zetten.
 
 import { dayOf } from '../src/lib/costs';
-import type { SessionSummary } from '../src/lib/summaries';
+import type { SessionSummary } from '../src/lib/stats';
 import { weekOf } from '../src/lib/stats';
 
 const SCHEMA = `CREATE TABLE IF NOT EXISTS session_summaries (

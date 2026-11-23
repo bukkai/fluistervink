@@ -12,6 +12,7 @@
 import { ApiError, sendSummary } from './api';
 import { db } from './db';
 import { isNativeApp } from './native';
+import type { SessionSummary } from './stats';
 
 const ENABLED_KEY = 'fluistervink.anonStats';
 const SENT_KEY = 'fluistervink.anonStatsSent';
@@ -21,30 +22,9 @@ export const WAIT_MS = 7 * 24 * 60 * 60_000;
 /** Zoveel verstuurde sessies onthouden; oudere komen toch niet meer in aanmerking */
 const KEEP_SENT = 200;
 
-export interface SessionSummary {
-  /** Duur, afgerond op 5 minuten */
-  minutes: number;
-  utterances: number;
-  observations: number;
-  /** Aantal verschillende soorten, niet welke */
-  species: number;
-  /** Waarnemingen die (nog) onzeker zijn */
-  uncertain: number;
-  /** Uitspraken zonder waarneming (niet begrepen of niets in gezegd) */
-  notUnderstood: number;
-  /** Uitspraken die een eerdere waarneming veranderden, wisten of terugdraaiden */
-  corrections: number;
-  /** Uitspraken die mislukten */
-  failed: number;
-  /** Waarnemingen die nagelopen of geëxporteerd zijn */
-  reviewed: number;
-  /** Ergens op bereik gewacht */
-  offline: boolean;
-  trektel: boolean;
-  tuintelling: boolean;
-  exported: 'none' | 'waarneming' | 'ebird' | 'both';
-  platform: 'android' | 'web';
-}
+// Het type staat in stats.ts: de proxy gebruikt het ook, en dit bestand haalt
+// browsercode binnen (database, installatie) die de proxy niet kent.
+export type { SessionSummary } from './stats';
 
 function read<T>(key: string, fallback: T): T {
   try {

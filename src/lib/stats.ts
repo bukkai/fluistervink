@@ -518,6 +518,32 @@ export function utterancesPerLanguage(rows: UsageRow[], now = new Date()): Recor
 // --- Stap 3 (23 nov): anonieme cijfers per sessie (summaries.ts), zonder
 // installatie. Per week waarin ze binnenkwamen: tot een week na het stoppen.
 
+/** Wat de app per sessie stuurt (summaries.ts); hier, zodat de proxy het type kan gebruiken zonder browsercode */
+export interface SessionSummary {
+  /** Duur, afgerond op 5 minuten */
+  minutes: number;
+  utterances: number;
+  observations: number;
+  /** Aantal verschillende soorten, niet welke */
+  species: number;
+  /** Waarnemingen die (nog) onzeker zijn */
+  uncertain: number;
+  /** Uitspraken zonder waarneming (niet begrepen of niets in gezegd) */
+  notUnderstood: number;
+  /** Uitspraken die een eerdere waarneming veranderden, wisten of terugdraaiden */
+  corrections: number;
+  /** Uitspraken die mislukten */
+  failed: number;
+  /** Waarnemingen die nagelopen of geëxporteerd zijn */
+  reviewed: number;
+  /** Ergens op bereik gewacht */
+  offline: boolean;
+  trektel: boolean;
+  tuintelling: boolean;
+  exported: 'none' | 'waarneming' | 'ebird' | 'both';
+  platform: 'android' | 'web';
+}
+
 /** Een samenvatting zoals de proxy hem teruggeeft (worker/summaries.ts) */
 export interface SummaryRow {
   week: string;
