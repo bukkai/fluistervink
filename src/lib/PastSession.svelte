@@ -92,7 +92,7 @@
   }
 
   // Voor wie eBird gebruikt: de vraag "alles genoteerd?" meteen na Stop, en nog
-  // één keer bij het klaarzetten als hij dan nog open is (docs/plan-ebird.md,
+  // één keer bij het klaarzetten als hij dan nog open is (docs/archief/plan-ebird.md,
   // punt 8). Wegtikken mag; het eBird-kaartje blijft de plek om het aan te passen.
   const ebird = preferenceOn('ebird');
   /** Net op "Alles klopt" getikt: de vraag staat dan bij die knop, niet bovenaan */

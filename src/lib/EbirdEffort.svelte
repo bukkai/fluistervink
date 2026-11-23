@@ -3,7 +3,7 @@
   import { dateYearTimeFormat } from './format';
   // Een sessie als eBird-checklist: inspanning nakijken, aanvullen wat de app
   // niet kan weten, en exporteren (instelling "Ik gebruik eBird",
-  // docs/plan-ebird.md). Wijzigingen gaan meteen naar de database (`setChecklist`).
+  // docs/archief/plan-ebird.md). Wijzigingen gaan meteen naar de database (`setChecklist`).
   import type { EbirdProtocol, Session } from './db';
   import ChecklistAnswers from './ChecklistAnswers.svelte';
   import { ebirdProtocol } from './effort';

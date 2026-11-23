@@ -31,7 +31,7 @@
   }
 
   // Voor wie eBird gebruikt: dezelfde nagelopen sessies ook als checklists,
-  // in één bestand (docs/plan-ebird.md, punt 8). Lege sessies doen niet mee.
+  // in één bestand (docs/archief/plan-ebird.md, punt 8). Lege sessies doen niet mee.
   const ebird = preferenceOn('ebird');
   const ebirdSince = preferenceSince('ebird');
   let ebirdPending = $derived(

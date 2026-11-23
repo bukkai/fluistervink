@@ -14,7 +14,7 @@ Wat waar staat. Ontwerp en werkafspraken staan in `CLAUDE.md` in de hoofdmap, de
 
 ## Plannen
 
-Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnamen blijven staan, ook als een plan af is.
+Elk plan begint met datum en status. Een afgerond plan gaat naar `archief/`; de code verwijst ernaar, dus pas die verwijzingen mee aan.
 
 **Lopend** (stand 22 nov):
 
@@ -42,10 +42,6 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 | --- | --- |
 | `plan-capacitor.md` | de native laag; fase 0–2 en 4 klaar, fase 3 loopt via `roadmap-android.md` |
 | `plan-laagdrempelig.md` | aanmelden zonder code; naslag voor het instellen |
-| `plan-ebird.md` | inspanning en export naar eBird; afgerond 16 nov (keuze "Ik gebruik eBird" bij Instellingen) |
-| `plan-soortgroepen.md` | zoogdieren, reptielen en amfibieën, dagvlinders en libellen; afgerond 16 nov (voor iedereen, standaard aan) |
-| `plan-offline.md` | offline wachtrij; afgerond, op stable sinds 18 nov |
-| `plan-afschermen.md` | afschermen en embargo met de stem, mee naar waarneming.nl; gebouwd en proefgeïmporteerd 22 nov, embargo weghalen met de stem in #345 |
 
 ## Naslag
 
@@ -64,5 +60,9 @@ Afgerond, alleen nog om terug te lezen.
 
 - `archief/mijlpaal-mvp.md`: de beoordeling van de MVP (12 okt).
 - `archief/veldtests.md`: bevindingen uit de eerste veldtests (9–12 okt).
+- `archief/plan-ebird.md`: inspanning en export naar eBird (afgerond 16 nov).
+- `archief/plan-soortgroepen.md`: zoogdieren, reptielen en amfibieën, dagvlinders en libellen (afgerond 16 nov).
+- `archief/plan-offline.md`: de offline wachtrij (op stable sinds 18 nov).
+- `archief/plan-afschermen.md`: afschermen en embargo met de stem, mee naar waarneming.nl (afgerond 22 nov).
 - `archief/werklog-2026.md`: de oude stand uit `NOTES.md` (13 okt – 22 nov).
 - `archief/kwaliteitsronde-logboek.md`: oudere regels uit het logboek van de kwaliteitsronde (24 okt – 11 nov).

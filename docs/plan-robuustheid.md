@@ -27,7 +27,7 @@ Een tester (app-b726a027) deed op 20 nov in de eerste sessie een stresstest: 27 
 | "Een mannetje grote bonte specht ter plaatse", "winterkoning en pimpelmees ter plaatse" | goed, ook twee soorten in één zin | goed |
 | "Maak van alle voorgaande meldingen twee vogels" | drie aanpassingen | goed |
 | "Maak het laatste ongedaan" | undo | goed |
-| "Maak alle vorige meldingen afgeschermd", "onder embargo" | niet begrepen | `docs/plan-afschermen.md` |
+| "Maak alle vorige meldingen afgeschermd", "onder embargo" | niet begrepen | `docs/archief/plan-afschermen.md` |
 | "Houtsnip raamslachtoffer", dan "is dood", dan "met het raam gebotst" | goed, in drie stappen | goed |
 | "Onbekend aantal kauwtjes, alleen gehoord" | aantal 1, exact | nu "gezien niet geteld" (regel in de prompt, 22 nov) |
 | "Een goudhaantje, maar de kever niet de vogel" | werd de vogel Goudhaan | #334 (insecten) |

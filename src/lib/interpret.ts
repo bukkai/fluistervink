@@ -499,7 +499,7 @@ function toCandidates(
 }
 
 /**
- * Afschermen en embargo (docs/plan-afschermen.md). Een onbekende afscherming
+ * Afschermen en embargo (docs/archief/plan-afschermen.md). Een onbekende afscherming
  * valt weg; een embargo zonder geldige datum wordt "zonder datum", want het
  * embargo zelf is wel gezegd.
  */

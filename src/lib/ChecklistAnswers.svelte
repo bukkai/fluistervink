@@ -1,7 +1,7 @@
 <script lang="ts">
   import { t } from './i18n';
   // Wat alleen de gebruiker weet over een sessie als checklist: alles
-  // genoteerd, en met hoeveel waarnemers (docs/plan-ebird.md, punt 3 en 8).
+  // genoteerd, en met hoeveel waarnemers (docs/archief/plan-ebird.md, punt 3 en 8).
   // Staat in het eBird-kaartje en in de vraag na Stop en bij het klaarzetten;
   // elke tik gaat meteen naar de database (`setChecklist`).
   import type { Session } from './db';

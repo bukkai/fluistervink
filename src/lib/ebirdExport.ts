@@ -16,7 +16,7 @@ import { activityName, BIRDS, getSpecies, groupOf, methodName } from './vocab';
 import { fileTimestamp, isoDate, pad } from './waarnemingExport';
 
 // Export van sessies als eBird-checklists, voor de import bij eBird
-// (Submit → Import data, "eBird Record Format"; docs/plan-ebird.md, fase 2).
+// (Submit → Import data, "eBird Record Format"; docs/archief/plan-ebird.md, fase 2).
 // Eén sessie = één checklist, één regel per soort. Het formaat: CSV zonder
 // kopregel en zonder aanhalingstekens, 19 kolommen in een vaste volgorde
 // (bijlage A van de importhandleiding van eBird, nagekeken op 12 nov 2026

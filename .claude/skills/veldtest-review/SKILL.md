@@ -42,7 +42,7 @@ In de zon valt contrast weg en zie je kleurverschil slecht. De gebruiker kijkt h
 
 ### 4. Zwak of wegvallend netwerk
 
-Dit is het belangrijkste scenario: een uitspraak die verloren gaat, kost een waarneming die je niet terugkrijgt. De app is local-first: elke uitspraak wordt eerst lokaal bewaard (audio, tijd, GPS) en daarna één voor één verwerkt (`src/lib/queue.ts`: transcriberen via `/api/transcribe`, interpreteren via `/api/messages`). Zonder bereik wacht de wachtrij en gaat hij vanzelf door (`docs/plan-offline.md`).
+Dit is het belangrijkste scenario: een uitspraak die verloren gaat, kost een waarneming die je niet terugkrijgt. De app is local-first: elke uitspraak wordt eerst lokaal bewaard (audio, tijd, GPS) en daarna één voor één verwerkt (`src/lib/queue.ts`: transcriberen via `/api/transcribe`, interpreteren via `/api/messages`). Zonder bereik wacht de wachtrij en gaat hij vanzelf door (`docs/archief/plan-offline.md`).
 
 Loop deze momenten na, en wat de gebruiker merkt **zonder naar het scherm te kijken**:
 

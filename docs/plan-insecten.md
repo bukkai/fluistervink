@@ -1,6 +1,6 @@
 # Plan: insecten inspreken
 
-Voorstel van 22 nov 2026, dezelfde dag goedgekeurd; laag 1 dezelfde dag gebouwd als ontwikkeloptie `insecten` (zie Gebouwd). Aanleiding: een tester zei "een goudhaantje, maar de kever, niet de vogel" (20 nov, app-b726a027), en het model maakte er de vogel Goudhaan van. De eigenaar: een kever mag als kever, als dat er zo bij gezegd wordt; en opvallende kevers en wantsen (meikever, lieveheersbeestje), hommels en bijen worden best eens ingesproken. Maar er zijn heel veel insecten. Dit plan is de verstandige weg daarheen. Vervolg op `docs/plan-soortgroepen.md` (zoogdieren, reptielen en amfibieën, dagvlinders en libellen).
+Voorstel van 22 nov 2026, dezelfde dag goedgekeurd; laag 1 dezelfde dag gebouwd als ontwikkeloptie `insecten` (zie Gebouwd). Aanleiding: een tester zei "een goudhaantje, maar de kever, niet de vogel" (20 nov, app-b726a027), en het model maakte er de vogel Goudhaan van. De eigenaar: een kever mag als kever, als dat er zo bij gezegd wordt; en opvallende kevers en wantsen (meikever, lieveheersbeestje), hommels en bijen worden best eens ingesproken. Maar er zijn heel veel insecten. Dit plan is de verstandige weg daarheen. Vervolg op `docs/archief/plan-soortgroepen.md` (zoogdieren, reptielen en amfibieën, dagvlinders en libellen).
 
 ## Wat we weten (22 nov)
 
