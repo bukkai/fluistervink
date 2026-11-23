@@ -14,6 +14,7 @@
     listUsage,
     markNotesProcessed,
     removeTester,
+    cleanupTesters,
     type SharedNote,
     type Tester,
   } from './api';
@@ -44,6 +45,7 @@
   } from './stats';
   import { AUDIO_SECONDS_PER_DAY, MESSAGES_PER_DAY } from './limits';
   import { ACTIVE_DAYS, asOwner, lastSeen, ownInstalls, splitActive } from './testers';
+  import { isUnused } from './unusedInstalls';
   import { describeImport, exportAllJson, importJson, saveFile } from './export';
 
   let testers = $state<Tester[]>();
@@ -252,6 +254,23 @@
   const hours = (seconds: number) =>
     `${(seconds / 3600).toLocaleString('nl-NL', { maximumFractionDigits: 1 })} u`;
   const maxTesterCost = $derived(Math.max(...(costs?.perTester.map((t) => t.cost) ?? []), 0));
+
+  const unusedCount = $derived((testers ?? []).filter((t) => isUnused(t)).length);
+
+  async function cleanup() {
+    if (
+      !confirm(
+        `${unusedCount} installaties uit de lijst halen die nooit iets inspraken, deelden of een naam opgaven? Ze blijven werken en komen terug zodra ze iets doen.`,
+      )
+    )
+      return;
+    try {
+      const gone = new Set(await cleanupTesters());
+      testers = testers?.filter((t) => !gone.has(t.name));
+    } catch (error) {
+      testersError = `Opruimen mislukt: ${error instanceof Error ? error.message : error}`;
+    }
+  }
 
   // De lijst na een wijziging hier bijwerken, niet opnieuw ophalen: de proxy
   // leest hem uit KV, en die geeft tot een minuut een oude stand terug.
@@ -747,6 +766,13 @@
         <p class="hint">
           Onder "Toon meer": afgesloten, van mij, nog niets gedeeld, of meer dan {ACTIVE_DAYS} dagen niet
           gebruikt.
+        </p>
+      {/if}
+      {#if unusedCount > 0}
+        <button class="link more" onclick={cleanup}>Ongebruikte opruimen ({unusedCount})</button>
+        <p class="hint">
+          Ongebruikt: aangemeld vóór vandaag en daarna niets ingesproken, gedeeld of een naam
+          opgegeven.
         </p>
       {/if}
     {/if}
