@@ -10,6 +10,7 @@ import {
   limitPeaks,
   monthForecast,
   perDay,
+  perSessionWeek,
   perWeek,
   topShare,
   unitCostPerWeek,
@@ -17,6 +18,7 @@ import {
   versionsInUse,
   weekOf,
   type ActivityRow,
+  type SummaryRow,
 } from './stats';
 
 const row = (day: string, tester: string, sessions = 1, utterances = 5): ActivityRow => ({
@@ -344,5 +346,50 @@ describe('per soort uitspraak, versie en taal', () => {
 
   it('telt uitspraken per taal', () => {
     expect(utterancesPerLanguage(rows, now)).toEqual({ nl: 3, en: 1, '': 1 });
+  });
+});
+
+describe('perSessionWeek', () => {
+  const summary = (week: string, extra: Partial<SummaryRow> = {}): SummaryRow => ({
+    week,
+    cohort: '',
+    platform: 'android',
+    minutes: 60,
+    utterances: 10,
+    observations: 8,
+    species: 5,
+    uncertain: 2,
+    notUnderstood: 1,
+    corrections: 1,
+    failed: 0,
+    reviewed: 8,
+    offline: false,
+    trektel: false,
+    tuintelling: false,
+    exported: 'waarneming',
+    ...extra,
+  });
+
+  it('rekent per week en alles samen, nieuwste eerst', () => {
+    const result = perSessionWeek([
+      summary('2026-11-16', { minutes: 30, exported: 'none', platform: 'web' }),
+      summary('2026-11-23'),
+      summary('2026-11-23', { minutes: 90, utterances: 30, notUnderstood: 3, offline: true }),
+    ]);
+    expect(result.map((w) => [w.week, w.sessions])).toEqual([
+      ['2026-11-23', 2],
+      ['2026-11-16', 1],
+      ['alle', 3],
+    ]);
+    expect(result[0]).toMatchObject({
+      minutes: 75,
+      utterances: 20,
+      notUnderstood: 0.1,
+      uncertain: 0.25,
+      exported: 1,
+      offline: 0.5,
+    });
+    expect(result[2].exported).toBeCloseTo(2 / 3);
+    expect(result[2].android).toBeCloseTo(2 / 3);
   });
 });

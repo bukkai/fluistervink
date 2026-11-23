@@ -35,7 +35,8 @@
       </li>
       <li>
         Geen account, geen advertenties, geen route van waar je geweest bent. Zonder delen ziet de
-        ontwikkelaar alleen hoeveel de app gebruikt wordt, niet wat je zegt of waar je bent.
+        ontwikkelaar alleen hoeveel de app gebruikt wordt, plus anonieme cijfers per sessie (uit te
+        zetten), niet wat je zegt of waar je bent.
       </li>
     </ul>
   </div>
@@ -140,10 +141,31 @@
 
 <section class="card">
   <div class="card-body">
+    <h3>Anonieme cijfers per sessie</h3>
+    <p>
+      Los van het delen hierboven stuurt de app na een sessie een handvol getallen: hoe lang hij
+      duurde (op 5 minuten), hoeveel uitspraken, waarnemingen en verschillende soorten, hoeveel
+      daarvan onzeker, niet begrepen, met de stem verbeterd of mislukt waren, of er op bereik
+      gewacht is, of het een trektelling of tuintelling was, of je hebt nagelopen en geëxporteerd,
+      en of het de Android-app was. Dat gebeurt als je de sessie exporteert, of een week na het
+      stoppen. Niet waar, wanneer, welke soorten of wat je zei. De server bewaart het zonder je
+      installatie, alleen met de week waarin die begon, dus het is niet terug te leiden naar jou. Zo
+      ziet de ontwikkelaar hoe goed de app in het veld werkt. Staat standaard aan; uitzetten bij
+      <a href="{app}#instellingen">Instellingen</a>.
+    </p>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-body">
     <h3>Wat je zelf kunt doen</h3>
     <ul>
       <li>
         Delen aan- of uitzetten, met of zonder opnames: <a href="{app}#instellingen">Instellingen</a
+        >.
+      </li>
+      <li>
+        Anonieme cijfers per sessie uitzetten: ook bij <a href="{app}#instellingen">Instellingen</a
         >.
       </li>
       <li>

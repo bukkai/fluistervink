@@ -19,6 +19,7 @@ import {
   type InstallSecrets,
 } from './install';
 import { AUDIO_SECONDS_PER_DAY, MESSAGES_PER_DAY } from '../src/lib/limits';
+import { checkSummary, storeSummary, summariesSince } from './summaries';
 import {
   activitySince,
   audioSecondsToday,
@@ -106,8 +107,9 @@ export default {
     if (!tester) {
       return json({ error: 'Ongeldige of ontbrekende toegangscode of installatie' }, 401);
     }
-    // In Workers Logs (observability), om gebruik per tester te kunnen zien
-    console.log({ tester, path: pathname });
+    // In Workers Logs (observability), om gebruik per tester te kunnen zien. Niet
+    // bij de anonieme cijfers: dan zou het log ze toch aan een installatie koppelen.
+    if (pathname !== '/api/summaries') console.log({ tester, path: pathname });
 
     try {
       if (pathname === '/api/ping' && request.method === 'GET') {
@@ -139,6 +141,9 @@ export default {
       }
       if (pathname === '/api/stats' && request.method === 'GET') {
         return await stats(request, env, tester);
+      }
+      if (pathname === '/api/summaries') {
+        return await summaries(request, env, tester);
       }
       if (pathname === '/api/billing' && request.method === 'GET') {
         return await billing(env, tester);
@@ -509,6 +514,31 @@ async function usage(request: Request, env: WorkerEnv, tester: string): Promise<
   // Bewaartermijn: wat ouder is dan 13 maanden alleen nog per week, zonder installatie
   await pruneUsage(env.USAGE);
   return json({ rows: await usageSince(env.USAGE, from) });
+}
+
+/**
+ * Anonieme cijfers per sessie (worker/summaries.ts). `POST` voor elke
+ * installatie: bewaard zonder installatie, alleen met de week waarin die
+ * begon; van de eigenaar niet (die test). `GET ?from=…` alleen de eigenaar.
+ */
+async function summaries(request: Request, env: WorkerEnv, tester: string): Promise<Response> {
+  if (request.method === 'GET') {
+    if (tester !== OWNER) return json({ error: 'Alleen voor de eigenaar' }, 403);
+    const from = new URL(request.url).searchParams.get('from') ?? '';
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(from)) return json({ error: 'Ongeldige datum' }, 400);
+    return json({ rows: await summariesSince(env.USAGE, from) });
+  }
+  if (request.method !== 'POST') return json({ error: 'Niet gevonden' }, 404);
+  if (!(await withinLimit(env, tester, 'summary'))) {
+    return json({ error: 'Te veel verzoeken achter elkaar; probeer het zo opnieuw' }, 429);
+  }
+  const summary = checkSummary(await request.json().catch(() => null));
+  if (!summary) return json({ error: 'Ongeldige samenvatting' }, 400);
+  // De app verwacht altijd JSON (zonder denkt hij aan de inlogpagina van een wifi)
+  if (tester === OWNER) return json({ ok: true, stored: false });
+  const install = tester.startsWith('app-') ? await findInstall(env.TESTERS, tester) : null;
+  await storeSummary(env.USAGE, summary, install?.registeredAt);
+  return json({ ok: true, stored: true });
 }
 
 /**

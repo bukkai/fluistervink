@@ -29,7 +29,8 @@
       </li>
       <li>
         No account, no ads, no track of where you’ve been. Without sharing, the developer only sees
-        how much the app is used, not what you say or where you are.
+        how much the app is used, plus anonymous numbers per session (can be switched off), not what
+        you say or where you are.
       </li>
     </ul>
   </div>
@@ -136,10 +137,32 @@
 
 <section class="card">
   <div class="card-body">
+    <h3>Anonymous numbers per session</h3>
+    <p>
+      Separately from the sharing above, the app sends a handful of numbers after a session: how
+      long it lasted (to 5 minutes), how many voice notes, observations and different species, how
+      many of those were uncertain, not understood, corrected by voice or failed, whether it waited
+      for a connection, whether it was a migration or garden count, whether you reviewed and
+      exported, and whether it was the Android app. This happens when you export the session, or a
+      week after stopping. Not where, when, which species or what you said. The server stores it
+      without your installation, only with the week in which it started, so it can’t be traced back
+      to you. This lets the developer see how well the app works in the field. On by default; switch
+      it off under <a href="{app}#instellingen">Settings</a>.
+    </p>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-body">
     <h3>What you can do yourself</h3>
     <ul>
       <li>
         Switch sharing on or off, with or without recordings: <a href="{app}#instellingen"
+          >Settings</a
+        >.
+      </li>
+      <li>
+        Switch off anonymous numbers per session: also under <a href="{app}#instellingen"
           >Settings</a
         >.
       </li>

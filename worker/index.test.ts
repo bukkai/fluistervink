@@ -1592,3 +1592,80 @@ describe('usage-tabel van vóór 23 nov (beta en stable delen de database)', () 
     );
   });
 });
+
+describe('/api/summaries (anonieme cijfers per sessie)', () => {
+  const summary = {
+    minutes: 60,
+    utterances: 10,
+    observations: 8,
+    species: 5,
+    uncertain: 1,
+    notUnderstood: 1,
+    corrections: 1,
+    failed: 0,
+    reviewed: 8,
+    offline: false,
+    trektel: false,
+    tuintelling: false,
+    exported: 'waarneming',
+    platform: 'android',
+  };
+  const post = (body: unknown, code?: string) =>
+    call('/api/summaries', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      ...(code ? { code } : {}),
+    });
+  const list = async () =>
+    (
+      (await (await call('/api/summaries?from=2000-01-01', { code: OWNER_CODE })).json()) as {
+        rows: Record<string, unknown>[];
+      }
+    ).rows;
+
+  it('bewaart zonder installatie, alleen met de week waarin die begon', async () => {
+    await putInstall(testersKv as never, ANNA_ID, {
+      name: ANNA,
+      // Woensdag 11 november 2026
+      registeredAt: Date.parse('2026-11-11T12:00:00Z'),
+      via: 'play',
+    });
+    const log = vi.spyOn(console, 'log');
+    const response = await post(summary);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ ok: true, stored: true });
+    const rows = await list();
+    expect(rows).toEqual([
+      expect.objectContaining({ ...summary, cohort: '2026-11-09', week: expect.any(String) }),
+    ]);
+    expect(JSON.stringify(rows)).not.toContain(ANNA);
+    // Ook het log koppelt de cijfers niet aan de installatie
+    expect(log.mock.calls.flat().some((c) => JSON.stringify(c).includes('/api/summaries'))).toBe(
+      false,
+    );
+    log.mockRestore();
+  });
+
+  it('weigert onbekende velden, vrije tekst en onzinwaarden', async () => {
+    for (const body of [
+      { ...summary, note: 'hallo' },
+      { ...summary, exported: 'ergens' },
+      { ...summary, minutes: -5 },
+      { ...summary, utterances: 1.5 },
+      { ...summary, offline: 'ja' },
+      { ...summary, platform: undefined },
+      [summary],
+      'tekst',
+    ]) {
+      expect((await post(body)).status).toBe(400);
+    }
+    expect(await list()).toEqual([]);
+  });
+
+  it('bewaart niets van de eigenaar, en alleen de eigenaar kan ophalen', async () => {
+    expect(await (await post(summary, OWNER_CODE)).json()).toEqual({ ok: true, stored: false });
+    expect(await list()).toEqual([]);
+    expect((await call('/api/summaries?from=2000-01-01')).status).toBe(403);
+  });
+});
