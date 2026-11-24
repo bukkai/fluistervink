@@ -33,6 +33,9 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     date: '2026-11-24',
     topics: {
+      Inspreken: [
+        'Nieuw in de soortenlijst: "Uil onbekend", voor een uil waarvan je niet weet welke. Een paar exoten heten nu zoals op waarneming.nl, zoals Hawaiigans en Soendataling.',
+      ],
       'Android-app': [
         'Nieuw bij Instellingen, vanaf versie 0.7 van de app: "Opnemen met het scherm uit". Met de volumeknop start en stop je dan een opname, ook met de telefoon in je zak. Een trektelling telt door met het scherm uit. Alleen een telefoongesprek of een andere app die de microfoon pakt (zoals Merlin) pauzeert hem; daarna gaat hij vanzelf verder.',
       ],
