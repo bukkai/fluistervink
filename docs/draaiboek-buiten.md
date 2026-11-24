@@ -28,6 +28,22 @@ Dezelfde zinnen in elke ronde van deel A, zodat de rondes te vergelijken zijn. R
 11. Een man en een vrouw grote bonte specht
 12. Vijftien graspiepers overvliegend naar het zuidwesten
 
+## Uitslag 24 nov
+
+Ronde 1–3 van A (Arnhem, 11:14–11:50, koptelefoon Sony XM5) en C (Velp, 14:27–15:36). Testset op A: 41 van 42 goed; de twee keer "Roepje vink" tellen als fout omdat de bewuste correctie "nee, keep" het label wordt, en "Twee koudjes" werd Vogel onbekend (in de app 2 kauwen, onzeker).
+
+- **Ronde 1** (telefoonmicrofoon, `mic_opened` "Speakerphone", `preferHeadset: false`): de twaalf zinnen 12/12 goed. Gesproken bevestiging stond nog uit (geen `speak` in het log).
+- **Ronde 2** (telefoon in de zak, volumeknop): ook 12/12. De opnames liepen via de service (`screen_off_recording`), dus met de **telefoonmicrofoon in de zak**, niet die van de koptelefoon; alleen de eerste uitspraak bij het starten ging via "Bluetooth headset". De oortjesmicrofoon in de zak is dus niet echt geprobeerd, maar de telefoon in de zak verstaat prima.
+- **Ronde 3** (trektelling, scherm aan, 17 stukken; accu 72 → 63%, koptelefoon 70 → 63%):
+  - Muziek op een ander apparaat stopte zodra de telling begon, en kwam met play niet terug. Vermoeden: het stille geluid waarmee de app de mediaknop claimt (`claimMediaButton`, 300 ms) maakt de telefoon de actieve bron van de koptelefoon (multipoint).
+  - Muziek op de telefoon zelf was niet te horen in de koptelefoon.
+  - **Gesproken bevestiging niet gehoord**, terwijl het log twintig keer `gesproken: true` zegt. Dat betekent alleen dat de tekst aan de spraak van Android is gegeven (`SprekenPlugin.zeg` meldt niet of hij echt klonk). Eén keer wel gehoord: na het stoppen van de telling, toen de app de microfoon van de koptelefoon opende.
+  - Vijf keer `KEYCODE_MEDIA_PAUSE` als druk (`screen_off_druk_trektel`), de eerste 4,5 s na het claimen: de koptelefoon stuurt pauze als de bron wisselt. Ook in C (3,7 s na het claimen).
+  - Volumeknop met het scherm aan: alleen volume, geen start of stop.
+  - "Eén oortje in het doosje" kon niet (koptelefoon); "buiten bereik lopen" was onduidelijk: bedoeld is zonder mobiel internet.
+  - Goed: een uitleg aan een omstander met vogelnamen erin ("ik ben mijn app aan het testen … roodborst … Corvus monedula") werd feedback, geen waarnemingen; "die drie houtduiven aan het begin vlogen naar het westen" paste de houtduiven van 11:30 aan; "Pica pica" werd ekster; feedback midden in een stuk werd apart gezet.
+- **C, lang met het scherm uit** (69 min, 57 stukken, alle met `hidden: false`, `bridgeMs` ≤ 72): accu 82 → 71%, ongeveer 10% per uur. Geen gaten. Bellen en Merlin niet gedaan. Een gesprek van anderen aan tafel liep het grootste deel mee: bijna alles genegeerd, maar uit één stuk kwamen vier soorten amfibieën met aantallen uit het gesprek (onzeker), uit een spelletje "noem een vogel" twee kauwen en verder een gewone pad. Zoals bij de podcast in de tuintelling (`docs/plan-tuintelling.md`, punt 9).
+
 ## A. Oortjesmicrofoon: drie rondes (#267)
 
 Beslist of de telling in de service (`TrektelOpname`) de oortjes gaat gebruiken. Twee oortjesrondes met de telefoon in de hand zijn al gedaan (21 nov, `testset/feedback/oortjesproef/`), en op 23 nov twee fietsrondes met de oortjesmicrofoon (`NOTES.md`), maar zonder de twaalf zinnen, dus niet te vergelijken. Elke ronde een eigen sessie, na de ronde stoppen en delen. Elke zin met de knop in de app (scherm aan), één zin per opname.
@@ -50,8 +66,8 @@ Beslist of de telling in de service (`TrektelOpname`) de oortjes gaat gebruiken.
 - [ ] 5 min met muziek of een podcast van een ander apparaat op de oortjes: hapert het, valt het weg?
 - [ ] 5 min met een podcast op de telefoon zelf: blijft de telling luisteren?
 - [ ] Volumeknop en oortjesknop proberen; gesproken bevestiging aan: is hij te horen?
-- [ ] Eén oortje in het doosje: wat doet de telling?
-- [ ] Een stukje buiten bereik lopen (als dat kan): de wachtrij vangt het op.
+- [ ] Eén oortje in het doosje (of de koptelefoon even uit): wat doet de telling?
+- [ ] Mobiel internet even uit (vliegtuigstand of mobiele data uit): de wachtrij vangt het op.
 - [ ] Na 15 min stoppen en delen. Accu van de oortjes: …%.
 - [ ] Bevindingen inspreken als feedback.
 
