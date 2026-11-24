@@ -1,5 +1,6 @@
 <script lang="ts">
   import { t } from './i18n';
+  import { screenOffSupported } from './native';
   // Trektelmodus aan of uit (docs/plan-trektelmodus.md)
   import { setTrektelEnabled, trektelEnabled } from './trektel';
 
@@ -19,6 +20,10 @@
     </label>
     <p class="hint">{t('trektel.hint1')}</p>
     <p class="hint">{t('trektel.hint2')}</p>
+    <!-- Alleen in de Android-app: daar kan de telling met het scherm uit doorgaan -->
+    {#if screenOffSupported}
+      <p class="hint">{t('trektel.hintScreenOff')}</p>
+    {/if}
     <p class="hint">{t('trektel.hint3')}</p>
   </div>
 </section>

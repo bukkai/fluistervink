@@ -114,6 +114,30 @@ describe('sendSummaries', () => {
     );
   });
 
+  it('stuurt een oude sessie ook na honderden andere niet opnieuw', async () => {
+    const many = Array.from({ length: 250 }, (_, i) => `s${i}`);
+    for (const id of many) await session(id, DAY, { exportedAt: NOW });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => Response.json({ ok: true })),
+    );
+    expect(await sendSummaries(NOW)).toBe(250);
+    expect(await sendSummaries(NOW)).toBe(0);
+  });
+
+  it('vergeet verwijderde sessies', async () => {
+    await session('s1', DAY, { exportedAt: NOW });
+    await session('s2', DAY, { exportedAt: NOW });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => Response.json({ ok: true })),
+    );
+    await sendSummaries(NOW);
+    await db.sessions.delete('s1');
+    expect(await sendSummaries(NOW)).toBe(0);
+    expect(JSON.parse(localStorage.getItem('fluistervink.anonStatsSent')!)).toEqual(['s2']);
+  });
+
   it('stuurt niets als het uit staat', async () => {
     setAnonStatsEnabled(false);
     await session('s1', DAY, { exportedAt: NOW });
