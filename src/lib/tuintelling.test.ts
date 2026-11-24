@@ -1,9 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { db, type Session } from './db';
 import { importJson } from './export';
 import { startSession } from './sessions';
 import {
+  TELWEEKEND,
+  TUINTEL_FOR_EVERYONE,
   TUINTEL_FORM_SPECIES,
+  dismissTelweekendNotice,
+  isTelweekend,
+  showTelweekendNotice,
+  tuintelAvailable,
   TUINTEL_MS,
   startTuintelCount,
   tuintelLeftMs,
@@ -215,5 +221,54 @@ describe('tuintelsessie', () => {
     await expect(importJson(backup('nu'))).rejects.toThrow();
     await importJson(backup(5));
     expect((await db.sessions.get('s2'))?.tuintelStartedAt).toBe(5);
+  });
+});
+
+describe('rond het telweekend', () => {
+  const at = (month: number, day: number, hour = 12) => new Date(2027, month, day, hour).getTime();
+  const donderdag = at(0, 28, 23);
+  const vrijdag = at(0, 29, 0);
+  const zondagAvond = at(0, 31, 23);
+  const maandag = at(1, 1, 0);
+
+  beforeEach(() => localStorage.clear());
+
+  it('is nog niet voor iedereen: dat is de lancering (stap 5)', () => {
+    expect(TUINTEL_FOR_EVERYONE).toBe(false);
+    expect(tuintelAvailable(vrijdag, false)).toBe(false);
+  });
+
+  it('kan met de ontwikkeloptie altijd', () => {
+    expect(tuintelAvailable(at(5, 1), true)).toBe(true);
+  });
+
+  it('toont de knop voor iedereen van een week ervoor tot en met zondag', () => {
+    expect(tuintelAvailable(at(0, 21, 23), false, true)).toBe(false);
+    expect(tuintelAvailable(TELWEEKEND.buttonFrom, false, true)).toBe(true);
+    expect(tuintelAvailable(zondagAvond, false, true)).toBe(true);
+    expect(tuintelAvailable(maandag, false, true)).toBe(false);
+  });
+
+  it('kent het telweekend als vrijdag tot en met zondag', () => {
+    expect(isTelweekend(donderdag)).toBe(false);
+    expect(isTelweekend(vrijdag)).toBe(true);
+    expect(isTelweekend(zondagAvond)).toBe(true);
+    expect(isTelweekend(maandag)).toBe(false);
+  });
+
+  it('meldt het telweekend tot je hem wegtikt of al telde', () => {
+    expect(showTelweekendNotice(donderdag, true, [])).toBe(false);
+    expect(showTelweekendNotice(vrijdag, false, [])).toBe(false);
+    expect(showTelweekendNotice(vrijdag, true, [])).toBe(true);
+    // Een tuintelling van vorige week (proberen) telt niet, een van dit weekend wel
+    expect(showTelweekendNotice(vrijdag, true, [{ tuintelling: true, startedAt: donderdag }])).toBe(
+      true,
+    );
+    expect(
+      showTelweekendNotice(zondagAvond, true, [{ tuintelling: true, startedAt: vrijdag }]),
+    ).toBe(false);
+    expect(showTelweekendNotice(zondagAvond, true, [{ startedAt: vrijdag }])).toBe(true);
+    dismissTelweekendNotice();
+    expect(showTelweekendNotice(vrijdag, true, [])).toBe(false);
   });
 });

@@ -63,6 +63,10 @@ export const nl = {
   'home.shareNo': 'Liever niet',
   'home.start': 'Begin met vogelen',
   'home.startTuintel': 'Tuintelling: een half uur tellen',
+  'home.telweekendTitle': 'Dit weekend is de Tuinvogeltelling',
+  'home.telweekendText':
+    'Tel een half uur de vogels in je tuin of vanaf je balkon. Daarna staat je lijstje klaar voor het formulier.',
+  'home.telweekendStart': 'Start de tuintelling',
   'home.tip': 'Nog nooit gedaan? Probeer het in de tuin of bij het raam: één merel is genoeg.',
   'home.lastSession': 'Laatste sessie',
 

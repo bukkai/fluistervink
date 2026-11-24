@@ -5,9 +5,10 @@
   // HowItWorks.en.svelte: een wijziging hier hoort in dezelfde PR ook daar.
   import { devOptionOn } from './devOptions';
   import { isAndroidApp, isIosApp } from './native';
+  import { tuintelAvailable } from './tuintelling';
 
-  // Tuintelling: alleen als die kan (ontwikkeloptie, docs/plan-tuintelling.md)
-  const tuintel = devOptionOn('tuintelling');
+  // Tuintelling: alleen als die kan (ontwikkeloptie, of rond het telweekend)
+  const tuintel = tuintelAvailable(Date.now(), devOptionOn('tuintelling'));
 </script>
 
 <a class="back" href="#/">Terug</a>

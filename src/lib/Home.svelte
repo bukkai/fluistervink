@@ -12,6 +12,7 @@
   import { isAndroidApp } from './native';
   import { preferenceOn } from './preferences';
   import type { StaleCheck } from './sessions';
+  import { dismissTelweekendNotice, showTelweekendNotice } from './tuintelling';
   import MoveToStable from './MoveToStable.svelte';
 
   // Startscherm als er geen sessie loopt: de startknop, met daarboven wat er
@@ -30,7 +31,7 @@
     askShare: boolean;
     onshare: (on: boolean) => void;
     onstart: () => void;
-    /** Tuintelling starten (ontwikkeloptie, tuintelling.ts) */
+    /** Tuintelling starten (ontwikkeloptie of rond het telweekend, tuintelling.ts) */
     onstarttuintel?: () => void;
   }
 
@@ -48,6 +49,16 @@
   }: Props = $props();
 
   let last = $derived(sessions.find((s) => s.status === 'ended'));
+
+  // In het telweekend een melding met de knop erin, in plaats van de losse knop
+  let noticeGone = $state(false);
+  let telweekend = $derived(
+    !noticeGone && showTelweekendNotice(now, onstarttuintel !== undefined, sessions),
+  );
+  function dismissTelweekend() {
+    dismissTelweekendNotice();
+    noticeGone = true;
+  }
 
   // Na het welkom, tot de eerste sessie: een tip onder de startknop
   let firstTime = $derived(sessions.length === 0);
@@ -97,6 +108,14 @@
       <button class="link" onclick={remindLater}>{t('common.later')}</button>
     </p>
   {/if}
+  {#if telweekend}
+    <div class="telweekend card">
+      <strong>{t('home.telweekendTitle')}</strong>
+      <p>{t('home.telweekendText')}</p>
+      <button class="btn block" onclick={onstarttuintel}>{t('home.telweekendStart')}</button>
+      <button class="link" onclick={dismissTelweekend}>{t('common.later')}</button>
+    </div>
+  {/if}
   {#if askShare && !installProblem}
     <div class="consent card">
       <strong>{t('home.shareTitle')}</strong>
@@ -111,7 +130,7 @@
     </div>
   {/if}
   <button class="start" onclick={onstart}>{t('home.start')}</button>
-  {#if onstarttuintel}
+  {#if onstarttuintel && !telweekend}
     <button class="btn secondary block large" onclick={onstarttuintel}>
       {t('home.startTuintel')}
     </button>
@@ -164,6 +183,20 @@
     border-radius: var(--radius);
     border: 1px solid var(--border);
     background: var(--surface);
+  }
+
+  .telweekend {
+    display: grid;
+    justify-items: center;
+    gap: 0.5rem;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0.9rem 1rem;
+    text-align: center;
+  }
+
+  .telweekend p {
+    margin: 0;
   }
 
   .consent {
