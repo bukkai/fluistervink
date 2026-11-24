@@ -86,7 +86,9 @@ Gevallen die de testset nog niet heeft. Eén sessie "Testset lastig". Achteraf b
 - [ ] **Beginnerswoorden (tuintelling):** "een duif", "twee mussen", "een mees", "een specht". Kijken wat het model ervan maakt; nodig voor `docs/plan-tuintelling.md`.
 - [ ] Sessie stoppen en delen, met opnames.
 
-## C. Trektelling met het scherm uit, lang (`docs/plan-trektelmodus.md`, punt 4)
+## C. Trektelling met het scherm uit, lang
+
+Bellen en Merlin afgevinkt op 24 nov: getest tijdens trektellingen met de service (scherm aan), dezelfde pauze bij een andere app als met het scherm uit. Accu en gaten: uitslag hierboven. Wat over is, is de tweede meting zonder zichtbare WebView. (`docs/plan-trektelmodus.md`, punt 4)
 
 Op 22 nov werkte het in drie korte tellingen (stukken meteen verwerkt, met tril). Nog niet geprobeerd: een lange telling voor de accu, gebeld worden, Merlin. Een aparte sessie, één tot twee uur, op een vaste plek; liefst met wat vogels of zelf af en toe een zin inspreken, zodat er stukken met spraak zijn. Daarna beslissen of het na de productierelease naar iedereen gaat (Maarten).
 
@@ -94,8 +96,8 @@ Op 22 nov werkte het in drie korte tellingen (stukken meteen verwerkt, met tril)
 - [ ] Sessie "Trektel scherm uit lang", trektelling starten met de app op het scherm. Begintijd: …, accu …%.
 - [ ] Scherm uit, telefoon neerleggen. Na elk stuk met spraak (ongeveer een minuut) voel je de tril van het verwerken.
 - [ ] **Scherm aan en uit:** na een kwartier een paar keer het scherm aan, de lijst bekijken, weer uit. Verwacht: geen gat en geen dubbel stuk rond die momenten.
-- [ ] **Gebeld worden:** laat iemand bellen (of bel jezelf met een tweede telefoon), een minuut praten, ophangen. Verwacht: lange tril bij het opnemen van de oproep (pauze), de telling gaat na het ophangen vanzelf verder, zonder Fluistervink te openen. Wat je in het gesprek zegt, komt niet in de telling.
-- [ ] **Merlin:** Merlin openen, Sound ID een minuut laten luisteren, Merlin sluiten (scherm mag daarna uit). Verwacht: Merlin hoort geluid, Fluistervink pauzeert met een lange tril en gaat daarna vanzelf verder. Langer dan een kwartier pauze stopt de telling; dus niet te lang.
+- [x] **Gebeld worden:** laat iemand bellen (of bel jezelf met een tweede telefoon), een minuut praten, ophangen. Verwacht: lange tril bij het opnemen van de oproep (pauze), de telling gaat na het ophangen vanzelf verder, zonder Fluistervink te openen. Wat je in het gesprek zegt, komt niet in de telling.
+- [x] **Merlin:** Merlin openen, Sound ID een minuut laten luisteren, Merlin sluiten (scherm mag daarna uit). Verwacht: Merlin hoort geluid, Fluistervink pauzeert met een lange tril en gaat daarna vanzelf verder. Langer dan een kwartier pauze stopt de telling; dus niet te lang.
 - [ ] Na één tot twee uur stoppen. Eindtijd: …, accu …%. Delen.
 - [ ] Bevindingen inspreken als feedback.
 
