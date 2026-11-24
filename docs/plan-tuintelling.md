@@ -110,11 +110,23 @@ Voorwaarde: Fluistervink staat half januari openbaar in Play. Lukt dat niet, dan
 - Niet automatisch invoeren bij mijntuinvogeltelling.nl als er geen import of API is (geen formulieren invullen namens de gebruiker).
 - Geen pushberichten of e-mail (er zijn geen accounts).
 
+## Naar iedereen (besloten 24 nov)
+
+De tuintelmodus komt eind januari voor iedereen, ook zonder samenwerking met Vogelbescherming (punt 4): tellen in Fluistervink, overtypen in hun formulier. Wat daarvoor nog moet, in volgorde:
+
+1. **Woorden van beginners meten** (punt 10): opnames van "duif", "mus", "mees", "kraai", "specht" en de verkleinvormen (`docs/draaiboek-buiten.md`, B), door de testset. Een promptregel alleen als de testset het laat zien, in beide prompts.
+2. **Weet het model dat het een tuintelling is?** (punt 5): "weer twee merels" na twee merels meten met de testset; zonder promptwijziging als het kan.
+3. **Welkom en uitleg** (punt 11): een tuinteller komt vanuit het welkom zonder omweg bij "Tuintelling", Probeer het eens werkt met "een merel"; `#uitleg` in NL en EN.
+4. **De knop alleen rond het telweekend** (punt 12), en de melding op vrijdag.
+5. **De ontwikkeloptie eraf**, begin januari, met een regel in de changelog; daarna de pagina `/tuintelling` zonder `noindex`, het filmpje en de zin in Play.
+6. **Plafonds en kosten** (punt 13): rond 22 jan de limieten bij OpenAI en Anthropic ophogen; aanmelden onder piekbelasting nalopen.
+7. **Bij het openen van het formulier** (januari): de volgorde van de vaste soorten in hun web-app vergelijken met de kaart Tuintelling.
+
 ## Open beslissingen voor de eigenaar
 
 - Gaat de tuintelling door als de app half januari nog niet openbaar in Play staat (alleen de PWA)?
 - ~~Vogelbescherming vooraf benaderen?~~ Gedaan (24 nov): vooralsnog geen samenwerking, zie punt 4.
-- Budget voor het telweekend (plafonds).
+- Budget voor het telweekend (plafonds); tot ~$200 bij 1000 tellers (punt 13).
 
 ## Gebouwd (21 nov, ontwikkeloptie `tuintelling`)
 
