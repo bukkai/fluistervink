@@ -55,9 +55,11 @@
       <p>
         In de Android-app kan ook de volumeknop de opname starten en stoppen (uit te zetten bij
         Instellingen). Zet bij Instellingen "Scherm aan houden" aan, dan gaat het scherm tijdens een
-        sessie niet vanzelf uit en blijft de volumeknop werken. Met oortjes in kan de app na het
-        trillen ook zeggen wat hij heeft vastgelegd (een proef, aan te zetten bij Instellingen).
-        Snel beginnen: houd het pictogram van Fluistervink ingedrukt en kies "Begin met vogelen".
+        sessie niet vanzelf uit en blijft de volumeknop werken. Of zet "Opnemen met het scherm uit"
+        aan: dan werkt de volumeknop ook met het scherm uit en de telefoon in je zak, en telt een
+        trektelling door. Met oortjes in kan de app na het trillen ook zeggen wat hij heeft
+        vastgelegd (een proef, aan te zetten bij Instellingen). Snel beginnen: houd het pictogram
+        van Fluistervink ingedrukt en kies "Begin met vogelen".
       </p>
     {/if}
   </div>
@@ -113,11 +115,11 @@
       </dd>
     </dl>
     <p>
-      Bij de trektelling: één lange tril als hij pauzeert (andere app, scherm op slot, oortjes los),
-      twee lange als hij gestopt is. Dat gebeurt ook als je die dag al 5 uur hebt ingesproken, het
-      maximum per dag, of als de microfoon niet meer aangaat; op het scherm staat dan waarom. Zonder
-      bereik telt hij gewoon door; na 2 uur zonder bereik komen er ook twee lange trillen, maar dan
-      loopt de telling door.
+      Bij de trektelling: één lange tril als hij pauzeert (andere app of een telefoongesprek, scherm
+      op slot zonder "Opnemen met het scherm uit", oortjes los), twee lange als hij gestopt is. Dat
+      gebeurt ook als je die dag al 5 uur hebt ingesproken, het maximum per dag, of als de microfoon
+      niet meer aangaat; op het scherm staat dan waarom. Zonder bereik telt hij gewoon door; na 2
+      uur zonder bereik komen er ook twee lange trillen, maar dan loopt de telling door.
     </p>
     {#if isAndroidApp}
       <p>

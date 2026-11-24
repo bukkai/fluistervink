@@ -5,9 +5,8 @@
 
 /**
  * - `oortjesMicrofoon`: de microfoon van Bluetooth-oortjes (microphone.ts)
- * - `schermUit`: opnemen met het scherm uit, met de volumeknop (proef,
- *   docs/roadmap-android.md stap 3)
- * - `oortjesKnop`: met `schermUit` ook de knop op de oortjes (claimt de
+ * - `oortjesKnop`: met de keuze "Opnemen met het scherm uit" (`schermUit` in
+ *   preferences.ts, tot v0.7 een ontwikkeloptie) ook de knop op de oortjes (claimt de
  *   mediaknop met een kort stil geluid; los sinds 24 nov, omdat dat bij een
  *   koptelefoon met twee apparaten muziek en de gesproken bevestiging leek
  *   weg te nemen)
@@ -25,13 +24,7 @@
  *   insects.ts, docs/plan-insecten.md, laag 1)
  */
 export type DevOption =
-  | 'oortjesMicrofoon'
-  | 'schermUit'
-  | 'oortjesKnop'
-  | 'english'
-  | 'spanje'
-  | 'tuintelling'
-  | 'insecten';
+  'oortjesMicrofoon' | 'oortjesKnop' | 'english' | 'spanje' | 'tuintelling' | 'insecten';
 
 const PREFIX = 'fluistervink.dev.';
 

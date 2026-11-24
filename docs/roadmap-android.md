@@ -134,7 +134,7 @@ Uit de voorstellen van 8 nov, nog open; kunnen tussen de stappen door, want ze v
 | --- | --- | --- | --- |
 | 1 | Volumeknop en sluiterknopje als inspreekknop, snelkoppeling | ja, klein | nu, tijdens de gesloten test |
 | 2 | Gesproken bevestiging | ja, klein | na stap 1 |
-| 3 | Opnemen met het scherm uit, knop op de oortjes, microfoonkeuze | ja, groot | proef in de beta-build (interne test) sinds 18 nov; in de stabiele pas met de verklaring bij Google |
+| 3 | Opnemen met het scherm uit, knop op de oortjes, microfoonkeuze | ja, groot | proef in de beta-build sinds 18 nov; scherm uit naar iedereen met v0.7 (keuze, standaard uit), knop op de oortjes nog een ontwikkeloptie |
 | 4 | Microfoon delen met Merlin | ja | in de trektelling met het scherm uit als proef sinds 18 nov |
 | 5 | Wake word | ja, groot | na de lancering, eerst een proef |
 | – | iPhone-app | – | na de lancering, `docs/plan-ios.md` |
@@ -145,7 +145,7 @@ Elke stap is één à twee PR's en gaat eerst op een wandeling mee voordat de vo
 
 1. Volumeknop: **tikken** om te starten en te stoppen. Of dat prettig werkt, merken we in het veld.
 2. Gesproken bevestiging: **alleen met oortjes**, nooit via de luidspreker.
-3. Stap 3 (opnemen met het scherm uit) **in de stabiele app pas na de productierelease**; als proef al in de beta (punt 6).
+3. Stap 3 (opnemen met het scherm uit) **in de stabiele app pas na de productierelease**; als proef al in de beta (punt 6). Bijgesteld 24 nov: met v0.7 naar iedereen, als keuze bij Instellingen (standaard uit), met de productierelease; de knop op de oortjes nog niet.
 4. Wake word: **open source** (openWakeWord), geen licentie.
 
 5. **Alleen voor de eigenaar tot het bevalt:** nieuwe functies uit deze roadmap komen achter een ontwikkeloptie die alleen met de code van de eigenaar zichtbaar is (zoals Developer, `isOwner` in `App.svelte`). Uitzondering: de volumeknop, die is voor iedereen (eerst standaard uit, sinds 16 nov standaard aan). De gesproken bevestiging is sinds 16 nov een proef voor iedereen, standaard uit. Native delen gaan gewoon mee in de Play-versie en doen bij anderen niets.

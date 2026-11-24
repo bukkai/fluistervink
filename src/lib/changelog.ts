@@ -31,6 +31,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026-11-24',
+    topics: {
+      'Android-app': [
+        'Nieuw bij Instellingen, vanaf versie 0.7 van de app: "Opnemen met het scherm uit". Tijdens een sessie start en stopt de volumeknop dan een opname, ook met het scherm uit en de telefoon in je zak, en een trektelling telt door met het scherm uit. Alleen een telefoongesprek of een andere app die de microfoon pakt (zoals Merlin) pauzeert hem; daarna gaat hij vanzelf verder.',
+      ],
+    },
+  },
+  {
     date: '2026-11-23',
     topics: {
       Inspreken: [
