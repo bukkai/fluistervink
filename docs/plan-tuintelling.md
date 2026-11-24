@@ -33,7 +33,7 @@ Krap, want de telling valt vlak na de lancering in Play (`docs/lancering.md`, pr
 | 29–31 jan | de telling; melding in de app op vrijdag |
 | feb | terugblik, cijfers, wat bleef hangen |
 
-Voorwaarde: Fluistervink staat half januari openbaar in Play. Lukt dat niet, dan alleen de PWA (zie Promotie).
+Liefst staat Fluistervink half januari openbaar in Play. Lukt dat niet, dan gaat de telling door met alleen de PWA (besloten 24 nov; zie Promotie).
 
 ## Uitzoeken
 
@@ -124,9 +124,9 @@ De tuintelmodus komt eind januari voor iedereen, ook zonder samenwerking met Vog
 
 ## Open beslissingen voor de eigenaar
 
-- Gaat de tuintelling door als de app half januari nog niet openbaar in Play staat (alleen de PWA)?
+- ~~Gaat de tuintelling door als de app half januari nog niet openbaar in Play staat (alleen de PWA)?~~ Ja (24 nov): dan alleen de PWA.
 - ~~Vogelbescherming vooraf benaderen?~~ Gedaan (24 nov): vooralsnog geen samenwerking, zie punt 4.
-- Budget voor het telweekend (plafonds); tot ~$200 bij 1000 tellers (punt 13).
+- ~~Budget voor het telweekend (plafonds)~~: akkoord (24 nov), tot ~$200 bij 1000 tellers (punt 13).
 
 ## Gebouwd (21 nov, ontwikkeloptie `tuintelling`)
 
