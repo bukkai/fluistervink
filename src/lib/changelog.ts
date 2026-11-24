@@ -40,55 +40,27 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     date: '2026-11-23',
-    topics: {
-      Inspreken: [
-        'Druk je op Stop terwijl je nog aan het inspreken bent, dan wordt die laatste uitspraak nu gewoon bewaard en verwerkt. Hij ging verloren.',
-      ],
-      'Over de app': [
-        'Hoeveel je liet verwerken (aantal uitspraken en hun duur) bewaart de server nu 13 maanden; daarna alleen nog als totaal per week, zonder te zien van wie. Zie Privacy.',
-        'Na een sessie stuurt de app anonieme cijfers: hoe lang hij duurde, hoeveel uitspraken en waarnemingen, hoeveel daarvan niet begrepen of onzeker waren, en of je hebt geëxporteerd. Niet waar, wanneer, welke soorten of wat je zei, en niet van welke telefoon. Uit te zetten bij Instellingen; zie Privacy.',
-        'Bij dat verbruik telt de server nu ook wat voor uitspraak het was (knop, trektelling, tuintelling of "Probeer het eens"), in welke taal, en met welke versie van de app. Niet wat je zei. Zie Privacy.',
-        'De server onthoudt bij je installatie ook of het een iPhone, een Android-toestel of een computer is. Niet het merk, het model of de versie. Zie Privacy.',
-        'De pagina Privacy is overzichtelijker: bovenaan kort wat er met je gegevens gebeurt, de details staan ingeklapt eronder. Er is niets weggelaten.',
-      ],
-    },
+    items: [
+      'Druk je op Stop terwijl je nog aan het inspreken bent, dan wordt die laatste uitspraak bewaard.',
+      'Na een sessie gaan anonieme cijfers naar de server (geen plek, soorten of tekst); uit te zetten bij Instellingen.',
+      'De pagina Privacy is overzichtelijker, en zegt wat de server nu bijhoudt: hoe lang, en wat voor toestel (iPhone, Android of computer).',
+    ],
   },
   {
     date: '2026-11-22',
-    topics: {
-      Export: [
-        'Afschermen en embargo: zeg "die afschermen", "die op vijf kilometer vervagen" of "onder embargo tot 1 maart" (ook voor alle vorige tegelijk), of kies het thuis bij de waarneming. In de lijst staat dan een slotje. De export naar waarneming.nl neemt het mee; naar eBird gaat zo\'n waarneming niet. Zeg je "onder embargo" zonder datum, dan staat hij thuis bij het nalopen klaar om de datum te kiezen. Met "zonder embargo" haal je een embargo weer weg.',
-        'Zeg je "onbekend aantal" of "niet geteld", dan wordt het aantal "gezien niet geteld" in plaats van een exact aantal van 1. In eBird wordt dat een X.',
-      ],
-      Nalopen: [
-        'Pas je een onzekere waarneming zelf aan (soort, aantal, gedrag of kleed), dan gaat "onzeker" er vanzelf af: je hebt hem dan nagekeken. Wil je hem toch onzeker houden, zet het vinkje dan weer aan.',
-        'De suggesties onder het soortveld hebben een eigen kleur en schuiven meteen in beeld, ook boven de knop Opslaan. Zoek je op de wetenschappelijke naam ("corvus"), dan staat die erbij.',
-      ],
-      Inspreken: [
-        'Feedback in een trektelling wordt niet meer uitgevoerd: zeg je "feedback, die buizerd had ter plaatse moeten zijn", dan gaat dat alleen naar de ontwikkelaar en blijft de buizerd zoals hij was. En een soort die lijkt op een eerdere ("graszanger" na grasmussen) wordt een nieuwe waarneming in plaats van een verbetering van de vorige.',
-        'Nieuw bij Instellingen: "Scherm aan houden tijdens een sessie". Het scherm gaat dan niet vanzelf uit, zodat je met de volumeknop kunt blijven inspreken.',
-        'Spreek je dezelfde soort nog eens in ("een hommel", even later weer "een hommel"), dan wordt dat altijd een nieuwe waarneming. Soms werd de tweede genegeerd omdat hij al in de lijst stond. Met "nog een hommel" telt hij op bij de vorige, zoals altijd.',
-        'Vertel je iets van eerder ("gisteren zag ik hier een ijsvogel"), dan bewaart de app het als onzeker, omdat de tijd niet klopt. Huisdieren en vee ("een kat") worden geen waarneming meer.',
-      ],
-      'Over de app': [
-        'Deel je met de ontwikkelaar, dan laat de app lange cijferreeksen (zoals een BSN of telefoonnummer) en e-mailadressen weg, en de opname daarvan ook.',
-      ],
-    },
+    items: [
+      'Afschermen en embargo, met de stem of thuis bij de waarneming; de export naar waarneming.nl neemt het mee.',
+      '"Onbekend aantal" wordt gezien niet geteld (in eBird een X).',
+      'Pas je een onzekere waarneming zelf aan, dan is hij niet meer onzeker; het soortveld zoekt ook op wetenschappelijke naam.',
+      'Nieuw bij Instellingen: het scherm aan houden tijdens een sessie.',
+    ],
   },
   {
     date: '2026-11-21',
-    topics: {
-      Trektelling: [
-        'De trektelmodus is geen proef meer: bij Instellingen staat hij nu gewoon als "Trektelmodus".',
-        'Kwamen er twee GPS-metingen vlak na elkaar binnen, dan kon een stuk van de trektelling de minder nauwkeurige plek houden. Nu krijgt het altijd de beste.',
-      ],
-      Export: [
-        'Bij Vorige sessies zijn geëxporteerde sessies van meer dan een week geleden ingeklapt, onderaan. Tik erop om ze te zien.',
-      ],
-      Nalopen: [
-        'In donkere modus is "Met de stem aangepast" en "nagelopen" in de lijst beter te lezen, net als de knop Trektelling starten.',
-      ],
-    },
+    items: [
+      'De trektelmodus is geen proef meer.',
+      'Geëxporteerde sessies van meer dan een week geleden staan ingeklapt bij Vorige sessies.',
+    ],
   },
   {
     date: '2026-11-20',
