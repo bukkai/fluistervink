@@ -67,6 +67,10 @@ export const en: Dictionary = {
   'home.shareNo': 'Rather not',
   'home.start': 'Start birding',
   'home.startTuintel': 'Garden count: half an hour',
+  'home.telweekendTitle': 'This weekend is the Garden Bird Count',
+  'home.telweekendText':
+    'Count the birds in your garden or from your balcony for half an hour. Afterwards your list is ready for the form.',
+  'home.telweekendStart': 'Start the garden count',
   'home.tip':
     'Never tried it? Give it a go in the garden or at the window: one Blackbird is enough.',
   'home.lastSession': 'Last session',

@@ -21,7 +21,12 @@
   import { CHANNEL } from './lib/log';
   import { vibrate } from './lib/feedback';
   import { DEV_OPTION_EVENT, devOptionOn } from './lib/devOptions';
-  import { TUINTEL_WARN_MS, tuintelLeftMs, tuintelPhase } from './lib/tuintelling';
+  import {
+    TUINTEL_WARN_MS,
+    tuintelAvailable,
+    tuintelLeftMs,
+    tuintelPhase,
+  } from './lib/tuintelling';
   import { instance } from './lib/instance.svelte';
   import { processQueue } from './lib/queue';
   import { syncSessionService } from './lib/sessionService';
@@ -260,6 +265,8 @@
     window.addEventListener(DEV_OPTION_EVENT, update);
     return () => window.removeEventListener(DEV_OPTION_EVENT, update);
   });
+  // Met de ontwikkeloptie altijd, voor iedereen alleen rond het telweekend
+  let tuintelCan = $derived(tuintelAvailable(now, tuintelOn));
   let tuintelPhaseNow = $derived(active ? tuintelPhase(active, now) : undefined);
   let tuintelLeftRaw = $derived(active ? tuintelLeftMs(active, now) : undefined);
   let tuintelOver = $derived(
@@ -422,7 +429,7 @@
       askShare={askShare && !installProblem}
       onshare={chooseShare}
       onclose={() => (welcomeClosed = true)}
-      ontuintel={tuintelOn ? () => start({ tuintelling: true }) : undefined}
+      ontuintel={tuintelCan ? () => start({ tuintelling: true }) : undefined}
     />
   {:else}
     <Home
@@ -435,7 +442,7 @@
       {askShare}
       onshare={chooseShare}
       onstart={() => start()}
-      onstarttuintel={tuintelOn ? () => start({ tuintelling: true }) : undefined}
+      onstarttuintel={tuintelCan ? () => start({ tuintelling: true }) : undefined}
     />
   {/if}
 </main>

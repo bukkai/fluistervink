@@ -15,6 +15,78 @@ export const TUINTEL_MS = 30 * 60_000;
 /** Zo lang voor het eind een waarschuwing (tril) */
 export const TUINTEL_WARN_MS = 5 * 60_000;
 
+/**
+ * Voor iedereen, rond het telweekend? Tot stap 5 van het plan (begin januari)
+ * alleen de eigenaar, met de ontwikkeloptie. Op `true` zetten is de lancering:
+ * dan verschijnt de knop vanzelf een week voor het telweekend en verdwijnt hij
+ * na zondag (webcode, geen nieuwe app-versie nodig).
+ */
+export const TUINTEL_FOR_EVERYONE = false;
+
+/**
+ * Het telweekend van 2027: vrijdag 29 t/m zondag 31 januari, in de tijd van de
+ * telefoon. Ieder jaar bijwerken (docs/plan-tuintelling.md, De telling).
+ */
+export const TELWEEKEND = {
+  /** Vanaf hier de knop: een week ervoor, om alvast te proberen */
+  buttonFrom: new Date(2027, 0, 22).getTime(),
+  /** Vrijdag 0:00: het telweekend begint, met de melding op het startscherm */
+  from: new Date(2027, 0, 29).getTime(),
+  /** Maandag 0:00: het telweekend is voorbij, knop en melding weg */
+  until: new Date(2027, 1, 1).getTime(),
+};
+
+/**
+ * Kan de tuintelling nu? Altijd met de ontwikkeloptie (de eigenaar); voor
+ * iedereen pas na de lancering, en dan alleen rond het telweekend. Zo hoeft er
+ * buiten januari niets permanent bij op het startscherm (plan, punt 12).
+ */
+export function tuintelAvailable(
+  now: number,
+  devOption: boolean,
+  forEveryone = TUINTEL_FOR_EVERYONE,
+): boolean {
+  if (devOption) return true;
+  return forEveryone && now >= TELWEEKEND.buttonFrom && now < TELWEEKEND.until;
+}
+
+/** Is het nu het telweekend (vrijdag t/m zondag)? */
+export function isTelweekend(at: number): boolean {
+  return at >= TELWEEKEND.from && at < TELWEEKEND.until;
+}
+
+const NOTICE_KEY = `fluistervink.tuintelMelding.${new Date(TELWEEKEND.from).getFullYear()}`;
+
+/**
+ * De melding "Dit weekend is de tuintelling" op het startscherm: in het
+ * telweekend, als de tuintelling kan, tot je hem wegtikt of dit weekend al een
+ * tuintelling deed. Alleen in de app; er zijn geen pushberichten.
+ */
+export function showTelweekendNotice(
+  now: number,
+  available: boolean,
+  sessions: readonly Pick<Session, 'tuintelling' | 'startedAt'>[],
+): boolean {
+  if (!available || !isTelweekend(now) || telweekendNoticeDismissed()) return false;
+  return !sessions.some((s) => s.tuintelling && isTelweekend(s.startedAt));
+}
+
+export function telweekendNoticeDismissed(): boolean {
+  try {
+    return localStorage.getItem(NOTICE_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export function dismissTelweekendNotice(): void {
+  try {
+    localStorage.setItem(NOTICE_KEY, '1');
+  } catch {
+    // Geblokkeerde opslag: dan alleen tot de app opnieuw opent (Home onthoudt het)
+  }
+}
+
 /** Het telformulier van Vogelbescherming (web-app MijnTuinvogeltelling) */
 export const TUINTEL_FORM_URL = 'https://www.mijntuinvogeltelling.nl/';
 

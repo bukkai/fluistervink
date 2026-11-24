@@ -4,9 +4,10 @@
   // dezelfde PR ook hier. Houd de trilpatronen gelijk met feedback.ts.
   import { devOptionOn } from './devOptions';
   import { isAndroidApp, isIosApp } from './native';
+  import { tuintelAvailable } from './tuintelling';
 
-  // Garden count: only when available (dev option, docs/plan-tuintelling.md)
-  const tuintel = devOptionOn('tuintelling');
+  // Garden count: only when available (dev option, or around the count weekend)
+  const tuintel = tuintelAvailable(Date.now(), devOptionOn('tuintelling'));
 </script>
 
 <a class="back" href="#/">Back</a>
