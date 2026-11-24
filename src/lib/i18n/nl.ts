@@ -57,7 +57,7 @@ export const nl = {
   'home.toSessions': 'Naar de sessies',
   'home.shareTitle': 'Delen met de ontwikkelaar?',
   'home.shareText':
-    'Fluistervink is nog in ontwikkeling. Mag de app na elke sessie je uitspraken (als tekst), wat de app ervan maakte, je correcties en feedback, en de locaties van je waarnemingen naar de ontwikkelaar sturen? Opnames niet, tenzij je dat bij Instellingen aanzet. Alleen de ontwikkelaar kan het lezen; je kunt het altijd weer uitzetten.',
+    'Fluistervink is nieuw en wordt beter van wat je inspreekt. Mag de app na elke sessie je uitspraken (als tekst), wat de app ervan maakte, je correcties en feedback, en de locaties van je waarnemingen naar de ontwikkelaar sturen? Opnames niet, tenzij je dat bij Instellingen aanzet. Alleen de ontwikkelaar kan het lezen; je kunt het altijd weer uitzetten.',
   'home.privacyLink': 'Meer over privacy',
   'home.shareYes': 'Ja, delen',
   'home.shareNo': 'Liever niet',
@@ -113,7 +113,7 @@ export const nl = {
   'welcome.tuintelSkip': 'Gewoon beginnen',
   'welcome.shareTitle': 'Help je mee?',
   'welcome.shareLead':
-    'Fluistervink is nog in ontwikkeling, en het werk van één ontwikkelaar, Stephan. Wat jij inspreekt en verbetert, laat zien waar de app nog misgaat.',
+    'Fluistervink is nieuw, en het werk van één ontwikkelaar, Stephan. Wat jij inspreekt en verbetert, laat zien waar de app nog misgaat.',
   'welcome.shareText':
     'Mag de app na elke sessie je uitspraken (als tekst), wat de app ervan maakte, je correcties en feedback, en de locaties van je waarnemingen naar de ontwikkelaar sturen? Opnames niet, tenzij je dat bij Instellingen aanzet. Alleen de ontwikkelaar kan het lezen, en je kunt het altijd weer uitzetten.',
   'welcome.asking': 'Even wachten…',
