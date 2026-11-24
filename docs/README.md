@@ -11,6 +11,7 @@ Wat waar staat. Ontwerp en werkafspraken staan in `CLAUDE.md` in de hoofdmap, de
 - `roadmap.md`: waar de app naartoe gaat, met de stand per plan.
 - `ideeen.md`: ideeën die nog geen plan zijn (eerst overleggen).
 - `lancering.md`: de weg naar openbaar in Google Play (v1.0), met afvinklijst.
+- `draaiboek-uitbrengen.md`: elke release naar stable afvinken: changelog inkorten, tag en Play (releasenaam, release notes NL en EN), `npm run release`, daarna.
 - `vrijgave.md`: wat met de lancering meegaat, wat achter een schakelaar wacht, en hoe elk wachtend onderdeel apart getest en gelanceerd wordt.
 
 ## Plannen

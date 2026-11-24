@@ -34,7 +34,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-11-24',
     topics: {
       'Android-app': [
-        'Nieuw bij Instellingen, vanaf versie 0.7 van de app: "Opnemen met het scherm uit". Tijdens een sessie start en stopt de volumeknop dan een opname, ook met het scherm uit en de telefoon in je zak, en een trektelling telt door met het scherm uit. Alleen een telefoongesprek of een andere app die de microfoon pakt (zoals Merlin) pauzeert hem; daarna gaat hij vanzelf verder.',
+        'Nieuw bij Instellingen, vanaf versie 0.7 van de app: "Opnemen met het scherm uit". Met de volumeknop start en stop je dan een opname, ook met de telefoon in je zak. Een trektelling telt door met het scherm uit. Alleen een telefoongesprek of een andere app die de microfoon pakt (zoals Merlin) pauzeert hem; daarna gaat hij vanzelf verder.',
       ],
     },
   },
@@ -92,74 +92,27 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     date: '2026-11-20',
-    topics: {
-      Nalopen: [
-        'Verbeterde je een waarneming onderweg met de stem ("nee, wulpen"), dan staat er in de lijst "Met de stem aangepast", met hoe hij eerst was. Zo zie je bij het nalopen of de correctie op de goede waarneming terechtkwam.',
-        'Heb je een sessie nagelopen, dan zegt de samenvatting hoe lang dat duurde, bijvoorbeeld "42 waarnemingen, nagelopen in 3 minuten". Alleen de tijd dat je met de sessie bezig was telt.',
-      ],
-      Trektelling: [
-        'Elk stuk van een trektelling krijgt de beste GPS-plek van die telling, want je staat stil. Komt er later een nauwkeurigere meting, dan krijgen de stukken die alsnog.',
-      ],
-    },
+    items: [
+      'Bij het nalopen zie je welke waarnemingen je onderweg met de stem verbeterde, en hoe ze eerst waren.',
+      'De samenvatting zegt hoe lang het nalopen duurde.',
+    ],
   },
   {
     date: '2026-11-19',
-    topics: {
-      Nalopen: [
-        "Begreep de app een uitspraak niet, dan zie je die bij het nalopen boven de waarnemingen, met wat er verstaan is en de opname. Zat er toch een vogel in, maak er dan met één tik een waarneming van en kies de soort. Na Opslaan geldt hij als nagelopen, niet als onzeker. Eerst stond zo'n uitspraak alleen weggestopt bij Uitspraken.",
-      ],
-      Inspreken: [
-        'Met de gesproken bevestiging aan hoor je bij een correctie nu wat het was en wat het werd: "holenduif wordt wulp, 3" of "houtduif, 3 wordt 6". Zo hoor je meteen of de correctie op de goede waarneming terechtkwam.',
-        'Een correctie met de stem, zoals "die kraanvogel van twintig minuten geleden was een blauwe reiger", vindt de bedoelde waarneming beter terug: de app kijkt verder terug, en weet bij een onzekere waarneming wat je toen zei.',
-      ],
-      Export: [
-        'Het bestand voor eBird heeft nu ook de Engelse naam van elke soort, zoals eBird hem schrijft. Daardoor herkent eBird bij het importeren meer soorten meteen, ook de soorten waarvan de wetenschappelijke naam bij eBird anders is (zoals de Winterkoning).',
-      ],
-      'Over de app': [
-        'Instellingen heeft een logischere volgorde: eerst wat de app verstaat, dan de bediening in het veld, tellen, nalopen en export, en onderaan je gegevens. Je naam staat nu bij Delen met de ontwikkelaar.',
-      ],
-    },
+    items: [
+      'Uitspraken die de app niet begreep, staan bij het nalopen bovenaan; met één tik maak je er alsnog een waarneming van.',
+      'Correcties met de stem vinden de bedoelde waarneming beter terug, en de gesproken bevestiging zegt wat het was en wat het werd.',
+      'eBird herkent bij het importeren meer soorten, dankzij de Engelse naam.',
+    ],
   },
   {
     date: '2026-11-18',
-    topics: {
-      'Android-app': [
-        'De uitleg om van Fluistervink Beta over te stappen naar de gewone app heeft een stap erbij: eerst de beta-test verlaten. Anders gaf Google Play na opnieuw installeren toch weer de beta.',
-      ],
-      Export: [
-        'Voor eBird telt de afgelegde afstand alleen nog lopen en fietsen. Een stuk met de auto of de boot (sneller dan 30 km/u) telt niet meer mee.',
-      ],
-      'Back-up': [
-        'Zet je een back-up terug, dan komt ook het logboek van die sessies mee. Deel je sessies met de ontwikkelaar, dan ging dat logboek eerst verloren.',
-      ],
-      Trektelling: [
-        'Tik je tijdens een trektelling op Instellingen of een ander scherm, dan vraagt de app eerst of de telling mag stoppen. Hij stopte daar zonder iets te zeggen.',
-        'Ging de microfoon bij "Trektelling starten" de eerste keer niet aan (vooral vlak na het geven van toestemming), dan probeert de app het nu meteen nog een keer, net als de knop Inspreken al deed.',
-        'Valt de microfoon weg tijdens een trektelling (bijvoorbeeld als je oortjes uitgaan), dan pauzeert de telling even en zet de app de microfoon opnieuw aan. Eerst telde hij stil door zonder iets te horen. Lukt dat niet, dan zegt het scherm waarom de telling gestopt is.',
-      ],
-      Inspreken: [
-        'Een waarneming kreeg soms als plek "null" mee, terwijl je geen plek had genoemd. Dat gebeurt niet meer.',
-        'Word je gebeld of gaan je oortjes uit midden in een opname, dan bewaart de app wat er al was. Eerst bleef de knop op "opnemen" hangen en ging de opname verloren.',
-        'Zijn er oortjes of een headset verbonden, dan zegt het sessiescherm met welke microfoon de app luistert. Dat is die van de telefoon: praat dus naar de telefoon, ook als die in je zak zit.',
-        'Had de GPS nog geen plek (in vliegtuigmodus of binnen kan de eerste meting minuten duren), dan krijgen de uitspraken van daarvoor de eerste plek die binnenkomt alsnog. In een trektelling klopt die precies; lopend zie je bij de waarneming "positie … min later".',
-        'Wacht de app op bereik, dan kun je het met het knopje met de twee pijlen meteen opnieuw proberen.',
-        'Maakt de spraakherkenning "goudborstje" van "roodborstje", dan wordt het nu gewoon een roodborst.',
-        'De Chileense Flamingo staat in de soortenlijst: een exoot die in Nederland geregeld te zien is.',
-        'Met "Ook andere dieren inspreken" aan herkent de app nu ook zeldzame andere dieren, zoals een wolf of een knoflookpad, net als dwaalgasten altijd als onzeker. "Korenwolf" wordt de Europese hamster.',
-        'Op een wifi waar je eerst moet inloggen (trein, camping) wachten je uitspraken nu tot er echt internet is. Eerst gingen ze verloren.',
-        'Vindt de GPS na een halve minuut nog geen plek, dan staat er "Nog geen locatie, inspreken kan gewoon" in plaats van een eindeloos "Locatie zoeken…".',
-        '"Ongedaan maken" terwijl er niets ongedaan te maken is, geeft nu twee trillen (niet begrepen) in plaats van één (opgeslagen).',
-        '"Nog vijf eraf" bij drie vogels maakt er één van, maar onzeker, zodat je hem bij het nalopen ziet.',
-        'Is de telefoon vol, dan zegt de app dat de opname niet bewaard kon worden (en stopt een trektelling), in plaats van de opname stil kwijt te raken.',
-      ],
-      Nalopen: [
-        'Bij het nalopen van de onzekere: pas je er een aan en sla je hem op, dan telt hij als nagelopen. Eerst werd hij overgeslagen.',
-        'Is een waarneming met de stem verwijderd terwijl je hem aan het bewerken was, dan zegt Opslaan dat nu, in plaats van stil niets te doen.',
-        'Verbeter je met de stem terwijl het bewerkformulier openstaat, dan zet Opslaan die verbetering niet meer terug: alleen wat je in het formulier zelf aanpaste, wordt opgeslagen.',
-        'Locatie aanpassen: de knop heet nu "Huidige locatie", met een vizier ervoor. Vindt hij je plek niet, dan geeft hij het na 10 seconden op (was 20) en zegt hij erbij als het aan het bereik ligt. Laadt de kaart niet, dan staat dat eronder.',
-        'Waarnemingen zonder plek (bijvoorbeeld een trektelling waarbij de GPS geen plek vond)? Onder de kaart zet "Plek kiezen voor alle" ze in één keer op de plek waar je stond.',
-      ],
-    },
+    items: [
+      'Er gaat minder verloren: een opname blijft bewaard als je gebeld wordt, op een wifi met inlogpagina wachten je uitspraken op echt internet, en een volle telefoon meldt de app.',
+      'Trektelling: valt de microfoon weg, dan zet de app hem opnieuw aan; naar een ander scherm vraagt eerst of de telling mag stoppen.',
+      'Uitspraken van vóór de eerste GPS-plek krijgen die alsnog, en onder de kaart zet "Plek kiezen voor alle" waarnemingen zonder plek in één keer goed.',
+      'Voor eBird telt de afgelegde afstand alleen lopen en fietsen.',
+    ],
   },
   {
     date: '2026-11-17',
