@@ -10,7 +10,7 @@ import {
   REE,
   toolResponse,
 } from '../test-helpers';
-import { describeContext, flyoverChunk, userMessage, parseResponse } from './interpret';
+import { countKind, describeContext, userMessage, parseResponse } from './interpret';
 
 // parseResponse is de poortwachter tussen model en database: wat hier
 // doorkomt, voert de app uit. Het model mag geen soorten verzinnen en niet
@@ -388,32 +388,43 @@ describe('afschermen en embargo', () => {
   });
 });
 
-describe('flyoverChunk', () => {
-  it('geeft de trektelregel alleen aan een trektelstuk, niet in de tuin', () => {
-    expect(flyoverChunk({ trektel: true }, {})).toBe(true);
-    expect(flyoverChunk({ trektel: true }, undefined)).toBe(true);
-    expect(flyoverChunk({ trektel: true }, { tuintelling: true })).toBe(false);
-    expect(flyoverChunk({}, {})).toBe(false);
+describe('countKind', () => {
+  it('geeft de trektelregel aan een trektelstuk, en in de tuin de regel van de tuintelling', () => {
+    expect(countKind({ trektel: true }, {})).toBe('trektel');
+    expect(countKind({ trektel: true }, undefined)).toBe('trektel');
+    expect(countKind({ trektel: true }, { tuintelling: true })).toBe('tuintelling');
+    // Ook een uitspraak met de gewone knop in een tuintelling
+    expect(countKind({}, { tuintelling: true })).toBe('tuintelling');
+    expect(countKind({}, {})).toBeUndefined();
   });
 });
 
 describe('userMessage', () => {
   it('geeft de datum alleen mee als er een embargo genoemd wordt', () => {
     const at = Date.parse('2026-11-22T10:00:00');
-    expect(userMessage('(geen)', 'Twee vinken.', false, 'nl', at)).not.toContain('Vandaag');
-    const embargo = userMessage('(geen)', 'Die onder embargo tot 1 maart.', false, 'nl', at);
+    expect(userMessage('(geen)', 'Twee vinken.', undefined, 'nl', at)).not.toContain('Vandaag');
+    const embargo = userMessage('(geen)', 'Die onder embargo tot 1 maart.', undefined, 'nl', at);
     expect(embargo).toContain('Vandaag: zondag 22 november 2026 (2026-11-22)\n\nUitspraak:');
-    expect(userMessage('(no observations yet)', 'Embargo that one', false, 'en', at)).toContain(
+    expect(userMessage('(no observations yet)', 'Embargo that one', undefined, 'en', at)).toContain(
       'Today: Sunday, 22 November 2026 (2026-11-22)',
     );
   });
 
   it('zegt het model alleen bij een trektelstuk dat het een trektelling is', () => {
-    const plain = userMessage('(geen)', 'Twee vinken.', false);
-    const trektel = userMessage('(geen)', 'Twee vinken.', true);
+    const plain = userMessage('(geen)', 'Twee vinken.', undefined);
+    const trektel = userMessage('(geen)', 'Twee vinken.', 'trektel');
     expect(plain).not.toContain('trektelling');
     expect(trektel.startsWith('Dit is een stuk uit een trektelling.')).toBe(true);
     expect(trektel).toContain('Uitspraak: "Twee vinken."');
+  });
+
+  it('zegt het model bij een tuintelling dat het een tuintelling is', () => {
+    const tuin = userMessage('(geen)', 'Nu nog maar één merel.', 'tuintelling');
+    expect(tuin.startsWith('Dit is een uitspraak uit een tuintelling.\n\n')).toBe(true);
+    expect(tuin).not.toContain('trektelling');
+    expect(
+      userMessage('(no observations yet)', 'Only one Blackbird now.', 'tuintelling', 'en'),
+    ).toMatch(/^This is a voice note from a garden bird count\.\n\n/);
   });
 });
 

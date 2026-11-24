@@ -131,7 +131,7 @@ Een tussenvorm is goedkoop: **soortnamen in een andere taal, de rest in het Enge
 
 ## Haken en ogen
 
-- **Taxonomie** is overal dezelfde (AviList, van waarneming.nl), dus geen probleem binnen de app. eBird gebruikt Clements; die vertaaltabel is nodig zodra eBird-gebruikers buiten Europa komen (zie `docs/plan-ebird.md`).
+- **Taxonomie** is overal dezelfde (AviList, van waarneming.nl), dus geen probleem binnen de app. eBird gebruikt Clements; die vertaaltabel is nodig zodra eBird-gebruikers buiten Europa komen (zie `docs/archief/plan-ebird.md`).
 - **Grootte van de prompt:** voor Nederland staan er zo'n 350 vogels in de prompt (`docs/waarneming-nl.md`). Een tropisch land heeft er al gauw 800. Dan scherper filteren (alleen de algemene en vrij algemene, de rest via `findVagrant`) of de lijst per streek nemen. Eerst meten bij een groot land.
 - **Kwaliteit van de lijsten:** de zeldzaamheid uit de bron is buiten Nederland en België vaak leeg; daarom de aantallen (zie Proef Spanje). Steekproef per land vóór het openzetten, zeker in landen met weinig waarnemers.
 - **Exoten en gevestigde soorten:** het script heeft een eigen lijst voor Nederland (Nijlgans, Halsbandparkiet). Per land nalopen, of het filter "inheems" van de API vertrouwen.

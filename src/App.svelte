@@ -15,13 +15,18 @@
     type StaleCheck,
   } from './lib/sessions';
   import ActiveSession from './lib/ActiveSession.svelte';
-  import { ApiError, getAccessCode, getTester, OWNER, ping } from './lib/api';
+  import { ApiError, claimOwnInstall, getAccessCode, getTester, OWNER, ping } from './lib/api';
   import { getInstallToken } from './lib/install';
   import { listDevNotes } from './lib/devNotes';
   import { CHANNEL } from './lib/log';
   import { vibrate } from './lib/feedback';
   import { DEV_OPTION_EVENT, devOptionOn } from './lib/devOptions';
-  import { TUINTEL_WARN_MS, tuintelLeftMs, tuintelPhase } from './lib/tuintelling';
+  import {
+    TUINTEL_WARN_MS,
+    tuintelAvailable,
+    tuintelLeftMs,
+    tuintelPhase,
+  } from './lib/tuintelling';
   import { instance } from './lib/instance.svelte';
   import { processQueue } from './lib/queue';
   import { syncSessionService } from './lib/sessionService';
@@ -151,7 +156,9 @@
   // dan bij het eerste verzoek opnieuw, zonder melding.
   let installProblem = $state<string>();
   async function ensureAccess() {
-    if (getAccessCode() || getInstallToken()) return;
+    // De eigenaar: een installatie van vóór de code als de zijne melden (api.ts)
+    if (getAccessCode()) return claimOwnInstall();
+    if (getInstallToken()) return;
     try {
       await ping();
     } catch (error) {
@@ -258,6 +265,8 @@
     window.addEventListener(DEV_OPTION_EVENT, update);
     return () => window.removeEventListener(DEV_OPTION_EVENT, update);
   });
+  // Met de ontwikkeloptie altijd, voor iedereen alleen rond het telweekend
+  let tuintelCan = $derived(tuintelAvailable(now, tuintelOn));
   let tuintelPhaseNow = $derived(active ? tuintelPhase(active, now) : undefined);
   let tuintelLeftRaw = $derived(active ? tuintelLeftMs(active, now) : undefined);
   let tuintelOver = $derived(
@@ -420,6 +429,7 @@
       askShare={askShare && !installProblem}
       onshare={chooseShare}
       onclose={() => (welcomeClosed = true)}
+      ontuintel={tuintelCan ? () => start({ tuintelling: true }) : undefined}
     />
   {:else}
     <Home
@@ -432,7 +442,7 @@
       {askShare}
       onshare={chooseShare}
       onstart={() => start()}
-      onstarttuintel={tuintelOn ? () => start({ tuintelling: true }) : undefined}
+      onstarttuintel={tuintelCan ? () => start({ tuintelling: true }) : undefined}
     />
   {/if}
 </main>

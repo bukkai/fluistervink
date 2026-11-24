@@ -26,11 +26,19 @@ vi.mock('./log', () => ({ logEvent }));
 const devOptionOn = vi.hoisted(() => vi.fn());
 vi.mock('./devOptions', () => ({ devOptionOn }));
 
+const preferenceOn = vi.hoisted(() => vi.fn());
+const setPreference = vi.hoisted(() => vi.fn());
+vi.mock('./preferences', () => ({ preferenceOn, setPreference }));
+
+// Van vóór v0.7: de ontwikkeloptie wordt bij het laden de keuze
+localStorage.setItem('fluistervink.dev.schermUit', '1');
+
 // Positie per trektelstuk: opgevraagd toen de service het begin meldde
 const takeChunkLookup = vi.hoisted(() => vi.fn());
 vi.mock('./trektelRecorder.svelte', () => ({ takeChunkLookup }));
 
 const { receiveScreenOffRecording, screenOff, startScreenOff } = await import('./screenOff.svelte');
+const migrated = [...setPreference.mock.calls];
 
 let nextId = 0;
 function recording(fields: Partial<ScreenOffRecording> = {}): ScreenOffRecording {
@@ -60,6 +68,7 @@ describe('opnemen met het scherm uit', () => {
     screenOff.startedAt = undefined;
     screenOff.ready = undefined;
     devOptionOn.mockReturnValue(true);
+    preferenceOn.mockReturnValue(true);
     native.pendingScreenOffRecordings.mockResolvedValue([]);
     native.doneScreenOffRecording.mockResolvedValue(undefined);
     native.listenScreenOff.mockImplementation((_options, h: ScreenOffHandlers) => {
@@ -71,8 +80,13 @@ describe('opnemen met het scherm uit', () => {
     takeChunkLookup.mockReturnValue(undefined);
   });
 
-  it('doet niets zonder de ontwikkeloptie', () => {
-    devOptionOn.mockReturnValue(false);
+  it('neemt de oude ontwikkeloptie eenmalig over als keuze', () => {
+    expect(migrated).toEqual([['schermUit', true]]);
+    expect(localStorage.getItem('fluistervink.dev.schermUit')).toBeNull();
+  });
+
+  it('doet niets zonder de keuze bij Instellingen', () => {
+    preferenceOn.mockReturnValue(false);
     startScreenOff('s1', 180_000, onPress)();
     expect(native.listenScreenOff).not.toHaveBeenCalled();
   });
@@ -86,7 +100,14 @@ describe('opnemen met het scherm uit', () => {
       trilStart: [40, 60, 40],
       trilStop: [200],
       zichtbaar: true,
+      oortjesKnop: true,
     });
+  });
+
+  it('zet de knop op de oortjes alleen aan met zijn eigen ontwikkeloptie', () => {
+    devOptionOn.mockReturnValue(false);
+    startScreenOff('s1', 180_000, onPress);
+    expect(native.listenScreenOff.mock.calls[0][0]).toMatchObject({ oortjesKnop: false });
   });
 
   it('bewaart de opname met de positie van het begin, en ruimt dan het bestand op', async () => {

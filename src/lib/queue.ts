@@ -15,7 +15,7 @@ import { migrateAudioOnce } from './audioMigration';
 import { devNoteText } from './devNotePrefix';
 import { isEmptyTrektelChunk, utteranceFeedback, vibrate } from './feedback';
 import { INSTANCE_ID } from './instance.svelte';
-import { MODEL, flyoverChunk, interpret, type Interpretation } from './interpret';
+import { MODEL, countKind, interpret, type Interpretation } from './interpret';
 import { currentPosition } from './location.svelte';
 import { APP_VERSION, logEvent, wasHiddenSince } from './log';
 import { PLATFORM } from './native';
@@ -34,7 +34,7 @@ import { checkEasterEggs } from './eastereggs.svelte';
 // `pending`) en daarna één voor één, op volgorde, door het model gehaald.
 // Normaal is de wachtrij direct leeg; bij een fout blijft de uitspraak bewaard
 // en kan hij opnieuw. Zonder bereik wacht een uitspraak tot er weer
-// verbinding is, en de rest van de wachtrij met hem (docs/plan-offline.md).
+// verbinding is, en de rest van de wachtrij met hem (docs/archief/plan-offline.md).
 
 /** Slaat een getypte uitspraak op en zet hem in de wachtrij. */
 export async function submitText(sessionId: string, text: string): Promise<void> {
@@ -495,7 +495,7 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
       here,
       sessionId: utterance.sessionId,
       groups,
-      trektel: flyoverChunk(utterance, session),
+      count: countKind(utterance, session),
       language,
       kind: usageKind(utterance, session),
       recordedAt: utterance.recordedAt,

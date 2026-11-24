@@ -1,6 +1,8 @@
 # Draaiboek 3: trektelling en tuintelling
 
-Proeven met de microfoon die blijft aanstaan: de trektelling met het scherm uit en de tuintelling. Vink af wat werkt; schrijf bij een afwijking op wat je zag en spreek het in als feedback. Na afloop delen en `npm run feedback -- pull`. Een punt dat werkt, gaat uit `NOTES.md`; als alles af is, gaat dit draaiboek naar `docs/archief/`.
+Proeven met de microfoon die blijft aanstaan: de trektelling met het scherm uit en de tuintelling. Vink af wat werkt; schrijf bij een afwijking op wat je zag en spreek het in als feedback. Na afloop delen en `npm run feedback -- pull`.
+
+**Afgerond op 23 nov:** A en B gedaan op 22 nov (uitslag hieronder, fixes in #347–#349). C: `walk_service_failed` kwam daarna nog één keer voor (22 nov 21:12), toen de sessie twee seconden na de start alweer stopte; onschuldig.
 
 Duur: twee keer ongeveer een half uur. Een plek waar af en toe vogels langskomen (raam, balkon, tuin).
 

@@ -11,10 +11,12 @@ Wat waar staat. Ontwerp en werkafspraken staan in `CLAUDE.md` in de hoofdmap, de
 - `roadmap.md`: waar de app naartoe gaat, met de stand per plan.
 - `ideeen.md`: ideeën die nog geen plan zijn (eerst overleggen).
 - `lancering.md`: de weg naar openbaar in Google Play (v1.0), met afvinklijst.
+- `draaiboek-uitbrengen.md`: elke release naar stable afvinken: changelog inkorten, tag en Play (releasenaam, release notes NL en EN), `npm run release`, daarna.
+- `vrijgave.md`: wat met de lancering meegaat, wat achter een schakelaar wacht, en hoe elk wachtend onderdeel apart getest en gelanceerd wordt.
 
 ## Plannen
 
-Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnamen blijven staan, ook als een plan af is.
+Elk plan begint met datum en status. Een afgerond plan gaat naar `archief/`; de code verwijst ernaar, dus pas die verwijzingen mee aan.
 
 **Lopend** (stand 22 nov):
 
@@ -35,6 +37,7 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 | `plan-jaarrond-tuintelling.md` | de tuintelmodus ook voor de Jaarrond Tuintelling van Sovon (vrije duur, overvliegers mee); voorstel 22 nov, na de tuintelling van januari |
 | `plan-ios.md` | iPhone-app; voorstel, fase 0–1 (eigen iPhone, gratis) mag al, de rest na de lancering |
 | `plan-marketing.md` | Fluistervink bekend maken na de lancering: in stappen vanwege de kosten, grote push rond de tuintelling; titel, filmpje en december besloten 22 nov, kostengrens een voorstel |
+| `plan-testers.md` | na de productierelease: de huidige testers uitfaseren, een nieuwe track "Beta" met een Google Group, en een uitnodiging op het hoofdscherm voor wie de app echt gebruikt; voorstel 23 nov |
 
 **Afgerond, naslag:**
 
@@ -42,10 +45,6 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 | --- | --- |
 | `plan-capacitor.md` | de native laag; fase 0–2 en 4 klaar, fase 3 loopt via `roadmap-android.md` |
 | `plan-laagdrempelig.md` | aanmelden zonder code; naslag voor het instellen |
-| `plan-ebird.md` | inspanning en export naar eBird; afgerond 16 nov (keuze "Ik gebruik eBird" bij Instellingen) |
-| `plan-soortgroepen.md` | zoogdieren, reptielen en amfibieën, dagvlinders en libellen; afgerond 16 nov (voor iedereen, standaard aan) |
-| `plan-offline.md` | offline wachtrij; afgerond, op stable sinds 18 nov |
-| `plan-afschermen.md` | afschermen en embargo met de stem, mee naar waarneming.nl; gebouwd en proefgeïmporteerd 22 nov, embargo weghalen met de stem in #345 |
 
 ## Naslag
 
@@ -55,7 +54,7 @@ Elk plan begint met datum en status. De code verwijst ernaar, dus de bestandsnam
 - `waarneming-nl.md`: importformaat, soortenlijst en codes van waarneming.nl.
 - `proxy.md`: de proxy: toegang, kosten, statistieken en wat testers delen.
 - `kwaliteitsronde.md`: de periodieke ronde over de hele codebase, met logboek.
-- `draaiboek-thuis.md`, `draaiboek-buiten.md`, `draaiboek-telling.md`: proeven op de telefoon om af te vinken: thuis aan tafel (gedaan 22 nov, op de kinderstem na), buiten met oortjes en testset-opnames, trektelling met het scherm uit en tuintelling. `draaiboek-release.md`: wat er vóór de laatste release naar stable nog op de telefoon moet (thuis een kwartier, buiten een half uur).
+- `draaiboek-thuis.md`, `draaiboek-buiten.md`: proeven op de telefoon om af te vinken, alleen wat nog moet: thuis de kinderstem, buiten de oortjesmicrofoon en testset-opnames. `draaiboek-release.md`: wat er vóór de laatste release naar stable nog op de telefoon moet (thuis gedaan, nog buiten een half uur).
 - `beheer.md`: API-sleutels, weetjes bij het bouwen van de Android-app, de branch-regel op `main`, twee sessies tegelijk.
 
 ## Archief
@@ -64,5 +63,10 @@ Afgerond, alleen nog om terug te lezen.
 
 - `archief/mijlpaal-mvp.md`: de beoordeling van de MVP (12 okt).
 - `archief/veldtests.md`: bevindingen uit de eerste veldtests (9–12 okt).
+- `archief/plan-ebird.md`: inspanning en export naar eBird (afgerond 16 nov).
+- `archief/plan-soortgroepen.md`: zoogdieren, reptielen en amfibieën, dagvlinders en libellen (afgerond 16 nov).
+- `archief/plan-offline.md`: de offline wachtrij (op stable sinds 18 nov).
+- `archief/plan-afschermen.md`: afschermen en embargo met de stem, mee naar waarneming.nl (afgerond 22 nov).
+- `archief/draaiboek-telling.md`: trektelling met het scherm uit en tuintelling op de telefoon (afgerond 23 nov).
 - `archief/werklog-2026.md`: de oude stand uit `NOTES.md` (13 okt – 22 nov).
-- `archief/kwaliteitsronde-logboek.md`: oudere regels uit het logboek van de kwaliteitsronde (24 okt – 11 nov).
+- `archief/kwaliteitsronde-logboek.md`: oudere regels uit het logboek van de kwaliteitsronde (24 okt – 16 nov).

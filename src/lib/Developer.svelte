@@ -10,9 +10,11 @@
     hideTester,
     listSharedNotes,
     listTesters,
+    markOwnInstall,
     listUsage,
     markNotesProcessed,
     removeTester,
+    cleanupTesters,
     type SharedNote,
     type Tester,
   } from './api';
@@ -42,7 +44,8 @@
     versionsInUse,
   } from './stats';
   import { AUDIO_SECONDS_PER_DAY, MESSAGES_PER_DAY } from './limits';
-  import { ACTIVE_DAYS, lastSeen, splitActive } from './testers';
+  import { ACTIVE_DAYS, asOwner, lastSeen, ownInstalls, splitActive } from './testers';
+  import { isUnused } from './unusedInstalls';
   import { describeImport, exportAllJson, importJson, saveFile } from './export';
 
   let testers = $state<Tester[]>();
@@ -119,8 +122,10 @@
 
   // Verbruik zoals de proxy het telt (worker/usage.ts), in dollars met de
   // prijstabel in costs.ts. Vanaf het begin van de vorige maand.
-  let costs = $state<CostSummary>();
-  let usageRows = $state<UsageRow[]>([]);
+  let rawUsage = $state<UsageRow[]>();
+  // Installaties van de eigenaar zelf tellen als de eigenaar (testers.ts)
+  const usageRows = $derived(asOwner(rawUsage ?? [], ownInstalls(testers ?? [])));
+  const costs = $derived<CostSummary | undefined>(rawUsage && summarize(usageRows));
   let costsError = $state('');
   // De echte rekening (worker/billing.ts), als controle op de prijstabel
   let billing = $state<Billing>();
@@ -130,10 +135,10 @@
 
   async function loadCosts() {
     try {
-      usageRows = await listUsage(startOfLastMonth(new Date()));
-      costs = summarize(usageRows);
+      rawUsage = await listUsage(startOfLastMonth(new Date()));
       costsError = '';
-      const sessions = await db.sessions.bulkGet(costs.topSessions.map((w) => w.session));
+      const top = summarize(rawUsage).topSessions;
+      const sessions = await db.sessions.bulkGet(top.map((w) => w.session));
       sessionNames = Object.fromEntries(
         sessions.flatMap((session) => (session?.place ? [[session.id, session.place.name]] : [])),
       );
@@ -228,11 +233,11 @@
   const costParts = $derived(
     costSplit(usageRows, new Map((testers ?? []).flatMap((t) => (t.via ? [[t.name, t.via]] : [])))),
   );
-  const splitText = (parts: Record<string, number>, names: Record<string, string>) =>
+  /** Kosten per deel als rijen, de duurste eerst */
+  const splitRows = (parts: Record<string, number>, names: Record<string, string>) =>
     Object.entries(parts)
       .sort(([, a], [, b]) => b - a)
-      .map(([key, cost]) => `${names[key] ?? key} ${money(cost)}`)
-      .join(' · ');
+      .map(([key, cost]) => ({ key, label: names[key] ?? key, cost }));
   const unitWeeks = $derived(unitCostPerWeek(usageRows, startOfLastMonth(new Date())));
   const peaks = $derived(limitPeaks(usageRows));
   // Stap 2: per functie, versie en taal (labels die de app sinds 23 nov meestuurt)
@@ -250,13 +255,45 @@
     `${(seconds / 3600).toLocaleString('nl-NL', { maximumFractionDigits: 1 })} u`;
   const maxTesterCost = $derived(Math.max(...(costs?.perTester.map((t) => t.cost) ?? []), 0));
 
+  const unusedCount = $derived((testers ?? []).filter((t) => isUnused(t)).length);
+
+  async function cleanup() {
+    if (
+      !confirm(
+        `${unusedCount} installaties uit de lijst halen die nooit iets inspraken, deelden of een naam opgaven? Ze blijven werken en komen terug zodra ze iets doen.`,
+      )
+    )
+      return;
+    try {
+      const gone = new Set(await cleanupTesters());
+      testers = testers?.filter((t) => !gone.has(t.name));
+    } catch (error) {
+      testersError = `Opruimen mislukt: ${error instanceof Error ? error.message : error}`;
+    }
+  }
+
+  // De lijst na een wijziging hier bijwerken, niet opnieuw ophalen: de proxy
+  // leest hem uit KV, en die geeft tot een minuut een oude stand terug.
+  function changeTester(name: string, change: Partial<Tester>) {
+    testers = testers?.map((t) => (t.name === name ? { ...t, ...change } : t));
+  }
+
   async function remove(tester: Tester) {
     if (!confirm(`${who(tester.name)} afsluiten? De app werkt daarna niet meer.`)) return;
     try {
       await removeTester(tester.name);
-      await loadTesters();
+      changeTester(tester.name, { blocked: true });
     } catch (error) {
       testersError = `Afsluiten mislukt: ${error instanceof Error ? error.message : error}`;
+    }
+  }
+
+  async function toggleOwn(tester: Tester) {
+    try {
+      await markOwnInstall(tester.name, !tester.owner);
+      changeTester(tester.name, { owner: !tester.owner || undefined });
+    } catch (error) {
+      testersError = `Aanpassen mislukt: ${error instanceof Error ? error.message : error}`;
     }
   }
 
@@ -264,7 +301,7 @@
     if (!confirm(`${who(tester.name)} uit de lijst halen? Hij blijft afgesloten.`)) return;
     try {
       await hideTester(tester.name);
-      await loadTesters();
+      testers = testers?.filter((t) => t.name !== tester.name);
     } catch (error) {
       testersError = `Verwijderen mislukt: ${error instanceof Error ? error.message : error}`;
     }
@@ -351,10 +388,11 @@
           <dd>{money(costs.lastMonth)}</dd>
         </div>
       </dl>
-      <p class="hint">
-        Deze maand: gebruikers {money(costs.split.users)} · jouw sessies {money(costs.split.owner)} ·
-        testset {money(costs.split.testset)}.
-      </p>
+      <ul class="amounts">
+        <li><span>Deze maand van gebruikers</span><span>{money(costs.split.users)}</span></li>
+        <li><span>Van jouw sessies</span><span>{money(costs.split.owner)}</span></li>
+        <li><span>Van de testset</span><span>{money(costs.split.testset)}</span></li>
+      </ul>
       {#if costs.perTester.length}
         <h3>Duurste testers, deze maand</h3>
         <ul class="bars">
@@ -503,43 +541,82 @@
       <details class="more-details">
         <summary>Meer: per aanbieder, duurste sessies, rekening</summary>
         <div class="stack">
-          <p class="hint">
-            Deze maand: OpenAI {money(costs.openai)} · Anthropic {money(
-              costs.anthropic,
-            )}{costs.perUtterance !== undefined
-              ? ` · ${money(costs.perUtterance)} per uitspraak`
-              : ''}{costs.perSession !== undefined
-              ? ` · ${money(costs.perSession)} per sessie`
-              : ''}
-          </p>
-          <p class="hint">
-            Deze maand per omgeving: {splitText(costParts.channel, {
-              stable: 'stabiel',
-              beta: 'beta',
-            }) || '–'}. Per aanmelding: {splitText(costParts.via, {
-              play: 'Android-app',
-              turnstile: 'browser',
-            }) || '–'}. Zonder de testset.
-          </p>
-          <p class="hint">
-            Dicht bij het plafond, deze maand: hooguit {peaks.messages} van {MESSAGES_PER_DAY} verzoeken
-            aan het model en {hours(peaks.audioSeconds)} van {hours(AUDIO_SECONDS_PER_DAY)} spraak door
-            één installatie op één dag; {peaks.hits === 0
-              ? 'niemand raakte een plafond'
-              : `${peaks.hits}× een plafond geraakt`}. Zonder de eigenaar.
-          </p>
-          <p class="hint">
-            Versies de laatste 7 dagen: {versions.length
-              ? versions
-                  .map(
-                    (v) =>
-                      `${v.version} (${count(v.installs, 'installatie', 'installaties')}, tot ${dateFormat.format(new Date(v.lastDay))})`,
-                  )
-                  .join(' · ')
-              : '–'}. Uitspraken per taal deze maand: {Object.entries(languages)
-              .map(([language, n]) => `${language || 'onbekend'} ${n}`)
-              .join(' · ') || '–'}. Zonder de eigenaar en de testset.
-          </p>
+          <h3>Per aanbieder, deze maand</h3>
+          <ul class="amounts">
+            <li><span>OpenAI</span><span>{money(costs.openai)}</span></li>
+            <li><span>Anthropic</span><span>{money(costs.anthropic)}</span></li>
+            {#if costs.perUtterance !== undefined}
+              <li><span>Per uitspraak</span><span>{money(costs.perUtterance)}</span></li>
+            {/if}
+            {#if costs.perSession !== undefined}
+              <li><span>Per sessie</span><span>{money(costs.perSession)}</span></li>
+            {/if}
+          </ul>
+
+          <h3>Per omgeving, deze maand</h3>
+          <ul class="amounts">
+            {#each splitRows( costParts.channel, { stable: 'Stabiel', beta: 'Beta' } ) as part (part.key)}
+              <li><span>{part.label}</span><span>{money(part.cost)}</span></li>
+            {:else}
+              <li><span>Nog niets</span><span>–</span></li>
+            {/each}
+          </ul>
+
+          <h3>Per aanmelding, deze maand</h3>
+          <ul class="amounts">
+            {#each splitRows( costParts.via, { play: 'Android-app', turnstile: 'Browser', eigenaar: 'Jij (met de code)', onbekend: 'Onbekend' } ) as part (part.key)}
+              <li><span>{part.label}</span><span>{money(part.cost)}</span></li>
+            {:else}
+              <li><span>Nog niets</span><span>–</span></li>
+            {/each}
+          </ul>
+          <p class="hint">Zonder de testset.</p>
+
+          <h3>Dicht bij het plafond, deze maand</h3>
+          <ul class="amounts">
+            <li>
+              <span>Verzoeken aan het model</span>
+              <span>{peaks.messages} van {MESSAGES_PER_DAY}</span>
+            </li>
+            <li>
+              <span>Spraak</span>
+              <span>{hours(peaks.audioSeconds)} van {hours(AUDIO_SECONDS_PER_DAY)}</span>
+            </li>
+            <li>
+              <span>Plafond geraakt</span>
+              <span class:over={peaks.hits > 0}>
+                {peaks.hits === 0 ? 'niemand' : `${peaks.hits}×`}
+              </span>
+            </li>
+          </ul>
+          <p class="hint">Het hoogste van één installatie op één dag. Zonder de eigenaar.</p>
+
+          <h3>Versies, laatste 7 dagen</h3>
+          <ul class="amounts">
+            {#each versions as v (v.version)}
+              <li>
+                <span class="code">{v.version}</span>
+                <span>
+                  {count(v.installs, 'installatie', 'installaties')} · tot {dateFormat.format(
+                    new Date(v.lastDay),
+                  )}
+                </span>
+              </li>
+            {:else}
+              <li><span>Geen</span><span>–</span></li>
+            {/each}
+          </ul>
+
+          <h3>Uitspraken per taal, deze maand</h3>
+          <ul class="amounts">
+            {#each Object.entries(languages) as [language, n] (language)}
+              <li><span>{language || 'onbekend'}</span><span>{n}</span></li>
+            {:else}
+              <li><span>Geen</span><span>–</span></li>
+            {/each}
+          </ul>
+          <p class="hint">Versies en talen zonder de eigenaar en de testset.</p>
+
           {#if unitWeeks.length}
             <h3>Per uitspraak, per week</h3>
             <div class="table">
@@ -594,7 +671,7 @@
               {#each providers as provider (provider.id)}
                 <li>
                   <span>{provider.name}</span>
-                  <span class="muted">{billText(provider.id)}</span>
+                  <span class="long">{billText(provider.id)}</span>
                 </li>
               {/each}
             </ul>
@@ -707,9 +784,13 @@
                 {tester.invitedAt ? `· ${dateFormat.format(tester.invitedAt)}` : ''}
                 · {tester.via === 'play' ? 'Play' : 'browser'}
                 {tester.blocked ? '· afgesloten' : ''}
+                {tester.owner ? '· van mij' : ''}
               </span>
               <span class="usage muted">{usageText(tester)}</span>
             </span>
+            <button class="link" onclick={() => toggleOwn(tester)}>
+              {tester.owner ? 'Niet van mij' : 'Van mij'}
+            </button>
             {#if tester.blocked}
               <button class="link danger" onclick={() => hide(tester)}>Verwijderen</button>
             {:else}
@@ -723,7 +804,15 @@
           {showInactive ? 'Toon minder' : `Toon meer (${split.inactive.length})`}
         </button>
         <p class="hint">
-          Onder "Toon meer": afgesloten, nog niets gedeeld, of meer dan {ACTIVE_DAYS} dagen niet gebruikt.
+          Onder "Toon meer": afgesloten, van mij, nog niets gedeeld, of meer dan {ACTIVE_DAYS} dagen niet
+          gebruikt.
+        </p>
+      {/if}
+      {#if unusedCount > 0}
+        <button class="link more" onclick={cleanup}>Ongebruikte opruimen ({unusedCount})</button>
+        <p class="hint">
+          Ongebruikt: aangemeld vóór vandaag en daarna niets ingesproken, gedeeld of een naam
+          opgegeven.
         </p>
       {/if}
     {/if}
@@ -870,6 +959,21 @@
   }
 
   .bar-label .muted {
+    font-size: 0.85rem;
+  }
+
+  /* Het bedrag rechts op één regel; het label breekt zo nodig af */
+  .amounts li > :last-child {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .amounts li > .long {
+    white-space: normal;
+  }
+
+  .amounts .code {
+    font-family: ui-monospace, monospace;
     font-size: 0.85rem;
   }
 

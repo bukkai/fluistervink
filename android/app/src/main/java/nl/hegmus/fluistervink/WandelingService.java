@@ -107,6 +107,14 @@ public class WandelingService extends Service {
         long minMs;
         long[] trilStart;
         long[] trilStop;
+        /**
+         * De knop op de oortjes start en stopt ook een opname (ontwikkeloptie
+         * `oortjesKnop`). Uit: geen stil geluid om de knop te krijgen
+         * (claimMediaButton), en een mediatoets doet niets, alleen loggen.
+         * Standaard aan, zodat een oudere webcode zonder de optie hetzelfde doet
+         * als vóór de splitsing (24 nov).
+         */
+        boolean oortjesKnop = true;
     }
 
     /** Waar opnames en meldingen heen gaan: SchermUitPlugin */
@@ -471,10 +479,13 @@ public class WandelingService extends Service {
     private void mediaPress(String key, long at) {
         boolean twice = lastMediaKeyAt > 0 && at - lastMediaKeyAt < MEDIA_DOUBLE_MS;
         lastMediaKeyAt = at;
+        boolean knop = config != null && config.oortjesKnop;
         JSObject data = mediaLog(key);
-        data.put("actie", twice ? "dubbel" : "druk");
+        // Knop uit: de koptelefoon stuurt soms zelf pauze als de bron wisselt
+        // (Sony XM5, 24 nov); dat mag geen opname starten
+        data.put("actie", !knop ? "knop_uit" : twice ? "dubbel" : "druk");
         log("mediaknop", data);
-        if (!twice) press("oortjes");
+        if (knop && !twice) press("oortjes");
     }
 
     /** Wat we bij elke mediatoets loggen: welke, en sinds wanneer we de knop hebben */
@@ -504,7 +515,7 @@ public class WandelingService extends Service {
      * dat een volumetoets stuurt.
      */
     private void claimMediaButton(String why) {
-        if (config == null || mediaSession == null) return;
+        if (config == null || mediaSession == null || !config.oortjesKnop) return;
         claimedAt = SystemClock.uptimeMillis();
         JSObject data = new JSObject();
         data.put("waarom", why);

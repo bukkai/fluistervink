@@ -2,7 +2,12 @@
   // Engelse versie van HowItWorks.svelte (ontwikkeloptie "English",
   // docs/plan-engels.md). Een wijziging aan de Nederlandse pagina hoort in
   // dezelfde PR ook hier. Houd de trilpatronen gelijk met feedback.ts.
+  import { devOptionOn } from './devOptions';
   import { isAndroidApp, isIosApp } from './native';
+  import { tuintelAvailable } from './tuintelling';
+
+  // Garden count: only when available (dev option, or around the count weekend)
+  const tuintel = tuintelAvailable(Date.now(), devOptionOn('tuintelling'));
 </script>
 
 <a class="back" href="#/">Back</a>
@@ -55,9 +60,11 @@
       <p>
         In the Android app the volume button can also start and stop a recording (you can switch
         that off in Settings). Switch on "Keep the screen on" in Settings and the screen won’t turn
-        off by itself during a session, so the volume button keeps working. With earbuds in, the app
-        can also say what it logged after the buzz (a trial, switch it on in Settings). Quick start:
-        press and hold the Fluistervink icon and choose "Start birding".
+        off by itself during a session, so the volume button keeps working. Or switch on "Record
+        with the screen off": then the volume button also works with the screen off and the phone in
+        your pocket, and a migration count keeps counting. With earbuds in, the app can also say
+        what it logged after the buzz (a trial, switch it on in Settings). Quick start: press and
+        hold the Fluistervink icon and choose "Start birding".
       </p>
     {/if}
   </div>
@@ -110,11 +117,12 @@
       </dd>
     </dl>
     <p>
-      During a migration count: one long buzz when it pauses (another app, screen locked, earbuds
-      out), two long when it has stopped. That also happens when you’ve already spoken for 5 hours
-      that day, the daily maximum, or when the microphone won’t switch on any more; the screen then
-      says why. Without signal it simply keeps counting; after 2 hours without signal you also get
-      two long buzzes, but then the count carries on.
+      During a migration count: one long buzz when it pauses (another app or a phone call, screen
+      locked without "Record with the screen off", earbuds out), two long when it has stopped. That
+      also happens when you’ve already spoken for 5 hours that day, the daily maximum, or when the
+      microphone won’t switch on any more; the screen then says why. Without signal it simply keeps
+      counting; after 2 hours without signal you also get two long buzzes, but then the count
+      carries on.
     </p>
     {#if isAndroidApp}
       <p>
@@ -151,6 +159,32 @@
     <p>Everything is only on your phone: make a backup in Settings now and then.</p>
   </div>
 </section>
+
+{#if tuintel}
+  <section class="card">
+    <div class="card-body">
+      <h3>Garden count</h3>
+      <p>
+        For the Dutch Garden Bird Count (Tuinvogeltelling): half an hour of counting what is in your
+        garden. On the start screen tap "Garden count", put the phone by the window and tap "Start
+        counting". The microphone then stays on for half an hour; you don't need to press anything.
+        Turn off the radio or TV for a moment: the app hears everything that is said.
+      </p>
+      <p>
+        Say how many you see now: "three great tits now", "two blackbirds again". If there are fewer
+        or they fly off, you don't need to do anything: per species the highest number you named at
+        once is what counts. Misheard? Say "no, one blackbird". Birds that only fly over don't
+        count.
+      </p>
+      <p>
+        With five minutes left you get two medium buzzes, after half an hour three long ones, and
+        then the count stops by itself. The highest number per species is then ready, in the order
+        of the form. Copy it over with "Open the count form"; you fill in your address and the
+        number of counters there yourself. Fluistervink sends nothing to Vogelbescherming.
+      </p>
+    </div>
+  </section>
+{/if}
 
 <section class="card">
   <div class="card-body">

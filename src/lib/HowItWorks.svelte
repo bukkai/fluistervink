@@ -3,7 +3,12 @@
   // wat AI er wel en niet in doet. Kort en zonder technische termen. Houd de
   // trilpatronen gelijk met feedback.ts. De Engelse versie staat in
   // HowItWorks.en.svelte: een wijziging hier hoort in dezelfde PR ook daar.
+  import { devOptionOn } from './devOptions';
   import { isAndroidApp, isIosApp } from './native';
+  import { tuintelAvailable } from './tuintelling';
+
+  // Tuintelling: alleen als die kan (ontwikkeloptie, of rond het telweekend)
+  const tuintel = tuintelAvailable(Date.now(), devOptionOn('tuintelling'));
 </script>
 
 <a class="back" href="#/">Terug</a>
@@ -55,9 +60,11 @@
       <p>
         In de Android-app kan ook de volumeknop de opname starten en stoppen (uit te zetten bij
         Instellingen). Zet bij Instellingen "Scherm aan houden" aan, dan gaat het scherm tijdens een
-        sessie niet vanzelf uit en blijft de volumeknop werken. Met oortjes in kan de app na het
-        trillen ook zeggen wat hij heeft vastgelegd (een proef, aan te zetten bij Instellingen).
-        Snel beginnen: houd het pictogram van Fluistervink ingedrukt en kies "Begin met vogelen".
+        sessie niet vanzelf uit en blijft de volumeknop werken. Of zet "Opnemen met het scherm uit"
+        aan: dan werkt de volumeknop ook met het scherm uit en de telefoon in je zak, en telt een
+        trektelling door. Met oortjes in kan de app na het trillen ook zeggen wat hij heeft
+        vastgelegd (een proef, aan te zetten bij Instellingen). Snel beginnen: houd het pictogram
+        van Fluistervink ingedrukt en kies "Begin met vogelen".
       </p>
     {/if}
   </div>
@@ -113,11 +120,11 @@
       </dd>
     </dl>
     <p>
-      Bij de trektelling: één lange tril als hij pauzeert (andere app, scherm op slot, oortjes los),
-      twee lange als hij gestopt is. Dat gebeurt ook als je die dag al 5 uur hebt ingesproken, het
-      maximum per dag, of als de microfoon niet meer aangaat; op het scherm staat dan waarom. Zonder
-      bereik telt hij gewoon door; na 2 uur zonder bereik komen er ook twee lange trillen, maar dan
-      loopt de telling door.
+      Bij de trektelling: één lange tril als hij pauzeert (andere app of een telefoongesprek, scherm
+      op slot zonder "Opnemen met het scherm uit", oortjes los), twee lange als hij gestopt is. Dat
+      gebeurt ook als je die dag al 5 uur hebt ingesproken, het maximum per dag, of als de microfoon
+      niet meer aangaat; op het scherm staat dan waarom. Zonder bereik telt hij gewoon door; na 2
+      uur zonder bereik komen er ook twee lange trillen, maar dan loopt de telling door.
     </p>
     {#if isAndroidApp}
       <p>
@@ -153,6 +160,32 @@
     <p>Alles staat alleen op je telefoon: maak af en toe een back-up bij Instellingen.</p>
   </div>
 </section>
+
+{#if tuintel}
+  <section class="card">
+    <div class="card-body">
+      <h3>Tuintelling</h3>
+      <p>
+        Voor de Nationale Tuinvogeltelling: een half uur tellen wat er in je tuin zit. Tik op het
+        startscherm op "Tuintelling", zet de telefoon bij het raam en tik op "Begin met tellen". De
+        microfoon blijft dan een half uur aan; je hoeft niets in te drukken. Zet radio of tv even
+        uit: de app hoort alles wat er gezegd wordt.
+      </p>
+      <p>
+        Zeg hoeveel je er nu ziet: "nu drie koolmezen", "weer twee merels". Zijn het er minder of
+        vliegen ze weg, dan hoef je niets te doen: per soort telt het hoogste aantal dat je in één
+        keer noemde. Verkeerd verstaan? Zeg "nee, één merel". Vogels die alleen overvliegen, tellen
+        niet mee.
+      </p>
+      <p>
+        Bij nog vijf minuten komen er twee middellange trillen, na het half uur drie lange, en dan
+        stopt de telling vanzelf. Daarna staat per soort het hoogste aantal klaar, in de volgorde
+        van het formulier. Neem het over met "Naar het telformulier"; je adres en het aantal tellers
+        vul je daar zelf in. Fluistervink stuurt niets naar Vogelbescherming.
+      </p>
+    </div>
+  </section>
+{/if}
 
 <section class="card">
   <div class="card-body">

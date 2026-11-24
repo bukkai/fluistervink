@@ -52,10 +52,10 @@
       hint: 'Met oortjes of een headset neemt de app op met hun microfoon in plaats van die van de telefoon, voor als de telefoon in je zak zit. In de Android-app vraagt hij daarvoor "Apparaten in de buurt". Bluetooth klinkt slechter en een podcast kan even pauzeren; de testset moet laten zien wat het kost.',
     },
     {
-      option: 'schermUit',
+      option: 'oortjesKnop',
       group: 'field',
-      label: 'Opnemen met het scherm uit',
-      hint: 'Tijdens een sessie start en stopt de volumeknop een opname, ook met het scherm uit. De knop op de oortjes doet dat ook, als hij bij Fluistervink aankomt: niet als er een podcast speelt, en bij sommige oortjes maar om en om. Werkt vanaf de volgende sessie (of open de sessie opnieuw).',
+      label: 'Knop op de oortjes',
+      hint: 'Met "Opnemen met het scherm uit" aan (bij In het veld) start en stopt ook de knop op de oortjes een opname, als hij bij Fluistervink aankomt: niet als er een podcast speelt, en bij sommige oortjes maar om en om. Daarvoor speelt de app bij het begin een kort stil geluid; bij een koptelefoon met twee apparaten kan dat de muziek van het andere stilzetten. Vanaf app-versie 0.7; daarvóór staat de knop altijd aan.',
       available: screenOffSupported,
     },
   ];

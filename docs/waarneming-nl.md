@@ -25,7 +25,7 @@ Uitgezocht op 10 oktober 2026 (ingelogd). Waarneming.nl heeft een eigen **bulkim
 | `is escape` | | `True`/`False` | – |
 | `activity`, `life stage`, `method`, `counting method` | | **tekst in de taal van de site** ("overvliegend", "gezien en gehoord", "exact aantal") | Nederlandse naam van het ID |
 | `uuid` | | UUIDv4/v7; een uuid die al bestaat → import geweigerd | ID van de waarneming |
-| `obscurity` | | **alleen 0 of 1** (proefimport 22 nov: "moet een keuze zijn uit 0, 1"), ook al kent de API 0, 1 (1 km), 5 (5 km) en 9 (verborgen) (`/api/v1/lookups/`) | `obscurity`: elke afscherming als 1, leeg = openbaar; bij 5 of 9 een melding om het op de site strenger te zetten (afgeschermd gaat niet naar eBird, `docs/plan-afschermen.md`) |
+| `obscurity` | | **alleen 0 of 1** (proefimport 22 nov: "moet een keuze zijn uit 0, 1"), ook al kent de API 0, 1 (1 km), 5 (5 km) en 9 (verborgen) (`/api/v1/lookups/`) | `obscurity`: elke afscherming als 1, leeg = openbaar; bij 5 of 9 een melding om het op de site strenger te zetten (afgeschermd gaat niet naar eBird, `docs/archief/plan-afschermen.md`) |
 | `embargo date` | | `YYYY-mm-dd`; tot die datum is de waarneming helemaal verborgen (proefimport 22 nov). Een nest krijgt van de site zelf een embargo van een half jaar | `embargoUntil` |
 | `related species`, `external reference`, `id` | | – | – |
 
@@ -36,7 +36,7 @@ Gevolgen:
 - Dankzij `uuid` kan dezelfde waarneming niet twee keer worden ingevoerd: de hele import wordt dan geweigerd.
 - Waarnemingen zonder positie kunnen niet mee (`lat`/`lng` verplicht).
 - `Location`/gebied is geen kolom: waarneming.nl bepaalt het gebied zelf uit de coördinaten.
-- Geen inspanning: de bulkimport heeft geen kolommen voor duur, afstand, waarnemers of een volledige lijst (nagegaan 11 nov 2026, `docs/plan-ebird.md`). Elke regel is een losse waarneming. Of de API iets als een telling of lijst kent, nagaan bij de aanvraag van een client-ID.
+- Geen inspanning: de bulkimport heeft geen kolommen voor duur, afstand, waarnemers of een volledige lijst (nagegaan 11 nov 2026, `docs/archief/plan-ebird.md`). Elke regel is een losse waarneming. Of de API iets als een telling of lijst kent, nagaan bij de aanvraag van een client-ID.
 - Nog na te gaan bij de eerste echte import: of verzamelsoorten als `Anatinae indet.` ("Eend onbekend") worden herkend.
 
 ### observation.org
@@ -59,7 +59,7 @@ Bron: de openbare API van waarneming.nl, zonder sleutel.
 - De wetenschappelijke namen volgen waarneming.nl (AviList-taxonomie), dus ze matchen bij de CSV-import. Waarneming.nl past de taxonomie soms aan (nov 2026: Winterkoning *Nannus troglodytes*, Rietgors *Schoeniclus schoeniclus*, Bonte Kraai een ondersoort *Corvus corone cornix*, door de import geaccepteerd op 22 nov); daarom haalt `.github/workflows/soortenlijst.yml` de lijst elke maandag opnieuw op en opent een PR met wat er veranderd is.
 - Alternatieve namen ("soepgans" voor Parkgans, "bonte specht" voor Grote Bonte Specht) zitten niet in de bron. Die vullen we zelf aan als we ze in de testset tegenkomen.
 
-Andere soortgroepen (13 nov, `docs/plan-soortgroepen.md`): het script haalt ook zoogdieren (regiolijst 5002), reptielen en amfibieën (5003), dagvlinders (5004) en libellen (5005) op, met hetzelfde filter en een eigen lijst gevestigde exoten. Elke soort heeft een veld `group`; soort-ID's overlappen niet tussen groepen. Gedrag, methode en kleed hebben per groep eigen ID's: `data/attributen-<groep>.json`, met de korte lijsten en standaarden per groep in `src/lib/vocab.ts`.
+Andere soortgroepen (13 nov, `docs/archief/plan-soortgroepen.md`): het script haalt ook zoogdieren (regiolijst 5002), reptielen en amfibieën (5003), dagvlinders (5004) en libellen (5005) op, met hetzelfde filter en een eigen lijst gevestigde exoten. Elke soort heeft een veld `group`; soort-ID's overlappen niet tussen groepen. Gedrag, methode en kleed hebben per groep eigen ID's: `data/attributen-<groep>.json`, met de korte lijsten en standaarden per groep in `src/lib/vocab.ts`.
 
 Engelse namen (19 nov, `docs/plan-engels.md`, stap 2): dezelfde aanroepen met `Accept-Language: en` geven de namen in het Engels ("Mute Swan" voor 136; gedrag "present", "flying over"; telmethode "estimated" uit `/api/v1/lookups/`). Het script zet ze in [`data/namen-en.json`](../data/namen-en.json): per soort-ID de naam, per groep de namen van gedrag, methode en kleed, en de telmethodes. Los van de soortenlijst, zodat er later een taal bij kan zonder de lijst te herhalen (`docs/plan-andere-landen.md`, keuze 1). Heeft een soort geen Engelse naam (veel verzamelsoorten, zoals "Accipiter spec."), dan geeft de bron de wetenschappelijke naam; die laat het script weg en de app valt erop terug. Opvragen met `speciesNameIn('en', id)`, `activityNameIn`, `methodNameIn`, `lifeStageNameIn` en `countingMethodNameIn` in `src/lib/vocab.ts`; nog nergens op het scherm gebruikt.
 

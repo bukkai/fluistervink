@@ -3,6 +3,7 @@ import { devOptionOn } from './devOptions';
 import { vibrationPattern } from './feedback';
 import { currentPosition } from './location.svelte';
 import { logEvent } from './log';
+import { preferenceOn, setPreference } from './preferences';
 import {
   doneScreenOffRecording,
   listenScreenOff,
@@ -16,11 +17,13 @@ import { MIN_DURATION_MS } from './recorder.svelte';
 import { takeChunkLookup } from './trektelRecorder.svelte';
 import { trektelLookup } from './trektelPosition';
 
-// Proef: opnemen met het scherm uit (docs/roadmap-android.md stap 3,
-// ontwikkeloptie `schermUit`). Met het scherm uit start en stopt de
+// Opnemen met het scherm uit (docs/roadmap-android.md stap 3; keuze
+// `schermUit` bij Instellingen, tot v0.7 een ontwikkeloptie). Met het scherm uit start en stopt de
 // volumeknop een opname in de service van de Android-app
-// (WandelingService.java), en de hele sessie lang ook de knop op de oortjes
-// of een Bluetooth-afstandsbediening, als die bij ons aankomt (`via` is dan
+// (WandelingService.java). Met de aparte ontwikkeloptie `oortjesKnop` (sinds
+// 24 nov los, zodat ze apart te testen en te lanceren zijn) de hele sessie lang
+// ook de knop op de oortjes of een Bluetooth-afstandsbediening, als die bij
+// ons aankomt (`via` is dan
 // `oortjes`; welke toets en een dubbele druk staan in `screen_off_mediaknop`,
 // de pogingen om de knop te krijgen in `screen_off_knop_claim`). De service geeft de opname hier af, en vanaf dan gaat
 // alles zoals bij de knop in de app: eerst bewaren in IndexedDB
@@ -47,9 +50,18 @@ export const screenOff = $state<{
   ready?: boolean;
 }>({});
 
-/** Kan het, en staat de ontwikkeloptie aan? */
+/** De ontwikkeloptie van vóór v0.7 wordt eenmalig de keuze bij Instellingen */
+const OLD_DEV_OPTION = 'fluistervink.dev.schermUit';
+try {
+  if (localStorage.getItem(OLD_DEV_OPTION) === '1') setPreference('schermUit', true);
+  localStorage.removeItem(OLD_DEV_OPTION);
+} catch {
+  // Geen opslag: dan is er ook geen oude optie
+}
+
+/** Kan het, en staat de keuze aan? */
 export function screenOffEnabled(): boolean {
-  return screenOffSupported && devOptionOn('schermUit');
+  return screenOffSupported && preferenceOn('schermUit');
 }
 
 /** Al bewaard of bezig: niet nog eens (gebeurtenis én `wachtend` kunnen dezelfde geven) */
@@ -211,6 +223,7 @@ export function startScreenOff(
       trilStart: vibrationPattern('screenOffStart'),
       trilStop: vibrationPattern('screenOffStop'),
       zichtbaar: KEEP_WEBVIEW_VISIBLE,
+      oortjesKnop: devOptionOn('oortjesKnop'),
     },
     {
       onStart: (startedAt, via) => {

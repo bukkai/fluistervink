@@ -4,6 +4,9 @@
   // toestemming voor microfoon en locatie, één zin proberen (TryOut, als de
   // browser kan opnemen), en de vraag over delen (alleen als die nog open
   // staat). Zie welcome.ts. Houd de trilpatronen gelijk met HowItWorks.
+  // Kan de tuintelling (ontwikkeloptie, later rond het telweekend), dan noemt
+  // de eerste stap hem, en brengt een laatste stap je er met één tik naartoe
+  // (docs/plan-tuintelling.md, punt 11).
   import { tick, untrack } from 'svelte';
   import { t } from './i18n';
   import { isAndroidApp } from './native';
@@ -20,21 +23,26 @@
     askShare,
     onshare,
     onclose,
+    ontuintel,
   }: {
     /** De vraag over delen staat nog open: dan een laatste stap */
     askShare: boolean;
     onshare: (on: boolean) => void;
     onclose: () => void;
+    /** De tuintelling kan: een laatste stap om hem meteen te starten */
+    ontuintel?: () => void;
   } = $props();
 
   // Bij het begin vastgelegd: de stappen veranderen niet als de keuze over
   // delen halverwege valt
-  type Step = 'welkom' | 'toestemming' | 'proberen' | 'delen';
+  type Step = 'welkom' | 'toestemming' | 'proberen' | 'delen' | 'tuintelling';
+  const tuintel = untrack(() => ontuintel !== undefined);
   const steps: Step[] = [
     'welkom',
     'toestemming',
     ...(recorder.status === 'unsupported' ? [] : ['proberen' as const]),
     ...(untrack(() => askShare) ? ['delen' as const] : []),
+    ...(tuintel ? ['tuintelling' as const] : []),
   ];
   let index = $state(0);
   let step = $derived(steps[index]);
@@ -60,7 +68,14 @@
 
   function share(on: boolean) {
     onshare(on);
-    close();
+    if (last) close();
+    else void next();
+  }
+
+  /** Start meteen een tuintelling; App.start zet het welkom op klaar */
+  function startTuintel() {
+    setWelcomeDone();
+    ontuintel?.();
   }
 
   function close() {
@@ -102,6 +117,9 @@
         <span>{t('welcome.howHome')}</span>
       </li>
     </ul>
+    {#if tuintel}
+      <p class="hint">{t('welcome.tuintelLine')}</p>
+    {/if}
   {:else if step === 'toestemming'}
     <h1 id="welcome-title" tabindex="-1" bind:this={heading}>{t('welcome.permissionsTitle')}</h1>
     <p class="lead">
@@ -135,9 +153,16 @@
   {:else if step === 'proberen'}
     <h1 id="welcome-title" tabindex="-1" bind:this={heading}>{t('welcome.tryTitle')}</h1>
     <p class="lead">
-      {t('welcome.tryLead')} <em>{t('welcome.tryExample')}</em>. {t('welcome.tryNothingSaved')}
+      {t('welcome.tryLead')}
+      <em>{tuintel ? t('welcome.tryExampleTuin') : t('welcome.tryExample')}</em>. {t(
+        'welcome.tryNothingSaved',
+      )}
     </p>
     <TryOut />
+  {:else if step === 'tuintelling'}
+    <h1 id="welcome-title" tabindex="-1" bind:this={heading}>{t('welcome.tuintelTitle')}</h1>
+    <p class="lead">{t('welcome.tuintelLead')}</p>
+    <p class="hint">{t('welcome.tuintelHint')}</p>
   {:else}
     <h1 id="welcome-title" tabindex="-1" bind:this={heading}>{t('welcome.shareTitle')}</h1>
     <p class="lead">{t('welcome.shareLead')}</p>
@@ -155,6 +180,9 @@
     {:else if step === 'delen'}
       <button class="btn block large" onclick={() => share(true)}>{t('home.shareYes')}</button>
       <button class="link" onclick={() => share(false)}>{t('home.shareNo')}</button>
+    {:else if step === 'tuintelling'}
+      <button class="btn block large" onclick={startTuintel}>{t('welcome.tuintelStart')}</button>
+      <button class="link" onclick={close}>{t('welcome.tuintelSkip')}</button>
     {:else}
       <button class="btn block large" class:secondary={step === 'proberen'} onclick={next}>
         {last ? t('welcome.start') : t('welcome.next')}

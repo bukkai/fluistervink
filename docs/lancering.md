@@ -57,6 +57,8 @@ Daaruit maken we: Android-pictogram (`android/app/src/main/res/mipmap-*`, adapti
 
 ## 4. Vóór de aanvraag voor productie
 
+Wat met de lancering meegaat en wat achter een schakelaar wacht: `docs/vrijgave.md`.
+
 - [x] **Kwaliteitsronde** (`docs/kwaliteitsronde.md`): gedaan na de release van 18 nov (#279), plus de architectuurronde (#280–#283).
 - [x] Feedback van de testers ophalen en verwerken (`npm run feedback -- pull` en `notes`), zodat er iets te vertellen is bij de aanvraag: gaat regelmatig. Testers gevraagd om nog wat in te dienen (21 nov). Vlak voor de aanvraag nog één keer.
 - [x] Laatste release in de gesloten test minstens een paar dagen vóór de aanvraag (beoordeling): v0.4 goedgekeurd, stable bijgewerkt op 21 nov. Mogelijk nog een v0.5 vóór 1 dec, afhankelijk van de proeven; die dan op tijd indienen.
@@ -68,9 +70,17 @@ Daaruit maken we: Android-pictogram (`android/app/src/main/res/mipmap-*`, adapti
 - [ ] Productietoegang aanvragen in de Play Console (na 14 dagen, als het dashboard het toestaat).
 - [ ] Na goedkeuring: de stabiele AAB naar **Productie**. Bij het maken van die release de landen kiezen: Nederland en België. De beta blijft in de interne test.
 - [ ] Zodra de app openbaar in Play staat: op de voorpagina (`index.html`) de zin onder "Open de app" wordt "Werkt in de browser van je telefoon. Op Android ook als app: Fluistervink in Google Play", met een link naar `https://play.google.com/store/apps/details?id=nl.hegmus.fluistervink` (eerder als draft #333, gesloten op 22 nov; opnieuw klaar in de PR "Play-link op de voorpagina", mergen zodra de app openbaar is). Daarvóór geeft die link wie geen tester is een "niet gevonden". Tot dan gaan nieuwe testers met de hand op de e-maillijst van de gesloten test.
-- [ ] `#uitleg` en `#privacy` nalopen op "test"-taal; `CLAUDE.md` en `NOTES.md` bijwerken. Nagelopen op 18 nov: beide schoon (alleen de gesproken bevestiging heet er een proef, en dat is hij nog). Besloten 21 nov: "(proef)" bij Trektelmodus eraf (gesproken bevestiging blijft een proef); "nog in ontwikkeling" in de vraag om te delen (welkom en startscherm) blijft tijdens de test en verandert vóór de productierelease.
+- [ ] `#uitleg` en `#privacy` nalopen op "test"-taal; `CLAUDE.md` en `NOTES.md` bijwerken. Nagelopen op 18 nov: beide schoon (alleen de gesproken bevestiging heet er een proef, en dat is hij nog). Besloten 21 nov: "(proef)" bij Trektelmodus eraf (gesproken bevestiging blijft een proef); "nog in ontwikkeling" in de vraag om te delen (welkom en startscherm) blijft tijdens de test en verandert vóór de productierelease: klaar in de PR "nog in ontwikkeling" (wordt "nieuw"), mergen zodra de productietoegang er is.
 - [ ] De eerste weken Statistieken en Kosten op Developer volgen.
 - [ ] Naam in de winkelvermelding: "Fluistervink: vogels inspreken" (`docs/play-store/README.md`).
 - [ ] Bekendheid geven in stappen, eerst in eigen kring: `docs/plan-marketing.md`.
+
+## 6. Na de productierelease: testers die er zelf voor kiezen
+
+Plan: `docs/plan-testers.md`.
+
+- [ ] De gesloten test "Stabiel" uitfaseren: geen nieuwe releases meer, lijst leeg, de testers een bedankmail (stap 1 van het plan).
+- [ ] Google Group (alleen mededelingen) en een nieuwe gesloten track "Beta" met de beta-AAB (stap 2).
+- [ ] **Uitproberen met het tweede account**, zodra "Beta" er is: eerst via de link van de interne test "Programma verlaten" (het account is daar sinds 18 nov tester), de app verwijderen en Fluistervink uit productie installeren. Dan lid worden van de groep, tester worden van "Beta" en kijken of Play de app bijwerkt naar de beta of dat verwijderen nodig is. Ook nagaan of de back-up van stabiel goed terugkomt in de beta. De uitkomst bepaalt de stappen op de kaart (stap 4 van het plan).
 
 Later, niet nodig voor de lancering: automatisch uploaden vanuit de workflow.

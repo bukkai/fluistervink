@@ -2,7 +2,14 @@
 import { DatabaseSync } from 'node:sqlite';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import worker from './index';
-import { installName, integrityNonce, putInstall, signInstallToken } from './install';
+import {
+  deviceOf,
+  getInstall,
+  installName,
+  integrityNonce,
+  putInstall,
+  signInstallToken,
+} from './install';
 import { keepFrom, pruneUsage, recordUsage, usageSince } from './usage';
 
 // De proxy in Node, met een nep-KV in het geheugen, D1 als SQLite in het
@@ -363,6 +370,125 @@ describe('/api/install (aanmelden zonder code)', () => {
     expect(await names()).not.toContain('app-3f9a2b1c');
     expect((await call('/api/ping', { code: token })).status).toBe(401);
     expect((await register({ id: ID, turnstile: 'goed' })).status).toBe(403);
+  });
+
+  it('markeert een installatie als die van de eigenaar, en weer terug', async () => {
+    turnstileAnswers();
+    const { token } = (await (await register({ id: ID, turnstile: 'goed' })).json()) as {
+      token: string;
+    };
+    const mark = (owner: '0' | '1', code: string = OWNER_CODE, name = 'app-3f9a2b1c') =>
+      call(`/api/testers?name=${name}&owner=${owner}`, { code, method: 'PATCH' });
+    const listed = async () =>
+      (
+        (await (await call('/api/testers', { code: OWNER_CODE })).json()) as {
+          testers: { name: string; owner?: boolean }[];
+        }
+      ).testers.find((t) => t.name === 'app-3f9a2b1c');
+
+    expect((await listed())?.owner).toBeUndefined();
+    expect((await mark('1')).status).toBe(200);
+    expect((await listed())?.owner).toBe(true);
+    // Twee keer is niet erg (de app meldt het vanzelf)
+    expect((await mark('1')).status).toBe(200);
+    // De installatie blijft gewoon werken
+    expect((await call('/api/ping', { code: token })).status).toBe(200);
+    expect((await mark('0')).status).toBe(200);
+    expect((await listed())?.owner).toBeUndefined();
+
+    // Alleen de eigenaar, en alleen een bestaande installatie
+    expect((await mark('1', token)).status).toBe(403);
+    expect((await mark('1', OWNER_CODE, 'app-00000000')).status).toBe(404);
+  });
+
+  it('zet een eerdere wijziging niet terug als de lijst van KV achterloopt', async () => {
+    turnstileAnswers();
+    await register({ id: ID, turnstile: 'goed' });
+    // KV's list kan tot een minuut een oude stand geven; get is wel vers
+    const stale = await testersKv.list();
+    const list = testersKv.list;
+    testersKv.list = async ({ prefix = '' } = {}) => ({
+      ...stale,
+      keys: stale.keys.filter((k) => k.name.startsWith(prefix)),
+    });
+    try {
+      await call('/api/testers?name=app-3f9a2b1c&owner=1', { code: OWNER_CODE, method: 'PATCH' });
+      await call('/api/testers?name=app-3f9a2b1c', { code: OWNER_CODE, method: 'DELETE' });
+    } finally {
+      testersKv.list = list;
+    }
+    expect(await getInstall(testersKv as never, ID, { fresh: true })).toEqual(
+      expect.objectContaining({ owner: true, blocked: true }),
+    );
+  });
+
+  const IPHONE =
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1';
+
+  it('herkent het soort toestel grof aan de User-Agent', () => {
+    expect(deviceOf(IPHONE)).toBe('ios');
+    expect(
+      deviceOf(
+        'Mozilla/5.0 (Linux; Android 14; Pixel 8; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/130.0 Mobile Safari/537.36',
+      ),
+    ).toBe('android');
+    expect(
+      deviceOf(
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15',
+      ),
+    ).toBe('computer');
+    expect(deviceOf(null)).toBeUndefined();
+    expect(deviceOf('')).toBeUndefined();
+  });
+
+  it('bewaart bij het aanmelden het soort toestel, en toont het de eigenaar', async () => {
+    turnstileAnswers();
+    const response = await call('/api/install', {
+      code: null,
+      method: 'POST',
+      headers: { 'User-Agent': IPHONE },
+      body: JSON.stringify({ id: ID, turnstile: 'goed' }),
+    });
+    expect(response.status).toBe(200);
+    const { testers } = (await (await call('/api/testers', { code: OWNER_CODE })).json()) as {
+      testers: { name: string; device?: string }[];
+    };
+    expect(testers.find((t) => t.name === 'app-3f9a2b1c')?.device).toBe('ios');
+  });
+
+  it('schrijft het toestel alsnog bij een oude installatie bij, en verder niets', async () => {
+    await putInstall(testersKv as never, ID, {
+      name: 'app-3f9a2b1c',
+      registeredAt: 1000,
+      via: 'turnstile',
+      displayName: 'Maarten',
+    });
+    const token = await signInstallToken(ID, INSTALL_SECRET);
+    const ping = () => call('/api/ping', { code: token, headers: { 'User-Agent': IPHONE } });
+
+    expect((await ping()).status).toBe(200);
+    expect(await getInstall(testersKv as never, ID)).toEqual({
+      name: 'app-3f9a2b1c',
+      registeredAt: 1000,
+      via: 'turnstile',
+      displayName: 'Maarten',
+      device: 'ios',
+    });
+  });
+
+  it('schrijft geen toestel bij een afgesloten installatie (die blijft dicht)', async () => {
+    await putInstall(testersKv as never, ID, {
+      name: 'app-3f9a2b1c',
+      registeredAt: 1000,
+      via: 'turnstile',
+      blocked: true,
+    });
+    const token = await signInstallToken(ID, INSTALL_SECRET);
+    expect(
+      (await call('/api/ping', { code: token, headers: { 'User-Agent': IPHONE } })).status,
+    ).toBe(401);
+    expect((await getInstall(testersKv as never, ID))?.device).toBeUndefined();
+    expect((await getInstall(testersKv as never, ID))?.blocked).toBe(true);
   });
 
   it('bewaart een opgegeven naam bij de installatie', async () => {
@@ -1035,6 +1161,73 @@ describe('/api/feedback/notes (feedback inzien)', () => {
     await insert('2026-11-03', 's2');
     await insert('2026-11-09', ''); // zonder sessie (testset) telt niet
     expect((await list())?.lastUsed).toBe('2026-11-03');
+  });
+
+  it('ruimt ongebruikte installaties op; ze blijven werken en komen terug als ze iets doen', async () => {
+    const DAY = 24 * 60 * 60 * 1000;
+    const install = (id: string, extra: Record<string, unknown> = {}) =>
+      putInstall(testersKv as never, id, {
+        name: installName(id),
+        registeredAt: Date.now() - 3 * DAY,
+        via: 'turnstile',
+        ...extra,
+      });
+    const OUD = 'c0000000-0000-4000-8000-00000000000c';
+    const NIEUW = 'd0000000-0000-4000-8000-00000000000d';
+    const NAAM = 'e0000000-0000-4000-8000-00000000000e';
+    await install(ANNA_ID); // spreekt in, zonder delen
+    await install(OUD);
+    await install(NIEUW, { registeredAt: Date.now() - 60 * 1000 });
+    await install(NAAM, { displayName: 'Kees' });
+    const names = async () =>
+      (
+        (await (await call('/api/testers', { code: OWNER_CODE })).json()) as {
+          testers: { name: string }[];
+        }
+      ).testers
+        .map((t) => t.name)
+        .sort();
+    await names(); // maakt de tabel aan
+    const spoke = (tester: string) =>
+      (env.USAGE as ReturnType<typeof memoryD1>)
+        .prepare(
+          `INSERT INTO usage (day, tester, channel, session, model) VALUES ('2026-11-03', ?, 'beta', 's1', 'm')`,
+        )
+        .bind(tester)
+        .run();
+    await spoke(ANNA);
+    const cleanup = () => call('/api/testers?cleanup=1', { code: OWNER_CODE, method: 'POST' });
+
+    // Alleen voor de eigenaar
+    expect((await call('/api/testers?cleanup=1', { method: 'POST' })).status).toBe(403);
+
+    expect(await (await cleanup()).json()).toEqual({ cleaned: [installName(OUD)] });
+    expect(await names()).toEqual([ANNA, installName(NIEUW), installName(NAAM)].sort());
+    // Het token werkt nog
+    const token = await signInstallToken(OUD, INSTALL_SECRET);
+    expect((await call('/api/ping', { code: token })).status).toBe(200);
+    // Tweede keer: niets meer
+    expect(await (await cleanup()).json()).toEqual({ cleaned: [] });
+
+    // Komt terug zodra hij iets inspreekt
+    await spoke(installName(OUD));
+    expect(await names()).toContain(installName(OUD));
+  });
+
+  it('ruimt niets op als het verbruik niet te lezen is', async () => {
+    await putInstall(testersKv as never, ANNA_ID, {
+      name: ANNA,
+      registeredAt: 1000,
+      via: 'turnstile',
+    });
+    env.USAGE = {
+      prepare: () => {
+        throw new Error('D1 weg');
+      },
+    };
+    const response = await call('/api/testers?cleanup=1', { code: OWNER_CODE, method: 'POST' });
+    expect(response.ok).toBe(false);
+    expect((await getInstall(testersKv as never, ANNA_ID))?.hidden).toBeUndefined();
   });
 
   it('telt per tester sessies, uitspraken, feedback en de laatste actie', async () => {

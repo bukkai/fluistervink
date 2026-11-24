@@ -81,6 +81,7 @@
     return () => {
       stopTracking();
       // Sessie gestopt tijdens een opname: microfoon uit, opname bewaren
+      closed = true;
       if (recorder.status === 'recording') finishRecording();
       stopTrektel();
       resetTrektelPosition();
@@ -171,6 +172,13 @@
    */
   const MAX_RECORDING_MS = 3 * 60_000;
 
+  // Stop tijdens een opname: dit scherm is dan al weg als de opname klaar is,
+  // en `session` wijst niet meer naar deze sessie (de lopende is er niet
+  // meer). Daarom het id van het begin; anders ging die opname verloren.
+  const thisSession = untrack(() => session.id);
+  /** Dit scherm is weg (sessie gestopt) */
+  let closed = false;
+
   let lookup: Promise<PositionLookup> | undefined;
   let maxTimer: ReturnType<typeof setTimeout> | undefined;
   let elapsed = $state(0);
@@ -197,6 +205,11 @@
       if (!(await startRecording({ measureHidden: screenOff.ready }))) {
         // Niet stil mislukken: wie niet naar het scherm kijkt, denkt anders dat hij opneemt
         if (recorder.failed) vibrate('failed');
+        return false;
+      }
+      // Gestopt terwijl de microfoon nog opstartte: niet doorlopen na de sessie
+      if (closed) {
+        void finishRecording();
         return false;
       }
       vibrate('recording');
@@ -263,12 +276,12 @@
       logEvent(
         'recording_chunks',
         { durationMs: recording.durationMs, ...recording.chunkStats },
-        { sessionId: session.id },
+        { sessionId: thisSession },
       );
     }
     // Een vorige melding "niet bewaard" geldt niet meer; mislukt het weer, dan komt hij terug
     saveError = undefined;
-    await submitRecording(session.id, recording, lookup);
+    await submitRecording(thisSession, recording, lookup);
   }
 
   // Opname vanzelf gestopt (gebeld, oortjes weg): bewaren wat er was
@@ -404,7 +417,7 @@
   );
 
   // Trektelling zonder bereik: al 2 uur wachten de stukken (offline wachtrij,
-  // docs/plan-offline.md). Twee lange trillen; de regel boven de lijst zegt het
+  // docs/archief/plan-offline.md). Twee lange trillen; de regel boven de lijst zegt het
   // ook. De telling gaat gewoon door.
   $effect(() =>
     onLongWait(() => {
@@ -719,6 +732,12 @@
   }
 
   .talk-bar.compact .talk span {
+    display: none;
+  }
+
+  /* De uitlegregel onder de knop ("Het half uur loopt door", de microfoon)
+     zou over Annuleren vallen; een foutmelding blijft wel staan */
+  .talk-bar.compact .mic.source {
     display: none;
   }
 

@@ -4,6 +4,8 @@ import { declaredTooLarge, json, MAX_AUDIO_BYTES, OWNER, readBody, tooLarge } fr
 import { feedback, testerUsage } from './feedback';
 import {
   cleanDisplayName,
+  deviceOf,
+  fillDevice,
   findInstall,
   getInstall,
   INSTALL_ID,
@@ -18,6 +20,7 @@ import {
   verifyTurnstile,
   type InstallSecrets,
 } from './install';
+import { hasActivity, isUnused } from '../src/lib/unusedInstalls';
 import { AUDIO_SECONDS_PER_DAY, MESSAGES_PER_DAY } from '../src/lib/limits';
 import { checkSummary, storeSummary, summariesSince } from './summaries';
 import {
@@ -103,7 +106,7 @@ export default {
       }
     }
 
-    const tester = await authorize(request, env);
+    const tester = await authorize(request, env, ctx);
     if (!tester) {
       return json({ error: 'Ongeldige of ontbrekende toegangscode of installatie' }, 401);
     }
@@ -226,7 +229,8 @@ async function install(request: Request, env: WorkerEnv): Promise<Response> {
     // met dezelfde naam zouden gedeelde gegevens en verbruik door elkaar halen.
     // De app kiest dan een nieuw id (install.ts).
     if (await findInstall(env.TESTERS, name)) return json({ error: 'Id al in gebruik' }, 409);
-    await putInstall(env.TESTERS, id, { name, registeredAt: Date.now(), via });
+    const device = deviceOf(request.headers.get('User-Agent'));
+    await putInstall(env.TESTERS, id, { name, registeredAt: Date.now(), via, device });
   }
   console.log({ tester: name, path: '/api/install', via });
   return json({ token: await signInstallToken(id, env.INSTALL_SECRET), tester: name });
@@ -563,39 +567,72 @@ async function billing(env: WorkerEnv, tester: string): Promise<Response> {
 }
 
 /**
+ * Alle installaties zoals de eigenaar ze ziet, met wat ze deelden en de laatste
+ * dag met een uitspraak. `strict`: een fout bij het verbruik niet overslaan.
+ */
+async function installList(env: WorkerEnv, { strict = false } = {}) {
+  const installs = (await listInstalls(env.TESTERS)).map(
+    ({ name, registeredAt, via, device, blocked, hidden, displayName, owner }) => ({
+      name,
+      source: 'install' as const,
+      invitedAt: registeredAt,
+      via,
+      device,
+      blocked: blocked || undefined,
+      hidden: hidden || undefined,
+      displayName,
+      owner: owner || undefined,
+    }),
+  );
+  const usage = await testerUsage(env);
+  // Zonder D1 toch de lijst, alleen zonder "laatst gebruikt"
+  const lastUsed = await lastUsedPerTester(env.USAGE).catch((error) => {
+    if (strict) throw error;
+    console.error('Laatst gebruikt niet te lezen', error);
+    return new Map<string, string>();
+  });
+  return installs.map((t) => ({
+    ...t,
+    usage: usage.get(t.name),
+    lastUsed: lastUsed.get(t.name),
+  }));
+}
+
+/**
  * Installaties beheren vanuit de app (alleen de eigenaar).
  *
  * - GET /api/testers               alle installaties, met verbruik
  * - DELETE /api/testers?name=…     installatie afsluiten
  * - DELETE /api/testers?name=…&hide=1  afgesloten installatie uit de lijst halen
+ * - PATCH /api/testers?name=…&owner=1  installatie van de eigenaar zelf (0: toch niet)
+ * - POST /api/testers?cleanup=1     ongebruikte installaties uit de lijst (`isUnused`)
  */
 async function testers(request: Request, env: WorkerEnv, tester: string): Promise<Response> {
   if (tester !== OWNER) return json({ error: 'Alleen voor de eigenaar' }, 403);
 
   if (request.method === 'GET') {
-    const installs = (await listInstalls(env.TESTERS))
-      .filter((t) => !t.hidden)
-      .map(({ name, registeredAt, via, blocked, displayName }) => ({
-        name,
-        source: 'install' as const,
-        invitedAt: registeredAt,
-        via,
-        blocked: blocked || undefined,
-        displayName,
-      }));
-    const usage = await testerUsage(env);
-    // Zonder D1 toch de lijst, alleen zonder "laatst gebruikt"
-    const lastUsed = await lastUsedPerTester(env.USAGE).catch((error) => {
-      console.error('Laatst gebruikt niet te lezen', error);
-      return new Map<string, string>();
-    });
-    return json({
-      testers: installs.map((t) => ({
-        ...t,
-        usage: usage.get(t.name),
-        lastUsed: lastUsed.get(t.name),
-      })),
-    });
+    // Opgeruimd en sindsdien iets gedaan: weer in de lijst
+    const shown = (await installList(env)).filter(
+      ({ hidden, ...t }) => !hidden || (!t.blocked && hasActivity(t)),
+    );
+    return json({ testers: shown.map(({ hidden: _, ...t }) => t) });
+  }
+  if (request.method === 'POST' && new URL(request.url).searchParams.get('cleanup') === '1') {
+    // Ongebruikte installaties uit de lijst; ze blijven werken. Zonder het
+    // verbruik (D1) niets opruimen: dan is "nooit iets ingesproken" niet te zien.
+    const unused = (await installList(env, { strict: true })).filter(
+      (t) => !t.hidden && isUnused(t),
+    );
+    const cleaned: string[] = [];
+    for (const { name } of unused) {
+      // Vers gelezen, zodat een wijziging van net niet verloren gaat
+      const found = await findInstall(env.TESTERS, name);
+      if (!found) continue;
+      const { id, ...record } = found;
+      await putInstall(env.TESTERS, id, { ...record, hidden: true });
+      cleaned.push(name);
+    }
+    return json({ cleaned });
   }
   if (request.method === 'DELETE') {
     const params = new URL(request.url).searchParams;
@@ -610,6 +647,20 @@ async function testers(request: Request, env: WorkerEnv, tester: string): Promis
     if (hide && !record.blocked) return json({ error: 'Eerst afsluiten' }, 409);
     await putInstall(env.TESTERS, id, { ...record, blocked: true, hidden: hide || undefined });
     return json({ ok: true });
+  }
+  if (request.method === 'PATCH') {
+    // Een installatie van de eigenaar zelf: met de hand op Developer, of
+    // vanzelf als de app met de code nog een installatie van vroeger heeft
+    const params = new URL(request.url).searchParams;
+    const name = params.get('name') ?? '';
+    const found = name.startsWith('app-') ? await findInstall(env.TESTERS, name) : undefined;
+    if (!found) return json({ error: 'Niet gevonden' }, 404);
+    const { id, ...record } = found;
+    const owner = params.get('owner') === '1';
+    if (!!record.owner !== owner) {
+      await putInstall(env.TESTERS, id, { ...record, owner: owner || undefined });
+    }
+    return json({ ok: true, owner });
   }
   return json({ error: 'Niet gevonden' }, 404);
 }
@@ -653,7 +704,11 @@ async function area(request: Request): Promise<Response> {
  * constante tijd (via SHA-256-hashes van gelijke lengte), zodat hij niet via
  * responstijden te raden is.
  */
-async function authorize(request: Request, env: WorkerEnv): Promise<string | null> {
+async function authorize(
+  request: Request,
+  env: WorkerEnv,
+  ctx: ExecutionContext,
+): Promise<string | null> {
   const header = request.headers.get('Authorization') ?? '';
   const code = header.startsWith('Bearer ') ? header.slice(7) : '';
   if (!code) return null;
@@ -663,7 +718,17 @@ async function authorize(request: Request, env: WorkerEnv): Promise<string | nul
     const id = await verifyInstallToken(code, env.INSTALL_SECRET);
     if (!id) return null;
     try {
-      if ((await getInstall(env.TESTERS, id))?.blocked) return null;
+      const record = await getInstall(env.TESTERS, id);
+      if (record?.blocked) return null;
+      // Installaties van vóór het toestel: alsnog, eenmalig, na het antwoord
+      const device = deviceOf(request.headers.get('User-Agent'));
+      if (record && !record.device && device) {
+        ctx.waitUntil(
+          fillDevice(env.TESTERS, id, device).catch((error) =>
+            console.error('Toestel niet bij te schrijven', error),
+          ),
+        );
+      }
     } catch (error) {
       // KV even niet te lezen: het token zelf is geldig
       console.error('Installatie niet te lezen', error);

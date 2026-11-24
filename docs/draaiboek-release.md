@@ -2,7 +2,7 @@
 
 Wat er sinds de vorige release (21 nov, 0c31293) op `main` staat en straks bij de testers komt, één keer op de telefoon nalopen. Op de beta, met de Android-app. Vink af wat werkt; schrijf bij een afwijking op wat je zag en spreek het in als feedback. Daarna `npm run release`. Als alles af is, gaat dit draaiboek naar `docs/archief/`.
 
-Duur: thuis een kwartier, buiten een half uur tot drie kwartier.
+Thuis (R) gedaan op 23 nov: alles goed. Over: S, buiten, een half uur tot drie kwartier.
 
 **Wat er meegaat** (alleen wat testers merken; de rest zit achter een ontwikkeloptie of is van de eigenaar):
 
@@ -13,33 +13,6 @@ Duur: thuis een kwartier, buiten een half uur tot drie kwartier.
 - Elke spreekpoging in het log (#361).
 
 Geen nieuwe app-versie nodig: sinds v0.6 is in `android/` alleen de versienaam veranderd.
-
-## R. Thuis (een kwartier)
-
-**Android-app na #359** (de beta-app, gewoon geopend)
-
-- [ ] Openen gaat zonder melding of foutscherm; Instellingen toont de versie.
-- [ ] Sessie starten: de melding "Fluistervink" staat in de balk (de service). Stoppen: de melding verdwijnt.
-- [ ] Een uitspraak met de knop: één korte tril.
-- [ ] Instellingen → back-up maken: het bestand komt in Downloads (niet het deelmenu van de browser).
-- [ ] `#uitleg`: de Android-alinea's (trillen met het scherm uit, de melding) staan er, de tekst voor de browser niet.
-- [ ] Developer → log: geen fout bij aanmelden (Play Integrity) of `walk_service_failed`.
-
-**Statistieken en Developer** (#353–#355, de drie punten uit `NOTES.md`)
-
-- [ ] Developer: de oude cijfers staan er als "Onbekend" per functie; de uitspraak van zonet heeft een functie, versie en taal.
-- [ ] Statistieken: trechter en "Blijven ze?" tonen echte installaties.
-- [ ] Anonieme cijfers als tester: in een privévenster de beta openen zonder eigenaarscode, een sessie met één uitspraak stoppen en exporteren. Op Statistieken verschijnt hij onder "Hoe sessies gaan".
-- [ ] Instellingen: de schakelaar voor de anonieme cijfers staat aan en is uit te zetten; `#privacy` noemt ze.
-
-**Nalopen** (#344, #347)
-
-- [ ] Soortveld: typ "corv": de suggesties hebben een eigen kleur, staan boven Opslaan en tonen de wetenschappelijke naam.
-- [ ] Een onzekere waarneming: verander het aantal en sla op. Het vinkje onzeker is weg.
-
-**Wat er nieuw is**
-
-- [ ] `#nieuw` op de beta: de regels van 22 en 23 nov lezen goed voor een tester (geen ontwikkelopties, geen technische termen).
 
 ## S. Buiten (een half uur tot drie kwartier)
 
@@ -66,7 +39,7 @@ Een gewone sessie zoals een tester hem gebruikt: wandeling of fietsrit, knop of 
 - [ ] Een paar uitspraken met het knopje, gesproken bevestiging aan.
 - [ ] Thuis in Developer → log de regels `speak`: `gesproken: true` zonder dat je iets hoorde = geluid onderweg kwijt; `geen oortjes` = de koptelefoon even niet gezien. Uitkomst in `NOTES.md`.
 
-**Als er tijd is:** deel C van `docs/draaiboek-buiten.md` (opnames voor de testset: iemand anders die een vogel noemt, radio, wind, Latijnse namen, beginnerswoorden). Niet nodig voor de release.
+**Als er tijd is:** deel B van `docs/draaiboek-buiten.md` (opnames voor de testset: iemand anders die een vogel noemt, radio, wind, Latijnse namen, beginnerswoorden). Niet nodig voor de release.
 
 **Thuis afmaken**
 
@@ -78,9 +51,8 @@ Een gewone sessie zoals een tester hem gebruikt: wandeling of fietsrit, knop of 
 ## Uitkomst
 
 - Alles groen: `npm run release`, daarbij de changelog inkorten (`docs/omgevingen.md`). Daarna de testers mailen (`docs/lancering.md`, punt 4) en de kwaliteitsronde op de beta.
-- Gaat er iets mis in R (Android na #359): niet releasen, eerst een fix op `main`.
 - Gaat er iets mis met het model in S: kijken of de testset het ook laat zien; een fix in de prompt kan na de release met een volgende `npm run release`, de app hoeft er niet voor opnieuw naar Play.
 
 ## Niet nodig voor deze release
 
-Achter een ontwikkeloptie of alleen in de beta-build, dus testers merken er niets van: oortjesmicrofoon (`draaiboek-buiten.md`, A), sluiterknopje met het scherm uit (B), kinderstem (`draaiboek-thuis.md`, G, begin december), tuintelling en `walk_service_failed` (`draaiboek-telling.md`, B en C), de iOS-proef.
+Achter een ontwikkeloptie of alleen in de beta-build, dus testers merken er niets van: oortjesmicrofoon (`draaiboek-buiten.md`, A), kinderstem (`draaiboek-thuis.md`, G, begin december), tuintelling, de iOS-proef.

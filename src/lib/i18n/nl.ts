@@ -57,12 +57,16 @@ export const nl = {
   'home.toSessions': 'Naar de sessies',
   'home.shareTitle': 'Delen met de ontwikkelaar?',
   'home.shareText':
-    'Fluistervink is nog in ontwikkeling. Mag de app na elke sessie je uitspraken (als tekst), wat de app ervan maakte, je correcties en feedback, en de locaties van je waarnemingen naar de ontwikkelaar sturen? Opnames niet, tenzij je dat bij Instellingen aanzet. Alleen de ontwikkelaar kan het lezen; je kunt het altijd weer uitzetten.',
+    'Fluistervink is nieuw en wordt beter van wat je inspreekt. Mag de app na elke sessie je uitspraken (als tekst), wat de app ervan maakte, je correcties en feedback, en de locaties van je waarnemingen naar de ontwikkelaar sturen? Opnames niet, tenzij je dat bij Instellingen aanzet. Alleen de ontwikkelaar kan het lezen; je kunt het altijd weer uitzetten.',
   'home.privacyLink': 'Meer over privacy',
   'home.shareYes': 'Ja, delen',
   'home.shareNo': 'Liever niet',
   'home.start': 'Begin met vogelen',
   'home.startTuintel': 'Tuintelling: een half uur tellen',
+  'home.telweekendTitle': 'Dit weekend is de Tuinvogeltelling',
+  'home.telweekendText':
+    'Tel een half uur de vogels in je tuin of vanaf je balkon. Daarna staat je lijstje klaar voor het formulier.',
+  'home.telweekendStart': 'Start de tuintelling',
   'home.tip': 'Nog nooit gedaan? Probeer het in de tuin of bij het raam: één merel is genoeg.',
   'home.lastSession': 'Laatste sessie',
 
@@ -98,9 +102,18 @@ export const nl = {
   'welcome.tryLead': 'Zeg iets alsof je buiten staat, bijvoorbeeld',
   'welcome.tryExample': '"drie merels en een zingende roodborst"',
   'welcome.tryNothingSaved': 'Er wordt niets bewaard.',
+  'welcome.tuintelLine': 'Doe je mee aan de Tuinvogeltelling? Fluistervink telt met je mee.',
+  'welcome.tryExampleTuin': '"twee koolmezen en een merel"',
+  'welcome.tuintelTitle': 'Tuintelling',
+  'welcome.tuintelLead':
+    'Een half uur tellen wat er in je tuin zit. Zet de telefoon bij het raam, tik op "Begin met tellen" en zeg hoeveel je er nu ziet, zoals "nu drie koolmezen".',
+  'welcome.tuintelHint':
+    'Na afloop staat per soort het hoogste aantal klaar om over te nemen in het formulier van de Tuinvogeltelling.',
+  'welcome.tuintelStart': 'Start de tuintelling',
+  'welcome.tuintelSkip': 'Gewoon beginnen',
   'welcome.shareTitle': 'Help je mee?',
   'welcome.shareLead':
-    'Fluistervink is nog in ontwikkeling, en het werk van één ontwikkelaar, Stephan. Wat jij inspreekt en verbetert, laat zien waar de app nog misgaat.',
+    'Fluistervink is nieuw, en het werk van één ontwikkelaar, Stephan. Wat jij inspreekt en verbetert, laat zien waar de app nog misgaat.',
   'welcome.shareText':
     'Mag de app na elke sessie je uitspraken (als tekst), wat de app ervan maakte, je correcties en feedback, en de locaties van je waarnemingen naar de ontwikkelaar sturen? Opnames niet, tenzij je dat bij Instellingen aanzet. Alleen de ontwikkelaar kan het lezen, en je kunt het altijd weer uitzetten.',
   'welcome.asking': 'Even wachten…',
@@ -192,13 +205,16 @@ export const nl = {
     'Naast vogels ook zoogdieren, reptielen en amfibieën, dagvlinders en libellen ("twee reeën", "een pad", "een atalanta"). Ze gaan mee naar waarneming.nl; eBird neemt alleen vogels. Uit: de app kiest alleen vogels, wat bij korte namen als "das" of "vos" een vergissing scheelt.',
   'prefs.volumeknop': 'Volumeknop als inspreekknop',
   'prefs.volumeknopHint':
-    'Tijdens een sessie start een druk op de volumeknop (omhoog of omlaag) een opname, en de volgende druk stopt hem. Handig met handschoenen of met de verrekijker in je andere hand; een Bluetooth-knopje voor selfies werkt ook zo. Het volume regel je tijdens een sessie dan niet met die knop. Werkt alleen met de app op het scherm, niet met het scherm uit.',
+    'Tijdens een sessie start een druk op de volumeknop (omhoog of omlaag) een opname, en de volgende druk stopt hem. Handig met handschoenen of met de verrekijker in je andere hand; een Bluetooth-knopje voor selfies werkt ook zo. Het volume regel je tijdens een sessie dan niet met die knop. Werkt met de app op het scherm; met het scherm uit alleen met "Opnemen met het scherm uit".',
   'prefs.gesproken': 'Gesproken bevestiging in de oortjes (proef)',
   'prefs.gesprokenHint':
     'Na het trillen zegt de app wat hij heeft vastgelegd ("houtduif, 6, overvliegend"). Alleen als er oortjes of een headset aan zitten, nooit via de luidspreker. Een podcast gaat even zachter.',
   'prefs.schermAan': 'Scherm aan houden tijdens een sessie',
   'prefs.schermAanHint':
     'Het scherm gaat niet vanzelf uit zolang een sessie loopt. Zo kun je met de volumeknop blijven inspreken zonder te ontgrendelen. Kost meer accu; met de aan-uitknop zet je het scherm gewoon op slot.',
+  'prefs.schermUit': 'Opnemen met het scherm uit',
+  'prefs.schermUitHint':
+    'Tijdens een sessie start en stopt de volumeknop een opname, ook als het scherm uit is en de telefoon in je zak zit; je voelt de tril bij het begin en het eind. Een trektelling telt dan ook door met het scherm uit. Het volume regel je met het scherm uit tijdens een sessie dan niet met die knop. Werkt vanaf de volgende sessie.',
   'prefs.zeldzaamOnzeker': 'Zeldzame soort wordt onzeker',
   'prefs.zeldzaamOnzekerHint':
     'Kiest de app een soort die bij waarneming.nl zeldzaam of zeer zeldzaam is, dan wordt de waarneming onzeker, zodat je hem thuis bovenaan ziet. Meestal is het een verwisseling met een gewone soort.',
@@ -274,6 +290,8 @@ export const nl = {
     'Voor als je op één plek telt en de telefoon naast je legt. Tijdens een sessie verschijnt dan de knop "Trektelling starten": de app luistert daarna door en verwerkt alles wat je zegt, zonder dat je steeds hoeft te drukken. Stilte wordt niet verstuurd.',
   'trektel.hint2':
     'Het scherm blijft aan zolang de telling loopt, dat kost accu. Ga je even naar een andere app (zoals Merlin) of gaat het scherm op slot, dan pauzeert de telling: de microfoon gaat uit (één lange tril) en weer aan als je terugkomt. Na een kwartier weg stopt de telling (twee lange trillen), en na vier uur stopt hij vanzelf.',
+  'trektel.hintScreenOff':
+    'Staat "Opnemen met het scherm uit" aan (bij Bediening in het veld), dan telt de trektelling ook door met het scherm op slot; alleen een andere app die de microfoon gebruikt, pauzeert hem dan.',
   'trektel.hint3':
     'Per dag verwerkt de app hooguit 5 uur spraak. Daarboven stopt de telling; wat je daarna nog inspreekt, blijft bewaard en kun je de volgende dag met "Opnieuw" laten verwerken.',
   // Sessiescherm (ActiveSession.svelte)

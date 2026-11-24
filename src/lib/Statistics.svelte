@@ -18,6 +18,7 @@
     type SummaryRow,
   } from './stats';
   import { dayOf } from './costs';
+  import { asOwner, ownInstalls } from './testers';
 
   const DAYS = 30;
   /** Grafiek en tabel even lang, zodat elke week in de grafiek een rij heeft */
@@ -53,7 +54,10 @@
     .then((result) => (installs = result))
     .catch(() => (installs = undefined));
 
-  let counted = $derived((rows ?? []).filter((r) => withOwner || r.tester !== 'eigenaar'));
+  // Installaties van de eigenaar zelf tellen als de eigenaar (testers.ts)
+  let own = $derived(ownInstalls(installs ?? []));
+  let allRows = $derived(asOwner(rows ?? [], own));
+  let counted = $derived(allRows.filter((r) => withOwner || r.tester !== 'eigenaar'));
   let days = $derived(perDay(counted, DAYS));
   let weeks = $derived(perWeek(counted, WEEKS));
   /** Laatste weken van eerste gebruik; ouder past niet op een telefoon */
@@ -74,25 +78,49 @@
   let steps = $derived(
     installs
       ? funnel(
-          rows ?? [],
-          installs.map((t) => t.name),
+          allRows,
+          installs.filter((t) => !t.owner).map((t) => t.name),
         )
       : undefined,
   );
-  /** Actief deze week, per manier van aanmelden (Play = Android-app) */
+  /**
+   * Actief deze week, per manier van aanmelden (Play = Android-app), en in de
+   * browser per soort toestel: hoeveel mensen een iPhone gebruiken.
+   */
   let byVia = $derived.by(() => {
     if (!installs) return undefined;
-    const via = new Map(installs.map((t) => [t.name, t.via]));
+    const byName = new Map(installs.map((t) => [t.name, t]));
     const thisWeek = weekOf(dayOf(new Date()));
     const active = new Set(counted.filter((r) => weekOf(r.day) === thisWeek).map((r) => r.tester));
     let play = 0;
     let browser = 0;
+    const devices = { ios: 0, android: 0, computer: 0, unknown: 0 };
     for (const tester of active) {
-      if (via.get(tester) === 'play') play++;
-      else if (via.get(tester) === 'turnstile') browser++;
+      const install = byName.get(tester);
+      if (install?.via === 'play') play++;
+      else if (install?.via === 'turnstile') {
+        browser++;
+        devices[install.device ?? 'unknown']++;
+      }
     }
-    return { play, browser };
+    return { play, browser, devices };
   });
+  /** "3 iPhone, 1 Android", alleen wat er is */
+  let browserDevices = $derived(
+    byVia
+      ? (
+          [
+            ['ios', 'iPhone'],
+            ['android', 'Android'],
+            ['computer', 'computer'],
+            ['unknown', 'onbekend'],
+          ] as const
+        )
+          .filter(([key]) => byVia.devices[key])
+          .map(([key, label]) => `${byVia.devices[key]} ${label}`)
+          .join(', ')
+      : '',
+  );
   const percent = (part: number, whole: number) =>
     whole ? `${Math.round((part / whole) * 100)}%` : '–';
   let maxUsers = $derived(Math.max(1, ...days.map((d) => d.users)));
@@ -172,7 +200,9 @@
       <p class="muted hint">
         Vorige week {weeks[1].active} actief, waarvan {weeks[0].returning} deze week terug.
         {#if byVia}
-          Deze week {byVia.play} in de Android-app en {byVia.browser} in de browser.
+          Deze week {byVia.play} in de Android-app en {byVia.browser} in de browser{browserDevices
+            ? ` (${browserDevices})`
+            : ''}.
         {/if}
       </p>
     </div>

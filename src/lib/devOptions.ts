@@ -5,8 +5,11 @@
 
 /**
  * - `oortjesMicrofoon`: de microfoon van Bluetooth-oortjes (microphone.ts)
- * - `schermUit`: opnemen met het scherm uit, met de volumeknop of de knop op
- *   de oortjes (proef, docs/roadmap-android.md stap 3)
+ * - `oortjesKnop`: met de keuze "Opnemen met het scherm uit" (`schermUit` in
+ *   preferences.ts, tot v0.7 een ontwikkeloptie) ook de knop op de oortjes (claimt de
+ *   mediaknop met een kort stil geluid; los sinds 24 nov, omdat dat bij een
+ *   koptelefoon met twee apparaten muziek en de gesproken bevestiging leek
+ *   weg te nemen)
  * - `english`: de app in het Engels, scherm én inspreken (docs/plan-engels.md,
  *   stap 3); aan- of uitzetten laadt de app opnieuw (i18n/index.ts)
  * - `spanje`: de soortenlijst van Spanje in plaats van die van Nederland
@@ -21,7 +24,7 @@
  *   insects.ts, docs/plan-insecten.md, laag 1)
  */
 export type DevOption =
-  'oortjesMicrofoon' | 'schermUit' | 'english' | 'spanje' | 'tuintelling' | 'insecten';
+  'oortjesMicrofoon' | 'oortjesKnop' | 'english' | 'spanje' | 'tuintelling' | 'insecten';
 
 const PREFIX = 'fluistervink.dev.';
 

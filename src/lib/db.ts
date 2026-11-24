@@ -78,7 +78,7 @@ export interface Session {
 }
 
 /**
- * Antwoorden van de gebruiker bij een sessie als checklist (docs/plan-ebird.md).
+ * Antwoorden van de gebruiker bij een sessie als checklist (docs/archief/plan-ebird.md).
  * Los van `Effort`, dat de app zelf meet: dit vult de gebruiker in, ook bij
  * sessies van vóór de inspanning. "Alles genoteerd" is later ook bruikbaar
  * voor waarneming.nl (`all_species_counted`), dus niet alleen voor eBird.
@@ -99,7 +99,7 @@ export interface Checklist {
 export type EbirdProtocol = 'Stationary' | 'Traveling' | 'Incidental';
 
 /**
- * Inspanning van een sessie, voor een eBird-checklist (docs/plan-ebird.md).
+ * Inspanning van een sessie, voor een eBird-checklist (docs/archief/plan-ebird.md).
  * Geen route: alleen de opgetelde afstand en het laatste ankerpunt.
  */
 export interface Effort {
@@ -350,7 +350,7 @@ export interface Observation {
   /**
    * Zichtbaarheid op waarneming.nl (ID uit hun lijst `obscurity`): 1 of 5 =
    * plek vervaagd tot 1 of 5 km, 9 = verborgen. Leeg of 0 = openbaar. Zie
-   * docs/plan-afschermen.md.
+   * docs/archief/plan-afschermen.md.
    */
   obscurity?: Obscurity;
   /** Onder embargo tot deze datum (YYYY-MM-DD, zoals de import van waarneming.nl hem wil) */

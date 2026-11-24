@@ -33,7 +33,7 @@ Krap, want de telling valt vlak na de lancering in Play (`docs/lancering.md`, pr
 | 29–31 jan | de telling; melding in de app op vrijdag |
 | feb | terugblik, cijfers, wat bleef hangen |
 
-Voorwaarde: Fluistervink staat half januari openbaar in Play. Lukt dat niet, dan alleen de PWA (zie Promotie).
+Liefst staat Fluistervink half januari openbaar in Play. Lukt dat niet, dan gaat de telling door met alleen de PWA (besloten 24 nov; zie Promotie).
 
 ## Uitzoeken
 
@@ -56,11 +56,13 @@ Voorwaarde: Fluistervink staat half januari openbaar in Play. Lukt dat niet, dan
    - **Developer:** de grootste winst is een link die het formulier vooraf invult (soort-ID's en aantallen in de URL; adres, e-mail en insturen blijven bij de gebruiker). Verder: de soort-ID's en de volgorde van de vaste soorten in 2027, of er een testomgeving is, en of een verwijzingscode voor Fluistervink kan.
    - **Social media manager:** of en hoe ze Fluistervink willen noemen (bericht, filmpje, de week ervoor), welke woorden wel en niet, #tuinvogeltelling, en wanneer hun planning voor januari vastligt.
 
+   **Stand (24 nov):** vooralsnog geen samenwerking. Hun systeem ondersteunt invoer van buiten nog niet, en in Fluistervink vul je de gegevens over je tuin niet in (die blijven in hun formulier). Niet aandringen. In de week van 30 nov nog een gesprek met de developer, vooral om te horen hoe het formulier in 2027 werkt. De tuintelmodus hangt niet van hen af: tellen in Fluistervink, overtypen in hun formulier (punt 2 en 8). Zonder hun akkoord geldt punt 4: hun naam alleen beschrijvend ("voer in bij de Tuinvogeltelling"), geen logo of huisstijl, geen verwijzingscode.
+
 ### In de app
 
 5. **Wat een aantal betekent.** Bij de tuintelling betekent "vijf koolmezen" *nu vijf tegelijk*, niet *vijf erbij*. De belangrijkste ontwerpkeuze. Voorstel: de uitspraken blijven gewone waarnemingen (zodat nalopen, kaart en export werken), en het tuintelresultaat rekent per soort het **maximum** over de waarnemingen van die soort. Open vragen:
    - Wat doen "nog drie erbij" en "die laatste weg" dan? (Waarschijnlijk zoals nu: ze passen één waarneming aan, het maximum volgt vanzelf.)
-   - Moet het model weten dat het een tuintelling is? Bv. "weer twee merels" is dan geen correctie op de vorige maar een nieuwe momentopname. Met de testset meten, liefst zonder promptwijziging; anders een korte regel in beide prompts (`prompt.ts`, `promptEn.ts`).
+   - Moet het model weten dat het een tuintelling is? Ja, maar alleen voor minder of weg (gemeten 24 nov, zie Naar iedereen, stap 2): een eigen regel in beide prompts.
    - Wat gaat er mee naar waarneming.nl: elke waarneming los (zoals nu), of één per soort met het maximum?
 6. **Overvliegers**: blijven in de lijst (het model zet al "overvliegend"), maar tellen niet mee in het tuintelresultaat, met een korte uitleg in het overzicht ("3 overvliegend, telt niet mee").
 7. **Half uur**: het half uur begint pas als je begint met tellen (knop "Begin met tellen"), niet bij het starten van de sessie: wie de telefoon klaarzet, begint vaak pas bij de eerste vogel (proeftelling 22 nov). Een zichtbare klok, een tril (en de gesproken bevestiging, als die aanstaat) bij 5 minuten voor het eind en bij het eind. Daarna stopt de telling en de sessie vanzelf; wat nog in de wachtrij zit, wordt gewoon verwerkt. De klok loopt op de wandklok, ook als je even stopt met luisteren.
@@ -108,11 +110,23 @@ Voorwaarde: Fluistervink staat half januari openbaar in Play. Lukt dat niet, dan
 - Niet automatisch invoeren bij mijntuinvogeltelling.nl als er geen import of API is (geen formulieren invullen namens de gebruiker).
 - Geen pushberichten of e-mail (er zijn geen accounts).
 
+## Naar iedereen (besloten 24 nov)
+
+De tuintelmodus komt eind januari voor iedereen, ook zonder samenwerking met Vogelbescherming (punt 4): tellen in Fluistervink, overtypen in hun formulier. Wat daarvoor nog moet, in volgorde:
+
+1. **Woorden van beginners meten** (punt 10): opnames van "duif", "mus", "mees", "kraai", "specht" en de verkleinvormen (`docs/draaiboek-buiten.md`, B), door de testset. Een promptregel alleen als de testset het laat zien, in beide prompts.
+2. **Weet het model dat het een tuintelling is?** (punt 5). **Gemeten op 24 nov:** 14 tuintelzinnen met eerdere waarnemingen als context, 8 keer door het model (`claude-haiku-5-5`, prompt zonder iets over de tuintelling), beoordeeld op het hoogste aantal per soort zoals de kaart Tuintelling het rekent: 104/112. Goed, elke keer: "weer twee merels" en "weer een merel" (nieuwe waarneming, maximum blijft), "nu zitten er vijf koolmezen" en "er zitten nu drie merels" (5 en 3), "er komen nog twee koolmezen bij" en "twee vinken erbij" (3 → 5, 1 → 3), "zes mussen" na vier (6), "de merel is weggevlogen" en "de koolmezen zijn allemaal weg" (nooit verwijderd, nooit overvliegend gemaakt; hooguit een opmerking "weggevlogen"), "die ekster is weg, nu een gaai". **Fout, 8 van de 8 keer: "nu nog maar één merel" na twee merels** verlaagt de waarneming naar 1, zodat het maximum van 2 verloren gaat. In de app is dat niet te onderscheiden van een echte correctie ("nee, één merel", een verstaanfout), dus de oplossing hoort in de prompt: een korte regel bij tuintelstukken, dat minder of weg geen correctie is (zoals de trektelling een eigen zin krijgt, `words.trektel` in `interpret.ts`), in beide prompts; daarna meten dat "nee, één merel" in een tuintelling nog wel verlaagt. Proefbestand en beoordeling buiten git in `testset/tuintelproef/` (`maak.mjs`, `beoordeel.mjs`; een eigen score, want de testset kent één label per uitspraak). **Opgelost (#375, gemerged 24 nov):** elke uitspraak in een tuintelling krijgt de zin "Dit is een uitspraak uit een tuintelling." (`countKind` in `interpret.ts`, ook met de gewone knop), en de systeemprompt een regel bij Wat je doet: een aantal is hoeveel er nu zijn, minder → een nieuwe waarneming, weg → niets, een echte correctie gaat gewoon. Gemeten met 4 extra gevallen ("nee, één merel", "nee, dat was een zanglijster", "die laatste weg", "er zijn nog twee koolmezen over"), 8 keer: 143/144 (de ene fout: "weer een pimpelmees" telde één keer op, ruis). Een eerdere versie van de regel met "dat was een zanglijster" als voorbeeld gaf bij die correctie in 3–4 van de 8 een opmerking ("Correctie", "Zanglijster"), die naar waarneming.nl zou gaan; zonder dat voorbeeld 0 van de 8. De tuintelling van 22 nov (`testset/telling-22nov.json`, 3 keer): gelijk aan main (22/36 tuintelling, 30/45 tegen 28/45 de rest); de ene zin die achteruit leek te gaan, geeft nu ter plaatse in plaats van het verouderde label overvliegend.
+3. ~~**Welkom en uitleg**~~ (punt 11), #377, gemerged 24 nov: als de tuintelling kan, noemt de eerste stap van het welkom hem, krijgt Probeer het eens een tuinvoorbeeld ("twee koolmezen en een merel"), en brengt een laatste stap je met **Start de tuintelling** meteen in de telling (of **Gewoon beginnen**). `#uitleg` heeft een stuk Tuintelling, NL en EN.
+4. **De knop alleen rond het telweekend** (punt 12), en de melding op vrijdag: #379, gemerged 24 nov. `tuintelAvailable` in `tuintelling.ts`: met de ontwikkeloptie altijd; voor iedereen alleen met `TUINTEL_FOR_EVERYONE`, van vrijdag 22 jan tot en met zondag 31 jan (`TELWEEKEND`, ieder jaar bijwerken). Van vrijdag 29 tot en met zondag een melding op het startscherm met de knop erin.
+5. **Voor iedereen**, begin januari: `TUINTEL_FOR_EVERYONE` op `true` (webcode, geen nieuwe app-versie; de knop verschijnt dan vanzelf op 22 jan), met een regel in de changelog; daarna de pagina `/tuintelling` zonder `noindex`, het filmpje en de zin in Play.
+6. **Plafonds en kosten** (punt 13): rond 22 jan de limieten bij OpenAI en Anthropic ophogen; aanmelden onder piekbelasting nalopen.
+7. **Bij het openen van het formulier** (januari): de volgorde van de vaste soorten in hun web-app vergelijken met de kaart Tuintelling.
+
 ## Open beslissingen voor de eigenaar
 
-- Gaat de tuintelling door als de app half januari nog niet openbaar in Play staat (alleen de PWA)?
-- Vogelbescherming vooraf benaderen?
-- Budget voor het telweekend (plafonds).
+- ~~Gaat de tuintelling door als de app half januari nog niet openbaar in Play staat (alleen de PWA)?~~ Ja (24 nov): dan alleen de PWA.
+- ~~Vogelbescherming vooraf benaderen?~~ Gedaan (24 nov): vooralsnog geen samenwerking, zie punt 4.
+- ~~Budget voor het telweekend (plafonds)~~: akkoord (24 nov), tot ~$200 bij 1000 tellers (punt 13).
 
 ## Gebouwd (21 nov, ontwikkeloptie `tuintelling`)
 
@@ -123,4 +137,5 @@ Voorwaarde: Fluistervink staat half januari openbaar in Play. Lukt dat niet, dan
 - Na afloop "Nog iets vergeten?" in het resultaat (22 nov): "Nog iets inspreken" zet de sessie voort met de gewone knop, zonder klok; in de kop "Nog iets vergeten? Spreek het in en tik op Klaar", en Klaar (zonder vraag) gaat terug naar het resultaat. Het telt gewoon mee in het hoogste aantal.
 - Bij de sessie de kaart Tuintelling (`TuintelResult.svelte`, `tuintelling.ts`) in plaats van de samenvatting: datum en begintijd (van het tellen), de vaste soorten van het formulier in hun volgorde met het hoogste aantal, daarna "zelf toevoegen", verzamelsoorten als waarschuwing, overvliegers apart (tellen niet mee), Kopiëren en een knop naar het telformulier. Andere dieren en uitgevinkte waarnemingen tellen niet mee.
 - De export naar waarneming.nl en eBird staat na een tuintelling ingeklapt (22 nov): één kaart "Ook doorgeven aan waarneming.nl of eBird?" met "Laat zien hoe" (`PastSession.svelte`). Open voor wie al exporteert (eBird aan, ooit een sessie geëxporteerd, of eerder opengeklapt). Een niet-geëxporteerde tuintelling krijgt geen "niet geëxporteerd", geen herinnering, en klapt een week na het stoppen weg bij Vorige sessies (`notForExport` in `sessions.ts`).
-- Nog niet: het model weet niet dat het een tuintelling is (punt 5, eerst meten); welkom en uitleg (punt 11); de knop alleen rond het telweekend (punt 12).
+- Het model weet dat het een tuintelling is (24 nov): minder is geen correctie (Naar iedereen, stap 2).
+- Welkom en uitleg (#377, 24 nov); de knop alleen rond het telweekend en de melding (#379).

@@ -6,7 +6,7 @@
 import type { SummaryRow } from './stats';
 import { language, t } from './i18n';
 import type { Billing, UsageRow } from './costs';
-import { forgetInstallToken, getInstallToken, register } from './install';
+import { existingInstallName, forgetInstallToken, getInstallToken, register } from './install';
 import type { ActivityRow } from './stats';
 
 /** Naam die de proxy geeft bij de toegangscode van de eigenaar. */
@@ -212,7 +212,27 @@ function upstreamDuration(response: Response): number | undefined {
 export async function ping(): Promise<string | undefined> {
   const { tester } = await request<{ tester?: string }>('/api/ping');
   if (tester) localStorage.setItem(TESTER_KEY, tester);
+  if (tester === OWNER) void claimOwnInstall();
   return tester;
+}
+
+const CLAIMED_KEY = 'fluistervink.installClaimed';
+
+/**
+ * De eigenaar op een toestel dat zich eerst zonder code aanmeldde (elke nieuwe
+ * installatie doet dat): meldt die installatie één keer als de zijne, zodat
+ * hij in Statistieken niet als gebruiker meetelt. Mislukt het, dan de volgende
+ * keer opnieuw; niets om te melden.
+ */
+export async function claimOwnInstall(): Promise<void> {
+  const name = existingInstallName();
+  if (!name || getTester() !== OWNER || localStorage.getItem(CLAIMED_KEY) === name) return;
+  try {
+    await markOwnInstall(name, true);
+    localStorage.setItem(CLAIMED_KEY, name);
+  } catch {
+    // Volgende keer
+  }
 }
 
 export interface TranscribeOptions {
@@ -351,9 +371,13 @@ export interface Tester {
   invitedAt?: number;
   /** Hoe een installatie bewees dat hij echt is */
   via?: 'play' | 'turnstile';
+  /** Soort toestel (worker/install.ts, deviceOf); ontbreekt bij oude installaties tot hun volgende verzoek */
+  device?: 'ios' | 'android' | 'computer';
   blocked?: boolean;
   /** Naam die een installatie zelf opgaf */
   displayName?: string;
+  /** Een installatie van de eigenaar zelf: telt mee als de eigenaar */
+  owner?: boolean;
   /** Laatste dag met een uitspraak ("2026-11-03"), ook zonder delen; uit het verbruik */
   lastUsed?: string;
   /** Wat de tester gedeeld heeft; leeg als er (nog) niets gedeeld is */
@@ -378,6 +402,22 @@ export async function removeTester(name: string): Promise<void> {
 /** Een afgesloten installatie uit de lijst halen; hij blijft afgesloten. */
 export async function hideTester(name: string): Promise<void> {
   await request(`/api/testers?name=${encodeURIComponent(name)}&hide=1`, { method: 'DELETE' });
+}
+
+/**
+ * Installaties die nooit iets deden uit de lijst halen (`isUnused`); ze blijven
+ * werken. Geeft de namen van wat opgeruimd is.
+ */
+export async function cleanupTesters(): Promise<string[]> {
+  return (await request<{ cleaned: string[] }>('/api/testers?cleanup=1', { method: 'POST' }))
+    .cleaned;
+}
+
+/** Een installatie van de eigenaar zelf, of (`false`) toch niet. */
+export async function markOwnInstall(name: string, owner: boolean): Promise<void> {
+  await request(`/api/testers?name=${encodeURIComponent(name)}&owner=${owner ? 1 : 0}`, {
+    method: 'PATCH',
+  });
 }
 
 /** Feedback van alle testers, zoals de proxy hem heeft (alleen voor de eigenaar). */

@@ -91,11 +91,11 @@ Wat de proeven lieten zien (18 nov, Sony WH-1000XM5, Pocket Casts, Fairphone 5 m
 3. **Na elke druk even "gepauzeerd" melden (0.883: 0,3 s, 0.885: 1,5 s), zodat de oortjes weer "pauzeren" sturen:** hielp niet. Bluetooth gaf de melding niet eens door, en de XM5 wisselt toch zelf af.
 4. Een langere stop-tril (400 ms) loste niets op; terug naar 200 ms.
 
-**Besloten (18 nov):** niet verder. Het doorlopende stille geluid, het uitlezen van spelers van andere apps (niet in de openbare API) en het melden van "gepauzeerd" zijn er weer uit; wat blijft is de eenvoudige versie hierboven. Dat werkt met oortjes die steeds dezelfde toets sturen (bedrade headset, sommige oortjes) als er geen podcast speelt; met de XM5 maar om en om. Andere oortjes zijn alleen met logcat uit te zoeken. **Voor een knop op het stuur (Maarten): een Bluetooth-sluiterknopje**, dat een volumetoets stuurt en dus via de volumeknop met het scherm uit gaat, waar dit filter niet speelt. Eerst zelf proberen met het scherm uit.
+**Besloten (18 nov):** niet verder. Het doorlopende stille geluid, het uitlezen van spelers van andere apps (niet in de openbare API) en het melden van "gepauzeerd" zijn er weer uit; wat blijft is de eenvoudige versie hierboven. Dat werkt met oortjes die steeds dezelfde toets sturen (bedrade headset, sommige oortjes) als er geen podcast speelt; met de XM5 maar om en om. Andere oortjes zijn alleen met logcat uit te zoeken. Wel te voorspellen (24 nov, niet gemeten): de knop gaat via AVRCP, dat alleen losse "afspelen" en "pauzeren" kent; de oortjes kiezen zelf welke. Oortjes die afgaan op wat de telefoon meldt, sturen zonder podcast steeds "afspelen" en zouden goed moeten werken; oortjes die zelf afwisselen (zoals de XM5) werken half. Met een podcast aan houdt de podcast de knop bij vrijwel alle oortjes. Een bedrade headset (`HEADSETHOOK`, geen Bluetooth) werkt naar verwachting altijd. Uitsluitsel geeft één wandeling met andere oortjes: elke druk staat in `screen_off_mediaknop`. **Voor een knop op het stuur (Maarten): een Bluetooth-sluiterknopje**, dat een volumetoets stuurt en dus via de volumeknop met het scherm uit gaat, waar dit filter niet speelt. Eerst zelf proberen met het scherm uit.
 
 Logcat met draadloze foutopsporing: verbinding valt weg zodra het scherm uitgaat; het log daarna ophalen met `adb logcat -b all -d`, en vooraf de buffer vergroten (`adb logcat -G 16M`), want Bluetooth vult de gewone in ±1,5 minuut.
 
-**Trektelling met het scherm uit (18 nov, proef in de beta):** met de ontwikkeloptie aan en de service met het type microfoon neemt de service de hele trektelling op en knipt hij zelf, ook met het scherm aan (geen overdracht, dus geen gat of dubbele opname). Geen Wake Lock meer, vergrendelen pauzeert niet. Waarom knippen in Java en hoe het werkt: `docs/plan-trektelmodus.md`, punt 4. Gemeten op 18 nov: de opname is in orde, maar Chromium zet de webcode 60 s na het vergrendelen stil, zodat de stukken pas bij het ontgrendelen verwerkt worden (niets verloren, wel geen tril). Nog in het veld na te gaan: een kwartier met het scherm uit (komen alle stukken door, wat kost het aan accu), scherm tussendoor aan, gebeld worden, Merlin openen.
+**Trektelling met het scherm uit (18 nov, proef in de beta):** met de ontwikkeloptie aan en de service met het type microfoon neemt de service de hele trektelling op en knipt hij zelf, ook met het scherm aan (geen overdracht, dus geen gat of dubbele opname). Geen Wake Lock meer, vergrendelen pauzeert niet. Waarom knippen in Java en hoe het werkt: `docs/plan-trektelmodus.md`, punt 4. Gemeten op 18 nov: de opname is in orde, maar Chromium zet de webcode 60 s na het vergrendelen stil, zodat de stukken pas bij het ontgrendelen verwerkt worden (niets verloren, wel geen tril). Opgelost met de proef van 20 nov (de WebView blijft zich in beeld melden): op 22 nov kwamen in drie tellingen met het scherm uit alle stukken meteen binnen en werden ze binnen 4–15 s verwerkt, met tril; accu ruwweg 7–14% per uur (`docs/plan-trektelmodus.md`, punt 4). Nog in het veld na te gaan: een lange telling voor de accu, gebeld worden, Merlin openen.
 
 ## Stap 4: de microfoon delen
 
@@ -134,7 +134,7 @@ Uit de voorstellen van 8 nov, nog open; kunnen tussen de stappen door, want ze v
 | --- | --- | --- | --- |
 | 1 | Volumeknop en sluiterknopje als inspreekknop, snelkoppeling | ja, klein | nu, tijdens de gesloten test |
 | 2 | Gesproken bevestiging | ja, klein | na stap 1 |
-| 3 | Opnemen met het scherm uit, knop op de oortjes, microfoonkeuze | ja, groot | proef in de beta-build (interne test) sinds 18 nov; in de stabiele pas met de verklaring bij Google |
+| 3 | Opnemen met het scherm uit, knop op de oortjes, microfoonkeuze | ja, groot | proef in de beta-build sinds 18 nov; scherm uit naar iedereen met v0.7 (keuze, standaard uit), knop op de oortjes nog een ontwikkeloptie |
 | 4 | Microfoon delen met Merlin | ja | in de trektelling met het scherm uit als proef sinds 18 nov |
 | 5 | Wake word | ja, groot | na de lancering, eerst een proef |
 | – | iPhone-app | – | na de lancering, `docs/plan-ios.md` |
@@ -145,7 +145,7 @@ Elke stap is één à twee PR's en gaat eerst op een wandeling mee voordat de vo
 
 1. Volumeknop: **tikken** om te starten en te stoppen. Of dat prettig werkt, merken we in het veld.
 2. Gesproken bevestiging: **alleen met oortjes**, nooit via de luidspreker.
-3. Stap 3 (opnemen met het scherm uit) **in de stabiele app pas na de productierelease**; als proef al in de beta (punt 6).
+3. Stap 3 (opnemen met het scherm uit) **in de stabiele app pas na de productierelease**; als proef al in de beta (punt 6). Bijgesteld 24 nov: met v0.7 naar iedereen, als keuze bij Instellingen (standaard uit), met de productierelease; de knop op de oortjes nog niet.
 4. Wake word: **open source** (openWakeWord), geen licentie.
 
 5. **Alleen voor de eigenaar tot het bevalt:** nieuwe functies uit deze roadmap komen achter een ontwikkeloptie die alleen met de code van de eigenaar zichtbaar is (zoals Developer, `isOwner` in `App.svelte`). Uitzondering: de volumeknop, die is voor iedereen (eerst standaard uit, sinds 16 nov standaard aan). De gesproken bevestiging is sinds 16 nov een proef voor iedereen, standaard uit. Native delen gaan gewoon mee in de Play-versie en doen bij anderen niets.

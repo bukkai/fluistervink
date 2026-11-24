@@ -2,7 +2,7 @@ import { db, type Effort, type Position, type Session } from './db';
 import { distanceMeters } from './geo';
 
 // Inspanning van een sessie: hoe lang en hoe ver er gevogeld is, voor een
-// eBird-checklist (docs/plan-ebird.md). De afstand werkt als een
+// eBird-checklist (docs/archief/plan-ebird.md). De afstand werkt als een
 // kilometerteller op de GPS die tijdens een sessie toch al aanstaat: de app
 // telt alleen op, en bewaart geen route. Alleen de laatst meegetelde meting
 // (het ankerpunt) staat bij de lopende sessie, zodat een herstart van de app

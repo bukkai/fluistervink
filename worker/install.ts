@@ -35,14 +35,27 @@ export interface InstallRecord {
   registeredAt: number;
   /** Hoe de app bewees dat hij echt is */
   via: 'play' | 'turnstile';
+  /**
+   * Soort toestel, uit de User-Agent (deviceOf). Ontbreekt bij installaties
+   * van vóór 23 nov 2026 tot hun eerstvolgende verzoek (fillDevice).
+   */
+  device?: Device;
   blocked?: boolean;
   /**
-   * Afgesloten én uit de lijst op Developer gehaald. Het record blijft wel
-   * staan: zonder zou het token van die installatie weer werken.
+   * Uit de lijst op Developer gehaald. Afgesloten: voorgoed (het record blijft
+   * wel staan, zonder zou het token weer werken). Niet afgesloten: opgeruimd
+   * omdat hij nooit iets deed (`isUnused`); hij werkt nog en staat weer in de
+   * lijst zodra hij iets doet.
    */
   hidden?: boolean;
   /** Naam die de gebruiker zelf opgaf (Instellingen), zodat de eigenaar weet wie het is */
   displayName?: string;
+  /**
+   * Een installatie van de eigenaar zelf (aangemeld voordat de code erin
+   * stond): telt in Statistieken en de kosten als de eigenaar, niet als
+   * gebruiker.
+   */
+  owner?: boolean;
 }
 
 /** Een opgegeven naam: hooguit 40 tekens, geen stuurtekens. */
@@ -99,12 +112,18 @@ async function hmac(text: string, secret: string): Promise<string> {
   return base64url(new Uint8Array(signature));
 }
 
-export async function getInstall(kv: KVNamespace, id: string): Promise<InstallRecord | null> {
+export async function getInstall(
+  kv: KVNamespace,
+  id: string,
+  { fresh = false } = {},
+): Promise<InstallRecord | null> {
   // Een minuut in de cache van de edge: dit gebeurt bij elk verzoek, en
-  // afsluiten hoeft niet op de seconde
-  const { metadata } = await kv.getWithMetadata<InstallRecord>(KEY_PREFIX + id, {
-    cacheTtl: 60,
-  });
+  // afsluiten hoeft niet op de seconde. Vóór het bijschrijven zonder cache,
+  // zodat een net afgesloten installatie niet weer opengaat.
+  const { metadata } = await kv.getWithMetadata<InstallRecord>(
+    KEY_PREFIX + id,
+    fresh ? undefined : { cacheTtl: 60 },
+  );
   return metadata;
 }
 
@@ -112,9 +131,36 @@ export async function putInstall(kv: KVNamespace, id: string, record: InstallRec
   await kv.put(KEY_PREFIX + id, '', { metadata: record });
 }
 
+/** Soort toestel, voor Statistieken: hoeveel mensen een iPhone gebruiken. */
+export type Device = 'ios' | 'android' | 'computer';
+
+/**
+ * Het soort toestel uit de User-Agent, grof: meer bewaart de proxy niet. Een
+ * iPad geeft zich in Safari uit als Mac en telt dan als computer.
+ */
+export function deviceOf(userAgent: string | null): Device | undefined {
+  if (!userAgent) return undefined;
+  if (/iPhone|iPad|iPod/.test(userAgent)) return 'ios';
+  if (/Android/.test(userAgent)) return 'android';
+  return 'computer';
+}
+
+/**
+ * Zet het toestel bij een installatie die het nog niet heeft (aangemeld
+ * vóór 23 nov 2026). Leest eerst zonder cache, zodat de rest van het record
+ * (afgesloten, naam) niet met een oude versie wordt overschreven.
+ */
+export async function fillDevice(kv: KVNamespace, id: string, device: Device): Promise<void> {
+  const record = await getInstall(kv, id, { fresh: true });
+  if (!record || record.device || record.blocked) return;
+  await putInstall(kv, id, { ...record, device });
+}
+
 /**
  * De installatie met deze naam ("app-3f9a2b1c"), via het begin van het id:
- * één verzoek, zonder alle installaties langs te gaan.
+ * zonder alle installaties langs te gaan. `list` kan tot een minuut achterlopen,
+ * dus de gegevens zelf daarna vers: anders zet een tweede wijziging kort na de
+ * eerste die eerste terug (bv. "van mij" en daarna afsluiten).
  */
 export async function findInstall(
   kv: KVNamespace,
@@ -122,7 +168,10 @@ export async function findInstall(
 ): Promise<(InstallRecord & { id: string }) | null> {
   const page = await kv.list<InstallRecord>({ prefix: KEY_PREFIX + name.slice('app-'.length) });
   const key = page.keys.find((k) => k.metadata?.name === name);
-  return key?.metadata ? { ...key.metadata, id: key.name.slice(KEY_PREFIX.length) } : null;
+  if (!key) return null;
+  const id = key.name.slice(KEY_PREFIX.length);
+  const record = await getInstall(kv, id, { fresh: true });
+  return record ? { ...record, id } : null;
 }
 
 /** Alle installaties, met hun id. */

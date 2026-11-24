@@ -9,3 +9,6 @@ worker/worker-configuration.d.ts
 
 # Android-project (Capacitor), deels gegenereerd
 android/
+
+# iOS-project (Capacitor), deels gegenereerd
+ios/
