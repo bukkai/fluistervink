@@ -422,6 +422,7 @@
       askShare={askShare && !installProblem}
       onshare={chooseShare}
       onclose={() => (welcomeClosed = true)}
+      ontuintel={tuintelOn ? () => start({ tuintelling: true }) : undefined}
     />
   {:else}
     <Home
