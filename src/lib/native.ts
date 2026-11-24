@@ -455,6 +455,11 @@ export interface ScreenOffOptions {
    * Chromium de pagina met het scherm uit niet stilzet
    */
   zichtbaar?: boolean;
+  /**
+   * Ook de knop op de oortjes start en stopt een opname (ontwikkeloptie
+   * `oortjesKnop`). Een app-versie van vóór 24 nov kent dit niet en doet het altijd.
+   */
+  oortjesKnop?: boolean;
 }
 
 interface SchermUitPlugin {
