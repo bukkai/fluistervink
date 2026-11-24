@@ -117,13 +117,13 @@ describe('context en bericht in het Engels', () => {
   });
 
   it('zegt in het Engels dat het een stuk uit een trektelling is', () => {
-    expect(userMessage('(no observations yet)', 'six Woodpigeons', true, 'en')).toBe(
+    expect(userMessage('(no observations yet)', 'six Woodpigeons', 'trektel', 'en')).toBe(
       'This is a chunk from a migration count.\n\nRecent observations in this session (#1 = most recent):\n(no observations yet)\n\nVoice note: "six Woodpigeons"',
     );
   });
 
   it('laat het Nederlands zoals het was', () => {
-    expect(userMessage('(nog geen waarnemingen)', 'zes houtduiven', false)).toBe(
+    expect(userMessage('(nog geen waarnemingen)', 'zes houtduiven', undefined)).toBe(
       'Recente waarnemingen in deze sessie (#1 = meest recent):\n(nog geen waarnemingen)\n\nUitspraak: "zes houtduiven"',
     );
   });
