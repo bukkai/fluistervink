@@ -56,6 +56,8 @@ Voorwaarde: Fluistervink staat half januari openbaar in Play. Lukt dat niet, dan
    - **Developer:** de grootste winst is een link die het formulier vooraf invult (soort-ID's en aantallen in de URL; adres, e-mail en insturen blijven bij de gebruiker). Verder: de soort-ID's en de volgorde van de vaste soorten in 2027, of er een testomgeving is, en of een verwijzingscode voor Fluistervink kan.
    - **Social media manager:** of en hoe ze Fluistervink willen noemen (bericht, filmpje, de week ervoor), welke woorden wel en niet, #tuinvogeltelling, en wanneer hun planning voor januari vastligt.
 
+   **Stand (24 nov):** vooralsnog geen samenwerking. Hun systeem ondersteunt invoer van buiten nog niet, en in Fluistervink vul je de gegevens over je tuin niet in (die blijven in hun formulier). Niet aandringen. In de week van 30 nov nog een gesprek met de developer, vooral om te horen hoe het formulier in 2027 werkt. De tuintelmodus hangt niet van hen af: tellen in Fluistervink, overtypen in hun formulier (punt 2 en 8). Zonder hun akkoord geldt punt 4: hun naam alleen beschrijvend ("voer in bij de Tuinvogeltelling"), geen logo of huisstijl, geen verwijzingscode.
+
 ### In de app
 
 5. **Wat een aantal betekent.** Bij de tuintelling betekent "vijf koolmezen" *nu vijf tegelijk*, niet *vijf erbij*. De belangrijkste ontwerpkeuze. Voorstel: de uitspraken blijven gewone waarnemingen (zodat nalopen, kaart en export werken), en het tuintelresultaat rekent per soort het **maximum** over de waarnemingen van die soort. Open vragen:
@@ -111,7 +113,7 @@ Voorwaarde: Fluistervink staat half januari openbaar in Play. Lukt dat niet, dan
 ## Open beslissingen voor de eigenaar
 
 - Gaat de tuintelling door als de app half januari nog niet openbaar in Play staat (alleen de PWA)?
-- Vogelbescherming vooraf benaderen?
+- ~~Vogelbescherming vooraf benaderen?~~ Gedaan (24 nov): vooralsnog geen samenwerking, zie punt 4.
 - Budget voor het telweekend (plafonds).
 
 ## Gebouwd (21 nov, ontwikkeloptie `tuintelling`)
