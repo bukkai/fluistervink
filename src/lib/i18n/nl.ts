@@ -290,6 +290,8 @@ export const nl = {
     'Voor als je op één plek telt en de telefoon naast je legt. Tijdens een sessie verschijnt dan de knop "Trektelling starten": de app luistert daarna door en verwerkt alles wat je zegt, zonder dat je steeds hoeft te drukken. Stilte wordt niet verstuurd.',
   'trektel.hint2':
     'Het scherm blijft aan zolang de telling loopt, dat kost accu. Ga je even naar een andere app (zoals Merlin) of gaat het scherm op slot, dan pauzeert de telling: de microfoon gaat uit (één lange tril) en weer aan als je terugkomt. Na een kwartier weg stopt de telling (twee lange trillen), en na vier uur stopt hij vanzelf.',
+  'trektel.hintScreenOff':
+    'Staat "Opnemen met het scherm uit" aan (bij Bediening in het veld), dan telt de trektelling ook door met het scherm op slot; alleen een andere app die de microfoon gebruikt, pauzeert hem dan.',
   'trektel.hint3':
     'Per dag verwerkt de app hooguit 5 uur spraak. Daarboven stopt de telling; wat je daarna nog inspreekt, blijft bewaard en kun je de volgende dag met "Opnieuw" laten verwerken.',
   // Sessiescherm (ActiveSession.svelte)

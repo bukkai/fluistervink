@@ -172,7 +172,7 @@ const loader = await createServer({
   optimizeDeps: { noDiscovery: true },
   server: { middlewareMode: true, hmr: false, ws: false },
 });
-const { MODEL, CONTEXT_SIZE, flyoverChunk, interpret, parseResponse } =
+const { MODEL, CONTEXT_SIZE, countKind, interpret, parseResponse } =
   await loader.ssrLoadModule('/src/lib/interpret.ts');
 const { promptVersionFor } = await loader.ssrLoadModule('/src/lib/prompt.ts');
 const { transcribe } = await loader.ssrLoadModule('/src/lib/transcribe.ts');
@@ -407,7 +407,7 @@ async function run(item) {
     model,
     contextText,
     groups: opts.soortgroepen,
-    trektel: flyoverChunk(u, sessionOf.get(u.sessionId)),
+    count: countKind(u, sessionOf.get(u.sessionId)),
     language,
     recordedAt: u.recordedAt,
   });

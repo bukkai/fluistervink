@@ -11,6 +11,7 @@ Wat waar staat. Ontwerp en werkafspraken staan in `CLAUDE.md` in de hoofdmap, de
 - `roadmap.md`: waar de app naartoe gaat, met de stand per plan.
 - `ideeen.md`: ideeën die nog geen plan zijn (eerst overleggen).
 - `lancering.md`: de weg naar openbaar in Google Play (v1.0), met afvinklijst.
+- `draaiboek-uitbrengen.md`: elke release naar stable afvinken: changelog inkorten, tag en Play (releasenaam, release notes NL en EN), `npm run release`, daarna.
 - `vrijgave.md`: wat met de lancering meegaat, wat achter een schakelaar wacht, en hoe elk wachtend onderdeel apart getest en gelanceerd wordt.
 
 ## Plannen
@@ -68,4 +69,4 @@ Afgerond, alleen nog om terug te lezen.
 - `archief/plan-afschermen.md`: afschermen en embargo met de stem, mee naar waarneming.nl (afgerond 22 nov).
 - `archief/draaiboek-telling.md`: trektelling met het scherm uit en tuintelling op de telefoon (afgerond 23 nov).
 - `archief/werklog-2026.md`: de oude stand uit `NOTES.md` (13 okt – 22 nov).
-- `archief/kwaliteitsronde-logboek.md`: oudere regels uit het logboek van de kwaliteitsronde (24 okt – 11 nov).
+- `archief/kwaliteitsronde-logboek.md`: oudere regels uit het logboek van de kwaliteitsronde (24 okt – 16 nov).

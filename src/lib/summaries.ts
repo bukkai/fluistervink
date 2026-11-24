@@ -19,8 +19,6 @@ const SENT_KEY = 'fluistervink.anonStatsSent';
 const SINCE_KEY = 'fluistervink.anonStatsSince';
 /** Zo lang na het stoppen gaat een sessie die niet geëxporteerd is alsnog */
 export const WAIT_MS = 7 * 24 * 60 * 60_000;
-/** Zoveel verstuurde sessies onthouden; oudere komen toch niet meer in aanmerking */
-const KEEP_SENT = 200;
 
 // Het type staat in stats.ts: de proxy gebruikt het ook, en dit bestand haalt
 // browsercode binnen (database, installatie) die de proxy niet kent.
@@ -129,6 +127,12 @@ export function sendSummaries(now = Date.now()): Promise<number> {
 
 async function run(now: number): Promise<number> {
   if (!anonStatsEnabled() || !navigator.onLine) return 0;
+  // Verstuurde sessies blijven in de lijst zolang ze bestaan: een geëxporteerde
+  // sessie komt altijd weer in aanmerking, dus inkorten tot de laatste zoveel
+  // zou de oudste steeds opnieuw sturen. Verwijderde sessies kunnen eruit.
+  const existing = new Set(await db.sessions.toCollection().primaryKeys());
+  let sent = read<string[]>(SENT_KEY, []).filter((id) => existing.has(id));
+  write(SENT_KEY, sent);
   let count = 0;
   for (const id of await dueSessions(now)) {
     const summary = await summarize(id);
@@ -139,7 +143,8 @@ async function run(now: number): Promise<number> {
       // Anders (geen bereik, server even weg): volgende keer verder.
       if (!(error instanceof ApiError && error.status === 400)) break;
     }
-    write(SENT_KEY, [...read<string[]>(SENT_KEY, []), id].slice(-KEEP_SENT));
+    sent = [...sent, id];
+    write(SENT_KEY, sent);
     count++;
   }
   return count;

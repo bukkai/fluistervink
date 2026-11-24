@@ -139,6 +139,7 @@ const WORDS = {
     embargo: 'embargo tot',
     today: 'Vandaag',
     trektel: 'Dit is een stuk uit een trektelling.',
+    tuintelling: 'Dit is een uitspraak uit een tuintelling.',
     recent: 'Recente waarnemingen in deze sessie (#1 = meest recent):',
     said: 'Uitspraak',
   },
@@ -158,6 +159,7 @@ const WORDS = {
     embargo: 'embargo until',
     today: 'Today',
     trektel: 'This is a chunk from a migration count.',
+    tuintelling: 'This is a voice note from a garden bird count.',
     recent: 'Recent observations in this session (#1 = most recent):',
     said: 'Voice note',
   },
@@ -268,32 +270,39 @@ export function parseResponse(
   return { actions, rejected, warnings };
 }
 
+/** Wat voor telling: krijgt een eigen regel in de systeemprompt */
+export type CountKind = 'trektel' | 'tuintelling';
+
 /**
- * Krijgt dit stuk de regel van de trektelling (een vogel zonder gedrag is
- * overvliegend)? Een tuintelling neemt op in de trektelstand, maar in de tuin
- * zit een vogel meestal: daar blijft hij ter plaatse (tuintelling 22 nov).
+ * Welke regel krijgt deze uitspraak? Een trektelstuk die van de trektelling
+ * (een vogel zonder gedrag is overvliegend). Een tuintelling neemt op in de
+ * trektelstand, maar in de tuin zit een vogel meestal: daar blijft hij ter
+ * plaatse (tuintelling 22 nov). Elke uitspraak van een tuintelling, ook met de
+ * gewone knop, krijgt de regel van de tuintelling: een aantal is hoeveel er nu
+ * zijn, minder is geen correctie (gemeten 24 nov, `docs/plan-tuintelling.md`).
  */
-export function flyoverChunk(
+export function countKind(
   utterance: { trektel?: boolean },
   session: { tuintelling?: boolean } | undefined,
-): boolean {
-  return !!utterance.trektel && !session?.tuintelling;
+): CountKind | undefined {
+  if (session?.tuintelling) return 'tuintelling';
+  return utterance.trektel ? 'trektel' : undefined;
 }
 
 /**
- * Het bericht bij elke aanroep: de context en de uitspraak. Een trektelstuk
- * krijgt er een regel bij, zodat het model weet dat een vogel zonder gedrag
- * overvliegend is (de regel zelf staat in de systeemprompt, die gecachet blijft).
+ * Het bericht bij elke aanroep: de context en de uitspraak. Een stuk uit een
+ * trektelling of tuintelling krijgt er een regel bij, zodat het model weet welke
+ * regel geldt (de regel zelf staat in de systeemprompt, die gecachet blijft).
  */
 export function userMessage(
   contextText: string,
   transcript: string,
-  trektel: boolean,
+  count: CountKind | undefined,
   language: Language = 'nl',
   recordedAt?: number,
 ): string {
   const words = WORDS[language];
-  const kind = trektel ? `${words.trektel}\n\n` : '';
+  const kind = count ? `${words[count]}\n\n` : '';
   // De datum alleen bij een embargo ("embargo tot 1 maart" → welk jaar?), zodat
   // alle andere berichten precies blijven zoals ze waren
   const today =
@@ -325,7 +334,8 @@ function spokenDate(at: number, language: Language): string {
  *   waarnemingen. `model` en `contextText` alleen voor de testset
  *   (scripts/testset.mjs): een ander model, of de context precies zoals hij
  *   destijds was. `sessionId`: voor het verbruik per sessie. `groups`: ook
- *   andere dieren dan vogels. `trektel`: een stuk uit een trektelling
+ *   andere dieren dan vogels. `count`: een uitspraak uit een trektelling of
+ *   tuintelling (`countKind`)
  */
 export async function interpret(
   transcript: string,
@@ -336,7 +346,7 @@ export async function interpret(
     contextText?: string;
     sessionId?: string;
     groups?: boolean;
-    trektel?: boolean;
+    count?: CountKind;
     language?: Language;
     /** Wat voor uitspraak, voor het verbruik per functie (Developer) */
     kind?: UsageKind;
@@ -366,7 +376,7 @@ export async function interpret(
           content: userMessage(
             contextText,
             transcript,
-            options.trektel ?? false,
+            options.count,
             language,
             options.recordedAt,
           ),

@@ -296,6 +296,8 @@ export const en: Dictionary = {
     'For when you count from one spot with the phone beside you. During a session you get a "Start migration count" button: the app then keeps listening and processes everything you say, without you having to press each time. Silence isn’t sent.',
   'trektel.hint2':
     'The screen stays on while the count runs, which uses battery. If you switch to another app (such as Merlin) or the screen locks, the count pauses: the microphone goes off (one long buzz) and back on when you return. After a quarter of an hour away the count stops (two long buzzes), and after four hours it stops by itself.',
+  'trektel.hintScreenOff':
+    'With "Record with the screen off" on (under Controls in the field), the count also carries on with the screen locked; only another app using the microphone pauses it then.',
   'trektel.hint3':
     'The app processes at most 5 hours of speech a day. Beyond that the count stops; anything you say after that is kept, and you can have it processed the next day with "Retry".',
   // Sessiescherm
