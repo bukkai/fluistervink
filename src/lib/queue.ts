@@ -15,7 +15,7 @@ import { migrateAudioOnce } from './audioMigration';
 import { devNoteText } from './devNotePrefix';
 import { isEmptyTrektelChunk, utteranceFeedback, vibrate } from './feedback';
 import { INSTANCE_ID } from './instance.svelte';
-import { MODEL, flyoverChunk, interpret, type Interpretation } from './interpret';
+import { MODEL, countKind, interpret, type Interpretation } from './interpret';
 import { currentPosition } from './location.svelte';
 import { APP_VERSION, logEvent, wasHiddenSince } from './log';
 import { PLATFORM } from './native';
@@ -495,7 +495,7 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
       here,
       sessionId: utterance.sessionId,
       groups,
-      trektel: flyoverChunk(utterance, session),
+      count: countKind(utterance, session),
       language,
       kind: usageKind(utterance, session),
       recordedAt: utterance.recordedAt,
