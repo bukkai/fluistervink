@@ -363,6 +363,32 @@ export async function fetchBilling(): Promise<Billing> {
   return request<Billing>('/api/billing');
 }
 
+/** Noodrem en grenzen voor alle installaties samen (worker/guard.ts). */
+export interface GuardStatus {
+  paused: boolean;
+  /** Kosten van vandaag van iedereen behalve de eigenaar, in dollars */
+  costToday: number;
+  budget: number;
+  installsToday: number;
+  installsPerDay: number;
+  sharedBytesToday: number;
+  sharedBytesPerDay: number;
+}
+
+/** Stand van de noodrem en de grenzen (alleen voor de eigenaar). */
+export async function fetchGuard(): Promise<GuardStatus> {
+  return request<GuardStatus>('/api/guard');
+}
+
+/** Noodrem aan of uit: alles wat geld kost, stopt voor iedereen behalve de eigenaar. */
+export async function setGuardPaused(paused: boolean): Promise<GuardStatus> {
+  return request<GuardStatus>('/api/guard', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ paused }),
+  });
+}
+
 /** Installatie in de proxy (worker/install.ts). */
 export interface Tester {
   name: string;
