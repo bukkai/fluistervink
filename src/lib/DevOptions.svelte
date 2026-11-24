@@ -55,7 +55,14 @@
       option: 'schermUit',
       group: 'field',
       label: 'Opnemen met het scherm uit',
-      hint: 'Tijdens een sessie start en stopt de volumeknop een opname, ook met het scherm uit. De knop op de oortjes doet dat ook, als hij bij Fluistervink aankomt: niet als er een podcast speelt, en bij sommige oortjes maar om en om. Werkt vanaf de volgende sessie (of open de sessie opnieuw).',
+      hint: 'Tijdens een sessie start en stopt de volumeknop een opname, ook met het scherm uit. Werkt vanaf de volgende sessie (of open de sessie opnieuw).',
+      available: screenOffSupported,
+    },
+    {
+      option: 'oortjesKnop',
+      group: 'field',
+      label: 'Knop op de oortjes',
+      hint: 'Met "Opnemen met het scherm uit" aan start en stopt ook de knop op de oortjes een opname, als hij bij Fluistervink aankomt: niet als er een podcast speelt, en bij sommige oortjes maar om en om. Daarvoor speelt de app bij het begin een kort stil geluid; bij een koptelefoon met twee apparaten kan dat de muziek van het andere stilzetten. Vanaf app-versie 0.7; daarvóór staat de knop altijd aan.',
       available: screenOffSupported,
     },
   ];

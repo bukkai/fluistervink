@@ -85,7 +85,7 @@ public class SchermUitPlugin extends Plugin implements WandelingService.Listener
     }
 
     /**
-     * Aanzetten: { sessieId, maxMs, minMs, trilStart, trilStop, zichtbaar? }.
+     * Aanzetten: { sessieId, maxMs, minMs, trilStart, trilStop, zichtbaar?, oortjesKnop? }.
      * `zichtbaar`: de WebView blijft zich in beeld melden (ZichtbareWebView).
      */
     @PluginMethod
@@ -99,6 +99,7 @@ public class SchermUitPlugin extends Plugin implements WandelingService.Listener
         }
         config.maxMs = call.getLong("maxMs", 180_000L);
         config.minMs = call.getLong("minMs", 500L);
+        config.oortjesKnop = !Boolean.FALSE.equals(call.getBoolean("oortjesKnop", true));
         try {
             config.trilStart = pattern(call.getArray("trilStart"));
             config.trilStop = pattern(call.getArray("trilStop"));

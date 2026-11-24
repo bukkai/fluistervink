@@ -86,7 +86,14 @@ describe('opnemen met het scherm uit', () => {
       trilStart: [40, 60, 40],
       trilStop: [200],
       zichtbaar: true,
+      oortjesKnop: true,
     });
+  });
+
+  it('zet de knop op de oortjes alleen aan met zijn eigen ontwikkeloptie', () => {
+    devOptionOn.mockImplementation((option: string) => option === 'schermUit');
+    startScreenOff('s1', 180_000, onPress);
+    expect(native.listenScreenOff.mock.calls[0][0]).toMatchObject({ oortjesKnop: false });
   });
 
   it('bewaart de opname met de positie van het begin, en ruimt dan het bestand op', async () => {
