@@ -62,7 +62,7 @@ Proef 22 nov: als tekst tegen het model (testset met een nagemaakte export, zond
 | Huisdier | "een kat", "de hond van de buren", "drie koeien in de wei" | niets | **kat ging mis** (Zoogdier onbekend, onzeker): regel in de prompt, nu goed, NL en EN |
 | Fictief of uitgestorven | "een dodo", "een draak" | niets | dodo goed; draak → Draaihals, onzeker (een verstaanfout is daar ook goed denkbaar) |
 | Ontsnapte vogel | "een parkiet", "een pauw in de tuin" | Halsbandparkiet onzeker; pauw als exoot of niets | goed: Halsbandparkiet of Grote Alexanderparkiet; pauw → Vogel onbekend, onzeker |
-| Dubbele namen | "een uil", "een vos", "een reiger" | de gewone betekenis | vos en reiger (Reiger onbekend) goed; uil → Vogel onbekend, onzeker: "Uil onbekend" komt met de volgende wekelijkse soortenlijst in de prompt |
+| Dubbele namen | "een uil", "een vos", "een reiger" | de gewone betekenis | vos en reiger (Reiger onbekend) goed; uil → Vogel onbekend, onzeker; "Uil onbekend" staat sinds de soortenlijst van 24 nov in de prompt, nog nagaan of het model hem kiest |
 | Volumeknop met podcast of tijdens bellen | indrukken | opname start niet stil; zie veldchecklist | telefoon |
 | Correctie in de wachtrij | offline: "drie vinken", dan "nee, keep" | na bereik eerst de vinken, dan de keep (plan-offline) | telefoon (de wachtrij zelf heeft tests) |
 | Stoppen midden in een opname | Stop tijdens het inspreken | de opname wordt bewaard en verwerkt | telefoon |
