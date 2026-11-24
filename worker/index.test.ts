@@ -641,6 +641,23 @@ describe('/api/messages (Anthropic)', () => {
     expect(upstream).not.toHaveBeenCalled();
   });
 
+  it.each(['claude-sonnet-5-5', 'claude-opus-5-5'])(
+    'laat %s alleen door voor de eigenaar',
+    async (model) => {
+      const response = await post({ model, max_tokens: 10, messages: [] });
+      expect(response.status).toBe(400);
+      expect(upstream).not.toHaveBeenCalled();
+
+      upstream.mockResolvedValue(Response.json(message));
+      const owner = await call('/api/messages', {
+        code: OWNER_CODE,
+        method: 'POST',
+        body: JSON.stringify({ model, max_tokens: 10, messages: [] }),
+      });
+      expect(owner.status).toBe(200);
+    },
+  );
+
   describe('plafond per dag', () => {
     /** Zoveel verzoeken aan het model op naam van een tester, zoals de proxy telt */
     async function asked(times: number, tester = ANNA, at = new Date()) {
@@ -713,6 +730,23 @@ describe('/api/messages (Anthropic)', () => {
       { tools: [{ type: 'web_search_20250305', name: 'web_search' }] },
     ],
     ['een tool zonder schema', { tools: [{ name: 'x' }] }],
+    [
+      'een cache van een uur',
+      { system: [{ type: 'text', text: 'x', cache_control: { type: 'ephemeral', ttl: '1h' } }] },
+    ],
+    [
+      'een cache van een uur in een bericht',
+      {
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: 'vink', cache_control: { type: 'ephemeral', ttl: '1h' } },
+            ],
+          },
+        ],
+      },
+    ],
     [
       'een document via een URL',
       {
