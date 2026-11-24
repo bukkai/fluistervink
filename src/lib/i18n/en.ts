@@ -61,7 +61,7 @@ export const en: Dictionary = {
   'home.toSessions': 'Go to sessions',
   'home.shareTitle': 'Share with the developer?',
   'home.shareText':
-    'Fluistervink is still being developed. After each session, may the app send the developer what you said (as text), what the app made of it, your corrections and feedback, and the locations of your observations? Not the recordings, unless you switch that on in Settings. Only the developer can read it; you can switch it off at any time.',
+    'Fluistervink is still being developed. After each session, may the app send the developer what you said (as text), what the app made of it, your corrections, notes and feedback, a log of what the app did, and the locations of your observations? Not the recordings, unless you switch that on in Settings. Only the developer can read it; you can switch it off at any time.',
   'home.privacyLink': 'More about privacy',
   'home.shareYes': 'Yes, share',
   'home.shareNo': 'Rather not',
@@ -87,7 +87,7 @@ export const en: Dictionary = {
   'welcome.permissionsLeadAfter':
     '. Allow it now, so the question doesn’t pop up in the middle of your first observation.',
   'welcome.permissionsHint':
-    'The microphone is only on while you press the button. The location puts every observation in the right place.',
+    'The microphone is only on when you ask for it: with the button, or during a count you start yourself. The location puts every observation in the right place.',
   'welcome.permissionsHintApp':
     'While you’re birding, Fluistervink shows a notification; that keeps the app working with your phone in your pocket.',
   'welcome.microphoneStatus': 'Microphone: {status}',
@@ -117,7 +117,7 @@ export const en: Dictionary = {
   'welcome.shareLead':
     'Fluistervink is still being developed, by a single developer, Stephan. What you say and correct shows where the app still gets things wrong.',
   'welcome.shareText':
-    'After each session, may the app send the developer what you said (as text), what the app made of it, your corrections and feedback, and the locations of your observations? Not the recordings, unless you switch that on in Settings. Only the developer can read it, and you can switch it off at any time.',
+    'After each session, may the app send the developer what you said (as text), what the app made of it, your corrections, notes and feedback, a log of what the app did, and the locations of your observations? Not the recordings, unless you switch that on in Settings. Only the developer can read it, and you can switch it off at any time.',
   'welcome.asking': 'One moment…',
   'welcome.allow': 'Allow',
   'welcome.start': 'Let’s go',
@@ -249,7 +249,7 @@ export const en: Dictionary = {
   // Delen
   'share.title': 'Share with the developer',
   'share.hintVoor':
-    'After each session, what you said, what the app made of it, your corrections when reviewing and your feedback go to the developer, to improve the recognition. So do the locations of your observations. See',
+    'After each session, what you said, what the app made of it, your corrections when reviewing, your notes, your feedback and a log of what the app did go to the developer, to improve the recognition. So do the locations of your observations. See',
   'share.hintNa': '.',
   'share.sessions': 'Share sessions and feedback',
   'share.audio': 'Recordings too (helps to compare speech recognition)',
@@ -261,7 +261,7 @@ export const en: Dictionary = {
   'share.nothingSent': 'Nothing sent yet.',
   'share.anon': 'Share anonymous numbers per session',
   'share.anonHint':
-    'Only numbers, such as the duration, the number of voice notes and whether you exported. Not where, when, which species or what you said, and not from which phone.',
+    'Only numbers, such as the duration, the number of voice notes and whether you exported. Not where, on which day, which species or what you said, and not from which phone.',
 
   // Opnames
   'recordings.title': 'Recordings',
