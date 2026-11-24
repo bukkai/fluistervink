@@ -30,7 +30,7 @@ Volgorde besloten op 17 nov. Alles komt eerst achter een ontwikkeloptie op `main
 **Eerst: vogelen zonder netwerk en zonder scherm.**
 
 1. ~~**Offline wachtrij**~~ (`docs/archief/plan-offline.md`): afgerond, op stable sinds 18 nov.
-2. **Opnemen met het scherm uit** en starten met de knop op de oortjes (`docs/roadmap-android.md`, stap 3; gevraagd door Maarten voor op de fiets). De verklaring bij Google (microfoon in de service) is goedgekeurd; de proef draait in de beta-build achter de ontwikkeloptie "scherm uit" (`docs/plan-trektelmodus.md`).
+2. **Opnemen met het scherm uit** en starten met de knop op de oortjes (`docs/roadmap-android.md`, stap 3; gevraagd door Maarten voor op de fiets). De verklaring bij Google (microfoon in de service) is goedgekeurd. Opnemen met het scherm uit (volumeknop en trektelling) gaat met v0.7 naar iedereen, als keuze bij Instellingen; de knop op de oortjes blijft een ontwikkeloptie (`oortjesKnop`, `docs/vrijgave.md`).
 3. **De microfoon delen** met Merlin en bellen (`AudioRecordingCallback`, stap 4), nodig voor het wake word.
 4. **Wake word "Fluistervink"**, open source (openWakeWord, stap 5). Het model trainen en meten op de opnames uit de testset kan al eerder, los van de app; in de app pas na stap 2 en 3, eerst een proef die alleen logt.
 

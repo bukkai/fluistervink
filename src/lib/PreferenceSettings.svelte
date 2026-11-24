@@ -2,7 +2,7 @@
   import { t, type Key } from './i18n';
   // Keuzes voor iedereen (preferences.ts); eBird en de gesproken bevestiging
   // staan standaard uit
-  import { speechSupported, volumeKeySupported } from './native';
+  import { screenOffSupported, speechSupported, volumeKeySupported } from './native';
   import { wakeLockSupported } from './screenWakeLock';
   import {
     preferenceOn,
@@ -38,6 +38,7 @@
     { preference: 'volumeknop', group: 'field', available: volumeKeySupported },
     { preference: 'gesproken', group: 'field', available: speechSupported },
     { preference: 'schermAan', group: 'field', available: wakeLockSupported },
+    { preference: 'schermUit', group: 'field', available: screenOffSupported },
     { preference: 'exportHerinnering', group: 'review' },
     { preference: 'ebird', group: 'review' },
   ];

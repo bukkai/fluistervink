@@ -197,13 +197,16 @@ export const en: Dictionary = {
     'Besides birds, also mammals, reptiles and amphibians, butterflies and dragonflies ("two Roe Deer", "a Common Toad", "a Red Admiral"). They go to waarneming.nl; eBird only takes birds. Off: the app only picks birds, which avoids mix-ups with short names.',
   'prefs.volumeknop': 'Volume button to speak',
   'prefs.volumeknopHint':
-    'During a session, pressing a volume button (up or down) starts a recording and the next press stops it. Handy with gloves on or binoculars in your other hand; a Bluetooth selfie button works the same way. You can’t change the volume with that button during a session. Only works with the app on screen, not with the screen off.',
+    'During a session, pressing a volume button (up or down) starts a recording and the next press stops it. Handy with gloves on or binoculars in your other hand; a Bluetooth selfie button works the same way. You can’t change the volume with that button during a session. Works with the app on screen; with the screen off only with "Record with the screen off".',
   'prefs.gesproken': 'Spoken confirmation in your earbuds (trial)',
   'prefs.gesprokenHint':
     'After the buzz, the app says what it logged ("woodpigeon, 6, flying over"). Only with earbuds or a headset connected, never through the speaker. A podcast goes quieter for a moment.',
   'prefs.schermAan': 'Keep the screen on during a session',
   'prefs.schermAanHint':
     'The screen doesn’t turn off by itself while a session is running. That way you can keep speaking with the volume button without unlocking. Uses more battery; the power button still locks the screen as usual.',
+  'prefs.schermUit': 'Record with the screen off',
+  'prefs.schermUitHint':
+    'During a session the volume button starts and stops a recording, even with the screen off and the phone in your pocket; you feel a buzz at the start and the end. A migration count also keeps counting with the screen off. With the screen off you can’t change the volume with that button during a session. Takes effect from the next session.',
   'prefs.zeldzaamOnzeker': 'Mark rare species as uncertain',
   'prefs.zeldzaamOnzekerHint':
     'If the app picks a species that is rare or very rare on waarneming.nl, the observation is marked uncertain, so you see it at the top when you review at home. Usually it’s a mix-up with a common species.',

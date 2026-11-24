@@ -55,9 +55,11 @@
       <p>
         In the Android app the volume button can also start and stop a recording (you can switch
         that off in Settings). Switch on "Keep the screen on" in Settings and the screen won’t turn
-        off by itself during a session, so the volume button keeps working. With earbuds in, the app
-        can also say what it logged after the buzz (a trial, switch it on in Settings). Quick start:
-        press and hold the Fluistervink icon and choose "Start birding".
+        off by itself during a session, so the volume button keeps working. Or switch on "Record
+        with the screen off": then the volume button also works with the screen off and the phone in
+        your pocket, and a migration count keeps counting. With earbuds in, the app can also say
+        what it logged after the buzz (a trial, switch it on in Settings). Quick start: press and
+        hold the Fluistervink icon and choose "Start birding".
       </p>
     {/if}
   </div>
@@ -110,11 +112,12 @@
       </dd>
     </dl>
     <p>
-      During a migration count: one long buzz when it pauses (another app, screen locked, earbuds
-      out), two long when it has stopped. That also happens when you’ve already spoken for 5 hours
-      that day, the daily maximum, or when the microphone won’t switch on any more; the screen then
-      says why. Without signal it simply keeps counting; after 2 hours without signal you also get
-      two long buzzes, but then the count carries on.
+      During a migration count: one long buzz when it pauses (another app or a phone call, screen
+      locked without "Record with the screen off", earbuds out), two long when it has stopped. That
+      also happens when you’ve already spoken for 5 hours that day, the daily maximum, or when the
+      microphone won’t switch on any more; the screen then says why. Without signal it simply keeps
+      counting; after 2 hours without signal you also get two long buzzes, but then the count
+      carries on.
     </p>
     {#if isAndroidApp}
       <p>

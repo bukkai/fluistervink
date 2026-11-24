@@ -192,13 +192,16 @@ export const nl = {
     'Naast vogels ook zoogdieren, reptielen en amfibieën, dagvlinders en libellen ("twee reeën", "een pad", "een atalanta"). Ze gaan mee naar waarneming.nl; eBird neemt alleen vogels. Uit: de app kiest alleen vogels, wat bij korte namen als "das" of "vos" een vergissing scheelt.',
   'prefs.volumeknop': 'Volumeknop als inspreekknop',
   'prefs.volumeknopHint':
-    'Tijdens een sessie start een druk op de volumeknop (omhoog of omlaag) een opname, en de volgende druk stopt hem. Handig met handschoenen of met de verrekijker in je andere hand; een Bluetooth-knopje voor selfies werkt ook zo. Het volume regel je tijdens een sessie dan niet met die knop. Werkt alleen met de app op het scherm, niet met het scherm uit.',
+    'Tijdens een sessie start een druk op de volumeknop (omhoog of omlaag) een opname, en de volgende druk stopt hem. Handig met handschoenen of met de verrekijker in je andere hand; een Bluetooth-knopje voor selfies werkt ook zo. Het volume regel je tijdens een sessie dan niet met die knop. Werkt met de app op het scherm; met het scherm uit alleen met "Opnemen met het scherm uit".',
   'prefs.gesproken': 'Gesproken bevestiging in de oortjes (proef)',
   'prefs.gesprokenHint':
     'Na het trillen zegt de app wat hij heeft vastgelegd ("houtduif, 6, overvliegend"). Alleen als er oortjes of een headset aan zitten, nooit via de luidspreker. Een podcast gaat even zachter.',
   'prefs.schermAan': 'Scherm aan houden tijdens een sessie',
   'prefs.schermAanHint':
     'Het scherm gaat niet vanzelf uit zolang een sessie loopt. Zo kun je met de volumeknop blijven inspreken zonder te ontgrendelen. Kost meer accu; met de aan-uitknop zet je het scherm gewoon op slot.',
+  'prefs.schermUit': 'Opnemen met het scherm uit',
+  'prefs.schermUitHint':
+    'Tijdens een sessie start en stopt de volumeknop een opname, ook als het scherm uit is en de telefoon in je zak zit; je voelt de tril bij het begin en het eind. Een trektelling telt dan ook door met het scherm uit. Het volume regel je met het scherm uit tijdens een sessie dan niet met die knop. Werkt vanaf de volgende sessie.',
   'prefs.zeldzaamOnzeker': 'Zeldzame soort wordt onzeker',
   'prefs.zeldzaamOnzekerHint':
     'Kiest de app een soort die bij waarneming.nl zeldzaam of zeer zeldzaam is, dan wordt de waarneming onzeker, zodat je hem thuis bovenaan ziet. Meestal is het een verwisseling met een gewone soort.',

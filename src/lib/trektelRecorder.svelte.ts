@@ -4,7 +4,7 @@
 // stopt, zodat er tussen twee stukken niets wegvalt. Een AnalyserNode meet
 // het geluidsniveau; de rekenregels voor het knippen staan in trektel.ts.
 //
-// Proef scherm uit (ontwikkeloptie `schermUit`, alleen de beta-build): heeft
+// Opnemen met het scherm uit (keuze `schermUit` bij Instellingen): heeft
 // de service het type microfoon, dan neemt de service de hele telling op en
 // knipt hij zelf (TrektelOpname.java, met dezelfde regels). De webcode houdt
 // dan alleen de stand bij; de stukken komen binnen als opname met het scherm
