@@ -84,6 +84,12 @@ const TRANSCRIBE_LANGUAGES = ['nl', 'en'];
 // Plafonds per installatie per dag: src/lib/limits.ts
 
 const CLAUDE_MODELS = ['claude-haiku-5-5', 'claude-sonnet-5-5', 'claude-opus-5-5'];
+/**
+ * Het model van de app (`MODEL` in src/lib/interpret.ts). De andere modellen
+ * alleen voor de eigenaar (testset): met Sonnet of Opus kost een installatie
+ * die de proxy als gratis LLM gebruikt per dag honderden euro's.
+ */
+const APP_CLAUDE_MODEL = 'claude-haiku-5-5';
 
 /** Bovengrens voor uitvoer: een uitspraak levert maar een paar tool calls op. */
 const MAX_OUTPUT_TOKENS = 4096;
@@ -440,6 +446,9 @@ async function messages(
   if (!CLAUDE_MODELS.includes(parsed.model as string)) {
     return json({ error: `Model niet toegestaan: ${parsed.model}` }, 400);
   }
+  if (tester !== OWNER && parsed.model !== APP_CLAUDE_MODEL) {
+    return json({ error: `Model alleen voor de testset: ${parsed.model}` }, 400);
+  }
   const problem = checkMessage(parsed);
   if (problem) return json({ error: problem }, 400);
   const body = parsed as unknown as Anthropic.MessageCreateParamsNonStreaming;
@@ -481,9 +490,27 @@ const CONTENT_TYPES = new Set(['text', 'tool_use', 'tool_result']);
  * input_schema): tools van Anthropic zelf, zoals web search, kosten per
  * gebruik en heeft de app niet nodig.
  */
+/**
+ * Elk `cache_control` in het verzoek is precies `{ type: 'ephemeral' }`, zoals
+ * de app het stuurt. Een langere `ttl` maakt het schrijven naar de cache twee
+ * keer zo duur.
+ */
+function plainCacheControl(value: unknown): boolean {
+  if (Array.isArray(value)) return value.every(plainCacheControl);
+  if (!value || typeof value !== 'object') return true;
+  for (const [key, inner] of Object.entries(value)) {
+    if (key === 'cache_control') {
+      const keys = inner && typeof inner === 'object' ? Object.keys(inner) : [];
+      if (keys.length !== 1 || (inner as { type?: unknown }).type !== 'ephemeral') return false;
+    } else if (!plainCacheControl(inner)) return false;
+  }
+  return true;
+}
+
 function checkMessage(body: Record<string, unknown>): string | undefined {
   const extra = Object.keys(body).filter((key) => !MESSAGE_FIELDS.has(key));
   if (extra.length) return `Velden niet toegestaan: ${extra.join(', ')}`;
+  if (!plainCacheControl(body)) return 'Alleen cache_control zonder ttl toegestaan';
 
   const tools = body.tools ?? [];
   if (!Array.isArray(tools)) return 'Ongeldige tools';
