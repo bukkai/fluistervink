@@ -735,6 +735,12 @@
     display: none;
   }
 
+  /* De uitlegregel onder de knop ("Het half uur loopt door", de microfoon)
+     zou over Annuleren vallen; een foutmelding blijft wel staan */
+  .talk-bar.compact .mic.source {
+    display: none;
+  }
+
   .talk {
     position: relative;
     display: flex;
