@@ -3,7 +3,11 @@
   // wat AI er wel en niet in doet. Kort en zonder technische termen. Houd de
   // trilpatronen gelijk met feedback.ts. De Engelse versie staat in
   // HowItWorks.en.svelte: een wijziging hier hoort in dezelfde PR ook daar.
+  import { devOptionOn } from './devOptions';
   import { isAndroidApp, isIosApp } from './native';
+
+  // Tuintelling: alleen als die kan (ontwikkeloptie, docs/plan-tuintelling.md)
+  const tuintel = devOptionOn('tuintelling');
 </script>
 
 <a class="back" href="#/">Terug</a>
@@ -155,6 +159,32 @@
     <p>Alles staat alleen op je telefoon: maak af en toe een back-up bij Instellingen.</p>
   </div>
 </section>
+
+{#if tuintel}
+  <section class="card">
+    <div class="card-body">
+      <h3>Tuintelling</h3>
+      <p>
+        Voor de Nationale Tuinvogeltelling: een half uur tellen wat er in je tuin zit. Tik op het
+        startscherm op "Tuintelling", zet de telefoon bij het raam en tik op "Begin met tellen". De
+        microfoon blijft dan een half uur aan; je hoeft niets in te drukken. Zet radio of tv even
+        uit: de app hoort alles wat er gezegd wordt.
+      </p>
+      <p>
+        Zeg hoeveel je er nu ziet: "nu drie koolmezen", "weer twee merels". Zijn het er minder of
+        vliegen ze weg, dan hoef je niets te doen: per soort telt het hoogste aantal dat je in één
+        keer noemde. Verkeerd verstaan? Zeg "nee, één merel". Vogels die alleen overvliegen, tellen
+        niet mee.
+      </p>
+      <p>
+        Bij nog vijf minuten komen er twee middellange trillen, na het half uur drie lange, en dan
+        stopt de telling vanzelf. Daarna staat per soort het hoogste aantal klaar, in de volgorde
+        van het formulier. Neem het over met "Naar het telformulier"; je adres en het aantal tellers
+        vul je daar zelf in. Fluistervink stuurt niets naar Vogelbescherming.
+      </p>
+    </div>
+  </section>
+{/if}
 
 <section class="card">
   <div class="card-body">

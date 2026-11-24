@@ -103,6 +103,16 @@ export const en: Dictionary = {
   'welcome.tryLead': 'Say something as if you were outside, for example',
   'welcome.tryExample': '"three blackbirds and a singing robin"',
   'welcome.tryNothingSaved': 'Nothing is saved.',
+  'welcome.tuintelLine':
+    'Taking part in the Dutch Garden Bird Count (Tuinvogeltelling)? Fluistervink counts along.',
+  'welcome.tryExampleTuin': '"two great tits and a blackbird"',
+  'welcome.tuintelTitle': 'Garden count',
+  'welcome.tuintelLead':
+    'Half an hour of counting what is in your garden. Put the phone by the window, tap "Start counting" and say how many you see now, like "three great tits now".',
+  'welcome.tuintelHint':
+    'Afterwards the highest number per species is ready to copy into the form of the Garden Bird Count.',
+  'welcome.tuintelStart': 'Start the garden count',
+  'welcome.tuintelSkip': 'Just get started',
   'welcome.shareTitle': 'Will you help?',
   'welcome.shareLead':
     'Fluistervink is still being developed, by a single developer, Stephan. What you say and correct shows where the app still gets things wrong.',

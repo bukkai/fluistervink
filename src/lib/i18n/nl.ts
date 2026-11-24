@@ -98,6 +98,15 @@ export const nl = {
   'welcome.tryLead': 'Zeg iets alsof je buiten staat, bijvoorbeeld',
   'welcome.tryExample': '"drie merels en een zingende roodborst"',
   'welcome.tryNothingSaved': 'Er wordt niets bewaard.',
+  'welcome.tuintelLine': 'Doe je mee aan de Tuinvogeltelling? Fluistervink telt met je mee.',
+  'welcome.tryExampleTuin': '"twee koolmezen en een merel"',
+  'welcome.tuintelTitle': 'Tuintelling',
+  'welcome.tuintelLead':
+    'Een half uur tellen wat er in je tuin zit. Zet de telefoon bij het raam, tik op "Begin met tellen" en zeg hoeveel je er nu ziet, zoals "nu drie koolmezen".',
+  'welcome.tuintelHint':
+    'Na afloop staat per soort het hoogste aantal klaar om over te nemen in het formulier van de Tuinvogeltelling.',
+  'welcome.tuintelStart': 'Start de tuintelling',
+  'welcome.tuintelSkip': 'Gewoon beginnen',
   'welcome.shareTitle': 'Help je mee?',
   'welcome.shareLead':
     'Fluistervink is nog in ontwikkeling, en het werk van één ontwikkelaar, Stephan. Wat jij inspreekt en verbetert, laat zien waar de app nog misgaat.',
