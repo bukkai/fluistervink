@@ -96,7 +96,7 @@ Liefst staat Fluistervink half januari openbaar in Play. Lukt dat niet, dan gaat
 - **Regionale omroepen en lokale kranten** (RODI e.d.): schrijven rond de telling stukjes, vaak met een lokale teller. De eigenaar als lokale teller met een app.
 - **Vogelwerkgroepen, IVN, KNNV-afdelingen**: nieuwsbrief of ledenblad, vaak met een deadline weken vooraf.
 - **Forum van waarneming.nl, Discord van de testers, eigen netwerk.**
-- **Vogelbescherming zelf**: afhankelijk van punt 4.
+- **Vogelbescherming zelf**: geen officiële samenwerking in 2027 (25 nov), wel stuurt de lead merk & campagnes de app door naar collega's die hem misschien willen verspreiden. Daarvoor een kort pakketje dat zonder ons te gebruiken is: één zin, het filmpje (staand), de link naar `fluistervink.nl/tuintelling` of Play met `referrer` `utm_source=vogelbescherming`, twee schermafbeeldingen, en dat tellers bij hen invoeren. Hun planning voor januari ligt waarschijnlijk in december vast, dus vóór half december sturen. Een repost of noemen kan een piek geven: vooraf het dagbudget in de proxy verhogen (`docs/draaiboek-terugdraaien.md`, C).
 
 ### Na de telling
 
@@ -125,7 +125,7 @@ De tuintelmodus komt eind januari voor iedereen, ook zonder samenwerking met Vog
 ## Open beslissingen voor de eigenaar
 
 - ~~Gaat de tuintelling door als de app half januari nog niet openbaar in Play staat (alleen de PWA)?~~ Ja (24 nov): dan alleen de PWA.
-- ~~Vogelbescherming vooraf benaderen?~~ Gedaan (24 nov): vooralsnog geen samenwerking, zie punt 4.
+- ~~Vogelbescherming vooraf benaderen?~~ Gedaan (24 nov): vooralsnog geen samenwerking, zie punt 4. Bevestigd op 25 nov: dit jaar geen officiële samenwerking; de lead merk & campagnes stuurt de app door aan collega's (Promotie).
 - ~~Budget voor het telweekend (plafonds)~~: akkoord (24 nov), tot ~$200 bij 1000 tellers (punt 13).
 
 ## Gebouwd (21 nov, ontwikkeloptie `tuintelling`)
