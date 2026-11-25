@@ -31,6 +31,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026-11-25',
+    topics: {
+      'Android-app': [
+        'Opnemen met het scherm uit: als je telefoon vol is, blijft de opname op de telefoon staan in plaats van verloren te gaan.',
+      ],
+    },
+  },
+  {
     date: '2026-11-24',
     topics: {
       Inspreken: [

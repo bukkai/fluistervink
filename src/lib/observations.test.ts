@@ -43,6 +43,7 @@ import {
   retry,
   retryNow,
   stopWaiting,
+  submitRecording,
   submitText,
 } from './queue';
 import { gps } from './location.svelte';
@@ -910,6 +911,22 @@ describe('telefoon vol', () => {
       spy.mockRestore();
     }
     expect(heard).toHaveBeenCalledWith(false);
+  });
+
+  const noPosition = () => Promise.resolve({ source: 'none' } as never);
+
+  it('een opname die niet bewaard kon worden, meldt dat (scherm uit laat het bestand dan staan)', async () => {
+    const spy = opslagVol(db.utterances);
+    const off = onSaveFailed(() => {});
+    try {
+      const recording = { audio: new Blob(['x']), startedAt: Date.now(), durationMs: 1000 };
+      await expect(submitRecording(SESSION, recording, noPosition())).resolves.toBe(false);
+    } finally {
+      off();
+      spy.mockRestore();
+    }
+    const recording = { audio: new Blob(['x']), startedAt: Date.now(), durationMs: 1000 };
+    await expect(submitRecording(SESSION, recording, noPosition())).resolves.toBe(true);
   });
 });
 

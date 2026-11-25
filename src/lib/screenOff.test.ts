@@ -75,7 +75,7 @@ describe('opnemen met het scherm uit', () => {
       handlers = h;
       return { done: Promise.resolve({ ok: true }), stop };
     });
-    submitRecording.mockResolvedValue(undefined);
+    submitRecording.mockResolvedValue(true);
     currentPosition.mockResolvedValue(lookup);
     takeChunkLookup.mockReturnValue(undefined);
   });
@@ -168,6 +168,18 @@ describe('opnemen met het scherm uit', () => {
       expect.objectContaining({ id: rec.id }),
       { sessionId: 's1' },
     );
+    await receiveScreenOffRecording(rec, undefined);
+    expect(native.doneScreenOffRecording).toHaveBeenCalledWith(rec.id);
+  });
+
+  // Ronde vóór productie (25 nov): submitRecording vangt een volle telefoon
+  // zelf af en gooit niet, maar meldt `false`. Toen werd het bestand gewist.
+  it('laat het bestand ook staan als de opname niet bewaard kon worden (telefoon vol)', async () => {
+    submitRecording.mockResolvedValueOnce(false);
+    const rec = recording();
+    await receiveScreenOffRecording(rec, undefined);
+    expect(native.doneScreenOffRecording).not.toHaveBeenCalled();
+    // Later (`wachtend`) opnieuw, en dan wel
     await receiveScreenOffRecording(rec, undefined);
     expect(native.doneScreenOffRecording).toHaveBeenCalledWith(rec.id);
   });
