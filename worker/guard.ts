@@ -10,7 +10,8 @@
 //
 // Daarboven geeft de proxy 503 met een eigen `code`. De app behandelt 503 als
 // tijdelijk: uitspraken wachten en gaan later alsnog (queue.ts), delen probeert
-// het later opnieuw (share.ts). Er gaat dus niets verloren.
+// het later opnieuw (share.ts). Er gaat dus niets verloren. Bij een grens voor
+// iedereen krijgt de eigenaar een waarschuwing (alert.ts).
 
 import { dayOf, rowCost, type UsageRow } from '../src/lib/costs';
 import {
@@ -20,10 +21,11 @@ import {
   SHARED_BYTES_PER_DAY,
   SHARED_BYTES_PER_INSTALL_PER_DAY,
 } from '../src/lib/limits';
+import { alert, type AlertEnv } from './alert';
 import { json, OWNER } from './common';
 import { ensureTable as ensureUsageTables } from './usage';
 
-export interface GuardEnv {
+export interface GuardEnv extends AlertEnv {
   USAGE: D1Database;
   TESTERS: KVNamespace;
   /** Optioneel: ander plafond per dag in dollars dan DAILY_BUDGET_USD */
@@ -148,14 +150,10 @@ const paused = () =>
     503,
   );
 
-/** Melding in Workers Logs, één keer per instantie per dag en soort */
-const warned = new Set<string>();
-function warnOnce(what: string, now: Date, detail: object) {
-  const key = `${dayOf(now)}:${what}`;
-  if (warned.has(key)) return;
-  warned.add(key);
-  console.error(`Grens bereikt: ${what}`, detail);
-}
+/** Vanaf dit deel van het budget een eerste waarschuwing (alert.ts) */
+const BUDGET_WARN_FRACTION = 0.8;
+
+const dollars = (n: number) => `$${n.toFixed(2)}`;
 
 /**
  * Mag dit verzoek aan het model of de spraakherkenning door? Undefined als
@@ -172,8 +170,22 @@ export async function guardAi(
   if (await isPaused(env.TESTERS)) return paused();
   try {
     const spent = await costToday(env.USAGE, now);
-    if (spent >= budget(env)) {
-      warnOnce('kosten per dag', now, { spent, budget: budget(env) });
+    const limit = budget(env);
+    if (spent >= limit * BUDGET_WARN_FRACTION && spent < limit) {
+      await alert(
+        env,
+        'budget_bijna',
+        `${dollars(spent)} van het dagbudget van ${dollars(limit)} is op. Daarboven wachten de uitspraken van iedereen tot morgen; hoger zetten met DAILY_BUDGET_USD.`,
+        now,
+      );
+    }
+    if (spent >= limit) {
+      await alert(
+        env,
+        'budget',
+        `Dagbudget bereikt (${dollars(spent)} van ${dollars(limit)}). Uitspraken van iedereen behalve de eigenaar wachten tot morgen; hoger zetten met DAILY_BUDGET_USD.`,
+        now,
+      );
       return json(
         {
           error:
@@ -206,7 +218,12 @@ export async function guardNewInstall(
     ]);
     await prune(env.USAGE, now);
     if (today > NEW_INSTALLS_PER_DAY || thisHour > NEW_INSTALLS_PER_HOUR) {
-      warnOnce('nieuwe installaties', now, { today, thisHour });
+      await alert(
+        env,
+        'install_limit',
+        `Grens voor nieuwe installaties bereikt (${today} vandaag, ${thisHour} dit uur; grens ${NEW_INSTALLS_PER_DAY} per dag, ${NEW_INSTALLS_PER_HOUR} per uur). Nieuwe gebruikers kunnen nu niet aanmelden.`,
+        now,
+      );
       return json(
         {
           error: 'Er melden zich nu heel veel nieuwe installaties aan; probeer het later opnieuw.',
@@ -239,10 +256,17 @@ export async function guardShare(
       bump(env.USAGE, 'share', bytes, now),
     ]);
     if (mine > SHARED_BYTES_PER_INSTALL_PER_DAY || all > SHARED_BYTES_PER_DAY) {
-      warnOnce(mine > SHARED_BYTES_PER_INSTALL_PER_DAY ? `delen ${tester}` : 'delen', now, {
-        mine,
-        all,
-      });
+      if (all > SHARED_BYTES_PER_DAY) {
+        await alert(
+          env,
+          'share_limit',
+          `Grens voor delen van alle installaties samen bereikt (${Math.round(all / 1e6)} MB vandaag). Delen wacht tot morgen.`,
+          now,
+        );
+      } else {
+        // Eén installatie: geen bericht, wel in het log
+        console.error('Grens bereikt: delen per installatie', { tester, mine });
+      }
       return json(
         {
           error: 'Vandaag is er al veel gedeeld; de app probeert het later opnieuw.',

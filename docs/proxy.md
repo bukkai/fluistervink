@@ -24,6 +24,36 @@ Op **Developer**, onder Kosten: de totalen van deze maand verdeeld over gebruike
 
 Niet gemeten: regio, tijdstip van de dag, soorten, openen zonder inspreken.
 
+## Waarschuwingen
+
+Sinds 26 nov, vóór de productierelease. Als de proxy iets tegenhoudt voor iedereen, ziet een gebruiker alleen dat zijn uitspraken wachten. Daarom stuurt de proxy de eigenaar dan een bericht (`worker/alert.ts`), naar de webhook in het geheim `ALERT_WEBHOOK` (formaat van Discord: `{ content }`):
+
+- `budget_bijna`: 80% van het dagbudget voor alle installaties samen is op; het verzoek gaat gewoon door;
+- `budget`: het dagbudget is op, uitspraken wachten tot morgen;
+- `install_limit`: de grens voor nieuwe installaties per uur of per dag;
+- `share_limit`: de grens voor delen van alle installaties samen (die van één installatie alleen in het log);
+- `openai_sleutel`, `anthropic_sleutel`: de aanbieder weigert onze sleutel (401, 403) of het tegoed is op (OpenAI `insufficient_quota`, Anthropic "credit balance"). Gewone drukte (429, 529) niet.
+
+Eén bericht per dag per soort, over beide omgevingen samen (KV-sleutel `alert/<dag>/<soort>` in `TESTERS`, twee dagen bewaard); de omgeving staat in het bericht. Alleen de soort en getallen, nooit een installatie, plek of tekst van een gebruiker. Een webhook die niet antwoordt (3 s) of faalt, laat het verzoek niet mislukken. Zonder `ALERT_WEBHOOK` alleen `console.error` in Workers Logs. De noodrem geeft geen bericht: die zet de eigenaar zelf.
+
+**Instellen (eenmalig):** in Discord een eigen kanaal dat alleen de eigenaar ziet, niet dat van de testers. Kanaalinstellingen → Integraties → Webhooks → Nieuwe webhook → URL kopiëren. Dan in beide omgevingen:
+
+```bash
+npx wrangler secret put ALERT_WEBHOOK
+```
+
+```bash
+npx wrangler secret put ALERT_WEBHOOK --env stable
+```
+
+Proberen (de URL plakken in plaats van `<webhook>`):
+
+```bash
+curl -H "Content-Type: application/json" -d '{"content":"Fluistervink: proefbericht"}' <webhook>
+```
+
+Wat te doen bij een bericht: `docs/draaiboek-terugdraaien.md`.
+
 ## Delen met de ontwikkelaar
 
 gestopte sessies (uitspraken, transcripten, LLM-uitvoer, nagelopen waarnemingen, prullenbak, feedback en het log van die periode) gaan automatisch naar de proxy, die ze per tester in KV bewaart (`/api/feedback`, `worker/feedback.ts`, binding `FEEDBACK`). Opnieuw na een wijziging (hash per sessie), bv. na het nalopen; mislukt het, dan bij de volgende gelegenheid (opstarten, schermwissel, weer online). Alleen na toestemming: het hoofdscherm vraagt het één keer (ook aan wie de app al had), daarna aan/uit bij Instellingen (`src/lib/ShareSettings.svelte`). Opnames alleen als de gebruiker dat apart aanzet. Alleen de eigenaar kan ophalen: `npm run feedback -- pull` zet per tester een export in `testset/feedback/<tester>.json`, direct bruikbaar voor `npm run testset`; `npm run feedback -- notes` toont de nieuwe feedback (`--alle`: ook verwerkte) en `npm run feedback -- verwerkt` markeert die daarna als verwerkt (ook op het scherm Developer, waar de eigenaar de feedback van alle testers leest; `/api/feedback/notes`, verwerkte id's in KV `TESTERS`). Verwerkt verbergt alleen; "Verwerkte wissen" op Developer haalt verwerkte feedback voorgoed van de lijst (`/api/feedback/delete`, gewiste id's in KV `TESTERS`, zodat hij ook na opnieuw delen weg blijft). De gedeelde sessies zelf blijven (testset), samengevat in `NOTES.md`. `npm run feedback -- wipe <tester>` wist alles van een tester (online en lokaal). Zie `src/lib/share.ts` en `scripts/feedback.mjs`.

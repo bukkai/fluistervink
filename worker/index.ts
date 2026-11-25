@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { bill, type BillingKeys } from './billing';
 import { declaredTooLarge, json, MAX_AUDIO_BYTES, OWNER, readBody, tooLarge } from './common';
 import { feedback, testerUsage } from './feedback';
+import { alert } from './alert';
 import { guard, guardAi, guardNewInstall } from './guard';
 import {
   cleanDisplayName,
@@ -56,6 +57,8 @@ interface Secrets {
   ACCESS_CODE?: string;
   OPENAI_API_KEY: string;
   ANTHROPIC_API_KEY: string;
+  /** Optioneel: webhook (Discord) voor waarschuwingen aan de eigenaar, worker/alert.ts */
+  ALERT_WEBHOOK?: string;
 }
 
 type WorkerEnv = Env & Secrets & BillingKeys & InstallSecrets;
@@ -178,6 +181,13 @@ export default {
       return json({ error: 'Niet gevonden' }, 404);
     } catch (error) {
       if (error instanceof Anthropic.APIError) {
+        if (keyOrCreditProblem(error.status, error.message)) {
+          await alert(
+            env,
+            'anthropic_sleutel',
+            `Anthropic weigert de sleutel of het tegoed is op (${error.status}): ${error.message.slice(0, 200)}. Het model werkt nu voor niemand.`,
+          );
+        }
         return json({ error: error.message }, upstreamStatus(error.status));
       }
       console.error(error);
@@ -361,9 +371,16 @@ async function transcribe(
     text?: string;
     logprobs?: { logprob: number }[];
     usage?: TranscriptionUsage;
-    error?: { message: string };
+    error?: { message: string; code?: string };
   };
   if (!response.ok) {
+    if (keyOrCreditProblem(response.status, result.error?.code)) {
+      await alert(
+        env,
+        'openai_sleutel',
+        `OpenAI weigert de sleutel of het tegoed is op (${response.status}${result.error?.code ? `, ${result.error.code}` : ''}). Spraakherkenning werkt nu voor niemand.`,
+      );
+    }
     return json(
       { error: result.error?.message ?? 'Fout bij OpenAI' },
       upstreamStatus(response.status),
@@ -787,6 +804,17 @@ async function authorize(
  * Een 401/403 van OpenAI of Anthropic betekent een probleem met onze eigen
  * API-sleutel, niet met de toegangscode van de app. Geef dat door als 502.
  */
+/**
+ * Ligt het aan onze sleutel of ons tegoed bij OpenAI of Anthropic, en dus voor
+ * iedereen? 401/403, OpenAI's `insufficient_quota` (429), en Anthropic's
+ * "credit balance is too low" (400). Gewone drukte (429, 529) niet: daarvoor
+ * wacht de wachtrij vanzelf.
+ */
+export function keyOrCreditProblem(status: number | undefined, detail = ''): boolean {
+  if (status === 401 || status === 403) return true;
+  return /insufficient_quota|credit balance/i.test(detail);
+}
+
 function upstreamStatus(status: number | undefined): number {
   if (!status || status === 401 || status === 403) return 502;
   return status;
