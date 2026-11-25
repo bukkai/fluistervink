@@ -3,7 +3,9 @@ import type { CapacitorConfig } from '@capacitor/cli';
 // Android-app (Capacitor), zie docs/plan-capacitor.md. De app laadt de
 // webcode live van de site, zodat een gemergde PR meteen ook in de app staat;
 // alleen wijzigingen in android/ vragen een nieuwe app-versie. `webDir` is
-// verplicht, maar wordt met `server.url` alleen als terugval meegeleverd.
+// verplicht, maar wordt met `server.url` alleen als terugval meegeleverd:
+// alleen `dist/client` (wat de site serveert), niet de Worker-build in
+// `dist/fluistervink` (proxycode en sourcemap horen niet in de app).
 // De app staat op /app/; op / staat de voorpagina, die de Android-app meteen
 // doorstuurt (public/naar-app.js). Daarom hoeft `url` niet te veranderen.
 // Een branch testen vóór het mergen: `CAP_SERVER_URL=<preview-adres van
@@ -11,7 +13,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'nl.hegmus.fluistervink',
   appName: 'Fluistervink',
-  webDir: 'dist',
+  webDir: 'dist/client',
   server: {
     url: process.env.CAP_SERVER_URL || 'https://fluistervink.stephanmullernl.workers.dev',
   },
