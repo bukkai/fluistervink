@@ -2,6 +2,19 @@
 
 Wat er in de Play Console staat, zodat het na te kijken en bij te werken is. De teksten hieronder moeten één op één gelijk zijn aan de Console; pas ze hier aan als je ze daar aanpast. Roadmap: `docs/lancering.md`.
 
+## Bij te werken in de Console (25 nov)
+
+Stap voor stap, in deze volgorde. Haal een stap hier weg als hij gedaan is; staat er niets meer, dan haal je deze kop ook weg.
+
+1. **Lange beschrijving** — Groei → Winkelaanwezigheid → **Hoofdwinkelvermelding** → App-details → *Volledige beschrijving*: de hele tekst vervangen door het blok onder [Full description](#full-description) (het hele codeblok). Naam en korte beschrijving blijven zoals ze zijn.
+2. **Schermafbeeldingen** — zelfde pagina, kopje Afbeeldingen → *Schermafbeeldingen van telefoon*: de vijf oude verwijderen (prullenbakje bij elke afbeelding) en de zes uit `screenshots/` uploaden. Daarna in deze volgorde slepen: 1-inspreken, 2-trektellen, 3-samenvatting, 4-nalopen, 5-export, 6-start. Onderaan **Opslaan**.
+3. **Verklaring microfoon** — Beleid en programma's → **App-content** → *Foreground service-rechten* (Voorgrondservices) → Beheren: bij het type microfoon (Background audio input) de beschrijving vervangen door het Engelse blok onder [Microfoon](#microfoon-opnemen-met-het-scherm-uit). De video mag blijven. **Opslaan.**
+4. **Ter beoordeling sturen** — linksboven **Publicatieoverzicht**: daar staan de wijzigingen van stap 1–3. *Wijzigingen ter beoordeling sturen*. Na de beoordeling (meestal binnen een paar dagen) staan ze in de winkel; staat *Beheerd publiceren* aan, dan zet je ze daarna zelf live met **Publiceren**. Testers zien de nieuwe tekst en afbeeldingen op de winkelpagina na de deelnamelink.
+
+Pas bij de productierelease (`docs/lancering.md`, punt 5): de **naam** in de Hoofdwinkelvermelding wordt "Fluistervink: vogels inspreken" (zie [App name](#app-name)).
+
+Niet aanpassen: korte beschrijving, pictogram, feature graphic, categorie, contactgegevens en Gegevensveiligheid (nagekeken 25 nov).
+
 ## Feature graphic
 
 `feature-graphic.jpg` (1024×500, JPEG zonder alfakanaal), gemaakt uit `feature-graphic.html` met het huidige logo. Opnieuw maken na een wijziging, of met het nieuwe logo van de artiest:
@@ -13,7 +26,7 @@ sips -s format jpeg -s formatOptions 92 /tmp/fg.png --out docs/play-store/featur
 
 ## Schermafbeeldingen
 
-`screenshots/1-inspreken.png` t/m `6-trektellen.png` (1082×1922, staand; gemaakt 25 nov, in de Console nog die van 9 nov, met het verdwenen "Nieuw dit jaar"), in deze volgorde uploaden bij Winkelvermelding → Telefoon: lopende sessie, samenvatting na een sessie, onzeker nalopen met de kaart, export naar waarneming.nl, startscherm, lopende trektelling. Van de stabiele versie (zonder "beta") met verzonnen voorbeeldgegevens: een ochtend in de Amsterdamse Waterleidingduinen een in Zuid-Kennemerland en een trektelling op een duintop (`scripts/play-screenshots/seed.ts`; de stand van de telling zet het script zelf, zonder microfoon, dus er gaat niets naar spraakherkenning of model), geen echte plekken van gebruikers. Opnieuw maken (bv. met het nieuwe logo) met `npm run play-screenshots`: start de dev-server in de stand van stable en een headless Chrome (in `/Applications`), en vraagt internet voor de kaarttegels.
+`screenshots/1-inspreken.png` t/m `6-start.png` (1082×1922, staand; gemaakt 25 nov), in deze volgorde bij Hoofdwinkelvermelding → Schermafbeeldingen van telefoon: lopende sessie, lopende trektelling, samenvatting na een sessie, onzeker nalopen met de kaart, export naar waarneming.nl, startscherm. Van de stabiele versie (zonder "beta") met verzonnen voorbeeldgegevens: een ochtend in de Amsterdamse Waterleidingduinen, een in Zuid-Kennemerland en een trektelling op een duintop (`scripts/play-screenshots/seed.ts`; de stand van de telling zet het script zelf, zonder microfoon, dus er gaat niets naar spraakherkenning of model), geen echte plekken van gebruikers. Opnieuw maken (bv. met het nieuwe logo) met `npm run play-screenshots`: start de dev-server in de stand van stable en een headless Chrome (in `/Applications`), en vraagt internet voor de kaarttegels.
 
 ## Categorie
 
@@ -69,8 +82,6 @@ Video: niet-openbaar op YouTube, link in het formulier; draaiboek in `docs/archi
 
 Hetzelfde `WandelingService` heeft ook het type `microphone` (recht `FOREGROUND_SERVICE_MICROPHONE`), sinds v0.7 in beide builds, voor de keuze "Opnemen met het scherm uit" bij Instellingen. De verklaring geldt voor de hele app: een nieuwe toestemming eerst hier en in het formulier, anders weigert Play elke release die beoordeeld wordt (`docs/google-play.md`).
 
-**Nog te doen vóór productie:** de tekst hieronder (sinds #390 ook de trektelling met het scherm uit, tot 4 uur doorlopend) in de Play Console zetten.
-
 Taaktype: **Background audio input** (het formulier biedt alleen dat en Other). De tekst in het Engels:
 
 ```
@@ -93,7 +104,7 @@ Video: gefilmd met een tweede telefoon (een schermopname toont met het scherm ui
 
 ## Teksten
 
-Play Console → Groei → Winkelaanwezigheid → **Hoofdwinkelvermelding**. Laatst gelijk gezet: 9 nov. **Nog te doen:** de lange beschrijving hieronder (bijgewerkt 25 nov: volumeknop met het scherm uit, trektellen, geen bereik, eBird, afschermen) in de Console zetten; de naam pas bij de productierelease.
+Play Console → Groei → Winkelaanwezigheid → **Hoofdwinkelvermelding**. Laatst gelijk gezet: 9 nov; wat er nog moet, staat bovenaan.
 
 ### App name
 
