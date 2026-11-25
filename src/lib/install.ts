@@ -44,11 +44,13 @@ function installId(): string {
 }
 
 /**
- * Nonce voor Play Integrity: het id, base64 (web-safe, zonder opvulling).
- * Zelfde als integrityNonce in worker/install.ts.
+ * Nonce voor Play Integrity: de SHA-256 van het id, base64 (web-safe, zonder
+ * opvulling), zodat Google het id zelf niet ziet. Zelfde als integrityNonce in
+ * worker/install.ts.
  */
-export function integrityNonce(id: string): string {
-  return btoa(String.fromCharCode(...new TextEncoder().encode(id)))
+export async function integrityNonce(id: string): Promise<string> {
+  const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(id));
+  return btoa(String.fromCharCode(...new Uint8Array(hash)))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '');
@@ -90,7 +92,7 @@ async function registerOnce(): Promise<{ token: string; tester: string }> {
   const id = installId();
 
   if (isAndroidApp) {
-    const integrity = await playIntegrityToken(integrityNonce(id), config.playProjectNumber);
+    const integrity = await playIntegrityToken(await integrityNonce(id), config.playProjectNumber);
     if (integrity) {
       try {
         return await stored(await call('POST', { id, integrity }));

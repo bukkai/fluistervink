@@ -189,12 +189,23 @@ export async function listInstalls(kv: KVNamespace): Promise<(InstallRecord & { 
 }
 
 /**
- * Nonce voor Play Integrity: het id van de installatie, base64 (web-safe,
- * zonder opvulling). Zo hoort een verklaring bij één installatie en is hij
- * niet voor een andere te gebruiken. De app rekent hem net zo uit
+ * Nonce voor Play Integrity: de SHA-256 van het id van de installatie, base64
+ * (web-safe, zonder opvulling). Zo hoort een verklaring bij één installatie en
+ * is hij niet voor een andere te gebruiken, en ziet Google het id zelf niet
+ * (Google raadt een hash aan). De app rekent hem net zo uit
  * (src/lib/install.ts).
  */
-export function integrityNonce(id: string): string {
+export async function integrityNonce(id: string): Promise<string> {
+  const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(id));
+  return base64url(new Uint8Array(hash));
+}
+
+/**
+ * De nonce van vóór 25 nov 2026: het id zelf, base64. Een app met de webcode
+ * nog uit de cache kan die een tijd blijven sturen. Weghalen als de hash een
+ * paar weken op stable staat (NOTES.md).
+ */
+export function legacyIntegrityNonce(id: string): string {
   return base64url(new TextEncoder().encode(id));
 }
 
@@ -274,9 +285,10 @@ export async function verifyPlayIntegrity(
   const request = payload?.requestDetails;
   const age = Date.now() - Number(request?.timestampMillis);
   const verdict = payload?.deviceIntegrity?.deviceRecognitionVerdict ?? [];
+  const nonce = request?.nonce?.replace(/=+$/, '');
   return (
     request?.requestPackageName === APP_ID &&
-    request.nonce?.replace(/=+$/, '') === integrityNonce(id) &&
+    (nonce === (await integrityNonce(id)) || nonce === legacyIntegrityNonce(id)) &&
     age >= -60_000 &&
     age < MAX_VERDICT_AGE_MS &&
     payload?.appIntegrity?.appRecognitionVerdict === 'PLAY_RECOGNIZED' &&

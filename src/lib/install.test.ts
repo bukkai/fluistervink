@@ -137,9 +137,9 @@ describe('aanmelden zonder code', () => {
     expect(getInstallToken()).toBe('i1.token');
   });
 
-  it('rekent dezelfde nonce uit als de proxy (zelfde waarde in worker/index.test.ts)', () => {
-    expect(integrityNonce('3f9a2b1c-0000-4000-8000-000000000001')).toBe(
-      'M2Y5YTJiMWMtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAx',
+  it('rekent dezelfde nonce uit als de proxy (zelfde waarde in worker/index.test.ts)', async () => {
+    expect(await integrityNonce('3f9a2b1c-0000-4000-8000-000000000001')).toBe(
+      'k0l91YJxDrSWOVtsmDgCOYMhex0GEqkoZqz2DjSfkAI',
     );
   });
 });
