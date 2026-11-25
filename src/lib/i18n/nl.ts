@@ -57,7 +57,7 @@ export const nl = {
   'home.toSessions': 'Naar de sessies',
   'home.shareTitle': 'Delen met de ontwikkelaar?',
   'home.shareText':
-    'Fluistervink is nieuw en wordt beter van wat je inspreekt. Mag de app na elke sessie je uitspraken (als tekst), wat de app ervan maakte, je correcties en feedback, en de locaties van je waarnemingen naar de ontwikkelaar sturen? Opnames niet, tenzij je dat bij Instellingen aanzet. Alleen de ontwikkelaar kan het lezen; je kunt het altijd weer uitzetten.',
+    'Fluistervink is nieuw en wordt beter van wat je inspreekt. Mag de app na elke sessie je uitspraken (als tekst), wat de app ervan maakte, je correcties, notities en feedback, een logboek van wat de app deed, en de locaties van je waarnemingen naar de ontwikkelaar sturen? Opnames niet, tenzij je dat bij Instellingen aanzet. Alleen de ontwikkelaar kan het lezen; je kunt het altijd weer uitzetten.',
   'home.privacyLink': 'Meer over privacy',
   'home.shareYes': 'Ja, delen',
   'home.shareNo': 'Liever niet',
@@ -86,7 +86,7 @@ export const nl = {
   'welcome.permissionsLeadAfter':
     ' mag gebruiken. Geef dat nu alvast, dan komt die vraag niet midden in je eerste waarneming.',
   'welcome.permissionsHint':
-    'De microfoon staat alleen aan als jij op de knop drukt. De locatie zorgt dat elke waarneming op de goede plek komt.',
+    'De microfoon staat alleen aan als jij erom vraagt: met de knop, of tijdens een telling die je zelf start. De locatie zorgt dat elke waarneming op de goede plek komt.',
   'welcome.permissionsHintApp':
     'Tijdens het vogelen staat er een melding van Fluistervink; daardoor werkt de app door als je telefoon in je zak zit.',
   'welcome.microphoneStatus': 'Microfoon: {status}',
@@ -115,7 +115,7 @@ export const nl = {
   'welcome.shareLead':
     'Fluistervink is nieuw, en het werk van één ontwikkelaar, Stephan. Wat jij inspreekt en verbetert, laat zien waar de app nog misgaat.',
   'welcome.shareText':
-    'Mag de app na elke sessie je uitspraken (als tekst), wat de app ervan maakte, je correcties en feedback, en de locaties van je waarnemingen naar de ontwikkelaar sturen? Opnames niet, tenzij je dat bij Instellingen aanzet. Alleen de ontwikkelaar kan het lezen, en je kunt het altijd weer uitzetten.',
+    'Mag de app na elke sessie je uitspraken (als tekst), wat de app ervan maakte, je correcties, notities en feedback, een logboek van wat de app deed, en de locaties van je waarnemingen naar de ontwikkelaar sturen? Opnames niet, tenzij je dat bij Instellingen aanzet. Alleen de ontwikkelaar kan het lezen, en je kunt het altijd weer uitzetten.',
   'welcome.asking': 'Even wachten…',
   'welcome.allow': 'Toestemming geven',
   'welcome.start': 'Aan de slag',
@@ -247,7 +247,7 @@ export const nl = {
   // Delen (ShareSettings.svelte)
   'share.title': 'Delen met de ontwikkelaar',
   'share.hintVoor':
-    'Na elke sessie gaan de uitspraken, wat de app ervan maakte, je correcties bij het nalopen en je feedback naar de ontwikkelaar, om de herkenning te verbeteren. Ook de locaties van je waarnemingen. Zie',
+    'Na elke sessie gaan de uitspraken, wat de app ervan maakte, je correcties bij het nalopen, je notities, je feedback en een logboek van wat de app deed naar de ontwikkelaar, om de herkenning te verbeteren. Ook de locaties van je waarnemingen. Zie',
   'share.hintNa': '.',
   'share.sessions': 'Sessies en feedback delen',
   'share.audio': 'Ook de opnames (helpt om de spraakherkenning te vergelijken)',
@@ -259,7 +259,7 @@ export const nl = {
   'share.nothingSent': 'Nog niets verstuurd.',
   'share.anon': 'Anonieme cijfers per sessie delen',
   'share.anonHint':
-    'Alleen getallen, zoals de duur, het aantal uitspraken en of je hebt geëxporteerd. Niet waar, wanneer, welke soorten of wat je zei, en niet van welke telefoon.',
+    'Alleen getallen, zoals de duur, het aantal uitspraken en of je hebt geëxporteerd. Niet waar, op welke dag, welke soorten of wat je zei, en niet van welke telefoon.',
 
   // Opnames (RecordingSettings.svelte, recordings.ts)
   'recordings.title': 'Opnames',

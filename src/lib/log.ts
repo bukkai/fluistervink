@@ -1,3 +1,4 @@
+import Dexie from 'dexie';
 import { db } from './db';
 import { language } from './i18n';
 import { region } from './region';
@@ -34,7 +35,11 @@ export function logEvent(
   data?: unknown,
   ids: { sessionId?: string; utteranceId?: string } = {},
 ): void {
-  db.events.add({ at: Date.now(), type, instance: INSTANCE_ID, ...ids, data }).catch(() => {});
+  // Buiten een lopende transactie: daarin zit `events` meestal niet, en dan
+  // ging de gebeurtenis stil verloren (bv. binnen applyActions)
+  Dexie.ignoreTransaction(() =>
+    db.events.add({ at: Date.now(), type, instance: INSTANCE_ID, ...ids, data }),
+  ).catch(() => {});
 }
 
 /** Laatste moment waarop de app naar de achtergrond ging. */

@@ -290,6 +290,27 @@ describe('corrigeren', () => {
     expect(obs).toMatchObject({ count: 2, uncertain: false });
   });
 
+  it('een ander aantal met de stem laat de twijfel staan', async () => {
+    await say('fitis of tjiftjaf', [
+      'add_observation',
+      { species_id: VINK, count: 1, uncertain: true, uncertain_reason: 'kan ook keep zijn' },
+    ]);
+    await say('nog één erbij', ['update_observation', { ref: 1, add_count: 1 }]);
+    const [obs] = await listObservations(SESSION);
+    expect(obs).toMatchObject({ count: 2, uncertain: true, uncertainReason: 'kan ook keep zijn' });
+  });
+
+  it('"ja, klopt" met de stem maakt hem zeker als het model dat zegt', async () => {
+    await say('vink', [
+      'add_observation',
+      { species_id: VINK, count: 1, uncertain: true, uncertain_reason: 'x' },
+    ]);
+    await say('ja, dat was een vink', ['update_observation', { ref: 1, uncertain: false }]);
+    const [obs] = await listObservations(SESSION);
+    expect(obs.uncertain).toBe(false);
+    expect(obs.uncertainReason).toBeUndefined();
+  });
+
   it('alleen een opmerking toevoegen laat de twijfel staan', async () => {
     await say('vink', ['add_observation', { species_id: VINK, count: 1, uncertain: true }]);
     await say('die zat op het hek', ['update_observation', { ref: 1, remarks: 'zat op het hek' }]);
@@ -307,7 +328,15 @@ describe('corrigeren', () => {
 });
 
 describe('easter eggs', () => {
+  // De grap trilt een seconde na het opslaan (setTimeout). Met echte timers
+  // viel die tril op een trage CI in een latere test ("houdt de rest van de
+  // wachtrij niet op" zag een feest-tril erbij): hier weggooien.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+  });
   afterEach(() => {
+    vi.clearAllTimers();
+    vi.useRealTimers();
     tochEenBuizerd.visible = false;
     lifer.visible = false;
   });
@@ -657,6 +686,26 @@ describe('ongedaan maken', () => {
     await say('ongedaan maken', ['undo', {}]);
     expect(await db.observations.count()).toBe(1);
     expect(await db.deletedObservations.count()).toBe(0);
+  });
+
+  it('een trektelstuk maakt niets ongedaan', async () => {
+    await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    const id = crypto.randomUUID();
+    await db.utterances.add({
+      id,
+      sessionId: SESSION,
+      recordedAt: (clock += 60_000),
+      transcript: 'nee, dat was fout',
+      status: 'pending',
+      trektel: true,
+    });
+    model.respond = () => toolResponse(['undo', {}]);
+    await processQueue();
+    expect(await listObservations(SESSION)).toHaveLength(1);
+    expect((await db.utterances.get(id))!.result).toBe('ignored');
+    await vi.waitFor(async () =>
+      expect(await db.events.where('type').equals('undo_skipped').count()).toBe(1),
+    );
   });
 
   it('twee keer ongedaan maken gaat twee stappen terug', async () => {
@@ -1078,6 +1127,30 @@ describe('wachtrij', () => {
     await retry(id);
     await vi.waitFor(async () => expect((await db.utterances.get(id))?.status).toBe('done'));
     expect(await db.observations.count()).toBe(1);
+  });
+
+  it('bij opnieuw proberen ziet het model alleen wat er vóór de uitspraak was', async () => {
+    await say('vink', ['add_observation', { species_id: VINK, count: 1 }]);
+    model.respond = () => {
+      throw new Error('geen verbinding');
+    };
+    const id = await queue('nog drie erbij');
+    await processQueue();
+    await say('houtduif', ['add_observation', { species_id: HOUTDUIF, count: 1 }]);
+
+    let seen: Observation[] = [];
+    model.respond = (recent) => {
+      seen = recent;
+      return toolResponse(['update_observation', { ref: 1, add_count: 3 }]);
+    };
+    await retry(id);
+    await vi.waitFor(async () => expect((await db.utterances.get(id))?.status).toBe('done'));
+    expect(seen.map((obs) => obs.speciesId)).toEqual([VINK]);
+    const counts = (await listObservations(SESSION)).map((obs) => [obs.speciesId, obs.count]);
+    expect(counts).toEqual([
+      [HOUTDUIF, 1],
+      [VINK, 4],
+    ]);
   });
 
   it('pakt uitspraken op die bleven hangen (app afgesloten tijdens verwerken)', async () => {

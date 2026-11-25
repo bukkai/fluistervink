@@ -11,6 +11,12 @@ import {
   signInstallToken,
 } from './install';
 import { keepFrom, pruneUsage, recordUsage, usageSince } from './usage';
+import {
+  NEW_INSTALLS_PER_DAY,
+  NEW_INSTALLS_PER_HOUR,
+  SHARED_BYTES_PER_INSTALL_PER_DAY,
+} from '../src/lib/limits';
+import { dayOf } from '../src/lib/costs';
 
 // De proxy in Node, met een nep-KV in het geheugen, D1 als SQLite in het
 // geheugen (zodat de echte SQL getest wordt) en een nagebootste fetch
@@ -116,6 +122,17 @@ function memoryD1() {
     },
     exec: (sql: string) => db.exec(sql),
   };
+}
+
+/** Zet een teller van worker/guard.ts voor vandaag op `n`. */
+async function setGuardCount(key: string, n: number) {
+  const db = env.USAGE as ReturnType<typeof memoryD1>;
+  db.exec(`CREATE TABLE IF NOT EXISTS guard_counts (
+    day TEXT NOT NULL, key TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (day, key))`);
+  await db
+    .prepare('INSERT OR REPLACE INTO guard_counts (day, key, n) VALUES (?, ?, ?)')
+    .bind(dayOf(new Date()), key, n)
+    .run();
 }
 
 let kv: ReturnType<typeof memoryKv>;
@@ -308,6 +325,29 @@ describe('/api/install (aanmelden zonder code)', () => {
 
   it('weigert een ongeldig id', async () => {
     expect((await register({ id: 'eigenaar', turnstile: 'goed' })).status).toBe(400);
+  });
+
+  it('stopt nieuwe installaties boven de grens per dag, bestaande mogen wel', async () => {
+    turnstileAnswers();
+    expect((await register({ id: ID, turnstile: 'goed' })).status).toBe(200);
+    await setGuardCount('install', NEW_INSTALLS_PER_DAY);
+    const other = '4f9a2b1c-0000-4000-8000-000000000002';
+    const response = await register({ id: other, turnstile: 'goed' });
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({ code: 'install_limit' });
+    expect(await getInstall(testersKv as never, other)).toBeNull();
+    // Een installatie die er al is, krijgt gewoon een token
+    expect((await register({ id: ID, turnstile: 'goed' })).status).toBe(200);
+  });
+
+  it('stopt ook boven de grens per uur', async () => {
+    turnstileAnswers();
+    for (let i = 0; i < NEW_INSTALLS_PER_HOUR; i++) {
+      const id = `${(0x10000000 + i).toString(16)}-0000-4000-8000-000000000003`;
+      expect((await register({ id, turnstile: 'goed' })).status).toBe(200);
+    }
+    const response = await register({ id: ID, turnstile: 'goed' });
+    expect(response.status).toBe(503);
   });
 
   it('staat uit zonder INSTALL_SECRET', async () => {
@@ -1900,5 +1940,124 @@ describe('/api/summaries (anonieme cijfers per sessie)', () => {
     expect(await (await post(summary, OWNER_CODE)).json()).toEqual({ ok: true, stored: false });
     expect(await list()).toEqual([]);
     expect((await call('/api/summaries?from=2000-01-01')).status).toBe(403);
+  });
+});
+
+describe('noodrem en grenzen voor alle installaties samen (guard.ts)', () => {
+  const message = {
+    id: 'msg_1',
+    type: 'message',
+    role: 'assistant',
+    model: 'claude-haiku-5-5',
+    content: [],
+    stop_reason: 'end_turn',
+    stop_sequence: null,
+    usage: { input_tokens: 1, output_tokens: 1 },
+  };
+  const body = JSON.stringify({ model: 'claude-haiku-5-5', max_tokens: 10, messages: [] });
+  const ask = (code?: string) =>
+    call('/api/messages', { method: 'POST', body, ...(code && { code }) });
+
+  it('noodrem: alleen de eigenaar zet hem, daarna wacht iedereen behalve de eigenaar', async () => {
+    expect((await call('/api/guard')).status).toBe(403);
+    expect(
+      (await call('/api/guard', { method: 'PUT', body: JSON.stringify({ paused: true }) })).status,
+    ).toBe(403);
+
+    const on = await call('/api/guard', {
+      code: OWNER_CODE,
+      method: 'PUT',
+      body: JSON.stringify({ paused: true }),
+    });
+    expect(await on.json()).toMatchObject({ paused: true });
+
+    const anna = await ask();
+    expect(anna.status).toBe(503);
+    expect(await anna.json()).toMatchObject({ code: 'paused' });
+    const share = await call('/api/feedback/sessions/abc', { method: 'PUT', body: '{"a":1}' });
+    expect(share.status).toBe(503);
+    expect(upstream).not.toHaveBeenCalled();
+    expect(kv.store.size).toBe(0);
+
+    upstream.mockImplementation(async () => Response.json(message));
+    expect((await ask(OWNER_CODE)).status).toBe(200);
+
+    await call('/api/guard', {
+      code: OWNER_CODE,
+      method: 'PUT',
+      body: JSON.stringify({ paused: false }),
+    });
+    expect((await ask()).status).toBe(200);
+  });
+
+  it('plafond per dag voor alle installaties samen, zonder de eigenaar', async () => {
+    upstream.mockImplementation(async () => Response.json(message));
+    const usage = (tester: string) =>
+      recordUsage(
+        env.USAGE as never,
+        { tester, channel: 'stable', session: 's', model: 'claude-haiku-5-5' },
+        // $10 aan Haiku (invoer $0,10 per miljoen tokens)
+        { inputTokens: 100_000_000 },
+      );
+    // Wat de eigenaar verbruikt (testset), telt niet mee; de installatie van
+    // Piet wel. (Apart, want een instantie onthoudt de kosten een halve minuut.)
+    await usage('eigenaar');
+    await usage(PIET);
+    const anna = await ask();
+    expect(anna.status).toBe(503);
+    expect(await anna.json()).toMatchObject({ code: 'budget' });
+    // De eigenaar blijft door kunnen
+    expect((await ask(OWNER_CODE)).status).toBe(200);
+
+    const status = await call('/api/guard', { code: OWNER_CODE });
+    expect(await status.json()).toMatchObject({ paused: false, costToday: 10, budget: 5 });
+  });
+
+  it('telt het verbruik van de eigenaar niet mee', async () => {
+    upstream.mockImplementation(async () => Response.json(message));
+    await recordUsage(
+      env.USAGE as never,
+      { tester: 'eigenaar', channel: 'stable', session: 's', model: 'claude-haiku-5-5' },
+      { inputTokens: 100_000_000 },
+    );
+    expect((await ask()).status).toBe(200);
+  });
+
+  it('een ander plafond met DAILY_BUDGET_USD', async () => {
+    upstream.mockImplementation(async () => Response.json(message));
+    env.DAILY_BUDGET_USD = '20';
+    await recordUsage(
+      env.USAGE as never,
+      { tester: PIET, channel: 'stable', session: 's', model: 'claude-haiku-5-5' },
+      { inputTokens: 100_000_000 },
+    );
+    expect((await ask()).status).toBe(200);
+  });
+
+  it('ruimt tellers van vóór gisteren op', async () => {
+    await setGuardCount(`share:${ANNA}`, 5);
+    const db = env.USAGE as ReturnType<typeof memoryD1>;
+    await db
+      .prepare('INSERT INTO guard_counts (day, key, n) VALUES (?, ?, ?)')
+      .bind('2000-01-01', `share:${PIET}`, 7)
+      .run();
+    await call('/api/guard', { code: OWNER_CODE });
+    const { results } = await db.prepare('SELECT key FROM guard_counts').all();
+    expect(results).toEqual([{ key: `share:${ANNA}` }]);
+  });
+
+  it('delen: boven de grens per installatie per dag wacht het, en wordt niets bewaard', async () => {
+    await setGuardCount(`share:${ANNA}`, SHARED_BYTES_PER_INSTALL_PER_DAY);
+    const anna = await call('/api/feedback/sessions/abc', { method: 'PUT', body: '{"a":1}' });
+    expect(anna.status).toBe(503);
+    expect(await anna.json()).toMatchObject({ code: 'share_limit' });
+    expect(kv.store.size).toBe(0);
+    // Een ander mag nog
+    const piet = await call('/api/feedback/sessions/abc', {
+      code: PIET_CODE,
+      method: 'PUT',
+      body: '{"a":1}',
+    });
+    expect(piet.status).toBe(200);
   });
 });

@@ -99,7 +99,7 @@ const WEEKLY_SCHEMA = `CREATE TABLE IF NOT EXISTS usage_weekly (
  */
 const ready = new WeakMap<D1Database, Promise<unknown>>();
 
-function ensureTable(db: D1Database): Promise<unknown> {
+export function ensureTable(db: D1Database): Promise<unknown> {
   let promise = ready.get(db);
   if (!promise) {
     promise = db

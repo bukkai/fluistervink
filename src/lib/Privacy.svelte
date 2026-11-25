@@ -37,7 +37,10 @@
         alleen hoeveel de app gebruikt wordt en een paar anonieme cijfers per sessie, nooit wat je
         zei of waar je was.
       </li>
-      <li>Je kunt alles zelf uitzetten en wissen.</li>
+      <li>
+        Delen kun je zelf uitzetten, en alles op je telefoon kun je zelf wissen. Wat al bij de
+        ontwikkelaar staat, wordt gewist als je erom vraagt.
+      </li>
       <li>
         Fluistervink is een persoonlijk project van Stephan Muller, die verantwoordelijk is voor je
         gegevens. Vragen of iets laten wissen: <a href="mailto:{CONTACT}">{CONTACT}</a>, of stuur
@@ -63,10 +66,17 @@
       <dt>Anthropic</dt>
       <dd>
         De tekst van je uitspraak plus de laatste waarnemingen van de sessie (zodat "nog drie erbij"
-        werkt), met hoe ver die van je af zijn. Geen opname en geen coördinaten. Anthropic wist het
-        binnen 30 dagen en traint er niet mee.
+        werkt), met hun tijd, je opmerkingen en notities, en hoe ver ze van je af zijn. Geen opname
+        en geen coördinaten. Anthropic wist het binnen 30 dagen (langer alleen als hun systemen
+        misbruik vermoeden) en traint er niet mee.
       </dd>
     </dl>
+    <p>
+      Bij een trektelling of tuintelling blijft de microfoon aan tot je stopt, en knipt de app de
+      opname in stukken van ongeveer een minuut. Stukken zonder spraak gooit de app meteen weg; de
+      rest gaat zoals elke uitspraak naar OpenAI en Anthropic, ook als iemand anders in de buurt
+      praat.
+    </p>
   </div>
 </section>
 
@@ -75,9 +85,12 @@
     <h3>Delen met de ontwikkelaar</h3>
     <p>
       Zeg je ja tegen delen, dan gaan na elke sessie je uitspraken als tekst, wat de app ervan
-      maakte, je correcties, je feedback, het logboek en de locaties van je waarnemingen naar de
-      ontwikkelaar. Opnames alleen als je dat bij <a href="{app}#instellingen">Instellingen</a> apart
-      aanzet. Feedback die je buiten een sessie typt, gaat meteen, met het logboek van het half uur ervoor.
+      maakte, je correcties, opmerkingen en notities, de naam van het gebied, je feedback, het
+      logboek (met het type toestel en de versie van Android of iOS) en de locaties van je
+      waarnemingen naar de ontwikkelaar. Opnames alleen als je dat bij <a href="{app}#instellingen">
+        Instellingen
+      </a> apart aanzet. Feedback die je buiten een sessie typt, gaat meteen, met het logboek van het
+      half uur ervoor.
     </p>
     <p>
       Zeg je per ongeluk een lang getal (zoals een telefoon- of rekeningnummer) of een e-mailadres,
@@ -85,9 +98,11 @@
       je telefoon blijft het staan.
     </p>
     <p>
-      Alleen de ontwikkelaar leest het, om de app te verbeteren, en geeft het niet door. Het staat
-      bij Cloudflare onder de naam van je installatie en blijft tot je vraagt het te wissen (via
-      feedback of <a href="mailto:{CONTACT}">{CONTACT}</a>).
+      Alleen de ontwikkelaar leest het, bij Cloudflare en op de eigen computer van de ontwikkelaar,
+      om de app te verbeteren. Soms gaat het opnieuw door de spraakherkenning en het model, om een
+      verbetering te testen. Verder gaat het nergens heen. Het staat onder de naam van je
+      installatie en blijft tot je vraagt het te wissen: mail naar
+      <a href="mailto:{CONTACT}">{CONTACT}</a>, of stuur feedback zolang delen aan staat.
     </p>
   </div>
 </section>
@@ -112,7 +127,8 @@
         opnames blijven bij de ontwikkelaar.
       </li>
       <li>
-        Een sessie helemaal verwijderen: bij <a href="{app}#sessies">Vorige sessies</a>.
+        Een sessie helemaal verwijderen: bij <a href="{app}#sessies">Vorige sessies</a>. Een al
+        gedeelde sessie blijft bij de ontwikkelaar tot je vraagt hem te wissen.
       </li>
       <li>
         Alles wissen: de app verwijderen, of in Chrome de sitegegevens van Fluistervink wissen.
@@ -167,11 +183,11 @@
         5 minuten), hoeveel uitspraken, waarnemingen en verschillende soorten, hoeveel daarvan
         onzeker, niet begrepen, met de stem verbeterd of mislukt waren, of er op bereik gewacht is,
         of het een trektelling of tuintelling was, of je hebt nagelopen en geëxporteerd, en of het
-        de Android-app was. Dat gebeurt als je de sessie exporteert, of een week na het stoppen.
-        Niet waar, wanneer, welke soorten of wat je zei. De server bewaart het zonder je
-        installatie, alleen met de week waarin die begon, dus het is niet terug te leiden naar jou.
-        Zo ziet de ontwikkelaar hoe goed de app in het veld werkt. Staat standaard aan; uitzetten
-        bij
+        de Android-app, een iPhone of de browser was. Dat gebeurt als je de sessie exporteert, of
+        een week na het stoppen. Niet waar, op welke dag, welke soorten of wat je zei. De server
+        bewaart het zonder je installatie, alleen met de week waarin het binnenkwam en de week
+        waarin je installatie begon, dus het is niet terug te leiden naar jou. Zo ziet de
+        ontwikkelaar hoe goed de app in het veld werkt. Staat standaard aan; uitzetten bij
         <a href="{app}#instellingen">Instellingen</a>.
       </p>
     </details>
@@ -199,10 +215,10 @@
           de eerste keer openen of er een echte browser achter zit, onder andere aan je IP-adres,
           volgens Cloudflare alleen om robots tegen te houden. Daarna heet je installatie
           bijvoorbeeld "app-3f9a2b1c", zonder iets wat naar jou verwijst, tenzij je bij
-          <a href="{app}#instellingen">Instellingen</a> je naam invult (niet verplicht). Bij die naam
+          <a href="{app}#instellingen">Instellingen</a> je naam invult (niet verplicht). Bij elke installatie
           staat ook of het een iPhone, een Android-toestel of een computer is (dat stuurt je browser zelf
           mee), zodat de ontwikkelaar ziet hoeveel mensen welk soort toestel gebruiken; het merk, het
-          model en de versie niet.
+          model en de versie niet (die staan alleen in het logboek, als je deelt).
         </dd>
       </dl>
     </details>
@@ -224,7 +240,7 @@
 </section>
 
 <p class="sources">
-  Bijgewerkt op 23 november 2026. Bronnen, nagekeken op 11 november 2026:
+  Bijgewerkt op 25 november 2026. Bronnen, nagekeken op 25 november 2026:
   <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noopener">
     OpenAI
   </a>,
