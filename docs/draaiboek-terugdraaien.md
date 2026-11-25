@@ -26,7 +26,7 @@ git diff <vorige-release>..origin/stable -- src/lib/db.ts | grep "db.version("
 
 In het dashboard: **Workers & Pages → fluistervink-stable → Deployments**. Bij de versie van vóór de release: **⋯ → Rollback**, met een korte reden.
 
-Of in de terminal (met dezelfde Cloudflare-login als `wrangler secret put`):
+Of in de terminal (met dezelfde Cloudflare-login als `wrangler secret put`). De lijst heeft de **nieuwste onderaan**; elke versie zonder `Message` is een build van Workers Builds (die zegt niet welke commit), en een "Secret Change" is ook een versie.
 
 ```bash
 npx wrangler deployments list --name fluistervink-stable
@@ -36,7 +36,15 @@ npx wrangler deployments list --name fluistervink-stable
 npx wrangler rollback <version-id> --name fluistervink-stable --message "terug naar vóór de release van <datum>"
 ```
 
-Nagaan: `https://fluistervink.nl/app/` in een privévenster openen en bij **Wat is er nieuw** de versie onderaan bekijken; een korte proefopname met de code van de eigenaar.
+Het werkt binnen seconden (geoefend 25 nov). Nagaan welke webcode er staat, zonder browsercache, aan de naam van het JS-bestand (die verandert bij elke build):
+
+```bash
+curl -s "https://fluistervink.nl/app/?r=$RANDOM" | grep -o '/assets/app-[^"]*\.js'
+```
+
+Daarna `npx wrangler secret list --name fluistervink-stable`: staan alle geheimen er nog? Een geheim dat ná de teruggezette versie is gezet, eerst nalopen. En een korte proefopname met de code van de eigenaar.
+
+**Let op:** loopt er nog een build in Workers Builds (net gemerged), dan zet die zijn versie gewoon over jouw teruggezette heen. Wacht tot hij klaar is (Cloudflare-dashboard, Builds), of zet hem stop, voordat je terugzet.
 
 **Wanneer gebruikers het krijgen:** een nieuwe (ook een oudere) versie komt alleen bij het opstarten binnen, en wacht tot er geen sessie loopt (`src/lib/update.ts`). Wie de app open heeft, krijgt hem pas na helemaal afsluiten en opnieuw openen. De proxy is meteen terug.
 
@@ -92,10 +100,12 @@ Alleen bij een fout in de native code (`android/`), na een nieuwe app-versie. We
 
 Eén keer, zodat het draaiboek klopt voordat het nodig is. Gebruik een release zonder nieuwe `db.version(n)`.
 
-1. `npx wrangler deployments list`: noteer de bovenste (huidige) en de vorige versie.
-2. `npx wrangler rollback <vorige> --message "oefening"`. Open de beta in een privévenster en kijk naar de versie bij Wat is er nieuw.
-3. Terug naar de huidige: `npx wrangler rollback <huidige> --message "oefening klaar"`.
+Doe het niet vlak na een merge naar `main`: Workers Builds moet klaar zijn.
+
+1. `npx wrangler deployments list --name fluistervink`: de onderste is de huidige, die erboven de vorige. Noteer ook de naam van het JS-bestand (de `curl` uit A, met het adres van de beta).
+2. `npx wrangler rollback <vorige> --name fluistervink --message "oefening"`. De naam van het JS-bestand moet veranderen; `secret list` moet nog alles geven.
+3. Terug: **vraag de lijst opnieuw op** en zet de onderste terug, niet de id van stap 1 (er kan intussen een build bij zijn gekomen). Het JS-bestand moet weer dat van stap 1 zijn.
 4. Stuur een proefbericht naar de webhook (zie `docs/proxy.md`, Waarschuwingen) en kijk of het in Discord aankomt.
 5. Pas dit draaiboek aan waar het niet klopte, en zet hier de datum van de oefening neer.
 
-Geoefend: nog niet.
+Geoefend: 25 nov 2026 op de beta. Terugzetten werkte binnen seconden, de proxy bleef antwoorden en alle geheimen bleven staan. Geleerd: tijdens de oefening rolde Workers Builds nog drie merges uit (#395–#398). Daardoor was de id van "de huidige" al verouderd, en zette "terug" even een oudere build neer, tot de volgende build het rechtzette. Daarom stap 3 en de waarschuwing in A. Verder stond in de eerste versie van dit draaiboek dat de nieuwste bovenaan staat; dat is onderaan. Het proefbericht naar Discord kwam aan.
