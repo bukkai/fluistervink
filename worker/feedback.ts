@@ -363,7 +363,9 @@ async function sharedSessionKeysWithMetadata(
   let cursor: string | undefined;
   do {
     const page = await env.FEEDBACK.list({ cursor });
-    keys.push(...page.keys.filter((k) => k.name.includes('/sessions/')));
+    for (const { name, metadata } of page.keys) {
+      if (name.includes('/sessions/')) keys.push({ name, metadata });
+    }
     cursor = page.list_complete ? undefined : page.cursor;
   } while (cursor);
   return keys;
