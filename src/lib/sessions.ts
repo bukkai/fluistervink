@@ -101,6 +101,9 @@ export async function resumeSession(id: string): Promise<boolean> {
     await db.sessions.update(id, {
       status: 'active',
       endedAt: undefined,
+      // Weer bezig: niet meer klaar voor waarneming.nl (anders ging een
+      // halve sessie mee in de volgende export)
+      readyAt: undefined,
       resumedAt: now,
       ...(session.effort && { effort: resumedEffort(session.effort, now) }),
     });

@@ -118,11 +118,14 @@ export async function rescueUtterance(utteranceId: string): Promise<string | und
     area: utterance.area,
     status: 'draft',
   };
-  await db.transaction('rw', db.observations, db.utterances, async () => {
+  // Dubbel getikt: de tweede maakt geen tweede waarneming
+  const added = await db.transaction('rw', db.observations, db.utterances, async () => {
+    if ((await db.utterances.get(utterance.id))?.handled) return false;
     await db.observations.add(observation);
     await db.utterances.update(utterance.id, { handled: 'observation' });
+    return true;
   });
-  return observation.id;
+  return added ? observation.id : undefined;
 }
 
 /**

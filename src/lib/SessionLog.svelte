@@ -5,6 +5,7 @@
   import { tick, untrack } from 'svelte';
   import { type Observation, type Session, type Utterance } from './db';
   import { player } from './player.svelte';
+  import { tapGuard } from './tapGuard';
   import { fillMissingAreas } from './area';
   import { mapsUrl } from './devNotes';
   import ObservationEditor from './ObservationEditor.svelte';
@@ -136,6 +137,9 @@
   );
   /** Waarneming net gemaakt van een niet begrepen uitspraak; annuleren haalt hem weg */
   let rescuing = $state<string>();
+
+  // Na Klopt of Weg schuift de rij eronder op dezelfde plek
+  const once = tapGuard();
 
   async function rescue(utteranceId: string) {
     const id = await rescueUtterance(utteranceId);
@@ -472,10 +476,10 @@
                 {/if}
                 <span class="end">
                   {#if obs.uncertain}
-                    <button class="small discard" onclick={() => deleteObservation(obs.id)}>
+                    <button class="small discard" onclick={once(() => deleteObservation(obs.id))}>
                       {t('log.discard')}
                     </button>
-                    <button class="small confirm" onclick={() => confirmObservation(obs.id)}>
+                    <button class="small confirm" onclick={once(() => confirmObservation(obs.id))}>
                       {t('log.confirm')}
                     </button>
                   {/if}

@@ -9,6 +9,7 @@ import {
   isFiledAway,
   notForExport,
   keepSession,
+  resumeSession,
 } from './sessions';
 
 // Vergeten sessie: na een uur stilte vragen, na 8 uur vanzelf stoppen.
@@ -164,5 +165,21 @@ describe('tuintelling zonder export', () => {
     expect(isFiledAway(tuin({}), false, none, now)).toBe(true);
     expect(isFiledAway(tuin({ endedAt: now - 2 * DAY }), false, none, now)).toBe(false);
     expect(isFiledAway(tuin({ readyAt: now - 9 * DAY }), false, none, now)).toBe(false);
+  });
+});
+
+describe('resumeSession', () => {
+  it('een klaargezette sessie voortzetten: niet meer klaar voor export', async () => {
+    await db.sessions.add({
+      id: 'klaar',
+      startedAt: now - HOUR,
+      endedAt: now - HOUR / 2,
+      status: 'ended',
+      readyAt: now - HOUR / 4,
+    });
+    expect(await resumeSession('klaar')).toBe(true);
+    const session = await db.sessions.get('klaar');
+    expect(session).toMatchObject({ status: 'active' });
+    expect(session?.readyAt).toBeUndefined();
   });
 });

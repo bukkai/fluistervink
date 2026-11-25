@@ -4,6 +4,7 @@
   import { liveQuery } from 'dexie';
   import { type Session } from './db';
   import { player } from './player.svelte';
+  import { tapGuard } from './tapGuard';
   import ObservationEditor from './ObservationEditor.svelte';
   import RarityMark from './RarityMark.svelte';
   import {
@@ -37,6 +38,9 @@
   let current = $derived(todo[0]);
   let source = $derived($utterances?.find((u) => u.id === current?.utteranceId));
   let species = $derived(current && getSpecies(current.speciesId));
+
+  // Na Klopt, Weg of Overslaan staat de volgende op dezelfde plek
+  const once = tapGuard();
 
   function skip() {
     if (current) skipped = [...skipped, current.id];
@@ -131,23 +135,26 @@
         {#if current.candidates?.length}
           <div class="candidates" role="group" aria-label={t('review.whichSpecies')}>
             {#each current.candidates as candidate (candidate)}
-              <button class="btn secondary" onclick={() => chooseCandidate(current.id, candidate)}>
+              <button
+                class="btn secondary"
+                onclick={once(() => chooseCandidate(current.id, candidate))}
+              >
                 {speciesLabel(candidate)}
               </button>
             {/each}
           </div>
         {/if}
         <div class="buttons">
-          <button class="btn secondary discard" onclick={() => deleteObservation(current.id)}>
+          <button class="btn secondary discard" onclick={once(() => deleteObservation(current.id))}>
             {t('log.discard')}
           </button>
           <button class="btn secondary" onclick={openEditor}>{t('review.edit')}</button>
-          <button class="btn" onclick={() => confirmObservation(current.id)}>
+          <button class="btn" onclick={once(() => confirmObservation(current.id))}>
             {t('log.confirm')}
           </button>
         </div>
         <p class="skip">
-          <button class="link" onclick={skip}>{t('review.skip')}</button>
+          <button class="link" onclick={once(skip)}>{t('review.skip')}</button>
         </p>
       {:else}
         <p>

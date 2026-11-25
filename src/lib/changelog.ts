@@ -33,6 +33,11 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     date: '2026-11-25',
     topics: {
+      Nalopen: [
+        'Twee keer snel tikken op "Klopt" of "Weg" raakt niet meer de volgende waarneming die op die plek verschijnt. Ook "Maak er een waarneming van" maakt er bij dubbel tikken maar één.',
+        'Een sessie die klaarstond voor waarneming.nl en die je voortzet, staat niet meer klaar: na het stoppen loop je hem opnieuw na.',
+      ],
+      'Over de app': ['De uitleg zegt nu hoe het trilt als je met het scherm uit opneemt.'],
       Inspreken: [
         'Een onzekere waarneming blijft onzeker als je er met de stem alleen iets bij zegt, zoals "nog één erbij": de soort is daarmee niet bevestigd. Een andere soort noemen of "ja, klopt" maakt hem wel zeker, net als aanpassen met de hand.',
         'Mislukt een uitspraak en probeer je hem later opnieuw, dan gaat "die" of "nog drie erbij" nog steeds over wat je vóór die uitspraak zag, niet over iets van daarna.',
