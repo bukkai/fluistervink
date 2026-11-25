@@ -60,6 +60,18 @@ export function vibrationPattern(feedback: Feedback): number[] {
 }
 
 /**
+ * Kan dit toestel trillen? De Android-app altijd; in de browser alleen een
+ * telefoon (aanraakscherm) met de Vibration API. Chrome op een laptop heeft
+ * `navigator.vibrate` wel, maar daar trilt niets; Safari op de iPhone heeft
+ * hem niet. Voor teksten die over trillen gaan.
+ */
+export function canVibrate(): boolean {
+  if (isNativeApp) return true;
+  if (typeof navigator.vibrate !== 'function') return false;
+  return typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
+}
+
+/**
  * Trilt, als het apparaat dat kan. In de Android-app via Android zelf; in de
  * browser weigert Chrome als de app op de achtergrond staat of als je de
  * pagina sinds het openen nog niet hebt aangeraakt. Weigeren komt in het

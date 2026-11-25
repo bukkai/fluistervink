@@ -4,7 +4,7 @@
   // bewaard (tryout.ts). De knop werkt zoals die in een sessie: tikken (nog
   // eens tikken stopt) of vasthouden (loslaten stopt).
   import { onDestroy } from 'svelte';
-  import { vibrate } from './feedback';
+  import { canVibrate, vibrate } from './feedback';
   import { t } from './i18n';
   import { logEvent } from './log';
   import { preferenceOn } from './preferences';
@@ -105,6 +105,9 @@
             : t('tryout.tap'),
   );
 
+  // Op een toestel dat niet trilt (een laptop, de iPhone in de browser)
+  // geen uitleg over de tril: die voel je daar niet (25 nov)
+  const vibrates = canVibrate();
   let trill = $derived(
     !result?.lines.length
       ? t('tryout.trillNothing')
@@ -173,7 +176,7 @@
             {/each}
           </ul>
         {/if}
-        <p class="trill">{trill}</p>
+        {#if vibrates}<p class="trill">{trill}</p>{/if}
         <p class="note">{t('tryout.note')}</p>
       </div>
     {/if}
