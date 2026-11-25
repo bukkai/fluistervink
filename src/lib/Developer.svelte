@@ -17,11 +17,13 @@
     markNotesProcessed,
     removeTester,
     cleanupTesters,
+    cleanupTestPhase,
     type SharedNote,
     type Tester,
   } from './api';
   import {
     checkBill,
+    dayOf,
     startOfLastMonth,
     summarize,
     type Billing,
@@ -32,6 +34,7 @@
   } from './costs';
   import { db } from './db';
   import {
+    addDays,
     COST_PER_USER_HIGH,
     COST_PER_USER_OK,
     costPerKind,
@@ -46,8 +49,16 @@
     versionsInUse,
   } from './stats';
   import { AUDIO_SECONDS_PER_DAY, MESSAGES_PER_DAY } from './limits';
-  import { ACTIVE_DAYS, asOwner, lastSeen, ownInstalls, splitActive } from './testers';
-  import { isUnused } from './unusedInstalls';
+  import {
+    ACTIVE_DAYS,
+    asOwner,
+    inTestPhase,
+    LAUNCH_DAY,
+    lastSeen,
+    ownInstalls,
+    splitActive,
+  } from './testers';
+  import { isLeftover, isUnused, LEFTOVER_DAYS } from './unusedInstalls';
   import { describeImport, exportAllJson, importJson, saveFile } from './export';
   import { dateTimeFormat, errorText } from './format';
 
@@ -303,6 +314,33 @@
       return;
     try {
       const gone = new Set(await cleanupTesters());
+      testers = testers?.filter((t) => !gone.has(t.name));
+    } catch (error) {
+      testersError = `Opruimen mislukt: ${errorText(error)}`;
+    }
+  }
+
+  /**
+   * Testfase opruimen: kan vanaf LEFTOVER_DAYS na de productierelease, voor wie
+   * sindsdien niets meer deed. Opruimen, niet afsluiten: wie toch terugkomt,
+   * kan gewoon verder (een afgesloten installatie kan zich niet opnieuw aanmelden).
+   */
+  const leftovers = $derived(
+    LAUNCH_DAY && dayOf(new Date()) >= addDays(LAUNCH_DAY, LEFTOVER_DAYS)
+      ? (testers ?? []).filter((t) => isLeftover(t, LAUNCH_DAY!))
+      : [],
+  );
+
+  async function cleanupLeftovers() {
+    if (
+      !LAUNCH_DAY ||
+      !confirm(
+        `${leftovers.length} installaties uit de testfase uit de lijst halen die sinds ${LAUNCH_DAY} niets meer inspraken of deelden? Ze blijven werken en komen terug zodra ze iets doen.`,
+      )
+    )
+      return;
+    try {
+      const gone = new Set(await cleanupTestPhase(LAUNCH_DAY));
       testers = testers?.filter((t) => !gone.has(t.name));
     } catch (error) {
       testersError = `Opruimen mislukt: ${errorText(error)}`;
@@ -872,6 +910,7 @@
                 · {tester.via === 'play' ? 'Play' : 'browser'}
                 {tester.blocked ? '· afgesloten' : ''}
                 {tester.owner ? '· van mij' : ''}
+                {inTestPhase(tester) ? '· testfase' : ''}
               </span>
               <span class="usage muted">{usageText(tester)}</span>
             </span>
@@ -891,8 +930,8 @@
           {showInactive ? 'Toon minder' : `Toon meer (${split.inactive.length})`}
         </button>
         <p class="hint">
-          Onder "Toon meer": afgesloten, van mij, nog niets gedeeld, of meer dan {ACTIVE_DAYS} dagen niet
-          gebruikt.
+          Onder "Toon meer": afgesloten, van mij, uit de testfase, nog niets gedeeld, of meer dan {ACTIVE_DAYS}
+          dagen niet gebruikt.
         </p>
       {/if}
       {#if unusedCount > 0}
@@ -900,6 +939,14 @@
         <p class="hint">
           Ongebruikt: aangemeld vóór vandaag en daarna niets ingesproken, gedeeld of een naam
           opgegeven.
+        </p>
+      {/if}
+      {#if leftovers.length > 0}
+        <button class="link more" onclick={cleanupLeftovers}>
+          Testfase opruimen ({leftovers.length})
+        </button>
+        <p class="hint">
+          Testfase: aangemeld vóór de productierelease en sindsdien niets ingesproken of gedeeld.
         </p>
       {/if}
     {/if}

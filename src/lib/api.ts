@@ -439,6 +439,18 @@ export async function cleanupTesters(): Promise<string[]> {
     .cleaned;
 }
 
+/**
+ * Installaties uit de testfase die sinds de productierelease (`since`) niets
+ * meer deden uit de lijst halen; ze blijven werken.
+ */
+export async function cleanupTestPhase(since: string): Promise<string[]> {
+  return (
+    await request<{ cleaned: string[] }>(`/api/testers?cleanup=testfase&since=${since}`, {
+      method: 'POST',
+    })
+  ).cleaned;
+}
+
 /** Een installatie van de eigenaar zelf, of (`false`) toch niet. */
 export async function markOwnInstall(name: string, owner: boolean): Promise<void> {
   await request(`/api/testers?name=${encodeURIComponent(name)}&owner=${owner ? 1 : 0}`, {

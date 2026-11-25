@@ -18,7 +18,14 @@
     type SummaryRow,
   } from './stats';
   import { dayOf } from './costs';
-  import { asOwner, ownInstalls } from './testers';
+  import {
+    asOwner,
+    LAUNCH_DAY,
+    leftoverNames,
+    ownInstalls,
+    testPhaseNames,
+    withoutTestPhase,
+  } from './testers';
 
   const DAYS = 30;
   /** Grafiek en tabel even lang, zodat elke week in de grafiek een rij heeft */
@@ -32,6 +39,8 @@
   let rows = $state<ActivityRow[]>();
   let error = $state('');
   let withOwner = $state(false);
+  /** Testers van vóór de productierelease meetellen (testers.ts, LAUNCH_DAY) */
+  let withTestPhase = $state(false);
 
   listActivity('2026-01-01')
     .then((result) => (rows = result))
@@ -44,7 +53,9 @@
   listSummaries(addDays(dayOf(new Date()), -7 * 12))
     .then((result) => (summaries = result))
     .catch(() => (summaries = undefined));
-  let sessionWeeks = $derived(perSessionWeek(summaries ?? []));
+  let sessionWeeks = $derived(
+    perSessionWeek(withTestPhase ? (summaries ?? []) : withoutTestPhase(summaries ?? [])),
+  );
   let allSessions = $derived(sessionWeeks.at(-1));
   /** Een deel als percentage, alleen bij een groep van minstens MIN_GROUP sessies */
   const pct = (share: number, sessions: number) =>
@@ -57,19 +68,25 @@
   // Installaties van de eigenaar zelf tellen als de eigenaar (testers.ts)
   let own = $derived(ownInstalls(installs ?? []));
   let allRows = $derived(asOwner(rows ?? [], own));
-  let counted = $derived(allRows.filter((r) => withOwner || r.tester !== 'eigenaar'));
+  // Testfase (testers.ts): wie na de release doorgaat, telt als gebruiker mee,
+  // maar niet als nieuwe gebruiker (trechter, "Blijven ze?")
+  let testPhase = $derived(testPhaseNames(rows ?? [], installs ?? []));
+  let leftover = $derived(leftoverNames(rows ?? [], testPhase));
+  let withoutOwner = $derived(allRows.filter((r) => withOwner || r.tester !== 'eigenaar'));
+  let counted = $derived(withoutOwner.filter((r) => withTestPhase || !leftover.has(r.tester)));
+  let newUsers = $derived(withoutOwner.filter((r) => withTestPhase || !testPhase.has(r.tester)));
   let days = $derived(perDay(counted, DAYS));
   let weeks = $derived(perWeek(counted, WEEKS));
   /** Laatste weken van eerste gebruik; ouder past niet op een telefoon */
   const COHORTS = 12;
-  let cohortRows = $derived(cohorts(counted).slice(0, COHORTS));
+  let cohortRows = $derived(cohorts(newUsers).slice(0, COHORTS));
   /**
    * Alle groepen samen, per week na het begin: telt alleen groepen waarvoor die
    * week al om is. Zo is er al een cijfer voordat één week groot genoeg is.
    */
   let cohortTotal = $derived(
     RETENTION_WEEKS.map((_, i) => {
-      const done = cohorts(counted).filter((c) => c.retained[i] !== undefined);
+      const done = cohorts(newUsers).filter((c) => c.retained[i] !== undefined);
       const size = done.reduce((sum, c) => sum + c.size, 0);
       const kept = done.reduce((sum, c) => sum + c.retained[i]! * c.size, 0);
       return { size, share: size ? kept / size : undefined };
@@ -79,7 +96,9 @@
     installs
       ? funnel(
           allRows,
-          installs.filter((t) => !t.owner).map((t) => t.name),
+          installs
+            .filter((t) => !t.owner && (withTestPhase || !testPhase.has(t.name)))
+            .map((t) => t.name),
         )
       : undefined,
   );
@@ -176,6 +195,12 @@
   <input type="checkbox" bind:checked={withOwner} />
   Mijn eigen gebruik meetellen
 </label>
+{#if LAUNCH_DAY}
+  <label class="owner">
+    <input type="checkbox" bind:checked={withTestPhase} />
+    Testers van vóór {shortFormat.format(date(LAUNCH_DAY))} meetellen
+  </label>
+{/if}
 
 {#if error}
   <p class="error">{error}</p>
@@ -238,7 +263,10 @@
         <p class="muted hint">
           Elk percentage van de stap ervoor. De laatste stap telt alleen wie minstens {STAY_DAYS /
             7} weken geleden begon ({steps.eligible}), met een percentage vanaf {MIN_GROUP}. Zonder
-          de eigenaar en zonder testers van vóór het aanmelden zonder code.
+          de eigenaar en zonder testers van vóór het aanmelden zonder code{LAUNCH_DAY &&
+          !withTestPhase
+            ? ', en zonder de testfase'
+            : ''}.
         </p>
       </div>
     </section>
@@ -288,7 +316,9 @@
       <p class="muted hint">
         Welk deel in precies die week na de eerste week nog iets insprak. Een percentage alleen bij
         minstens {MIN_GROUP} mensen, en alleen voor weken die om zijn. Alle: de groepen samen waarvoor
-        die week al om is.
+        die week al om is.{LAUNCH_DAY && !withTestPhase
+          ? ' Alleen wie na de productierelease begon.'
+          : ''}
       </p>
     </div>
   </section>

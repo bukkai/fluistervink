@@ -1360,6 +1360,57 @@ describe('/api/feedback/notes (feedback inzien)', () => {
     expect(await names()).toContain(installName(OUD));
   });
 
+  it('ruimt de testfase op; wie daarna iets doet, komt terug', async () => {
+    const launch = '2026-11-01';
+    const install = (id: string, registeredAt: number) =>
+      putInstall(testersKv as never, id, {
+        name: installName(id),
+        registeredAt,
+        via: 'play',
+      });
+    const GESTOPT = 'c0000000-0000-4000-8000-00000000000c';
+    const DOOR = 'd0000000-0000-4000-8000-00000000000d';
+    const NIEUW = 'e0000000-0000-4000-8000-00000000000e';
+    await install(GESTOPT, Date.parse('2026-10-20T12:00:00Z'));
+    await install(DOOR, Date.parse('2026-10-20T12:00:00Z'));
+    await install(NIEUW, Date.parse('2026-11-05T12:00:00Z'));
+    const names = async () =>
+      (
+        (await (await call('/api/testers', { code: OWNER_CODE })).json()) as {
+          testers: { name: string }[];
+        }
+      ).testers
+        .map((t) => t.name)
+        .sort();
+    await names(); // maakt de tabel aan
+    const spoke = (tester: string, day: string) =>
+      (env.USAGE as ReturnType<typeof memoryD1>)
+        .prepare(
+          `INSERT INTO usage (day, tester, channel, session, model) VALUES (?, ?, 'stable', 's1', 'm')`,
+        )
+        .bind(day, tester)
+        .run();
+    await spoke(installName(GESTOPT), '2026-10-25');
+    await spoke(installName(DOOR), '2026-10-25');
+    await spoke(installName(DOOR), '2026-11-10');
+    const cleanup = (query: string) =>
+      call(`/api/testers?cleanup=testfase${query}`, { code: OWNER_CODE, method: 'POST' });
+
+    expect((await cleanup('')).status).toBe(400);
+    expect(await (await cleanup(`&since=${launch}`)).json()).toEqual({
+      cleaned: [installName(GESTOPT)],
+    });
+    // Deed vóór het opruimen al iets, en staat toch niet meer in de lijst
+    expect(await names()).toEqual([installName(DOOR), installName(NIEUW)].sort());
+    // Het token werkt nog
+    const token = await signInstallToken(GESTOPT, INSTALL_SECRET);
+    expect((await call('/api/ping', { code: token })).status).toBe(200);
+
+    // Komt terug zodra hij na het opruimen iets inspreekt
+    await spoke(installName(GESTOPT), '2099-01-01');
+    expect(await names()).toContain(installName(GESTOPT));
+  });
+
   it('ruimt niets op als het verbruik niet te lezen is', async () => {
     await putInstall(testersKv as never, ANNA_ID, {
       name: ANNA,
