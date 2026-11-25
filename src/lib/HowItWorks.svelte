@@ -129,7 +129,9 @@
     {#if isAndroidApp}
       <p>
         Zolang een sessie loopt, staat er een melding bovenin en werkt de app door met het scherm
-        uit. Laat de knop wel eerst los: scherm uit tijdens het inspreken stopt de opname.
+        uit. Laat de knop wel eerst los: scherm uit tijdens het inspreken stopt de opname, behalve
+        met "Opnemen met het scherm uit". Daarmee voel je bij het starten met de volumeknop twee
+        snelle tikjes en bij het stoppen één stevige tril, ook met de telefoon in je zak.
       </p>
     {:else if !isIosApp}
       <p>

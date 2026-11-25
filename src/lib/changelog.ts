@@ -31,6 +31,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026-11-25',
+    topics: {
+      Nalopen: [
+        'Twee keer snel tikken op "Klopt" of "Weg" raakt niet meer de volgende waarneming die op die plek verschijnt. Ook "Maak er een waarneming van" maakt er bij dubbel tikken maar één.',
+        'Een sessie die klaarstond voor waarneming.nl en die je voortzet, staat niet meer klaar: na het stoppen loop je hem opnieuw na.',
+      ],
+      'Over de app': ['De uitleg zegt nu hoe het trilt als je met het scherm uit opneemt.'],
+    },
+  },
+  {
     date: '2026-11-24',
     topics: {
       Inspreken: [

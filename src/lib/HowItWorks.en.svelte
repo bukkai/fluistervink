@@ -128,7 +128,9 @@
       <p>
         While a session is running, there’s a notification at the top and the app keeps working with
         the screen off. Do let go of the button first: turning the screen off while speaking stops
-        the recording.
+        the recording, except with "Record with the screen off". With that on, you feel two quick
+        taps when the volume button starts a recording and one firm buzz when it stops, even with
+        the phone in your pocket.
       </p>
     {:else if !isIosApp}
       <p>

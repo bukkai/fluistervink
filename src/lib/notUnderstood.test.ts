@@ -66,6 +66,14 @@ describe('niet begrepen uitspraken', () => {
     expect(notUnderstood(await listUtterances('s'))).toEqual([]);
   });
 
+  it('dubbel getikt: één waarneming', async () => {
+    await db.utterances.add(utterance('u', {}));
+    const ids = await Promise.all([rescueUtterance('u'), rescueUtterance('u')]);
+
+    expect(ids.filter(Boolean)).toHaveLength(1);
+    expect(await db.observations.count()).toBe(1);
+  });
+
   it('annuleren haalt de waarneming weg en zet de uitspraak terug op de kaart', async () => {
     await db.utterances.add(utterance('u', {}));
     const id = await rescueUtterance('u');
