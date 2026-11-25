@@ -148,8 +148,9 @@ Een vaste plek (vensterbank of vogelhut), `schermUit` aan, `oortjesMicrofoon` ui
 
 **3.2 Tweede telling, even lang, zonder zichtbare WebView**
 
-- [ ] Eerst laten maken: een PR die `KEEP_WEBVIEW_VISIBLE` uitzet (`src/lib/screenOff.svelte.ts`, webcode, na de merge meteen in de beta).
-- [ ] Dezelfde telling. Het verschil in accu is wat de zichtbare WebView kost. Daarna weer aanzetten (zonder bevriest de webcode en is er geen tril).
+- [ ] Ontwikkeloptie **"Scherm uit: webcode laten slapen (accuproef)"** aan (Instellingen → In het veld; webcode, geen nieuwe app-versie). Log: `screen_off_on` met `zichtbaar: false`.
+- [ ] Dezelfde telling, even lang. Verwacht: geen tril na een stuk, alles wordt pas verwerkt als het scherm aangaat. Het verschil in accu met 3.1 is wat de zichtbare WebView kost.
+- [ ] Daarna de optie weer uit.
 
 ## 4. Met een kind (begin december; #327)
 

@@ -67,7 +67,8 @@ describe('opnemen met het scherm uit', () => {
     vi.clearAllMocks();
     screenOff.startedAt = undefined;
     screenOff.ready = undefined;
-    devOptionOn.mockReturnValue(true);
+    // Alle ontwikkelopties aan, behalve de accuproef die iets uitzet
+    devOptionOn.mockImplementation((option: string) => option !== 'webviewSlapen');
     preferenceOn.mockReturnValue(true);
     native.pendingScreenOffRecordings.mockResolvedValue([]);
     native.doneScreenOffRecording.mockResolvedValue(undefined);
@@ -108,6 +109,15 @@ describe('opnemen met het scherm uit', () => {
     devOptionOn.mockReturnValue(false);
     startScreenOff('s1', 180_000, onPress);
     expect(native.listenScreenOff.mock.calls[0][0]).toMatchObject({ oortjesKnop: false });
+  });
+
+  it('houdt de WebView in beeld, behalve met de ontwikkeloptie webviewSlapen', () => {
+    startScreenOff('s1', 180_000, onPress);
+    expect(native.listenScreenOff.mock.calls[0][0]).toMatchObject({ zichtbaar: true });
+
+    devOptionOn.mockImplementation((option: string) => option === 'webviewSlapen');
+    startScreenOff('s2', 180_000, onPress);
+    expect(native.listenScreenOff.mock.calls[1][0]).toMatchObject({ zichtbaar: false });
   });
 
   it('bewaart de opname met de positie van het begin, en ruimt dan het bestand op', async () => {

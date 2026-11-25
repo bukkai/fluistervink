@@ -168,9 +168,13 @@ export async function receiveScreenOffRecording(
  * meteen verwerkt worden, met tril. Meten: geen `page_frozen` meer, `hidden`
  * false bij `trektel_stuk` met het scherm uit, en de accu in
  * `trektel_native_end`; hoe vaak het nodig was in `screen_off_webview_zichtbaar`.
- * Kost het te veel accu, dan hier uitzetten (geen nieuwe app-versie nodig).
+ * Standaard aan. De ontwikkeloptie `webviewSlapen` zet het uit, om te meten
+ * wat de zichtbare WebView aan accu kost (docs/draaiboek-testen.md, 3.2);
+ * dan bevriest de webcode weer en is er met het scherm uit geen tril.
  */
-export const KEEP_WEBVIEW_VISIBLE = true;
+export function keepWebviewVisible(): boolean {
+  return !devOptionOn('webviewSlapen');
+}
 
 /**
  * Chromium zet een pagina die niet in beeld is na een minuut stil (Page
@@ -216,6 +220,7 @@ export function startScreenOff(
 ): () => void {
   if (!screenOffEnabled()) return () => {};
   const context = { sessionId };
+  const zichtbaar = keepWebviewVisible();
   let lookup: Promise<PositionLookup> | undefined;
 
   const { done, stop } = listenScreenOff(
@@ -225,7 +230,7 @@ export function startScreenOff(
       minMs: MIN_DURATION_MS,
       trilStart: vibrationPattern('screenOffStart'),
       trilStop: vibrationPattern('screenOffStop'),
-      zichtbaar: KEEP_WEBVIEW_VISIBLE,
+      zichtbaar,
       oortjesKnop: devOptionOn('oortjesKnop'),
     },
     {
@@ -269,7 +274,7 @@ export function startScreenOff(
   const stopWatching = watchPageFreeze(context);
   done.then((result) => {
     if (result.ok) screenOff.ready = true;
-    logEvent('screen_off_on', { ...result, zichtbaar: KEEP_WEBVIEW_VISIBLE }, context);
+    logEvent('screen_off_on', { ...result, zichtbaar }, context);
   });
   // Wat de service maakte terwijl de app dicht was
   pendingScreenOffRecordings().then((recordings) =>

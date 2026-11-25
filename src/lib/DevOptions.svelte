@@ -58,6 +58,13 @@
       hint: 'Met "Opnemen met het scherm uit" aan (bij In het veld) start en stopt ook de knop op de oortjes een opname, als hij bij Fluistervink aankomt: niet als er een podcast speelt, en bij sommige oortjes maar om en om. Daarvoor speelt de app bij het begin een kort stil geluid; bij een koptelefoon met twee apparaten kan dat de muziek van het andere stilzetten. Vanaf app-versie 0.7; daarvóór staat de knop altijd aan.',
       available: screenOffSupported,
     },
+    {
+      option: 'webviewSlapen',
+      group: 'field',
+      label: 'Scherm uit: webcode laten slapen (accuproef)',
+      hint: 'Alleen om te meten wat het kost dat de app met het scherm uit wakker blijft. Aan: de webcode bevriest weer na een minuut met het scherm uit, er is geen tril na een opname of een stuk van de trektelling, en alles wordt pas verwerkt als het scherm aangaat. Opnemen gaat gewoon door. Na de meting weer uitzetten (docs/draaiboek-testen.md, 3.2).',
+      available: screenOffSupported,
+    },
   ];
 
   const shown = items.filter((item) => item.available !== false);
