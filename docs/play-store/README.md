@@ -1,18 +1,6 @@
 # Winkelvermelding in Google Play
 
-Wat er in de Play Console staat, zodat het na te kijken en bij te werken is. De teksten hieronder moeten één op één gelijk zijn aan de Console; pas ze hier aan als je ze daar aanpast. Roadmap: `docs/lancering.md`.
-
-## Bij te werken in de Console (25 nov)
-
-Stap voor stap, in deze volgorde. Haal een stap hier weg als hij gedaan is; staat er niets meer, dan haal je deze kop ook weg.
-
-1. **Schermafbeeldingen** — Groei → Winkelaanwezigheid → **Hoofdwinkelvermelding**, kopje Afbeeldingen → *Schermafbeeldingen van telefoon*: de vijf oude verwijderen (prullenbakje bij elke afbeelding) en de zes uit `screenshots/` uploaden. Daarna in deze volgorde slepen: 1-inspreken, 2-trektellen, 3-samenvatting, 4-nalopen, 5-export, 6-start. Onderaan **Opslaan**.
-2. **Verklaring microfoon** — Beleid en programma's → **App-content** → *Foreground service-rechten* (Voorgrondservices) → Beheren: bij het type microfoon (Background audio input) de beschrijving vervangen door het Engelse blok onder [Microfoon](#microfoon-opnemen-met-het-scherm-uit). De video mag blijven. **Opslaan.**
-3. **Ter beoordeling sturen** — linksboven **Publicatieoverzicht**: daar staan de wijzigingen van hierboven (ook de lange beschrijving, gedaan 25 nov). *Wijzigingen ter beoordeling sturen*. Na de beoordeling (meestal binnen een paar dagen) staan ze in de winkel; staat *Beheerd publiceren* aan, dan zet je ze daarna zelf live met **Publiceren**. Testers zien de nieuwe tekst en afbeeldingen op de winkelpagina na de deelnamelink.
-
-Pas bij de productierelease (`docs/lancering.md`, punt 5): de **naam** in de Hoofdwinkelvermelding wordt "Fluistervink: vogels inspreken" (zie [App name](#app-name)).
-
-Niet aanpassen: korte beschrijving, pictogram, feature graphic, categorie, contactgegevens en Gegevensveiligheid (nagekeken 25 nov).
+Wat er in de Play Console staat, zodat het na te kijken en bij te werken is. De teksten hieronder moeten één op één gelijk zijn aan de Console; pas ze hier aan als je ze daar aanpast. Laatst bijgewerkt in de Console: 25 nov (beschrijving, schermafbeeldingen, verklaring microfoon; ter beoordeling gestuurd). Roadmap: `docs/lancering.md`.
 
 ## Feature graphic
 
@@ -25,7 +13,7 @@ sips -s format jpeg -s formatOptions 92 /tmp/fg.png --out docs/play-store/featur
 
 ## Schermafbeeldingen
 
-`screenshots/1-inspreken.png` t/m `6-start.png` (1082×1922, staand; gemaakt 25 nov), in deze volgorde bij Hoofdwinkelvermelding → Schermafbeeldingen van telefoon: lopende sessie, lopende trektelling, samenvatting na een sessie, onzeker nalopen met de kaart, export naar waarneming.nl, startscherm. Van de stabiele versie (zonder "beta") met verzonnen voorbeeldgegevens: een ochtend in de Amsterdamse Waterleidingduinen, een in Zuid-Kennemerland en een trektelling op een duintop (`scripts/play-screenshots/seed.ts`; de stand van de telling zet het script zelf, zonder microfoon, dus er gaat niets naar spraakherkenning of model), geen echte plekken van gebruikers. Opnieuw maken (bv. met het nieuwe logo) met `npm run play-screenshots`: start de dev-server in de stand van stable en een headless Chrome (in `/Applications`), en vraagt internet voor de kaarttegels.
+`screenshots/1-inspreken.png` t/m `6-start.png` (1082×1922, staand; gemaakt en geüpload 25 nov), in deze volgorde bij Hoofdwinkelvermelding → Schermafbeeldingen van telefoon: lopende sessie, lopende trektelling, samenvatting na een sessie, onzeker nalopen met de kaart, export naar waarneming.nl, startscherm. Van de stabiele versie (zonder "beta") met verzonnen voorbeeldgegevens: een ochtend in de Amsterdamse Waterleidingduinen, een in Zuid-Kennemerland en een trektelling op een duintop (`scripts/play-screenshots/seed.ts`; de stand van de telling zet het script zelf, zonder microfoon, dus er gaat niets naar spraakherkenning of model), geen echte plekken van gebruikers. Opnieuw maken (bv. met het nieuwe logo) met `npm run play-screenshots`: start de dev-server in de stand van stable en een headless Chrome (in `/Applications`), en vraagt internet voor de kaarttegels.
 
 ## Categorie
 
@@ -103,7 +91,7 @@ Video: gefilmd met een tweede telefoon (een schermopname toont met het scherm ui
 
 ## Teksten
 
-Play Console → Groei → Winkelaanwezigheid → **Hoofdwinkelvermelding**. Laatst gelijk gezet: 25 nov (lange beschrijving; de naam nog niet).
+Play Console → Groei → Winkelaanwezigheid → **Hoofdwinkelvermelding**.
 
 ### App name
 
