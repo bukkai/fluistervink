@@ -2784,6 +2784,30 @@
   "group": 1
  },
  {
+  "id": 643156,
+  "name": "Duif onbekend",
+  "scientific": "Columbidae indet.",
+  "type": "M",
+  "rarity": 0,
+  "group": 1
+ },
+ {
+  "id": 643161,
+  "name": "Specht onbekend",
+  "scientific": "Picidae indet.",
+  "type": "M",
+  "rarity": 0,
+  "group": 1
+ },
+ {
+  "id": 643256,
+  "name": "Mees onbekend",
+  "scientific": "Paridae indet.",
+  "type": "M",
+  "rarity": 0,
+  "group": 1
+ },
+ {
   "id": 643328,
   "name": "Goudhaan onbekend",
   "scientific": "Regulidae indet.",
@@ -2797,6 +2821,14 @@
   "scientific": "Fringillidae indet.",
   "type": "M",
   "rarity": 1,
+  "group": 1
+ },
+ {
+  "id": 643341,
+  "name": "Mus onbekend",
+  "scientific": "Passeridae indet.",
+  "type": "M",
+  "rarity": 0,
   "group": 1
  },
  {
