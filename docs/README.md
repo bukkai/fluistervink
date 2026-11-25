@@ -70,3 +70,4 @@ Afgerond, alleen nog om terug te lezen.
 - `archief/draaiboek-telling.md`: trektelling met het scherm uit en tuintelling op de telefoon (afgerond 23 nov).
 - `archief/werklog-2026.md`: de oude stand uit `NOTES.md` (13 okt – 22 nov).
 - `archief/kwaliteitsronde-logboek.md`: oudere regels uit het logboek van de kwaliteitsronde (24 okt – 16 nov).
+- `archief/play-videos.md`: draaiboeken voor de video's bij de verklaring foreground service (goedgekeurd).

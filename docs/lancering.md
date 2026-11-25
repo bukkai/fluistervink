@@ -19,7 +19,7 @@ Grove planning: gesloten test vanaf ~10 nov, aanvragen ~24 nov, openbaar rond be
 Eigenaar:
 
 - [x] `npm run release`: welkom (#168) en back-up (#167) naar `fluistervink.nl`.
-- [x] Play Console → Testen → **Gesloten tests**: track aanmaken (bv. "Stabiel"), de stabiele AAB van de laatste tag uploaden en uitrollen (`docs/google-play.md`, stap 5.4).
+- [x] Play Console → Testen → **Gesloten tests**: track aanmaken (bv. "Stabiel"), de stabiele AAB van de laatste tag uploaden en uitrollen (`docs/google-play.md`, Een nieuwe versie).
 - [x] Deelnamelink van die track: `https://play.google.com/apps/testing/nl.hegmus.fluistervink`. Winkelpagina (pas zichtbaar na deelnemen): `https://play.google.com/store/apps/details?id=nl.hegmus.fluistervink`.
 - [x] 15–20 testers werven (12 sinds 17 nov, genoeg voor de regel van Google) (Gmail-adressen in de lijst van de gesloten test) en de deelnamelink sturen; een code is niet meer nodig.
 - [x] Contactadres voor de Play Store en de privacypagina: `info@fluistervink.nl` (bestaat sinds 9 nov).

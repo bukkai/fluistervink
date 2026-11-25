@@ -1,95 +1,53 @@
-# Google Play: interne test (fase 4)
+# Google Play: builds, ondertekenen en uploaden
 
-Android-testers krijgen de app via de **interne test** van Google Play, in plaats van losse APK's. Een release bouwt GitHub Actions bij een tag (`.github/workflows/release.yml`): twee ondertekende AAB's (Android App Bundle, het formaat dat Play wil), als artifacts bij de run. Plan: `docs/plan-capacitor.md`, fase 4.
+Een nieuwe app-versie bouwt GitHub Actions bij een tag (`.github/workflows/release.yml`): twee ondertekende AAB's (Android App Bundle, het formaat dat Play wil), als artifacts bij de run. De winkelvermelding en de verklaringen staan in `docs/play-store/README.md`, de lancering in `docs/lancering.md`.
 
-**Beta en stabiel** (`docs/omgevingen.md`): één app in Play, twee builds. De **beta** (`fluistervink-<tag>-beta`, heet "Fluistervink Beta", laadt de webcode van workers.dev) gaat naar de interne test. De **stabiele** (`fluistervink-<tag>-stable`, heet "Fluistervink", laadt `fluistervink.nl`) gaat naar een gesloten test, later productie. Wie in beide lijsten staat, krijgt de beta: die heeft bij dezelfde tag het hogere `versionCode`. Upload daarom bij elke tag **allebei**; anders kan een tester via een nieuwere stabiele build ongemerkt op `fluistervink.nl` belanden, zonder zijn sessies (die horen bij het adres).
-
-## Hoe het ondertekenen werkt
-
-Met **Play App Signing** heeft Google de echte sleutel waarmee de app op telefoons komt (de *app signing key*). Wij ondertekenen alleen met een **upload-key**: daarmee bewijs je bij het uploaden dat de AAB van jou komt. Raak je de upload-key kwijt, dan kan Google hem vervangen; de app zelf blijft dezelfde. Daarom is dit veiliger dan zelf de enige sleutel beheren.
-
-De upload-key staat in een keystore-bestand (`.jks`). GitHub Actions krijgt hem via vier secrets; `android/app/build.gradle` gebruikt hem alleen als die er zijn. Lokaal (zonder secrets) blijft `assembleDebug` gewoon werken, en `bundleRelease` maakt dan een niet-ondertekende AAB die Play weigert.
-
-## Eenmalig, door de eigenaar
-
-### 1. Play Console-account
-
-1. Ga naar [play.google.com/console](https://play.google.com/console) en maak een ontwikkelaarsaccount aan (eenmalig $25). Kies een **persoonlijk** account.
-2. Google vraagt een identiteitscontrole (legitimatie) en het verifiëren van een telefoonnummer. Dat kan een paar dagen duren.
-3. Voor een interne test hoeft de app niet door de beoordeling en niet openbaar in de Play Store. (De regel voor nieuwe persoonlijke accounts, eerst 14 dagen een gesloten test met 12 testers, geldt alleen voor publiceren in productie.)
-
-### 2. App aanmaken
-
-1. In de Play Console: **App maken**. Naam "Fluistervink", taal Nederlands, app (geen game), gratis.
-2. Het app-ID (`nl.hegmus.fluistervink`) vraagt Play niet hier; dat ligt vast bij de eerste upload (stap 5) en kan daarna niet meer veranderen.
-3. Play App Signing staat standaard aan bij een nieuwe app. Laat dat zo.
-
-### 3. Upload-key maken
-
-Op de Mac, in een map buiten de repository (bv. `~/Documents/fluistervink-sleutels/`):
-
-```bash
-keytool -genkeypair -v -keystore upload.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000
-```
-
-`keytool` hoort bij Java (bv. de Temurin 21 uit de README, of `"/Applications/Android Studio.app/Contents/jbr/Contents/Home/bin/keytool"`). Het vraagt een wachtwoord voor de keystore en je naam; de rest mag leeg blijven. Gebruik voor de sleutel hetzelfde wachtwoord als voor de keystore.
-
-Bewaar `upload.jks` en het wachtwoord goed (bv. in je wachtwoordbeheerder). **Nooit in git.**
-
-### 4. Secrets in GitHub
-
-Op GitHub: repository → **Settings → Secrets and variables → Actions → New repository secret**. Vier stuks:
-
-| Naam | Waarde |
-| --- | --- |
-| `UPLOAD_KEYSTORE_BASE64` | de keystore als tekst: `base64 -i upload.jks \| pbcopy` en dan plakken |
-| `UPLOAD_KEYSTORE_PASSWORD` | het wachtwoord van de keystore |
-| `UPLOAD_KEY_ALIAS` | `upload` (de `-alias` van keytool) |
-| `UPLOAD_KEY_PASSWORD` | het wachtwoord van de sleutel (zelfde als hierboven) |
-
-### 5. Eerste release bouwen en uploaden
-
-1. Een tag zetten op `main` en pushen:
-
-   ```bash
-   git tag v0.1 && git push origin v0.1
-   ```
-
-   (Of op GitHub bij Actions → "Release Android" → **Run workflow**.)
-2. Op GitHub bij **Actions** wacht je tot de run groen is (een paar minuten), en download je onderaan de artifacts `fluistervink-v0.1-beta` en `fluistervink-v0.1-stable` (elk een zip met `app-release.aab`). Uitpakken.
-3. In de Play Console: **Testen → Interne tests → Nieuwe release maken**, de `.aab` van **beta** uploaden, een releasenaam (mag de tag zijn) en kort wat er nieuw is. Opslaan en **Uitrollen naar interne test**.
-4. Zodra er mensen op de stabiele versie zitten: **Testen → Gesloten tests** (track aanmaken, bv. "Stabiel"), daar de `.aab` van **stable** uploaden en uitrollen.
-5. Play vraagt eenmalig nog wat gegevens voordat je kunt uitrollen (onder **Dashboard → App instellen**): privacybeleid (de link naar `#privacy` van de site), app-toegang, advertenties (nee), contentclassificatie, doelgroep, gegevensveiligheid. De interne test werkt al voordat alles hiervan af is; Play laat zien wat verplicht is.
-
-### 6. Testers toevoegen
-
-1. **Testen → Interne tests → Testers**: een e-maillijst maken met de Google-accounts (Gmail-adressen) van de Android-testers (beta). Hooguit 100. Gebruikers van de stabiele versie gaan in de lijst van de gesloten test, met een eigen link.
-2. Daar staat ook de **link voor deelname**: interne test `https://play.google.com/apps/internaltest/4701242842814722001`, gesloten test `https://play.google.com/apps/testing/nl.hegmus.fluistervink`.
-3. Per tester: eerst het Google-account op de lijst van stap 1 zetten, daarna de link voor deelname sturen (vanaf je eigen mail). Een iPhone-gebruiker krijgt het adres van de site (Safari, "Zet op beginscherm").
-4. De tester opent de link voor deelname op de telefoon, wordt tester en installeert de app uit Play. Een code is niet nodig: de app meldt zich vanzelf aan (Play Integrity). Wie wil, vult bij **Instellingen** een naam in, die jij op Developer ziet.
-
-**Van beta naar stabiel** (17 nov): de beta-app toont iedereen behalve de eigenaar een kaart op het hoofdscherm met de vraag om over te stappen (`src/lib/MoveToStable.svelte`): back-up maken (alleen nodig als er nog sessies zijn die niet naar waarneming.nl zijn geëxporteerd), de interne test verlaten (via de link van de interne test, "Programma verlaten"), via de link van de gesloten test tester worden, de beta verwijderen, Fluistervink uit Play installeren en eventueel de back-up terugzetten. Play zet niemand vanzelf over, want de beta heeft het hogere `versionCode`. Wel eerst in de Play Console:
-
-1. Alle adressen uit de lijst van de interne test ook in de lijst van de gesloten test zetten (anders werkt de link van stap 2 niet).
-2. Daarna uit de lijst van de interne test iedereen weghalen behalve jezelf. Wie op beide lijsten staat, krijgt bij opnieuw installeren weer de beta. **Ook wie niet meer op de interne lijst staat** maar zich ooit via de link van de interne test heeft aangemeld, blijft daar tester en krijgt de beta (gemerkt 18 nov met een tweede account). Daarom staat in de kaart eerst "Programma verlaten" via de link van de interne test. De beta blijft bij wie hem nog heeft gewoon werken (de webcode komt van de site), alleen zonder nieuwe AAB's.
-
-Jijzelf: de debug-APK die je nu hebt, is met een andere sleutel ondertekend. Verwijder die eerst; daarna installeer je de app uit Play, net als de testers. **Let op:** verwijderen wist de sessies in de app. Maak eerst een JSON-export (met opnames) en importeer die daarna in de app uit Play.
+**Beta en stabiel** (`docs/omgevingen.md`): één app in Play (`nl.hegmus.fluistervink`), twee builds. De **beta** (`fluistervink-<tag>-beta`, heet "Fluistervink Beta", laadt de webcode van workers.dev) gaat naar de **interne test**. De **stabiele** (`fluistervink-<tag>-stable`, heet "Fluistervink", laadt `fluistervink.nl`) gaat naar de **gesloten test** ("Stabiel"), straks naar productie. Wie in beide lijsten staat, krijgt de beta: die heeft bij dezelfde tag het hogere `versionCode`. Upload daarom bij elke tag **allebei**; anders kan een tester via een nieuwere stabiele build ongemerkt op `fluistervink.nl` belanden, zonder zijn sessies (die horen bij het adres).
 
 ## Een nieuwe versie
 
-Alleen nodig bij wijzigingen in `android/` of `capacitor.config.ts`; webwijzigingen staan meteen in de app.
+Alleen nodig bij wijzigingen in `android/` of `capacitor.config.ts`; webwijzigingen staan meteen in de app. De afvinklijst per release staat in `docs/draaiboek-uitbrengen.md`.
 
-1. Mergen naar `main`, dan `git tag v0.2 && git push origin v0.2` (elke tag een hoger nummer).
-2. Beide artifacts downloaden en in de Play Console een nieuwe release maken: beta naar de interne test, stable naar de gesloten test (stap 5.3 en 5.4). Als **releasenaam** de tag (`v0.7`): Play stelt zelf de versionName voor, maar de naam van een eerdere release kan blijven hangen (de gesloten test heette tot v0.6 nog "v0.3").
+1. Mergen naar `main`, dan `git tag v0.8 && git push origin v0.8` (elke tag een hoger nummer). Of op GitHub bij Actions → "Release Android" → **Run workflow** (zonder tag; versienaam `0.7+12`).
+2. Bij **Actions** wachten tot de run groen is (een paar minuten) en onderaan de artifacts `fluistervink-<tag>-beta` en `fluistervink-<tag>-stable` downloaden (elk een zip met `app-release.aab`). Uitpakken.
+3. Play Console → **Testen → Interne tests → Nieuwe release maken**: de beta-AAB, releasenaam, kort wat er nieuw is, Opslaan, Uitrollen.
+4. **Testen → Gesloten tests → Stabiel**: hetzelfde met de stabiele AAB (straks ook **Productie**).
+5. Als **releasenaam** de tag (`v0.8`): Play stelt zelf een naam voor, maar de naam van een eerdere release kan blijven hangen.
 
-**Toestemmingen alleen in de beta** (18 nov): wat in `android/app/src/stable/AndroidManifest.xml` staat, haalt de stabiele build uit het manifest (nu niets; tot v0.7 de microfoon in de service, voor opnemen met het scherm uit). Zo kan een native proef in de interne test, terwijl de stabiele app zelf de nieuwe toestemming niet heeft. **Maar** (gemerkt bij v0.4): de interne test laat de upload zonder vragen door, terwijl de verklaring voor de hele app geldt. Daarna weigert Play elke release die beoordeeld wordt (gesloten test, productie) met "You must let us know whether your app uses any Foreground Service permissions", tot de verklaring ook de nieuwe toestemming noemt. Een toestemming alleen in de beta scheelt dus geen verklaring; hij kan alleen uitgerold worden voordat iedereen hem heeft. De teksten staan in `docs/play-store/README.md`. Na het uploaden nagaan bij **App-bundels** in de Play Console of de stabiele de toestemmingen heeft die hij hoort te hebben (sinds v0.7 ook `FOREGROUND_SERVICE_MICROPHONE`).
+**Toestemmingen alleen in de beta:** wat in `android/app/src/stable/AndroidManifest.xml` staat, haalt de stabiele build uit het manifest (nu niets). Zo kan een native proef in de interne test, terwijl de stabiele app de nieuwe toestemming niet heeft. **Maar:** de interne test laat de upload zonder vragen door, terwijl de verklaring foreground service voor de hele app geldt. Daarna weigert Play elke release die beoordeeld wordt (gesloten test, productie) met "You must let us know whether your app uses any Foreground Service permissions", tot de verklaring ook de nieuwe toestemming noemt (gemerkt bij v0.4). Een toestemming alleen in de beta scheelt dus geen verklaring; hij kan alleen uitgerold worden voordat iedereen hem heeft. Na het uploaden nagaan bij **App-bundels** of de stabiele de toestemmingen heeft die hij hoort te hebben (sinds v0.7 ook `FOREGROUND_SERVICE_MICROPHONE`).
+
+### Versienummers
 
 Het versienummer komt vanzelf uit git (`android/app/build.gradle`). Play kent er drie:
 
-- **versionCode**: 2 × aantal commits, +1 voor de beta, dus altijd hoger dan het vorige. Hieraan ziet Play wat nieuwer is; bij **App-bundels** staat per upload welke het is.
-- **versionName**: wat Android en Instellingen tonen, uit de laatste tag: `0.6 (8577151)` op de tag zelf, `0.6+12 (…)` bij een build twaalf commits later (lokaal of via **Run workflow** zonder tag). Tot v0.6 was het `0.<aantal commits> (<hash>)`.
-- **Releasenaam**: vrije tekst in de Play Console, alleen voor jezelf; maak hem gelijk aan de tag.
-
-Play weigert een AAB met een `versionCode` die al eerder is geüpload; dat gebeurt als je de workflow twee keer op dezelfde commit draait.
+- **versionCode**: 2 × aantal commits, +1 voor de beta, dus altijd hoger dan het vorige. Hieraan ziet Play wat nieuwer is; bij **App-bundels** staat per upload welke het is. Play weigert een AAB met een `versionCode` die al eerder is geüpload; dat gebeurt als je de workflow twee keer op dezelfde commit draait.
+- **versionName**: wat Android en Instellingen tonen, uit de laatste tag: `0.7 (a783304)` op de tag zelf, `0.7+12 (…)` bij een build twaalf commits later.
+- **Releasenaam**: vrije tekst in de Play Console, alleen voor jezelf; gelijk aan de tag.
 
 Later kan het uploaden ook automatisch vanuit de workflow (met een serviceaccount van Google Cloud); voor af en toe een release is met de hand eenvoudiger.
+
+## Ondertekenen
+
+Met **Play App Signing** heeft Google de echte sleutel waarmee de app op telefoons komt (de *app signing key*). Wij ondertekenen alleen met een **upload-key**: daarmee bewijs je bij het uploaden dat de AAB van jou komt. Raak je de upload-key kwijt, dan kan Google hem vervangen; de app zelf blijft dezelfde.
+
+De upload-key staat in `upload.jks` (alias `upload`), buiten de repository en met het wachtwoord in de wachtwoordbeheerder. **Nooit in git.** GitHub Actions krijgt hem via vier secrets (Settings → Secrets and variables → Actions); `android/app/build.gradle` gebruikt hem alleen als die er zijn. Lokaal (zonder secrets) blijft `assembleDebug` gewoon werken, en `bundleRelease` maakt dan een niet-ondertekende AAB die Play weigert.
+
+| Secret | Waarde |
+| --- | --- |
+| `UPLOAD_KEYSTORE_BASE64` | de keystore als tekst: `base64 -i upload.jks \| pbcopy` |
+| `UPLOAD_KEYSTORE_PASSWORD` | het wachtwoord van de keystore |
+| `UPLOAD_KEY_ALIAS` | `upload` |
+| `UPLOAD_KEY_PASSWORD` | het wachtwoord van de sleutel (hetzelfde) |
+
+Een nieuwe upload-key (na verlies, via Google) maak je met `keytool -genkeypair -v -keystore upload.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000` (`keytool` hoort bij Java, bv. de Temurin 21 uit de README of die in Android Studio) en zet je daarna opnieuw in de secrets.
+
+## Testers
+
+1. **Testen → Interne tests → Testers** (beta, alleen de eigenaar) en **Testen → Gesloten tests → Stabiel → Testers**: e-maillijsten met de Google-accounts van de testers.
+2. Links voor deelname: interne test `https://play.google.com/apps/internaltest/4701242842814722001`, gesloten test `https://play.google.com/apps/testing/nl.hegmus.fluistervink`.
+3. Per tester: eerst het Google-account op de lijst zetten, daarna de link voor deelname sturen. Een iPhone-gebruiker krijgt het adres van de site (Safari, "Zet op beginscherm").
+4. De tester opent de link op de telefoon, wordt tester en installeert de app uit Play. Een code is niet nodig: de app meldt zich vanzelf aan (Play Integrity). Wie wil, vult bij **Instellingen** een naam in, die de eigenaar op Developer ziet.
+
+Na productie gaan testers die er zelf voor kiezen via een Google Group: `docs/plan-testers.md`.
+
+**Van beta naar stabiel** (17 nov): de beta-app toont iedereen behalve de eigenaar een kaart om over te stappen (`src/lib/MoveToStable.svelte`): back-up maken (als er nog sessies niet naar waarneming.nl zijn geëxporteerd), via de link van de interne test "Programma verlaten", via de link van de gesloten test tester worden, de beta verwijderen, Fluistervink uit Play installeren en eventueel de back-up terugzetten. Play zet niemand vanzelf over, want de beta heeft het hogere `versionCode`. Wie zich ooit via de link van de interne test heeft aangemeld, blijft daar tester en krijgt de beta, ook als hij niet meer op de lijst staat (gemerkt 18 nov met een tweede account); daarom eerst "Programma verlaten". De beta blijft bij wie hem nog heeft gewoon werken, alleen zonder nieuwe AAB's.

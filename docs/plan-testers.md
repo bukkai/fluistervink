@@ -29,7 +29,7 @@ Hergebruik "Stabiel" **niet** voor de nieuwe testers: wie zich daar ooit heeft a
 
 1. Een Google Group aanmaken, bv. `fluistervink-testers@googlegroups.com`. Instellingen: iedereen mag lid worden, ledenlijst alleen zichtbaar voor de eigenaar, berichten alleen van de eigenaar. De groep is alleen voor mededelingen aan de testers; feedback blijft op Discord.
 2. In de Play Console een nieuwe **gesloten test** "Beta" met die groep als testers. Daar komt de beta-AAB, naast de interne test van de eigenaar. De interne test blijft, want die wordt niet door Google beoordeeld; de nieuwe track wel (uren tot dagen).
-3. Bij elke tag: beta-AAB naar de interne test én naar "Beta", stabiele AAB naar Productie. Aanpassen in `docs/google-play.md` (stap 5 en 6) en `docs/omgevingen.md`.
+3. Bij elke tag: beta-AAB naar de interne test én naar "Beta", stabiele AAB naar Productie. Aanpassen in `docs/google-play.md` (Een nieuwe versie, Testers) en `docs/omgevingen.md`.
 4. `MoveToStable.svelte` weghalen of beperken: anders vraagt de beta-app de nieuwe testers meteen weer om weg te gaan. Het eenvoudigst: weghalen, want de eerste testers zijn dan al over.
 5. De privacypagina (Nederlands en Engels): wie lid wordt van de groep, deelt het eigen Google-account met de eigenaar (dat deden de testers op de e-maillijst ook al, maar het staat er nog niet).
 

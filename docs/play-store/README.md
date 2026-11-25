@@ -1,6 +1,6 @@
 # Winkelvermelding in Google Play
 
-Wat er in de Play Console is ingevuld (9 nov 2026), zodat het later na te kijken en bij te werken is. Roadmap: `docs/lancering.md`.
+Wat er in de Play Console staat, zodat het na te kijken en bij te werken is. De teksten hieronder moeten één op één gelijk zijn aan de Console; pas ze hier aan als je ze daar aanpast. Roadmap: `docs/lancering.md`.
 
 ## Feature graphic
 
@@ -35,12 +35,11 @@ Overal alleen **Collected**, nergens **Shared**: OpenAI, Anthropic, Cloudflare, 
 
 Verder: versleuteld onderweg ja; geen accounts; verwijderen aanvragen ja, via `https://fluistervink.nl/privacy`. Bijwerken als gegevens een nieuwe kant op gaan (zelfde moment als `#privacy`).
 
-**Nagekeken op 11 nov 2026** (kwaliteitsronde, tegen `#privacy` en de code op `82c1b73`): het formulier in de Play Console hoeft niet aangepast. Wat er sinds 9 nov bij kwam, valt onder wat er al staat:
+**Laatst nagekeken: 25 nov 2026**, geen wijziging nodig. Zo vallen de latere onderdelen onder wat er al staat:
 
-- Het scherm Statistieken (hoeveel installaties de app gebruiken, per dag en week) rekent met het verbruik dat de proxy al telde: dat is **App interactions → Analytics**, met het installatie-id onder **Device or other IDs → Analytics**.
-- **23 nov:** de soort uitspraak, taal en versie bij het verbruik, en de anonieme cijfers per sessie (`src/lib/summaries.ts`, zonder installatie bewaard) vallen ook onder **App interactions → Analytics**, dat al als Required staat. Het formulier hoeft niet aangepast.
-- Trektelmodus, volumeknop, snelkoppeling, tegel, samenvatting en exportherinnering sturen geen nieuwe gegevens. De gesproken bevestiging (ontwikkeloptie) spreekt op de telefoon zelf.
-- Losse feedback gaat nu meteen weg in plaats van bij de volgende ronde, nog steeds alleen na toestemming: **Other user-generated content**.
+- Verbruik per installatie, het scherm Statistieken, de soort uitspraak, taal, versie en soort toestel, en de anonieme cijfers per sessie (`src/lib/summaries.ts`): **App interactions → Analytics**, met het installatie-id onder **Device or other IDs → Analytics**.
+- Losse feedback (meteen, na toestemming): **Other user-generated content**.
+- Trektelmodus, opnemen met het scherm uit, volumeknop, snelkoppeling, tegel, samenvatting en exportherinnering sturen geen nieuwe gegevens. De gesproken bevestiging spreekt op de telefoon zelf.
 
 Keuzes om te onthouden:
 
@@ -64,21 +63,15 @@ Why it is needed: birders put the phone in their pocket with the screen off betw
 User impact if deferred or interrupted: observations get no or wrong locations and cannot be exported correctly, and the user must look at the screen to check every observation, which defeats the purpose of the app. No location history or GPS track is stored: only the position at the moment of each spoken observation.
 ```
 
-Video (de eigenaar neemt hem op, niet-openbaar op YouTube, link in het formulier), zo'n 30–60 seconden op de telefoon met schermopname:
-
-1. App openen, "Begin met vogelen": de melding "Aan het vogelen" verschijnt (meldingenbalk even omlaag trekken).
-2. Een waarneming inspreken ("zes overvliegende houtduiven"); hij verschijnt in de lijst met de plek.
-3. Scherm uit, een paar seconden wachten, scherm aan: de sessie loopt nog en de melding staat er.
-4. Op de melding tikken opent de app. "Stop": de melding verdwijnt.
-5. De sessie openen: de waarneming op de kaart.
+Video: niet-openbaar op YouTube, link in het formulier; draaiboek in `docs/archief/play-videos.md`.
 
 ### Microfoon (opnemen met het scherm uit)
 
-Sinds v0.4 (18 nov) heeft de **beta-build** ook het type `microphone` (recht `FOREGROUND_SERVICE_MICROPHONE`) op dezelfde `WandelingService`, en sinds v0.7 ook de stabiele (keuze "Opnemen met het scherm uit" bij Instellingen). De verklaring geldt voor de hele app, dus zodra de beta in de interne test staat, moet hij ook in het formulier, anders weigert Play elke release die beoordeeld wordt (gesloten test, productie). Het formulier aanvullen: naast locatie ook microfoon aanvinken, met de tekst en video hieronder.
+Hetzelfde `WandelingService` heeft ook het type `microphone` (recht `FOREGROUND_SERVICE_MICROPHONE`), sinds v0.7 in beide builds, voor de keuze "Opnemen met het scherm uit" bij Instellingen. De verklaring geldt voor de hele app: een nieuwe toestemming eerst hier en in het formulier, anders weigert Play elke release die beoordeeld wordt (`docs/google-play.md`).
 
-**Bijwerken vóór productie (25 nov):** de tekst hieronder noemt nu ook de trektelling met het scherm uit (tot 4 uur doorlopend opnemen) en niet meer dat de functie alleen in de interne test zit. Zet hem zo in de Play Console (Beleid → App-content → Voorgrondservices), zodat de beschrijving klopt met wat de productie-app doet.
+**Nog te doen vóór productie:** de tekst hieronder (sinds #390 ook de trektelling met het scherm uit, tot 4 uur doorlopend) in de Play Console zetten.
 
-Taaktype: **Background audio input** (het formulier biedt alleen dat en Other; 18 nov). Dat vraagt alleen een video. Vraagt het formulier ergens om een beschrijving (of later bij een vraag van Google), gebruik dan deze tekst in het Engels:
+Taaktype: **Background audio input** (het formulier biedt alleen dat en Other). De tekst in het Engels:
 
 ```
 In addition to location (see above), the same foreground service (WandelingService) uses the microphone type, for one setting, "Record with the screen off", which the user switches on in the app's settings. It covers two uses: recording a single spoken observation with a key press, and a migration count.
@@ -96,17 +89,13 @@ Why it is needed: birdwatchers hold binoculars in one hand and often wear gloves
 User impact if deferred or interrupted: the observation the user is speaking is lost, or the user has to take out the phone, unlock it and look at the screen, which is exactly what the app is meant to avoid.
 ```
 
-Video (niet-openbaar op YouTube), zo'n 45–60 seconden. Met het scherm uit toont een schermopname alleen zwart, dus **film de telefoon met een tweede telefoon** (met geluid, zodat je de uitspraak hoort). Vooraf: de beta uit Play, ontwikkeloptie "Opnemen met het scherm uit" aan.
+Video: gefilmd met een tweede telefoon (een schermopname toont met het scherm uit alleen zwart); draaiboek in `docs/archief/play-videos.md`.
 
-1. App openen, "Begin met vogelen": de melding "Aan het vogelen" verschijnt.
-2. Scherm uit (aan/uit-knop), telefoon even laten zien met zwart scherm.
-3. Volumeknop indrukken (zeg erbij: "volume key"). Laat zien dat de opname loopt: scherm aan en ontgrendelen (de opname loopt door). De app staat op de knop "Stop · 4 s" die meetelt, en de meldingenbalk omlaag toont "Opname loopt · volumeknop stopt". Scherm weer uit. (Op het vergrendelscherm zelf staat de melding niet: het is een stille melding, kanaal met laag belang, en die verbergt Android daar standaard. Wil je hem daar toch zien, zet dan in de instellingen van de telefoon bij Meldingen → Vergrendelscherm "stille meldingen tonen" aan.)
-4. Een waarneming inspreken ("twee scholeksters, overvliegend naar het zuiden"), dan nog eens de volumeknop.
-5. Scherm aan, ontgrendelen: de waarneming staat in de lijst. Op "Stop": de melding verdwijnt.
+## Teksten
 
-Ondertitels of een korte tekst in de beschrijving van de video helpen de beoordelaar: "Screen off → volume key starts recording → speak → volume key stops → observation appears."
+Play Console → Groei → Winkelaanwezigheid → **Hoofdwinkelvermelding**. Laatst gelijk gezet: 9 nov. **Nog te doen:** de lange beschrijving hieronder (bijgewerkt 25 nov: volumeknop met het scherm uit, trektellen, geen bereik, eBird, afschermen) in de Console zetten; de naam pas bij de productierelease.
 
-## App name
+### App name
 
 Bij de productierelease (besloten 22 nov, `docs/plan-marketing.md`); tot dan "Fluistervink".
 
@@ -114,13 +103,13 @@ Bij de productierelease (besloten 22 nov, `docs/plan-marketing.md`); tot dan "Fl
 Fluistervink: vogels inspreken
 ```
 
-## Short description
+### Short description
 
 ```
 Spreek je vogelwaarnemingen in en zet ze thuis op waarneming.nl.
 ```
 
-## Full description
+### Full description
 
 ```
 Fluistervink is een notitieboekje voor vogelaars dat luistert. Je drukt op de knop, zegt wat je ziet of hoort, en de app maakt er een waarneming van, met tijd en plek erbij. Je hoeft niet te typen en nauwelijks naar je scherm te kijken: je ogen blijven bij de vogels.
@@ -138,19 +127,25 @@ VERBETEREN MET JE STEM
 Verkeerd verstaan of nog een paar gezien? Zeg het gewoon: "nee, keep in plaats van vink", "nog drie erbij" of "die laatste weg".
 
 ZONDER NAAR HET SCHERM TE KIJKEN
-Een korte tril betekent opgeslagen, twee trillen dat de app je niet begreep, en een ander patroon dat het opgeslagen is maar met twijfel. Tijdens een sessie werkt de app door met het scherm uit; de tril komt ook met je telefoon op zak.
+Een korte tril betekent opgeslagen, twee trillen dat de app je niet begreep, en een ander patroon dat het opgeslagen is maar met twijfel. Tijdens een sessie werkt de app door met het scherm uit; de tril komt ook met je telefoon op zak. De volumeknop is de inspreekknop. Zet je bij Instellingen "Opnemen met het scherm uit" aan, dan start en stop je een opname met de volumeknop terwijl de telefoon in je zak zit.
+
+TREKTELLEN
+Tel je op één plek, met de telefoon naast je? Start dan een trektelling: de app luistert door en verwerkt alles wat je zegt, zonder dat je steeds op de knop hoeft te drukken.
+
+GEEN BEREIK? GEWOON DOOR
+De app bewaart wat je zegt op je telefoon en verwerkt het zodra er weer verbinding is.
 
 THUIS NALOPEN
 Na afloop loop je je sessie na. De waarnemingen waar de app aan twijfelde, staan bovenaan: Klopt, Weg of Aanpassen. Je kunt opnames terugluisteren, alles op een kaart zien en de plek van een waarneming met de hand verzetten. Klopt de rest, dan is één tik genoeg.
 
-NAAR WAARNEMING.NL
-Nagelopen sessies zet je klaar en exporteer je in één bestand, dat je bij waarneming.nl importeert. Soorten, gedrag en telmethode staan al in de vorm die waarneming.nl verwacht.
+NAAR WAARNEMING.NL EN EBIRD
+Nagelopen sessies zet je klaar en exporteer je in één bestand, dat je bij waarneming.nl importeert. Soorten, gedrag en telmethode staan al in de vorm die waarneming.nl verwacht, net als afschermen en embargo ("die ooievaar afschermen"). Gebruik je eBird, dan exporteer je je sessie ook als checklist, met duur en afstand.
 
 GEEN ACCOUNT, GEEN ADVERTENTIES
 Fluistervink is gratis, zonder account en zonder advertenties. Alles wat je inspreekt staat eerst op je eigen telefoon. Bij Instellingen maak je een back-up.
 
 OPEN OVER AI
-Om je stem te verstaan gaat je opname naar OpenAI, en om er een waarneming van te maken gaat de tekst naar Anthropic. Die gebruiken het niet om hun modellen te trainen. De app kiest alleen soorten uit de soortenlijst van waarneming.nl en verzint geen vogels, maar kan je wel verkeerd verstaan, vooral in de wind. Daarom loop je thuis na. Je hebt internet nodig om in te spreken.
+Om je stem te verstaan gaat je opname naar OpenAI, en om er een waarneming van te maken gaat de tekst naar Anthropic. Die gebruiken het niet om hun modellen te trainen. De app kiest alleen soorten uit de soortenlijst van waarneming.nl en verzint geen vogels, maar kan je wel verkeerd verstaan, vooral in de wind. Daarom loop je thuis na.
 
 Fluistervink is een persoonlijk project en staat los van waarneming.nl en Observation.org.
 
