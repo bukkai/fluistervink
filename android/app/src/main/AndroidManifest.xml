@@ -24,9 +24,9 @@
 
         </activity>
 
-        <!-- Houdt de app in leven tijdens een sessie (fase 2); microfoon alleen
-             bij de proef opnemen met het scherm uit (ontwikkeloptie). De
-             stabiele build heeft alleen location: src/stable/AndroidManifest.xml -->
+        <!-- Houdt de app in leven tijdens een sessie (fase 2); microfoon voor
+             opnemen met het scherm uit (keuze bij Instellingen, sinds v0.7 ook
+             in de stabiele build: src/stable/AndroidManifest.xml) -->
         <service
             android:name=".WandelingService"
             android:exported="false"

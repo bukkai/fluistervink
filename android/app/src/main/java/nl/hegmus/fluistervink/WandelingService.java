@@ -613,7 +613,9 @@ public class WandelingService extends Service {
             TrillenPlugin.tril(this, TRIL_MISLUKT);
             return;
         }
-        Opname next = new Opname(new File(directory(this), "opname.tmp"));
+        // Eigen naam per opname: de vorige kan op de worker nog afgemaakt worden
+        // (finish), en die schreef anders in hetzelfde bestand
+        Opname next = new Opname(new File(directory(this), "opname-" + System.currentTimeMillis() + ".tmp"));
         try {
             next.start();
         } catch (Exception e) {

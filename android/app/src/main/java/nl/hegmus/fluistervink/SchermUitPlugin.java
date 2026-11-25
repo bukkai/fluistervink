@@ -18,8 +18,8 @@ import java.io.InputStream;
 import org.json.JSONException;
 
 /**
- * Proef: opnemen met het scherm uit (docs/roadmap-android.md stap 3,
- * ontwikkeloptie "schermUit" in src/lib/devOptions.ts). De webcode zet het
+ * Opnemen met het scherm uit (docs/roadmap-android.md stap 3; sinds v0.7 de
+ * keuze "Opnemen met het scherm uit" bij Instellingen). De webcode zet het
  * aan zolang een sessie loopt (src/lib/screenOff.svelte.ts); dan neemt
  * WandelingService op als de volumeknop met het scherm uit wordt ingedrukt.
  *
@@ -36,10 +36,10 @@ import org.json.JSONException;
 public class SchermUitPlugin extends Plugin implements WandelingService.Listener {
 
     /**
-     * Staat de microfoon in de service in het manifest? Alleen in de beta: de
-     * stabiele build haalt hem eruit tot er een verklaring bij Google Play is
-     * (src/stable/AndroidManifest.xml). Zonder registreert MainActivity de
-     * plugin niet, zodat de webcode de ontwikkeloptie niet toont.
+     * Staat de microfoon in de service in het manifest? Sinds v0.7 in beide
+     * builds (de verklaring bij Google Play is goedgekeurd). Een build die hem
+     * eruit haalt (src/stable/AndroidManifest.xml), registreert MainActivity
+     * de plugin niet, zodat de webcode de keuze niet toont.
      */
     static boolean beschikbaar(Context context) {
         try {
@@ -97,8 +97,8 @@ public class SchermUitPlugin extends Plugin implements WandelingService.Listener
             call.reject("Ongeldig sessieId");
             return;
         }
-        config.maxMs = call.getLong("maxMs", 180_000L);
-        config.minMs = call.getLong("minMs", 500L);
+        config.maxMs = getal(call, "maxMs", 180_000L);
+        config.minMs = getal(call, "minMs", 500L);
         config.oortjesKnop = !Boolean.FALSE.equals(call.getBoolean("oortjesKnop", true));
         try {
             config.trilStart = pattern(call.getArray("trilStart"));
@@ -127,23 +127,49 @@ public class SchermUitPlugin extends Plugin implements WandelingService.Listener
             call.resolve(result);
             return;
         }
-        service.arm();
-        result.put("ok", service.microphoneReady());
-        if (WandelingService.microphoneError != null) result.put("reden", WandelingService.microphoneError);
-        call.resolve(result);
+        opHoofdthread(() -> {
+            service.arm();
+            result.put("ok", service.microphoneReady());
+            if (WandelingService.microphoneError != null) result.put("reden", WandelingService.microphoneError);
+            call.resolve(result);
+        });
     }
 
     @PluginMethod
     public void uit(PluginCall call) {
         WandelingService service = WandelingService.instance;
-        if (service != null) {
-            service.disarm();
-            // Het laatste stuk van een trektelling staat dan klaar voor `wachtend`
-            service.flush();
-        } else WandelingService.config = null;
+        opHoofdthread(() -> {
+            if (service != null) {
+                service.disarm();
+                // Het laatste stuk van een trektelling staat dan klaar voor `wachtend`
+                service.flush();
+            } else WandelingService.config = null;
+        });
         WandelingService.webRecording = false;
         // Pas klaar als het log van ZichtbareWebView verstuurd is: daarna haalt de webcode de luisteraars weg
         houdWebcodeWakker(false, false, call::resolve);
+    }
+
+    /**
+     * Plugin-methoden draaien op een eigen thread van Capacitor; de volumeknop,
+     * de oortjes en de timers van de service op de hoofdthread. Alles wat de
+     * opname of de trektelling van de service aanraakt, daarom ook op de
+     * hoofdthread: anders konden "stop" uit de app en een druk op de knop
+     * tegelijk dezelfde opname afmaken.
+     */
+    private void opHoofdthread(Runnable taak) {
+        if (getBridge() == null) taak.run();
+        else getBridge().executeOnMainThread(taak);
+    }
+
+    /**
+     * Een getal uit de aanroep. Capacitor's `getLong` geeft de standaard als
+     * het getal als Integer binnenkomt, en dat is elk getal onder 2^31 uit
+     * JSON: `maxMs` en `minMs` van de webcode werden zo nooit gebruikt.
+     */
+    static long getal(PluginCall call, String naam, long standaard) {
+        Object waarde = call.getData().opt(naam);
+        return waarde instanceof Number ? ((Number) waarde).longValue() : standaard;
     }
 
     /**
@@ -204,33 +230,39 @@ public class SchermUitPlugin extends Plugin implements WandelingService.Listener
             return;
         }
         WandelingService.TrektelConfig settings = new WandelingService.TrektelConfig();
-        settings.opties.doelMs = call.getLong("doelMs", settings.opties.doelMs);
-        settings.opties.pauzeMs = call.getLong("pauzeMs", settings.opties.pauzeMs);
-        settings.opties.maxMs = call.getLong("maxStukMs", settings.opties.maxMs);
-        settings.opties.minSpraakMs = call.getLong("minSpraakMs", settings.opties.minSpraakMs);
+        settings.opties.doelMs = getal(call, "doelMs", settings.opties.doelMs);
+        settings.opties.pauzeMs = getal(call, "pauzeMs", settings.opties.pauzeMs);
+        settings.opties.maxMs = getal(call, "maxStukMs", settings.opties.maxMs);
+        settings.opties.minSpraakMs = getal(call, "minSpraakMs", settings.opties.minSpraakMs);
         settings.opties.margeDb = call.getDouble("margeDb", settings.opties.margeDb);
         settings.opties.vloerDb = call.getDouble("vloerDb", settings.opties.vloerDb);
-        settings.maxMs = call.getLong("maxMs", 4 * 60 * 60_000L);
-        String reden = service.startTrektel(settings);
-        result.put("ok", reden == null);
-        if (reden != null) result.put("reden", reden);
-        call.resolve(result);
+        settings.maxMs = getal(call, "maxMs", 4 * 60 * 60_000L);
+        opHoofdthread(() -> {
+            String reden = service.startTrektel(settings);
+            result.put("ok", reden == null);
+            if (reden != null) result.put("reden", reden);
+            call.resolve(result);
+        });
     }
 
     /** Trektelling stoppen; geeft { reden, durationMs, stukken, stil, accuBegin, accuEind } */
     @PluginMethod
     public void trektelStop(PluginCall call) {
         WandelingService service = WandelingService.instance;
-        JSObject data = service != null ? service.stopTrektel("app") : null;
-        call.resolve(data != null ? data : new JSObject());
+        opHoofdthread(() -> {
+            JSObject data = service != null ? service.stopTrektel("app") : null;
+            call.resolve(data != null ? data : new JSObject());
+        });
     }
 
     /** Een lopende opname stoppen (de knop in de app, terwijl het scherm weer aan is) */
     @PluginMethod
     public void stop(PluginCall call) {
         WandelingService service = WandelingService.instance;
-        if (service != null) service.finish("app");
-        call.resolve();
+        opHoofdthread(() -> {
+            if (service != null) service.finish("app");
+            call.resolve();
+        });
     }
 
     /** De webcode neemt zelf op, of niet meer: { bezig } */

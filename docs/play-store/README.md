@@ -76,20 +76,24 @@ Video (de eigenaar neemt hem op, niet-openbaar op YouTube, link in het formulier
 
 Sinds v0.4 (18 nov) heeft de **beta-build** ook het type `microphone` (recht `FOREGROUND_SERVICE_MICROPHONE`) op dezelfde `WandelingService`, en sinds v0.7 ook de stabiele (keuze "Opnemen met het scherm uit" bij Instellingen). De verklaring geldt voor de hele app, dus zodra de beta in de interne test staat, moet hij ook in het formulier, anders weigert Play elke release die beoordeeld wordt (gesloten test, productie). Het formulier aanvullen: naast locatie ook microfoon aanvinken, met de tekst en video hieronder.
 
+**Bijwerken vóór productie (25 nov):** de tekst hieronder noemt nu ook de trektelling met het scherm uit (tot 4 uur doorlopend opnemen) en niet meer dat de functie alleen in de interne test zit. Zet hem zo in de Play Console (Beleid → App-content → Voorgrondservices), zodat de beschrijving klopt met wat de productie-app doet.
+
 Taaktype: **Background audio input** (het formulier biedt alleen dat en Other; 18 nov). Dat vraagt alleen een video. Vraagt het formulier ergens om een beschrijving (of later bij een vraag van Google), gebruik dan deze tekst in het Engels:
 
 ```
-In addition to location (see above), the same foreground service (WandelingService) uses the microphone type, for one feature: recording a spoken observation while the screen is off.
+In addition to location (see above), the same foreground service (WandelingService) uses the microphone type, for one setting, "Record with the screen off", which the user switches on in the app's settings. It covers two uses: recording a single spoken observation with a key press, and a migration count.
 
 How it works: during an active birding session the user turns the screen off and puts the phone in a pocket. To record an observation, the user presses a volume key: the phone gives a short vibration and the service starts recording, and the notification changes to "Opname loopt · volumeknop stopt" (recording · volume key stops). The user speaks the observation ("two oystercatchers flying south") and presses the volume key again to stop; another short vibration confirms. The recording is saved on the device first and then transcribed and turned into an observation, exactly like a recording made with the on-screen button, followed by the usual confirming vibration.
 
-The microphone is only open between those two key presses (at most 3 minutes per recording); the app does not listen continuously and does not record in the background on its own. The microphone type is only added to the foreground service when the user has enabled the feature, and only while the app is in the foreground (when the session screen is open), as Android 14 requires. Outside a session the volume keys keep their normal function.
+For a single observation, the microphone is only open between those two key presses (at most 3 minutes per recording).
+
+Migration count: a birder counting migrating birds from one spot keeps the phone nearby and reports what passes, often for hours. The user starts the count explicitly on the session screen; from then on the service records continuously and cuts the audio into chunks of about a minute, each of which is transcribed like a single recording. The notification then reads "Trektelling loopt · het scherm mag uit" (migration count running · the screen may be off). The count stops when the user stops it, after at most 4 hours, or when the daily limit of spoken audio is reached; when another app (for example a phone call) takes the microphone, the count pauses and the notification says so.
+
+Apart from these two uses, started by the user, the app does not listen continuously and does not record in the background on its own. The microphone type is only added to the foreground service when the user has enabled the feature, and only while the app is in the foreground (when the session screen is open), as Android 14 requires. Outside a session the volume keys keep their normal function.
 
 Why it is needed: birdwatchers hold binoculars in one hand and often wear gloves. Waking the screen, unlocking the phone and finding the record button takes several seconds, and a bird that calls or flies over is gone by then. With the screen off and a physical key, the user can record without looking at the phone. Without the microphone foreground service type, Android does not allow the app to record while the screen is off.
 
 User impact if deferred or interrupted: the observation the user is speaking is lost, or the user has to take out the phone, unlock it and look at the screen, which is exactly what the app is meant to avoid.
-
-Note: the feature is currently being tested in our internal testing build before it is rolled out to all users. The build in closed testing does not declare the microphone foreground service type yet.
 ```
 
 Video (niet-openbaar op YouTube), zo'n 45–60 seconden. Met het scherm uit toont een schermopname alleen zwart, dus **film de telefoon met een tweede telefoon** (met geluid, zodat je de uitspraak hoort). Vooraf: de beta uit Play, ontwikkeloptie "Opnemen met het scherm uit" aan.

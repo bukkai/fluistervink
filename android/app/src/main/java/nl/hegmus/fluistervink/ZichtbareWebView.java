@@ -7,8 +7,8 @@ import android.view.View;
 import com.getcapacitor.CapacitorWebView;
 
 /**
- * Proef (ontwikkeloptie "schermUit", alleen de beta-build): de WebView blijft
- * zich "in beeld" melden zolang een sessie met het scherm uit loopt.
+ * Met "Opnemen met het scherm uit" (sinds v0.7 een keuze bij Instellingen)
+ * blijft de WebView zich "in beeld" melden zolang een sessie loopt.
  *
  * Chromium zet de pagina een minuut nadat de WebView meldt dat hij niet meer
  * in beeld is stil (Page Lifecycle "freeze"); de stukken van een trektelling
@@ -20,8 +20,9 @@ import com.getcapacitor.CapacitorWebView;
  * hem daar VISIBLE door. Gaat de optie uit, dan krijgt hij de echte stand.
  *
  * Staat in de layout van Capacitor (res/layout/capacitor_bridge_layout_main.xml
- * vervangt die van Capacitor). Zonder SchermUitPlugin (de stabiele build)
- * zet niemand `zichtbaarHouden` aan, en is dit gewoon de WebView van Capacitor.
+ * vervangt die van Capacitor). Zonder SchermUitPlugin (keuze uit, of een build
+ * zonder microfoon in de service) zet niemand `zichtbaarHouden` aan, en is dit
+ * gewoon de WebView van Capacitor.
  */
 public class ZichtbareWebView extends CapacitorWebView {
 
