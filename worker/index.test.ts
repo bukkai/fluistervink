@@ -315,6 +315,18 @@ describe('/api/install (aanmelden zonder code)', () => {
     expect(testersKv.store.size).toBe(0);
   });
 
+  it('laat de testsleutels van Turnstile alleen lokaal toe (TURNSTILE_TEST)', async () => {
+    // Zo antwoordt Cloudflare met de testsecret: geslaagd, zonder actie
+    upstream.mockImplementation(async () =>
+      Response.json({ success: true, metadata: { result_with_testing_key: true } }),
+    );
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect((await register({ id: ID, turnstile: 'test' })).status).toBe(403);
+    expect(error).toHaveBeenCalledWith('Turnstile: testsleutel geweigerd, alleen lokaal');
+    env.TURNSTILE_TEST = '1';
+    expect((await register({ id: ID, turnstile: 'test' })).status).toBe(200);
+  });
+
   it('weigert een tweede id met hetzelfde begin, want dat geeft dezelfde naam', async () => {
     turnstileAnswers();
     expect((await register({ id: ID, turnstile: 'goed' })).status).toBe(200);

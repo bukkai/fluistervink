@@ -266,7 +266,10 @@ async function install(request: Request, env: WorkerEnv): Promise<Response> {
   if (typeof body.integrity === 'string' && env.PLAY_SERVICE_ACCOUNT) {
     if (await verifyPlayIntegrity(body.integrity, id, env.PLAY_SERVICE_ACCOUNT)) via = 'play';
   } else if (typeof body.turnstile === 'string' && env.TURNSTILE_SECRET) {
-    if (await verifyTurnstile(body.turnstile, env.TURNSTILE_SECRET, ip)) via = 'turnstile';
+    const allowTestKey = env.TURNSTILE_TEST === '1';
+    if (await verifyTurnstile(body.turnstile, env.TURNSTILE_SECRET, ip, allowTestKey)) {
+      via = 'turnstile';
+    }
   }
   if (!via) return json({ error: 'De app kon niet bewijzen dat hij echt is' }, 403);
 
