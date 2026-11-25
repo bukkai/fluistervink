@@ -111,12 +111,15 @@ export async function receiveScreenOffRecording(
   const position = lookup ?? (trektel ? chunkLookup() : Promise.resolve(NO_POSITION));
   try {
     const audio = toBlob(recording);
-    await submitRecording(
+    const saved = await submitRecording(
       recording.sessieId,
       { audio, startedAt: recording.startedAt, durationMs: recording.durationMs },
       position,
       trektel ? { trektel: true } : {},
     );
+    // Niet bewaard (telefoon vol): het bestand van de service is dan het enige
+    // exemplaar, dus niet wissen. `submitRecording` meldde het al.
+    if (!saved) throw new Error('niet bewaard');
     const savedAt = Date.now();
     await doneScreenOffRecording(recording.id);
     const since = (at?: number) => (at === undefined ? undefined : receivedAt - at);

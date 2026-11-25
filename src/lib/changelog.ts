@@ -45,6 +45,9 @@ export const CHANGELOG: ChangelogEntry[] = [
       Trektelling: [
         '"Ongedaan maken" in een trektelling maakt geen ander stuk van de telling meer ongedaan; zo\'n stuk komt bij "niet begrepen", zodat je het thuis naloopt.',
       ],
+      'Android-app': [
+        'Opnemen met het scherm uit: als je telefoon vol is, blijft de opname op de telefoon staan in plaats van verloren te gaan.',
+      ],
     },
   },
   {

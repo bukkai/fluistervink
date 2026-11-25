@@ -47,21 +47,24 @@ export async function submitText(sessionId: string, text: string): Promise<void>
  * Slaat een opname op en zet hem in de wachtrij; de spraakherkenning is de
  * eerste verwerkingsstap.
  * @param lookup Positie, opgevraagd bij het indrukken van de opnameknop
+ * @returns Of de opname bewaard is. Zo niet, dan is dat al gemeld (tril,
+ *   sessiescherm); een opname die nog ergens anders staat (de service van
+ *   scherm uit), moet daar dan blijven.
  */
 export async function submitRecording(
   sessionId: string,
   recording: Recording,
   lookup: Promise<PositionLookup>,
   options: { trektel?: boolean } = {},
-): Promise<void> {
+): Promise<boolean> {
   let audio;
   try {
     audio = await storeAudio(recording.audio);
   } catch (error) {
     saveFailed(error, sessionId, options.trektel);
-    return;
+    return false;
   }
-  await submit(
+  return submit(
     {
       sessionId,
       recordedAt: recording.startedAt,
@@ -113,7 +116,7 @@ async function submit(
     'sessionId' | 'recordedAt' | 'transcript' | 'audio' | 'audioDurationMs' | 'trektel'
   >,
   lookup: Promise<PositionLookup>,
-): Promise<void> {
+): Promise<boolean> {
   const id = crypto.randomUUID();
   try {
     // De taal van nu: zo blijft een uitspraak in zijn taal, ook als hij pas
@@ -128,7 +131,7 @@ async function submit(
     });
   } catch (error) {
     saveFailed(error, fields.sessionId, fields.trektel);
-    return;
+    return false;
   }
   // Wacht de wachtrij op bereik, dan komt er voorlopig geen antwoord: meteen
   // "bewaard, wacht op bereik". Niet bij een trektelstuk (dat knipt de app
@@ -136,6 +139,7 @@ async function submit(
   if (!fields.trektel && listening) vibrate('waiting');
   processQueue();
   attachPosition(id, lookup);
+  return true;
 }
 
 /** Welk plafond per dag van de proxy: spraak (`audio_limit`) of het model (`message_limit`) */

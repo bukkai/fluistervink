@@ -43,6 +43,7 @@ import {
   retry,
   retryNow,
   stopWaiting,
+  submitRecording,
   submitText,
 } from './queue';
 import { gps } from './location.svelte';
@@ -327,7 +328,15 @@ describe('corrigeren', () => {
 });
 
 describe('easter eggs', () => {
+  // De grap trilt een seconde na het opslaan (setTimeout). Met echte timers
+  // viel die tril op een trage CI in een latere test ("houdt de rest van de
+  // wachtrij niet op" zag een feest-tril erbij): hier weggooien.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+  });
   afterEach(() => {
+    vi.clearAllTimers();
+    vi.useRealTimers();
     tochEenBuizerd.visible = false;
     lifer.visible = false;
   });
@@ -951,6 +960,22 @@ describe('telefoon vol', () => {
       spy.mockRestore();
     }
     expect(heard).toHaveBeenCalledWith(false);
+  });
+
+  const noPosition = () => Promise.resolve({ source: 'none' } as never);
+
+  it('een opname die niet bewaard kon worden, meldt dat (scherm uit laat het bestand dan staan)', async () => {
+    const spy = opslagVol(db.utterances);
+    const off = onSaveFailed(() => {});
+    try {
+      const recording = { audio: new Blob(['x']), startedAt: Date.now(), durationMs: 1000 };
+      await expect(submitRecording(SESSION, recording, noPosition())).resolves.toBe(false);
+    } finally {
+      off();
+      spy.mockRestore();
+    }
+    const recording = { audio: new Blob(['x']), startedAt: Date.now(), durationMs: 1000 };
+    await expect(submitRecording(SESSION, recording, noPosition())).resolves.toBe(true);
   });
 });
 
