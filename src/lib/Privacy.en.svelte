@@ -61,8 +61,8 @@
       <dd>
         The text of your voice note plus the latest observations of the session (so that "three
         more" works), with their time, your remarks and notes, and how far they are from you. No
-        recording and no coordinates. Anthropic deletes it within 30 days (longer only if their
-        systems suspect misuse) and doesn’t train on it.
+        recording and no coordinates. Anthropic deletes it within 30 days (longer only if the law
+        requires it or their systems suspect misuse, then up to two years) and doesn’t train on it.
       </dd>
     </dl>
     <p>
@@ -204,12 +204,12 @@
         <dd>
           In the browser, or if Google Play doesn’t confirm it, Cloudflare Turnstile checks the
           first time you open the app whether there’s a real browser behind it, among other things
-          from your IP address, according to Cloudflare only to keep robots out. After that your
-          installation is called something like "app-3f9a2b1c", with nothing that points to you,
-          unless you fill in your name under <a href="{app}#instellingen">Settings</a> (optional). Every
-          installation also notes whether it’s an iPhone, an Android device or a computer (your browser
-          sends that itself), so the developer can see how many people use which kind of device; not the
-          brand, model or version (those are only in the log, if you share).
+          from your IP address, according to Cloudflare only to recognise and keep out robots. After
+          that your installation is called something like "app-3f9a2b1c", with nothing that points
+          to you, unless you fill in your name under <a href="{app}#instellingen">Settings</a> (optional).
+          Every installation also notes whether it’s an iPhone, an Android device or a computer (your
+          browser sends that itself), so the developer can see how many people use which kind of device;
+          not the brand, model or version (those are only in the log, if you share).
         </dd>
       </dl>
     </details>
