@@ -412,6 +412,7 @@ export const nl = {
   'log.status.feedback': 'feedback',
   'log.status.undone': 'teruggedraaid',
   'log.status.waiting': 'wacht op bereik',
+  'log.status.waitingPaused': 'wacht, even gepauzeerd',
   'log.status.waitingBusy': 'wacht, het is druk',
   'log.status.queued': 'in wachtrij',
   'log.status.transcribing': 'verstaan…',
