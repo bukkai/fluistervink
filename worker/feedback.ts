@@ -53,8 +53,11 @@ export async function feedback(request: Request, env: Env, tester: string): Prom
     const contentType = /^(application\/json|audio\/[\w.+-]+)(;.*)?$/.test(sent)
       ? sent
       : 'application/octet-stream';
+    // Bij een sessie meteen de telling voor de lijst met installaties
+    // (testerUsage), zodat die het bestand niet hoeft te lezen
+    const usage = kind === 'sessions' ? sharedUsage(parseShared(parseJson(body))) : undefined;
     await env.FEEDBACK.put(`${tester}/${kind}/${id}`, body, {
-      metadata: { contentType, uploadedAt: Date.now(), bytes: body.byteLength },
+      metadata: { contentType, uploadedAt: Date.now(), bytes: body.byteLength, usage },
     });
     return json({ ok: true });
   }
@@ -195,7 +198,18 @@ interface SharedSession {
  * vastlopen. Wat niet klopt, telt niet mee.
  */
 async function readShared(env: Env, key: string): Promise<Required<SharedSession>> {
-  const data = await env.FEEDBACK.get<SharedSession>(key, 'json').catch(() => null);
+  return parseShared(await env.FEEDBACK.get<SharedSession>(key, 'json').catch(() => null));
+}
+
+function parseJson(body: ArrayBuffer | Uint8Array): SharedSession | null {
+  try {
+    return JSON.parse(new TextDecoder().decode(body)) as SharedSession | null;
+  } catch {
+    return null;
+  }
+}
+
+function parseShared(data: SharedSession | null): Required<SharedSession> {
   const list = (value: unknown): unknown[] => (Array.isArray(value) ? value : []);
   const isObject = (value: unknown) => typeof value === 'object' && value !== null;
   const text = (value: unknown) => (typeof value === 'string' ? value : undefined);
@@ -238,43 +252,98 @@ export interface TesterUsage {
   lastActivity?: number;
 }
 
+/** Telling van één gedeeld bestand, uitgerekend bij het delen. */
+export function sharedUsage(data: Required<SharedSession>): TesterUsage {
+  const notes = data.utterances.filter((u) => u.kind === 'dev_note').length;
+  const times = [
+    ...data.utterances.map((u) => u.recordedAt),
+    ...data.sessions.map((s) => s.endedAt ?? s.startedAt ?? 0),
+  ];
+  const lastActivity = times.length ? Math.max(...times) : 0;
+  return {
+    sessions: data.sessions.length,
+    utterances: data.utterances.length - notes,
+    notes,
+    lastActivity: lastActivity || undefined,
+  };
+}
+
+/** De telling in de metadata van een gedeeld bestand (sinds 25 nov), als hij er is. */
+function usageFromMetadata(metadata: unknown): TesterUsage | undefined {
+  const usage = (metadata as { usage?: Partial<TesterUsage> } | null)?.usage;
+  const count = (value: unknown) =>
+    typeof value === 'number' && Number.isInteger(value) && value >= 0 ? value : undefined;
+  const sessions = count(usage?.sessions);
+  const utterances = count(usage?.utterances);
+  const notes = count(usage?.notes);
+  if (sessions === undefined || utterances === undefined || notes === undefined) return undefined;
+  return { sessions, utterances, notes, lastActivity: count(usage?.lastActivity) || undefined };
+}
+
 /**
  * Gebruik per tester, uit wat er gedeeld is (share.ts): alleen gestopte
  * sessies en losse feedback, en alleen van testers die delen aan hebben.
+ *
+ * De telling per bestand staat sinds 25 nov in de metadata van de sleutel
+ * (bij het delen uitgerekend), zodat de lijst alleen de sleutels leest en
+ * niet elk bestand; dat werd met elke gedeelde sessie trager, tot de grens
+ * van een Worker. Bestanden van daarvoor worden nog gelezen. Feedback die in
+ * twee bestanden staat (losse feedback van vóór 25 nov, per tester en per
+ * apparaat), telt alleen tussen gelezen bestanden één keer.
  */
 export async function testerUsage(env: Env): Promise<Map<string, TesterUsage>> {
-  const keys = await sharedSessionKeys(env);
+  const keys = await sharedSessionKeysWithMetadata(env);
 
-  const files = await Promise.all(
-    keys.map(async (key) => ({
-      tester: key.split('/')[0],
-      data: await readShared(env, key),
-    })),
-  );
-  type Entry = { sessions: number; utterances: Map<string, boolean>; lastActivity?: number };
+  type Entry = {
+    sessions: number;
+    utterances: number;
+    notes: number;
+    /** Uit gelezen bestanden: op id, want losse feedback kan in twee bestanden staan */
+    read: Map<string, boolean>;
+    lastActivity: number;
+  };
   const perTester = new Map<string, Entry>();
+  const entryFor = (tester: string): Entry => {
+    let entry = perTester.get(tester);
+    if (!entry) {
+      entry = { sessions: 0, utterances: 0, notes: 0, read: new Map(), lastActivity: 0 };
+      perTester.set(tester, entry);
+    }
+    return entry;
+  };
+
+  const add = (entry: Entry, usage: TesterUsage) => {
+    entry.sessions += usage.sessions;
+    entry.utterances += usage.utterances;
+    entry.notes += usage.notes;
+    entry.lastActivity = Math.max(entry.lastActivity, usage.lastActivity ?? 0);
+  };
+  const older: string[] = [];
+  for (const { name, metadata } of keys) {
+    const usage = usageFromMetadata(metadata);
+    if (usage) add(entryFor(name.split('/')[0]), usage);
+    else older.push(name);
+  }
+  const files = await Promise.all(
+    older.map(async (key) => ({ tester: key.split('/')[0], data: await readShared(env, key) })),
+  );
   for (const { tester, data } of files) {
-    const entry: Entry = perTester.get(tester) ?? { sessions: 0, utterances: new Map() };
-    perTester.set(tester, entry);
+    const entry = entryFor(tester);
+    const { lastActivity } = sharedUsage(data);
     entry.sessions += data.sessions.length;
-    const times = [
-      ...data.utterances.map((u) => u.recordedAt),
-      ...data.sessions.map((s) => s.endedAt ?? s.startedAt ?? 0),
-    ];
-    // Op id, want losse feedback kan in twee bestanden staan
-    for (const u of data.utterances) entry.utterances.set(u.id, u.kind === 'dev_note');
-    if (times.length) entry.lastActivity = Math.max(entry.lastActivity ?? 0, ...times);
+    entry.lastActivity = Math.max(entry.lastActivity, lastActivity ?? 0);
+    for (const u of data.utterances) entry.read.set(u.id, u.kind === 'dev_note');
   }
 
   return new Map(
-    [...perTester].map(([tester, { sessions, utterances, lastActivity }]) => {
-      const notes = [...utterances.values()].filter(Boolean).length;
+    [...perTester].map(([tester, { sessions, utterances, notes, read, lastActivity }]) => {
+      const readNotes = [...read.values()].filter(Boolean).length;
       return [
         tester,
         {
           sessions,
-          utterances: utterances.size - notes,
-          notes,
+          utterances: utterances + read.size - readNotes,
+          notes: notes + readNotes,
           lastActivity: lastActivity || undefined,
         },
       ];
@@ -284,11 +353,17 @@ export async function testerUsage(env: Env): Promise<Map<string, TesterUsage>> {
 
 /** Sleutels van alle gedeelde sessies (`<tester>/sessions/<id>`), zonder opnames. */
 async function sharedSessionKeys(env: Env): Promise<string[]> {
-  const keys: string[] = [];
+  return (await sharedSessionKeysWithMetadata(env)).map((k) => k.name);
+}
+
+async function sharedSessionKeysWithMetadata(
+  env: Env,
+): Promise<{ name: string; metadata: unknown }[]> {
+  const keys: { name: string; metadata: unknown }[] = [];
   let cursor: string | undefined;
   do {
     const page = await env.FEEDBACK.list({ cursor });
-    keys.push(...page.keys.map((k) => k.name).filter((name) => name.includes('/sessions/')));
+    keys.push(...page.keys.filter((k) => k.name.includes('/sessions/')));
     cursor = page.list_complete ? undefined : page.cursor;
   } while (cursor);
   return keys;

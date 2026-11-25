@@ -1335,6 +1335,41 @@ describe('/api/feedback/notes (feedback inzien)', () => {
     });
   });
 
+  it('leest voor de telling alleen de sleutels, oude bestanden zonder telling wel', async () => {
+    await putInstall(testersKv as never, ANNA_ID, {
+      name: ANNA,
+      registeredAt: 1000,
+      via: 'turnstile',
+    });
+    // Gedeeld vóór 25 nov: zonder telling in de metadata
+    await kv.put(
+      `${ANNA}/sessions/oud`,
+      JSON.stringify({
+        sessions: [{ startedAt: 6000, endedAt: 7000 }],
+        utterances: [
+          { id: 'u9', recordedAt: 6500, transcript: 'Merel' },
+          { id: 'n9', recordedAt: 6600, kind: 'dev_note', transcript: 'Feedback: oud' },
+        ],
+      }),
+      { metadata: { contentType: 'application/json', uploadedAt: 1, bytes: 1 } },
+    );
+    expect(kv.store.get(`${ANNA}/sessions/w1`)?.metadata).toMatchObject({
+      usage: { sessions: 1, utterances: 1, notes: 1, lastActivity: 2000 },
+    });
+    const get = vi.spyOn(kv, 'get');
+    const response = await call('/api/testers', { code: OWNER_CODE });
+    const { testers } = (await response.json()) as {
+      testers: { name: string; usage?: object }[];
+    };
+    expect(testers.find((t) => t.name === ANNA)?.usage).toEqual({
+      sessions: 2,
+      utterances: 2,
+      notes: 3,
+      lastActivity: 7000,
+    });
+    expect(get.mock.calls.map(([key]) => key)).toEqual([`${ANNA}/sessions/oud`]);
+  });
+
   it('onthoudt welke feedback verwerkt is, en kan dat terugdraaien', async () => {
     expect((await markProcessed(['n1', 'n2'], true)).status).toBe(200);
     expect((await notes()).map((n) => n.processed)).toEqual([true, true]);
