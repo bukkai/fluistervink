@@ -67,8 +67,8 @@
       <dd>
         De tekst van je uitspraak plus de laatste waarnemingen van de sessie (zodat "nog drie erbij"
         werkt), met hun tijd, je opmerkingen en notities, en hoe ver ze van je af zijn. Geen opname
-        en geen coördinaten. Anthropic wist het binnen 30 dagen (langer alleen als hun systemen
-        misbruik vermoeden) en traint er niet mee.
+        en geen coördinaten. Anthropic wist het binnen 30 dagen (langer alleen als de wet dat vraagt
+        of als hun systemen misbruik vermoeden, dan tot twee jaar) en traint er niet mee.
       </dd>
     </dl>
     <p>
@@ -213,8 +213,8 @@
         <dd>
           In de browser, of als Google Play het niet bevestigt, controleert Cloudflare Turnstile bij
           de eerste keer openen of er een echte browser achter zit, onder andere aan je IP-adres,
-          volgens Cloudflare alleen om robots tegen te houden. Daarna heet je installatie
-          bijvoorbeeld "app-3f9a2b1c", zonder iets wat naar jou verwijst, tenzij je bij
+          volgens Cloudflare alleen om robots te herkennen en tegen te houden. Daarna heet je
+          installatie bijvoorbeeld "app-3f9a2b1c", zonder iets wat naar jou verwijst, tenzij je bij
           <a href="{app}#instellingen">Instellingen</a> je naam invult (niet verplicht). Bij elke installatie
           staat ook of het een iPhone, een Android-toestel of een computer is (dat stuurt je browser zelf
           mee), zodat de ontwikkelaar ziet hoeveel mensen welk soort toestel gebruiken; het merk, het
