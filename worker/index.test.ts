@@ -1222,6 +1222,28 @@ describe('/api/feedback/notes (feedback inzien)', () => {
     expect((await notes()).map((n) => n.id)).toEqual(['n2', 'n1']);
   });
 
+  it('leest alleen bestanden met feedback, en oude bestanden zonder telling', async () => {
+    await share('zonder-feedback', {
+      sessions: [{ startedAt: 4000, endedAt: 5000 }],
+      utterances: [{ id: 'u5', recordedAt: 4500, transcript: 'Vink' }],
+    });
+    // Gedeeld vóór 25 nov: zonder telling in de metadata
+    await kv.put(
+      `${ANNA}/sessions/oud`,
+      JSON.stringify({
+        sessions: [],
+        utterances: [{ id: 'n8', recordedAt: 8000, kind: 'dev_note', transcript: 'Oud' }],
+      }),
+      { metadata: { contentType: 'application/json', uploadedAt: 1, bytes: 1 } },
+    );
+    const get = vi.spyOn(kv, 'get');
+    expect((await notes()).map((n) => n.id)).toEqual(['n8', 'n2', 'n1']);
+    const read = get.mock.calls.map(([key]) => key).filter((key) => key.includes('/sessions/'));
+    expect(read.sort()).toEqual(
+      [`${ANNA}/sessions/losse-feedback`, `${ANNA}/sessions/oud`, `${ANNA}/sessions/w1`].sort(),
+    );
+  });
+
   it('neemt de gebiedsnaam van de sessie mee', async () => {
     await share('w2', {
       sessions: [{ place: { name: 'Gulperberg' }, startedAt: 4000, endedAt: 5000 }],

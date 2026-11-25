@@ -146,11 +146,15 @@ export interface SharedNote {
 }
 
 /**
- * Alle feedback uit de gedeelde sessies, nieuwste eerst. Leest elke
- * gedeelde sessie (zonder opnames); bij een handvol testers is dat genoeg.
+ * Alle feedback uit de gedeelde sessies, nieuwste eerst. Leest alleen de
+ * bestanden met feedback erin: sinds 25 nov staat in de metadata hoeveel
+ * (`usage.notes`, bij het delen geteld), en de meeste sessies hebben geen
+ * feedback. Bestanden van daarvoor worden nog allemaal gelezen.
  */
 async function sharedNotes(env: Env): Promise<SharedNote[]> {
-  const keys = await sharedSessionKeys(env);
+  const keys = (await sharedSessionKeysWithMetadata(env))
+    .filter(({ metadata }) => (usageFromMetadata(metadata)?.notes ?? 1) > 0)
+    .map(({ name }) => name);
 
   const done = await processedNotes(env);
   const deleted = await noteIds(env, DELETED_KEY);
@@ -352,10 +356,6 @@ export async function testerUsage(env: Env): Promise<Map<string, TesterUsage>> {
 }
 
 /** Sleutels van alle gedeelde sessies (`<tester>/sessions/<id>`), zonder opnames. */
-async function sharedSessionKeys(env: Env): Promise<string[]> {
-  return (await sharedSessionKeysWithMetadata(env)).map((k) => k.name);
-}
-
 async function sharedSessionKeysWithMetadata(
   env: Env,
 ): Promise<{ name: string; metadata: unknown }[]> {
