@@ -22,7 +22,7 @@ import {
   verifyTurnstile,
   type InstallSecrets,
 } from './install';
-import { hasActivity, isUnused } from '../src/lib/unusedInstalls';
+import { activeAfter, hasActivity, isLeftover, isUnused } from '../src/lib/unusedInstalls';
 import {
   AREA_LOOKUPS_PER_INSTALL_PER_DAY,
   AUDIO_SECONDS_PER_DAY,
@@ -669,7 +669,7 @@ async function billing(env: WorkerEnv, tester: string): Promise<Response> {
  */
 async function installList(env: WorkerEnv, { strict = false } = {}) {
   const installs = (await listInstalls(env.TESTERS)).map(
-    ({ name, registeredAt, via, device, blocked, hidden, displayName, owner }) => ({
+    ({ name, registeredAt, via, device, blocked, hidden, hiddenAt, displayName, owner }) => ({
       name,
       source: 'install' as const,
       invitedAt: registeredAt,
@@ -677,6 +677,7 @@ async function installList(env: WorkerEnv, { strict = false } = {}) {
       device,
       blocked: blocked || undefined,
       hidden: hidden || undefined,
+      hiddenAt,
       displayName,
       owner: owner || undefined,
     }),
@@ -703,6 +704,7 @@ async function installList(env: WorkerEnv, { strict = false } = {}) {
  * - DELETE /api/testers?name=…&hide=1  afgesloten installatie uit de lijst halen
  * - PATCH /api/testers?name=…&owner=1  installatie van de eigenaar zelf (0: toch niet)
  * - POST /api/testers?cleanup=1     ongebruikte installaties uit de lijst (`isUnused`)
+ * - POST /api/testers?cleanup=testfase&since=2026-12-03  testfase uit de lijst (`isLeftover`)
  */
 async function testers(request: Request, env: WorkerEnv, tester: string): Promise<Response> {
   if (tester !== OWNER) return json({ error: 'Alleen voor de eigenaar' }, 403);
@@ -710,15 +712,25 @@ async function testers(request: Request, env: WorkerEnv, tester: string): Promis
   if (request.method === 'GET') {
     // Opgeruimd en sindsdien iets gedaan: weer in de lijst
     const shown = (await installList(env)).filter(
-      ({ hidden, ...t }) => !hidden || (!t.blocked && hasActivity(t)),
+      ({ hidden, hiddenAt, ...t }) =>
+        !hidden ||
+        (!t.blocked && (hiddenAt === undefined ? hasActivity(t) : activeAfter(t, hiddenAt))),
     );
-    return json({ testers: shown.map(({ hidden: _, ...t }) => t) });
+    return json({ testers: shown.map(({ hidden: _, hiddenAt: __, ...t }) => t) });
   }
-  if (request.method === 'POST' && new URL(request.url).searchParams.get('cleanup') === '1') {
-    // Ongebruikte installaties uit de lijst; ze blijven werken. Zonder het
-    // verbruik (D1) niets opruimen: dan is "nooit iets ingesproken" niet te zien.
+  const params = new URL(request.url).searchParams;
+  const cleanup = params.get('cleanup');
+  if (request.method === 'POST' && (cleanup === '1' || cleanup === 'testfase')) {
+    // Ongebruikte installaties, of de testfase die sinds de productierelease
+    // (`since`) niets meer deed, uit de lijst; ze blijven werken. Zonder het
+    // verbruik (D1) niets opruimen: dan is "niets ingesproken" niet te zien.
+    const since = params.get('since') ?? '';
+    if (cleanup === 'testfase' && !/^\d{4}-\d{2}-\d{2}$/.test(since)) {
+      return json({ error: 'since ontbreekt' }, 400);
+    }
+    const now = Date.now();
     const unused = (await installList(env, { strict: true })).filter(
-      (t) => !t.hidden && isUnused(t),
+      (t) => !t.hidden && (cleanup === '1' ? isUnused(t) : isLeftover(t, since)),
     );
     const cleaned: string[] = [];
     for (const { name } of unused) {
@@ -726,13 +738,16 @@ async function testers(request: Request, env: WorkerEnv, tester: string): Promis
       const found = await findInstall(env.TESTERS, name);
       if (!found) continue;
       const { id, ...record } = found;
-      await putInstall(env.TESTERS, id, { ...record, hidden: true });
+      await putInstall(env.TESTERS, id, {
+        ...record,
+        hidden: true,
+        hiddenAt: cleanup === 'testfase' ? now : undefined,
+      });
       cleaned.push(name);
     }
     return json({ cleaned });
   }
   if (request.method === 'DELETE') {
-    const params = new URL(request.url).searchParams;
     const name = params.get('name') ?? '';
     // Het token blijft geldig, maar authorize() weigert het daarna
     const found = name.startsWith('app-') ? await findInstall(env.TESTERS, name) : undefined;
@@ -748,7 +763,6 @@ async function testers(request: Request, env: WorkerEnv, tester: string): Promis
   if (request.method === 'PATCH') {
     // Een installatie van de eigenaar zelf: met de hand op Developer, of
     // vanzelf als de app met de code nog een installatie van vroeger heeft
-    const params = new URL(request.url).searchParams;
     const name = params.get('name') ?? '';
     const found = name.startsWith('app-') ? await findInstall(env.TESTERS, name) : undefined;
     if (!found) return json({ error: 'Niet gevonden' }, 404);

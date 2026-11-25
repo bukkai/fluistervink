@@ -1,6 +1,7 @@
 import { OWNER, type Tester } from './api';
 import { dayOf } from './costs';
 import { weekOf, type ActivityRow, type SummaryRow } from './stats';
+import { usedSince } from './unusedInstalls';
 
 // De lijst met installaties op Developer: wie de laatste tijd actief was
 // bovenaan, de rest achter "Toon meer".
@@ -22,7 +23,8 @@ export function lastSeen(tester: Tester): number | undefined {
  * Actieve installaties (niet afgesloten, iets gedeeld, en gezien in de laatste
  * `ACTIVE_DAYS` dagen), en de rest; allebei met de laatst geziene bovenaan.
  * Wie nog niets deelde staat ook bij de rest: daar valt voor de eigenaar
- * (nog) niets aan te zien. Zijn eigen installaties ook, en die uit de testfase.
+ * (nog) niets aan te zien. Zijn eigen installaties ook, en die uit de testfase
+ * die sinds de productierelease niets meer deden; wie doorgaat, is gewoon actief.
  */
 export function splitActive(testers: Tester[], now = Date.now(), launchDay = LAUNCH_DAY) {
   const since = now - ACTIVE_DAYS * 24 * 60 * 60 * 1000;
@@ -30,7 +32,7 @@ export function splitActive(testers: Tester[], now = Date.now(), launchDay = LAU
   const isActive = (t: Tester) =>
     !t.blocked &&
     !t.owner &&
-    !inTestPhase(t, launchDay) &&
+    !(inTestPhase(t, launchDay) && !usedSince(t, launchDay!)) &&
     t.usage !== undefined &&
     (lastSeen(t) ?? 0) >= since;
   return { active: sorted.filter(isActive), inactive: sorted.filter((t) => !isActive(t)) };
@@ -87,10 +89,27 @@ export function testPhaseNames(
 }
 
 /**
+ * Uit de testfase en sinds de release niets meer ingesproken: die laat
+ * Statistieken standaard weg. Wie na de release doorgaat, telt gewoon mee als
+ * gebruiker (vandaag, deze week, de grafiek), maar niet als nieuwe gebruiker:
+ * de trechter en "Blijven ze?" gaan over wie na de release begon.
+ */
+export function leftoverNames(
+  rows: ActivityRow[],
+  testPhase: Set<string>,
+  launchDay = LAUNCH_DAY,
+): Set<string> {
+  if (!launchDay) return new Set();
+  const continued = new Set(rows.filter((r) => r.day >= launchDay).map((r) => r.tester));
+  return new Set([...testPhase].filter((name) => !continued.has(name)));
+}
+
+/**
  * Anonieme cijfers per sessie zonder de testfase. Die hebben geen installatie,
  * alleen de week waarin de installatie begon: alles van vóór de week van de
  * release valt weg, en ook cijfers zonder die week. Een installatie uit de
- * week van de release zelf, maar van vóór de dag, telt dus wel mee.
+ * week van de release zelf, maar van vóór de dag, telt dus wel mee. Testers
+ * die doorgaan vallen hier ook weg: de cijfers zeggen niet van wie ze zijn.
  */
 export function withoutTestPhase(rows: SummaryRow[], launchDay = LAUNCH_DAY): SummaryRow[] {
   if (!launchDay) return rows;

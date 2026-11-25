@@ -18,7 +18,14 @@
     type SummaryRow,
   } from './stats';
   import { dayOf } from './costs';
-  import { asOwner, LAUNCH_DAY, ownInstalls, testPhaseNames, withoutTestPhase } from './testers';
+  import {
+    asOwner,
+    LAUNCH_DAY,
+    leftoverNames,
+    ownInstalls,
+    testPhaseNames,
+    withoutTestPhase,
+  } from './testers';
 
   const DAYS = 30;
   /** Grafiek en tabel even lang, zodat elke week in de grafiek een rij heeft */
@@ -61,24 +68,25 @@
   // Installaties van de eigenaar zelf tellen als de eigenaar (testers.ts)
   let own = $derived(ownInstalls(installs ?? []));
   let allRows = $derived(asOwner(rows ?? [], own));
+  // Testfase (testers.ts): wie na de release doorgaat, telt als gebruiker mee,
+  // maar niet als nieuwe gebruiker (trechter, "Blijven ze?")
   let testPhase = $derived(testPhaseNames(rows ?? [], installs ?? []));
-  let counted = $derived(
-    allRows.filter(
-      (r) => (withOwner || r.tester !== 'eigenaar') && (withTestPhase || !testPhase.has(r.tester)),
-    ),
-  );
+  let leftover = $derived(leftoverNames(rows ?? [], testPhase));
+  let withoutOwner = $derived(allRows.filter((r) => withOwner || r.tester !== 'eigenaar'));
+  let counted = $derived(withoutOwner.filter((r) => withTestPhase || !leftover.has(r.tester)));
+  let newUsers = $derived(withoutOwner.filter((r) => withTestPhase || !testPhase.has(r.tester)));
   let days = $derived(perDay(counted, DAYS));
   let weeks = $derived(perWeek(counted, WEEKS));
   /** Laatste weken van eerste gebruik; ouder past niet op een telefoon */
   const COHORTS = 12;
-  let cohortRows = $derived(cohorts(counted).slice(0, COHORTS));
+  let cohortRows = $derived(cohorts(newUsers).slice(0, COHORTS));
   /**
    * Alle groepen samen, per week na het begin: telt alleen groepen waarvoor die
    * week al om is. Zo is er al een cijfer voordat één week groot genoeg is.
    */
   let cohortTotal = $derived(
     RETENTION_WEEKS.map((_, i) => {
-      const done = cohorts(counted).filter((c) => c.retained[i] !== undefined);
+      const done = cohorts(newUsers).filter((c) => c.retained[i] !== undefined);
       const size = done.reduce((sum, c) => sum + c.size, 0);
       const kept = done.reduce((sum, c) => sum + c.retained[i]! * c.size, 0);
       return { size, share: size ? kept / size : undefined };
@@ -308,7 +316,9 @@
       <p class="muted hint">
         Welk deel in precies die week na de eerste week nog iets insprak. Een percentage alleen bij
         minstens {MIN_GROUP} mensen, en alleen voor weken die om zijn. Alle: de groepen samen waarvoor
-        die week al om is.
+        die week al om is.{LAUNCH_DAY && !withTestPhase
+          ? ' Alleen wie na de productierelease begon.'
+          : ''}
       </p>
     </div>
   </section>

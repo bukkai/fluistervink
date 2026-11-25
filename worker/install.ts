@@ -50,6 +50,12 @@ export interface InstallRecord {
    * lijst zodra hij iets doet.
    */
   hidden?: boolean;
+  /**
+   * Wanneer een werkende installatie werd opgeruimd. Alleen bij de testfase
+   * (`isLeftover`): die deed vóór het opruimen al iets, dus komt pas terug als
+   * hij daarna iets doet (`activeAfter`).
+   */
+  hiddenAt?: number;
   /** Naam die de gebruiker zelf opgaf (Instellingen), zodat de eigenaar weet wie het is */
   displayName?: string;
   /**

@@ -73,6 +73,7 @@ Wat met de lancering meegaat en wat achter een schakelaar wacht: `docs/vrijgave.
 - [ ] `#uitleg` en `#privacy` nalopen op "test"-taal; `CLAUDE.md` en `NOTES.md` bijwerken. Nagelopen op 18 nov: beide schoon (alleen de gesproken bevestiging heet er een proef, en dat is hij nog). Besloten 21 nov: "(proef)" bij Trektelmodus eraf (gesproken bevestiging blijft een proef); "nog in ontwikkeling" in de vraag om te delen (welkom en startscherm) blijft tijdens de test en verandert vóór de productierelease: klaar in de PR "nog in ontwikkeling" (wordt "nieuw"), mergen zodra de productietoegang er is.
 - [ ] Op de dag van de productierelease `LAUNCH_DAY` in `src/lib/testers.ts` invullen (kleine PR, daarna `npm run release`): Statistieken begint dan schoon, de testers van daarvóór staan achter een vinkje (`docs/proxy.md`, Statistieken).
 - [ ] De eerste weken Statistieken en Kosten op Developer volgen.
+- [ ] Drie maanden na de release: op Developer "Testfase opruimen" (testers die sindsdien niets meer deden; ze blijven werken).
 - [x] Naam in de winkelvermelding: "Fluistervink: vogels inspreken" (al gezet op 25 nov) (`docs/play-store/README.md`).
 - [ ] Bekendheid geven in stappen, eerst in eigen kring: `docs/plan-marketing.md`.
 

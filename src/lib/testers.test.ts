@@ -4,6 +4,7 @@ import type { SummaryRow } from './stats';
 import {
   asOwner,
   inTestPhase,
+  leftoverNames,
   lastSeen,
   ownInstalls,
   splitActive,
@@ -121,17 +122,41 @@ describe('testfase (schone lei bij de productierelease)', () => {
     expect([...names].sort()).toEqual(['oude-code', 'tester']);
   });
 
-  it('zet installaties uit de testfase bij de rest op Developer', () => {
+  it('zet testers die sinds de release niets deden bij de rest op Developer', () => {
     const shared = { sessions: 1, utterances: 3, notes: 0 };
     const { active } = splitActive(
       [
-        tester('tester', { invitedAt: daysAgo(20), lastUsed: '2026-11-11', usage: shared }),
+        tester('tester', { invitedAt: daysAgo(20), lastUsed: '2026-11-01', usage: shared }),
         tester('nieuw', { invitedAt: daysAgo(1), lastUsed: '2026-11-11', usage: shared }),
       ],
       now,
       '2026-11-05',
     );
     expect(active.map((t) => t.name)).toEqual(['nieuw']);
+  });
+
+  it('zet een tester die na de release doorgaat gewoon bij de actieven', () => {
+    const shared = { sessions: 1, utterances: 3, notes: 0 };
+    const { active } = splitActive(
+      [tester('tester', { invitedAt: daysAgo(20), lastUsed: '2026-11-10', usage: shared })],
+      now,
+      '2026-11-05',
+    );
+    expect(active.map((t) => t.name)).toEqual(['tester']);
+  });
+
+  it('laat Statistieken alleen de testers weglaten die na de release stopten', () => {
+    const left = leftoverNames(
+      [
+        { day: '2026-11-20', tester: 'gestopt', sessions: 1, utterances: 3 },
+        { day: '2026-11-20', tester: 'door', sessions: 1, utterances: 3 },
+        { day: '2026-12-10', tester: 'door', sessions: 1, utterances: 3 },
+      ],
+      new Set(['gestopt', 'door', 'nooit']),
+      launch,
+    );
+    expect([...left].sort()).toEqual(['gestopt', 'nooit']);
+    expect(leftoverNames([], new Set(['a']), undefined).size).toBe(0);
   });
 
   it('laat anonieme cijfers van vóór de week van de release weg', () => {
