@@ -1,5 +1,6 @@
 import { devNoteText } from '../src/lib/devNotePrefix';
 import { json, MAX_AUDIO_BYTES, OWNER, readBody } from './common';
+import { guardShare } from './guard';
 
 // Wat testers delen (sessies, feedback, eventueel opnames), in KV: de route
 // /api/feedback en wat de proxy er zelf uit leest (feedback voor Developer,
@@ -43,6 +44,9 @@ export async function feedback(request: Request, env: Env, tester: string): Prom
     const body = await readBody(request, kind === 'sessions' ? MAX_SESSION_BYTES : MAX_AUDIO_BYTES);
     if (body instanceof Response) return body;
     if (body.byteLength === 0) return json({ error: 'Leeg' }, 400);
+    // Noodrem, en een grens op wat er per dag gedeeld wordt (guard.ts)
+    const refused = await guardShare(env, tester, body.byteLength);
+    if (refused) return refused;
     // Alleen de typen die de app stuurt: de eigenaar haalt het later op, en
     // een tester mag niet bepalen hoe dat geopend wordt (bv. als HTML)
     const sent = request.headers.get('Content-Type') ?? '';

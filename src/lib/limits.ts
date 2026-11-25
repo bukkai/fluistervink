@@ -20,3 +20,27 @@ export const AUDIO_SECONDS_PER_DAY = 5 * 60 * 60;
  * (`docs/plan-marketing.md`, Kostengrens per stap).
  */
 export const MESSAGES_PER_DAY = 500;
+
+// Grenzen voor alle installaties samen (worker/guard.ts). De plafonds per
+// installatie houden één misbruikte installatie tegen, maar wie er veel
+// aanmaakte, kreeg tot 25 nov voor elk een eigen dag. De eigenaar valt erbuiten.
+
+/**
+ * Kosten per dag van alle installaties samen, in dollars, over beta en stable.
+ * Gebruikers kostten tot 24 nov hooguit $0,15 op een dag. Daarboven wachten
+ * uitspraken tot de volgende dag (503, zoals bij geen bereik). In te stellen
+ * met de var `DAILY_BUDGET_USD`.
+ */
+export const DAILY_BUDGET_USD = 5;
+
+/** Nieuwe installaties per uur en per dag, voor alle omgevingen samen. */
+export const NEW_INSTALLS_PER_HOUR = 30;
+export const NEW_INSTALLS_PER_DAY = 150;
+
+/**
+ * Delen per dag: per installatie (een trektelling van 4 uur met opnames is
+ * ~75 MB) en alle installaties samen. Wat erboven komt, deelt de app later
+ * (share.ts probeert het opnieuw).
+ */
+export const SHARED_BYTES_PER_INSTALL_PER_DAY = 250 * 1024 * 1024;
+export const SHARED_BYTES_PER_DAY = 2 * 1024 * 1024 * 1024;

@@ -38,9 +38,13 @@ export function redactDeep<T>(value: T): T {
     return Object.fromEntries(
       Object.entries(value as Record<string, unknown>).map(([key, inner]) => [
         key,
-        redactDeep(inner),
+        // Id's en versies niet: een uuid of hash kan toevallig een lange
+        // cijferreeks bevatten, en zonder klopt de gedeelde sessie niet meer
+        isReference(key) ? inner : redactDeep(inner),
       ]),
     ) as T;
   }
   return value;
 }
+
+const isReference = (key: string) => /^(id|.+Id|.+_id|.+Version)$/.test(key);

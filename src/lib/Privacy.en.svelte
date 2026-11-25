@@ -31,7 +31,10 @@
         how much the app is used and a few anonymous numbers per session, never what you said or
         where you were.
       </li>
-      <li>You can switch everything off and delete it yourself.</li>
+      <li>
+        You can switch sharing off yourself, and delete everything on your phone yourself. What the
+        developer already has is erased when you ask.
+      </li>
       <li>
         Fluistervink is a personal project of Stephan Muller, who is responsible for your data.
         Questions or having something erased: <a href="mailto:{CONTACT}">{CONTACT}</a>, or send
@@ -57,10 +60,17 @@
       <dt>Anthropic</dt>
       <dd>
         The text of your voice note plus the latest observations of the session (so that "three
-        more" works), with how far they are from you. No recording and no coordinates. Anthropic
-        deletes it within 30 days and doesn’t train on it.
+        more" works), with their time, your remarks and notes, and how far they are from you. No
+        recording and no coordinates. Anthropic deletes it within 30 days (longer only if their
+        systems suspect misuse) and doesn’t train on it.
       </dd>
     </dl>
+    <p>
+      During a migration or garden count the microphone stays on until you stop, and the app cuts
+      the recording into pieces of about a minute. Pieces without speech are thrown away right away;
+      the rest goes to OpenAI and Anthropic like any voice note, also if someone else nearby is
+      talking.
+    </p>
   </div>
 </section>
 
@@ -69,8 +79,9 @@
     <h3>Sharing with the developer</h3>
     <p>
       If you say yes to sharing, then after each session your voice notes as text, what the app made
-      of them, your corrections, your feedback, the log and the locations of your observations go to
-      the developer. Recordings only if you switch that on separately under
+      of them, your corrections, remarks and notes, the name of the area, your feedback, the log
+      (with the kind of device and the version of Android or iOS) and the locations of your
+      observations go to the developer. Recordings only if you switch that on separately under
       <a href="{app}#instellingen">Settings</a>. Feedback you type outside a session goes straight
       away, with the log of the half hour before.
     </p>
@@ -80,9 +91,11 @@
       too. It stays on your phone.
     </p>
     <p>
-      Only the developer reads it, to improve the app, and doesn’t pass it on. It is stored at
-      Cloudflare under the name of your installation and kept until you ask for it to be erased (via
-      feedback or <a href="mailto:{CONTACT}">{CONTACT}</a>).
+      Only the developer reads it, at Cloudflare and on the developer’s own computer, to improve the
+      app. Sometimes it goes through the speech recognition and the model again, to test an
+      improvement. Beyond that it goes nowhere. It is stored under the name of your installation and
+      kept until you ask for it to be erased: email
+      <a href="mailto:{CONTACT}">{CONTACT}</a>, or send feedback while sharing is on.
     </p>
   </div>
 </section>
@@ -107,7 +120,8 @@
         shared stay with the developer.
       </li>
       <li>
-        Delete a session completely: under <a href="{app}#sessies">Sessions</a>.
+        Delete a session completely: under <a href="{app}#sessies">Sessions</a>. A session already
+        shared stays with the developer until you ask for it to be erased.
       </li>
       <li>Delete everything: uninstall the app, or clear Fluistervink’s site data in Chrome.</li>
       <li>
@@ -160,11 +174,12 @@
         lasted (to 5 minutes), how many voice notes, observations and different species, how many of
         those were uncertain, not understood, corrected by voice or failed, whether it waited for a
         connection, whether it was a migration or garden count, whether you reviewed and exported,
-        and whether it was the Android app. This happens when you export the session, or a week
-        after stopping. Not where, when, which species or what you said. The server stores it
-        without your installation, only with the week in which it started, so it can’t be traced
-        back to you. This lets the developer see how well the app works in the field. On by default;
-        switch it off under <a href="{app}#instellingen">Settings</a>.
+        and whether it was the Android app, an iPhone or the browser. This happens when you export
+        the session, or a week after stopping. Not where, on which day, which species or what you
+        said. The server stores it without your installation, only with the week in which it arrived
+        and the week in which your installation started, so it can’t be traced back to you. This
+        lets the developer see how well the app works in the field. On by default; switch it off
+        under <a href="{app}#instellingen">Settings</a>.
       </p>
     </details>
 
@@ -191,10 +206,10 @@
           first time you open the app whether there’s a real browser behind it, among other things
           from your IP address, according to Cloudflare only to keep robots out. After that your
           installation is called something like "app-3f9a2b1c", with nothing that points to you,
-          unless you fill in your name under <a href="{app}#instellingen">Settings</a> (optional). With
-          that name it also notes whether it’s an iPhone, an Android device or a computer (your browser
+          unless you fill in your name under <a href="{app}#instellingen">Settings</a> (optional). Every
+          installation also notes whether it’s an iPhone, an Android device or a computer (your browser
           sends that itself), so the developer can see how many people use which kind of device; not the
-          brand, model or version.
+          brand, model or version (those are only in the log, if you share).
         </dd>
       </dl>
     </details>
@@ -217,7 +232,7 @@
 </section>
 
 <p class="sources">
-  Updated on 23 November 2026. Sources, checked on 11 November 2026:
+  Updated on 25 November 2026. Sources, checked on 25 November 2026:
   <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noopener">
     OpenAI
   </a>,
