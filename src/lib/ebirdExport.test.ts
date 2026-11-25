@@ -5,6 +5,7 @@ import {
   COLUMNS,
   buildEbirdExport,
   clean,
+  countryCode,
   ebirdName,
   exportForEbird,
   lastObservers,
@@ -366,5 +367,25 @@ describe('ebirdName', () => {
   it('is leeg als de soort niet te koppelen is', () => {
     expect(ebirdName(999_999_999)).toBe('');
     expect(ebirdName(REE)).toBe('');
+  });
+});
+
+describe('landcode voor eBird', () => {
+  it('alleen een land als de plek daar zeker ligt, anders leeg', () => {
+    expect(countryCode(52.37, 4.9)).toBe('NL'); // Amsterdam
+    expect(countryCode(53.22, 6.57)).toBe('NL'); // Groningen
+    expect(countryCode(52.22, 6.89)).toBe('NL'); // Enschede
+    expect(countryCode(51.97, 6.29)).toBe('NL'); // Doetinchem
+    expect(countryCode(51.5, 3.61)).toBe('NL'); // Middelburg
+    expect(countryCode(50.85, 4.35)).toBe('BE'); // Brussel
+    expect(countryCode(51.21, 3.22)).toBe('BE'); // Brugge
+    expect(countryCode(40.42, -3.7)).toBe('ES'); // Madrid
+    expect(countryCode(39.57, 2.65)).toBe('ES'); // Palma
+    // Dicht bij een grens of in een ander land: leeg (de coördinaten staan er wel in)
+    expect(countryCode(50.85, 5.69)).toBe(''); // Maastricht
+    expect(countryCode(51.44, 4.93)).toBe(''); // Baarle
+    expect(countryCode(51.84, 6.6)).toBe(''); // Bocholt (Duitsland)
+    expect(countryCode(48.86, 2.35)).toBe(''); // Parijs
+    expect(countryCode(undefined, undefined)).toBe('');
   });
 });

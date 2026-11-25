@@ -58,6 +58,42 @@ const LONG_TRAVELING_M = 8000;
 /** eBird neemt een duur tot 24 uur, exclusief */
 const MAX_DURATION_MIN = 1439;
 const MAX_COUNT = 999_999;
+
+/**
+ * Kaders (zuid, noord, west, oost) die helemaal binnen één land liggen, met
+ * wat afstand tot de grens. Samen dekken ze het grootste deel van Nederland
+ * (niet Zuid-Limburg, het zuiden van Brabant rond Baarle en Zeeuws-
+ * Vlaanderen), het midden en de kust van België, en een deel van Spanje
+ * (ontwikkeloptie "Spanje").
+ */
+const INSIDE: [code: string, box: [number, number, number, number]][] = [
+  // Zeeland, Holland, Utrecht, het noorden van Brabant, Friesland, tot Arnhem
+  ['NL', [51.5, 53.45, 4.0, 5.9]],
+  ['NL', [51.38, 51.75, 3.4, 4.0]],
+  // Overijssel, Drenthe, Groningen
+  ['NL', [52.15, 53.3, 5.9, 6.95]],
+  // De Achterhoek
+  ['NL', [51.9, 52.15, 5.9, 6.6]],
+  ['BE', [50.5, 51.0, 3.6, 5.5]],
+  ['BE', [51.0, 51.25, 2.7, 3.3]],
+  ['ES', [37.0, 42.0, -6.0, 0.0]],
+  ['ES', [38.6, 40.1, 1.15, 4.35]],
+  ['ES', [27.6, 29.5, -18.2, -13.4]],
+];
+
+/**
+ * Landcode voor eBird bij een plek, alleen als die zeker in dat land ligt;
+ * anders leeg. eBird vraagt het land niet verplicht (bijlage A: `DEFAULT
+ * NULL`; de plek staat er met coördinaten in), en een verkeerd land is erger dan
+ * geen: tot 25 nov stond er altijd NL, ook in België of Spanje.
+ */
+export function countryCode(lat: number | undefined, lon: number | undefined): string {
+  if (lat === undefined || lon === undefined) return '';
+  const inside = INSIDE.find(
+    ([, [south, north, west, east]]) => lat >= south && lat <= north && lon >= west && lon <= east,
+  );
+  return inside?.[0] ?? '';
+}
 /** Telmethode "gezien niet geteld": in eBird een X (aanwezig, niet geteld) */
 const NOT_COUNTED = 3;
 const CHECKLIST_COMMENT = 'Ingesproken met Fluistervink';
@@ -351,7 +387,7 @@ function toRow(
     'Start Time': `${pad(start.getHours())}:${pad(start.getMinutes())}`,
     // Leeg: bij de import wijs je de plek toch aan op de kaart
     'State/Province': '',
-    'Country Code': 'NL',
+    'Country Code': countryCode(location.lat, location.lon),
     Protocol: checklist.protocol,
     'Number of Observers': String(checklist.observers),
     Duration: incidental ? '' : String(checklist.durationMin),
