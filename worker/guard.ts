@@ -76,10 +76,10 @@ async function bump(db: D1Database, key: string, amount: number, now: Date): Pro
 
 /**
  * Tellers van vóór gisteren weg: ze staan per installatie (`share:app-…`) en
- * zijn alleen voor de grens van vandaag nodig. Bij elke nieuwe installatie en
- * als de eigenaar Developer opent.
+ * zijn alleen voor de grens van vandaag nodig. Bij elke nieuwe installatie,
+ * als de eigenaar Developer opent, en elke nacht (`scheduled` in index.ts).
  */
-async function prune(db: D1Database, now: Date): Promise<void> {
+export async function pruneGuardCounts(db: D1Database, now: Date): Promise<void> {
   await ensureTable(db);
   const yesterday = dayOf(new Date(now.getTime() - 24 * 60 * 60 * 1000));
   await db.prepare('DELETE FROM guard_counts WHERE day < ?').bind(yesterday).run();
@@ -216,7 +216,7 @@ export async function guardNewInstall(
       bump(env.USAGE, 'install', 1, now),
       bump(env.USAGE, hour, 1, now),
     ]);
-    await prune(env.USAGE, now);
+    await pruneGuardCounts(env.USAGE, now);
     if (today > NEW_INSTALLS_PER_DAY || thisHour > NEW_INSTALLS_PER_HOUR) {
       await alert(
         env,
@@ -300,7 +300,9 @@ export async function guard(request: Request, env: GuardEnv, tester: string): Pr
   const now = new Date();
   // Vers, niet uit het geheugen van deze instantie
   costCache.delete(env.USAGE);
-  await prune(env.USAGE, now).catch((error) => console.error('Tellers niet opgeruimd', error));
+  await pruneGuardCounts(env.USAGE, now).catch((error) =>
+    console.error('Tellers niet opgeruimd', error),
+  );
   const [isNowPaused, spent, installsToday, sharedToday] = await Promise.all([
     isPaused(env.TESTERS),
     costToday(env.USAGE, now),

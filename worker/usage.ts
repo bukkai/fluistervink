@@ -291,7 +291,8 @@ export function keepFrom(now = new Date()): string {
 /**
  * Regels van vóór de bewaartermijn samenvatten per week (maandag), omgeving en
  * model, zonder installatie en sessie, en daarna wissen. Draait als de
- * eigenaar de kosten ophaalt; is er niets ouds, dan doet het niets.
+ * eigenaar de kosten ophaalt en elke nacht (`scheduled` in index.ts); is er
+ * niets ouds, dan doet het niets.
  */
 export async function pruneUsage(db: D1Database, now = new Date()): Promise<number> {
   await ensureTable(db);

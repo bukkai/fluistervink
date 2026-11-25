@@ -1826,6 +1826,51 @@ describe('bewaartermijn van het verbruik', () => {
   });
 });
 
+describe('elke nacht opruimen (scheduled)', () => {
+  it('vat oud verbruik samen en haalt oude tellers van de grenzen weg', async () => {
+    const db = env.USAGE as ReturnType<typeof memoryD1>;
+    const now = new Date('2027-12-15T03:17:00Z');
+    const key = { tester: 'anna', channel: 'stable', session: 's', model: 'gpt-transcribe' };
+    await recordUsage(db as never, key, { audioSeconds: 60 }, new Date('2026-10-02T12:00:00Z'));
+    await recordUsage(db as never, key, { audioSeconds: 10 }, new Date('2027-12-14T12:00:00Z'));
+    await setGuardCount('install', 3);
+    await db
+      .prepare('INSERT INTO guard_counts (day, key, n) VALUES (?, ?, ?)')
+      .bind('2027-12-01', `share:${PIET}`, 7)
+      .run();
+
+    const pending: Promise<unknown>[] = [];
+    await worker.scheduled(
+      { scheduledTime: now.getTime(), cron: '17 3 * * *', noRetry() {} } as never,
+      env as never,
+      { waitUntil: (promise: Promise<unknown>) => pending.push(promise) } as never,
+    );
+    await Promise.all(pending);
+
+    expect((await usageSince(db as never, '2000-01-01')).map((r) => r.day)).toEqual(['2027-12-14']);
+    const weekly = await db.prepare('SELECT week FROM usage_weekly').all();
+    expect(weekly.results).toEqual([{ week: '2026-09-28' }]);
+    const { results } = await db.prepare('SELECT day FROM guard_counts').all();
+    expect(results).toEqual([]);
+  });
+
+  it('een fout in de database komt in het log, niet als onafgehandelde fout', async () => {
+    env.USAGE = {
+      prepare: () => {
+        throw new Error('D1 weg');
+      },
+    };
+    const pending: Promise<unknown>[] = [];
+    await worker.scheduled(
+      { scheduledTime: Date.now(), cron: '17 3 * * *', noRetry() {} } as never,
+      env as never,
+      { waitUntil: (promise: Promise<unknown>) => pending.push(promise) } as never,
+    );
+    await expect(Promise.all(pending)).resolves.toBeDefined();
+    expect(console.error).toHaveBeenCalledWith('Opruimen mislukt', expect.any(Error));
+  });
+});
+
 describe('usage-tabel van vóór 23 nov (beta en stable delen de database)', () => {
   it('laat de oude tabel staan, telt hem mee, en de oude code kan er nog in schrijven', async () => {
     const db = memoryD1();

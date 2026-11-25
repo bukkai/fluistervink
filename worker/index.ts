@@ -3,7 +3,7 @@ import { bill, type BillingKeys } from './billing';
 import { declaredTooLarge, json, MAX_AUDIO_BYTES, OWNER, readBody, tooLarge } from './common';
 import { feedback, testerUsage } from './feedback';
 import { alert } from './alert';
-import { guard, guardAi, guardNewInstall } from './guard';
+import { guard, guardAi, guardNewInstall, pruneGuardCounts } from './guard';
 import {
   cleanDisplayName,
   deviceOf,
@@ -194,7 +194,29 @@ export default {
       return json({ error: 'Interne fout in de proxy' }, 500);
     }
   },
+
+  /**
+   * Elke nacht opruimen (cron in wrangler.jsonc, alleen in de stabiele
+   * omgeving: beide delen dezelfde D1, en twee keer tegelijk samenvatten zou
+   * oude regels dubbel in `usage_weekly` zetten). Zonder dit gebeurde het
+   * alleen als de eigenaar Developer opende, en met meer gebruikers groeit de
+   * tabel dan ongemerkt.
+   */
+  async scheduled(controller, env, ctx): Promise<void> {
+    ctx.waitUntil(cleanUp(env, new Date(controller.scheduledTime)));
+  },
 } satisfies ExportedHandler<WorkerEnv>;
+
+/** Verbruik ouder dan de bewaartermijn per week samenvatten, en oude tellers van de grenzen weg */
+export async function cleanUp(env: WorkerEnv, now: Date): Promise<void> {
+  try {
+    const summarized = await pruneUsage(env.USAGE, now);
+    await pruneGuardCounts(env.USAGE, now);
+    console.log({ path: 'scheduled', summarized });
+  } catch (error) {
+    console.error('Opruimen mislukt', error);
+  }
+}
 
 /**
  * Snelheidslimiet op wat ons tegoed kost (AI_LIMIT in wrangler.jsonc), per
