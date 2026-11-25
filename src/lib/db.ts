@@ -213,6 +213,12 @@ export interface Utterance {
    * zodra hij verwerkt is.
    */
   waitingSince?: number;
+  /**
+   * Waarop hij wacht, als het geen bereik is: de proxy houdt het voor iedereen
+   * even tegen (noodrem, dagbudget, te veel nieuwe installaties). Het
+   * sessiescherm zegt dan niet "Geen bereik". Weg zodra hij verwerkt is.
+   */
+  waitingFor?: WaitingFor;
   /** Aantal verwerkingspogingen (meer dan 1 na "Opnieuw" of een herstart) */
   attempts?: number;
   /**
@@ -223,6 +229,9 @@ export interface Utterance {
   /** Meetgegevens van de laatste verwerkingspoging, voor analyse */
   metrics?: ProcessingMetrics;
 }
+
+/** Waarop een uitspraak wacht, naast geen bereik (`Utterance.waitingFor`) */
+export type WaitingFor = 'paused' | 'busy';
 
 export interface TranscriptionMetrics {
   model: string;
