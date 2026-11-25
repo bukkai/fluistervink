@@ -22,8 +22,8 @@ Elk plan begint met datum en status. Een afgerond plan gaat naar `archief/`; de 
 
 | Plan | Status |
 | --- | --- |
-| `roadmap-android.md` | vogelen zonder naar de telefoon te kijken, vijf stappen; stap 1–2 gebouwd, stap 3 (scherm uit) als proef in de beta, de rest na de productierelease |
-| `plan-trektelmodus.md` | trektelmodus; gebouwd, proef met tester Maarten; met het scherm uit als proef in de beta (18 nov) |
+| `roadmap-android.md` | vogelen zonder naar de telefoon te kijken, vijf stappen; stap 1–2 gebouwd, stap 3 (scherm uit) sinds v0.7 voor iedereen (keuze bij Instellingen), knop op de oortjes nog een ontwikkeloptie, de rest na de productierelease |
+| `plan-trektelmodus.md` | trektelmodus; gebouwd, proef met tester Maarten; met het scherm uit sinds v0.7 voor iedereen (keuze bij Instellingen) |
 | `plan-tuintelling.md` | Nationale Tuinvogeltelling (29–31 jan 2027): kern gebouwd als ontwikkeloptie (21 nov); gesprekken met Vogelbescherming week van 23 nov |
 | `plan-insecten.md` | insecten inspreken: vangnet per groep met opzoeken (nu), korte lijst opvallende soorten in de prompt (april); laag 1 gebouwd als ontwikkeloptie `insecten` (22 nov) |
 | `plan-robuustheid.md` | edge cases die een tester zou proberen; code klaar, nog een paar gevallen op de telefoon en in de testset |
