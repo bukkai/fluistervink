@@ -73,7 +73,7 @@ De teksten staan in `docs/play-store/README.md`; daar ook bijwerken als hier iet
 
 ## Besloten (22 nov)
 
-1. **Titel met zoekwoord:** "Fluistervink: vogels inspreken" (precies 30 tekens), in de Play Console bij de productierelease, ook in `docs/play-store/README.md`.
+1. **Titel met zoekwoord:** "Fluistervink: vogels inspreken" (precies 30 tekens), in de Play Console sinds 25 nov, ook in `docs/play-store/README.md`.
 2. **Het filmpje** maakt en spreekt de eigenaar zelf in.
 3. **December alleen eigen kring** (testers, Discord, vrienden en vogelmaatjes); de eerste stap daarbuiten is de tuintelling in januari.
 

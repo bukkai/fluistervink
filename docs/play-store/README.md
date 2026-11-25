@@ -1,6 +1,6 @@
 # Winkelvermelding in Google Play
 
-Wat er in de Play Console staat, zodat het na te kijken en bij te werken is. De teksten hieronder moeten één op één gelijk zijn aan de Console; pas ze hier aan als je ze daar aanpast. Laatst bijgewerkt in de Console: 25 nov (beschrijving, schermafbeeldingen, verklaring microfoon; ter beoordeling gestuurd). Roadmap: `docs/lancering.md`.
+Wat er in de Play Console staat, zodat het na te kijken en bij te werken is. De teksten hieronder moeten één op één gelijk zijn aan de Console; pas ze hier aan als je ze daar aanpast. Laatst bijgewerkt in de Console: 25 nov (naam, beschrijving, schermafbeeldingen, verklaring microfoon; ter beoordeling gestuurd). Roadmap: `docs/lancering.md`.
 
 ## Feature graphic
 
@@ -95,7 +95,7 @@ Play Console → Groei → Winkelaanwezigheid → **Hoofdwinkelvermelding**.
 
 ### App name
 
-Bij de productierelease (besloten 22 nov, `docs/plan-marketing.md`); tot dan "Fluistervink".
+In de Console sinds 25 nov (besloten 22 nov, `docs/plan-marketing.md`). Op het toestel heet de app gewoon "Fluistervink" (dat komt uit de app zelf).
 
 ```
 Fluistervink: vogels inspreken
