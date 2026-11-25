@@ -274,7 +274,8 @@
     switch (u.status) {
       case 'pending':
         if (!u.waitingSince) return t('log.status.queued');
-        return u.waitingFor ? t('log.status.waitingBusy') : t('log.status.waiting');
+        if (u.waitingFor === 'paused') return t('log.status.waitingPaused');
+        return u.waitingFor === 'busy' ? t('log.status.waitingBusy') : t('log.status.waiting');
       case 'processing':
         return u.transcript === undefined && u.audio
           ? t('log.status.transcribing')

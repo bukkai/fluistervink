@@ -419,6 +419,7 @@ export const en: Dictionary = {
   'log.status.feedback': 'feedback',
   'log.status.undone': 'undone',
   'log.status.waiting': 'waiting for signal',
+  'log.status.waitingPaused': 'waiting, paused for a moment',
   'log.status.waitingBusy': 'waiting, it is busy',
   'log.status.queued': 'queued',
   'log.status.transcribing': 'listening…',
