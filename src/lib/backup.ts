@@ -11,7 +11,8 @@ import type { SaveResult } from './native';
 //
 // Opnames gaan alleen mee waar ze nog nodig zijn (`needsAudio`): na het
 // nalopen zijn de waarnemingen het waardevolle deel, en opnames maken het
-// bestand vele malen groter (in de app gaat het in één keer naar Android).
+// bestand vele malen groter. Het bestand wordt per uitspraak opgebouwd en gaat
+// in de app in stukken naar Android (`exportAllJson`, `saveFileNative`).
 
 const LAST_BACKUP_KEY = 'fluistervink.lastBackupAt';
 
