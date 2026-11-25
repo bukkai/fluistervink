@@ -62,7 +62,7 @@ Wat met de lancering meegaat en wat achter een schakelaar wacht: `docs/vrijgave.
 - [x] **Kwaliteitsronde** (`docs/kwaliteitsronde.md`): gedaan na de release van 18 nov (#279), plus de architectuurronde (#280–#283).
 - [x] Feedback van de testers ophalen en verwerken (`npm run feedback -- pull` en `notes`), zodat er iets te vertellen is bij de aanvraag: gaat regelmatig. Testers gevraagd om nog wat in te dienen (21 nov). Vlak voor de aanvraag nog één keer.
 - [x] Laatste release in de gesloten test minstens een paar dagen vóór de aanvraag (beoordeling): v0.4 goedgekeurd, stable bijgewerkt op 21 nov. Mogelijk nog een v0.5 vóór 1 dec, afhankelijk van de proeven; die dan op tijd indienen.
-- [ ] Na die laatste release naar stable de testers een mail sturen: de nieuwste versie binnenhalen (bijwerken in Play) en, als ze de app geprobeerd hebben, nog feedback indienen. Daarna de feedback vlak voor de aanvraag ophalen (punt hierboven).
+- [x] Na die laatste release naar stable de testers een mail sturen: de nieuwste versie binnenhalen (bijwerken in Play) en, als ze de app geprobeerd hebben, nog feedback indienen (verstuurd 25 nov, BCC vanuit de e-maillijst van de gesloten test; ook gevraagd niet af te melden en uitspraken met "Fluistervink" te beginnen, met opnames delen aan). Daarna de feedback vlak voor de aanvraag ophalen (punt hierboven).
 
 ## 5. Productie
 
