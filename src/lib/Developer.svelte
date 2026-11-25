@@ -7,6 +7,9 @@
   import {
     deleteNotes,
     fetchBilling,
+    fetchGuard,
+    setGuardPaused,
+    type GuardStatus,
     hideTester,
     listSharedNotes,
     listTesters,
@@ -47,6 +50,44 @@
   import { ACTIVE_DAYS, asOwner, lastSeen, ownInstalls, splitActive } from './testers';
   import { isUnused } from './unusedInstalls';
   import { describeImport, exportAllJson, importJson, saveFile } from './export';
+
+  // Noodrem en grenzen voor alle installaties samen (worker/guard.ts)
+  let guard = $state<GuardStatus>();
+  let guardError = $state('');
+  let guardBusy = $state(false);
+
+  async function loadGuard() {
+    try {
+      guard = await fetchGuard();
+      guardError = '';
+    } catch (error) {
+      guardError = `Noodrem ophalen mislukt: ${error instanceof Error ? error.message : error}`;
+    }
+  }
+  loadGuard();
+
+  async function togglePause() {
+    if (!guard) return;
+    const paused = !guard.paused;
+    if (
+      paused &&
+      !confirm(
+        'Noodrem aan? Spraakherkenning, model, delen en nieuwe installaties stoppen voor iedereen behalve jou. Uitspraken blijven bewaard en gaan door als de rem eraf is.',
+      )
+    )
+      return;
+    guardBusy = true;
+    try {
+      guard = await setGuardPaused(paused);
+      guardError = '';
+    } catch (error) {
+      guardError = `Noodrem zetten mislukt: ${error instanceof Error ? error.message : error}`;
+    } finally {
+      guardBusy = false;
+    }
+  }
+
+  const megabytes = (bytes: number) => `${Math.round(bytes / 1024 / 1024)} MB`;
 
   let testers = $state<Tester[]>();
   let testersError = $state('');
@@ -366,6 +407,53 @@
 
 <a class="back" href="#/">Terug</a>
 <h2 class="page-title">Developer</h2>
+
+<section class="card">
+  <div class="card-head"><h2>Noodrem</h2></div>
+  <div class="card-body stack">
+    {#if guardError}
+      <p class="message error">{guardError}</p>
+    {/if}
+    {#if guard}
+      {#if guard.paused}
+        <p class="message error">
+          De noodrem staat aan: alleen jij kunt nu inspreken, delen en aanmelden.
+        </p>
+      {/if}
+      <ul class="amounts">
+        <li>
+          <span>Kosten vandaag, alle installaties</span>
+          <span class:over={guard.costToday >= guard.budget}>
+            {money(guard.costToday)} van {money(guard.budget)}
+          </span>
+        </li>
+        <li>
+          <span>Nieuwe installaties vandaag</span>
+          <span class:over={guard.installsToday >= guard.installsPerDay}>
+            {guard.installsToday} van {guard.installsPerDay}
+          </span>
+        </li>
+        <li>
+          <span>Gedeeld vandaag</span>
+          <span class:over={guard.sharedBytesToday >= guard.sharedBytesPerDay}>
+            {megabytes(guard.sharedBytesToday)} van {megabytes(guard.sharedBytesPerDay)}
+          </span>
+        </li>
+      </ul>
+      <p class="hint">
+        Boven een grens wachten uitspraken en delen tot de volgende dag (UTC), zoals bij geen
+        bereik; er gaat niets verloren. Jouw eigen verbruik telt niet mee.
+      </p>
+      <button
+        class="btn {guard.paused ? 'secondary' : 'danger'}"
+        disabled={guardBusy}
+        onclick={togglePause}
+      >
+        {guard.paused ? 'Noodrem uit' : 'Noodrem aan'}
+      </button>
+    {/if}
+  </div>
+</section>
 
 <section class="card">
   <div class="card-head"><h2>Kosten</h2></div>
