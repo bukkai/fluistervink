@@ -1,6 +1,7 @@
 import { t } from './i18n';
 import { db, type Observation, type Session } from './db';
 import { saveFile } from './export';
+import { errorText } from './format';
 import { logEvent } from './log';
 import { isNativeApp } from './native';
 import { listObservations } from './observations';
@@ -169,7 +170,7 @@ export async function exportForWaarneming(sessions: Session[]): Promise<string |
   } catch (error) {
     logEvent('export_failed', { error: String(error) });
     return t('export.saveFailed', {
-      error: String(error instanceof Error ? error.message : error),
+      error: errorText(error),
     });
   }
   await markExported(result.sessions, result.exported);

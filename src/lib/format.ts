@@ -7,6 +7,11 @@ import { LOCALE, t } from './i18n';
  * daar staan.
  */
 
+/** De tekst van een fout, voor een melding op het scherm */
+export function errorText(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 /** "14:32" */
 export const timeFormat = new Intl.DateTimeFormat(LOCALE, { timeStyle: 'short' });
 
