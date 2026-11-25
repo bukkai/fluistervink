@@ -78,8 +78,8 @@ Op volgorde (25 nov). Wat de proxy en Play al hebben: daglimiet van het model pe
 
 1. [ ] De stabiele AAB (v0.8) naar **Productie**, met de release notes van de gesloten test. Bij het maken van de release de landen kiezen: Nederland en België. De beta blijft in de interne test.
 2. [ ] Wachten tot de winkelpagina zonder testersaccount te openen is (`https://play.google.com/store/apps/details?id=nl.hegmus.fluistervink`, in een privévenster). Pas dan verder: de webcode op `main` heeft de Play-link op de voorpagina (#363) en "nieuw" in plaats van "nog in ontwikkeling" (#362), en die link geeft wie geen tester is tot dan "niet gevonden".
-3. [ ] `LAUNCH_DAY` in `src/lib/testers.ts` op de datum van vandaag (PR van één regel, mergen): Statistieken begint schoon, de testers van daarvóór staan achter een vinkje (`docs/proxy.md`, Statistieken).
-4. [ ] `npm run release` (`docs/draaiboek-uitbrengen.md`, stap 1, 2 en 5; de changelog is klaar sinds #416). Daarmee gaan ook `ALERT_WEBHOOK` (#394) en de nachtelijke cron (#401) op stable werken.
+3. [ ] PR "Lanceringsdag" (staat als draft klaar): de datum van vandaag op twee plekken, `LAUNCH_DAY` in `src/lib/testers.ts` en de enige dag in `src/lib/changelog.ts`, dan mergen. `LAUNCH_DAY` laat Statistieken schoon beginnen, de testers van daarvóór achter een vinkje (`docs/proxy.md`, Statistieken). De changelog begint opnieuw met één regel: de lange lijst was voor de testers, en een nieuwe gebruiker heeft er niets aan (besloten 25 nov; de oude regels staan in git).
+4. [ ] `npm run release` (`docs/draaiboek-uitbrengen.md`, stap 1 en 5; de changelog zit in de PR van stap 3). Daarmee gaan ook `ALERT_WEBHOOK` (#394) en de nachtelijke cron (#401) op stable werken.
 5. [ ] Nalopen op `fluistervink.nl`: de voorpagina met de Play-link, `/app/`, `#nieuw`, `/privacy`; de stabiele Android-app en een geïnstalleerde PWA openen meteen de app (`docs/vrijgave.md`, Mee met de lancering).
 6. [ ] `NOTES.md` en `CLAUDE.md` bijwerken (productie, stable op welke commit).
 

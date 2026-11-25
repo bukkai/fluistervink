@@ -62,7 +62,7 @@ export function asOwner<T extends { tester: string }>(rows: T[], own: Set<string
  * aanmeldde, hoort bij de testfase. `undefined` zolang er geen productie is:
  * dan telt iedereen gewoon mee.
  */
-export const LAUNCH_DAY: string | undefined = undefined;
+export const LAUNCH_DAY: string | undefined = '2026-12-03';
 
 /** Een installatie uit de testfase: aangemeld vóór de productierelease. */
 export function inTestPhase(tester: Tester, launchDay = LAUNCH_DAY): boolean {
