@@ -196,18 +196,33 @@ try {
     await db.sessions.update(${JSON.stringify(ids.active)}, { status: 'ended', endedAt: Date.now() - 60000 });
   })()`);
   await open(`#sessie/${ids.review}`);
-  await shoot('2-samenvatting');
+  await shoot('3-samenvatting');
   await scrollTo('Onzeker nalopen');
-  await shoot('3-nalopen');
+  await shoot('4-nalopen');
   await open('#sessies');
-  await shoot('4-export');
+  await shoot('5-export');
   // Het startscherm zonder lopende sessie
   await evaluate(`(async () => {
     const { db } = await import('/src/lib/db.ts');
     await db.sessions.delete(${JSON.stringify(ids.active)});
   })()`);
   await open('');
-  await shoot('5-start');
+  await shoot('6-start');
+
+  // Een lopende trektelling (in Play de tweede, hier als laatste: de andere
+  // schermen hebben de gewone lopende sessie nodig): de stand van de telling zelf zetten, zonder
+  // microfoon, zodat er niets naar spraakherkenning of model gaat
+  const count = await evaluate(`(async () => {
+    const { seedTrektel } = await import('/scripts/play-screenshots/seed.ts');
+    return seedTrektel();
+  })()`);
+  await open('');
+  await evaluate(`(async () => {
+    const { trektel } = await import('/src/lib/trektelRecorder.svelte.ts');
+    Object.assign(trektel, { status: 'running', startedAt: ${count.countStart}, speaking: false, sent: 9, skipped: 3 });
+  })()`);
+  await sleep(1500);
+  await shoot('2-trektellen');
 
   page.close();
   browser.close();

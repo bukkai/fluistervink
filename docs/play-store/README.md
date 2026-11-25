@@ -1,6 +1,6 @@
 # Winkelvermelding in Google Play
 
-Wat er in de Play Console staat, zodat het na te kijken en bij te werken is. De teksten hieronder moeten één op één gelijk zijn aan de Console; pas ze hier aan als je ze daar aanpast. Roadmap: `docs/lancering.md`.
+Wat er in de Play Console staat, zodat het na te kijken en bij te werken is. De teksten hieronder moeten één op één gelijk zijn aan de Console; pas ze hier aan als je ze daar aanpast. Laatst bijgewerkt in de Console: 25 nov (beschrijving, schermafbeeldingen, verklaring microfoon; ter beoordeling gestuurd). Roadmap: `docs/lancering.md`.
 
 ## Feature graphic
 
@@ -13,7 +13,7 @@ sips -s format jpeg -s formatOptions 92 /tmp/fg.png --out docs/play-store/featur
 
 ## Schermafbeeldingen
 
-`screenshots/1-inspreken.png` t/m `5-start.png` (1082×1922, staand; gemaakt 25 nov, in de Console nog die van 9 nov, met het verdwenen "Nieuw dit jaar"), in deze volgorde uploaden bij Winkelvermelding → Telefoon: lopende sessie, samenvatting na een sessie, onzeker nalopen met de kaart, export naar waarneming.nl, startscherm. Van de stabiele versie (zonder "beta") met verzonnen voorbeeldgegevens: een ochtend in de Amsterdamse Waterleidingduinen en een in Zuid-Kennemerland (`scripts/play-screenshots/seed.ts`), geen echte plekken van gebruikers. Opnieuw maken (bv. met het nieuwe logo) met `npm run play-screenshots`: start de dev-server in de stand van stable en een headless Chrome (in `/Applications`), en vraagt internet voor de kaarttegels.
+`screenshots/1-inspreken.png` t/m `6-start.png` (1082×1922, staand; gemaakt en geüpload 25 nov), in deze volgorde bij Hoofdwinkelvermelding → Schermafbeeldingen van telefoon: lopende sessie, lopende trektelling, samenvatting na een sessie, onzeker nalopen met de kaart, export naar waarneming.nl, startscherm. Van de stabiele versie (zonder "beta") met verzonnen voorbeeldgegevens: een ochtend in de Amsterdamse Waterleidingduinen, een in Zuid-Kennemerland en een trektelling op een duintop (`scripts/play-screenshots/seed.ts`; de stand van de telling zet het script zelf, zonder microfoon, dus er gaat niets naar spraakherkenning of model), geen echte plekken van gebruikers. Opnieuw maken (bv. met het nieuwe logo) met `npm run play-screenshots`: start de dev-server in de stand van stable en een headless Chrome (in `/Applications`), en vraagt internet voor de kaarttegels.
 
 ## Categorie
 
@@ -69,8 +69,6 @@ Video: niet-openbaar op YouTube, link in het formulier; draaiboek in `docs/archi
 
 Hetzelfde `WandelingService` heeft ook het type `microphone` (recht `FOREGROUND_SERVICE_MICROPHONE`), sinds v0.7 in beide builds, voor de keuze "Opnemen met het scherm uit" bij Instellingen. De verklaring geldt voor de hele app: een nieuwe toestemming eerst hier en in het formulier, anders weigert Play elke release die beoordeeld wordt (`docs/google-play.md`).
 
-**Nog te doen vóór productie:** de tekst hieronder (sinds #390 ook de trektelling met het scherm uit, tot 4 uur doorlopend) in de Play Console zetten.
-
 Taaktype: **Background audio input** (het formulier biedt alleen dat en Other). De tekst in het Engels:
 
 ```
@@ -93,7 +91,7 @@ Video: gefilmd met een tweede telefoon (een schermopname toont met het scherm ui
 
 ## Teksten
 
-Play Console → Groei → Winkelaanwezigheid → **Hoofdwinkelvermelding**. Laatst gelijk gezet: 9 nov. **Nog te doen:** de lange beschrijving hieronder (bijgewerkt 25 nov: volumeknop met het scherm uit, trektellen, geen bereik, eBird, afschermen) in de Console zetten; de naam pas bij de productierelease.
+Play Console → Groei → Winkelaanwezigheid → **Hoofdwinkelvermelding**.
 
 ### App name
 
