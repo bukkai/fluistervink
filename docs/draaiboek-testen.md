@@ -50,14 +50,29 @@ In deze volgorde:
 
 **2.3 Oortjesmicrofoon, telefoon in de zak (#267; ronde 2 opnieuw)**
 
-Op 24 nov ging deze ronde via de service, dus met de telefoonmicrofoon. Nu zonder service:
+**De service:** met "Opnemen met het scherm uit" (`schermUit`) aan neemt bij een **uit of vergrendeld scherm** niet de app op, maar de service van de Android-app (volumeknop, knopje of oortjesknop; ook een hele trektelling). De service gebruikt altijd de **telefoonmicrofoon**: hij kiest de oortjes nog niet (`setPreferredDevice`). Met het scherm aan neemt de app zelf op, met de oortjes als `oortjesMicrofoon` aanstaat; een opname met de knop in de app die al liep, blijft dat ook als het scherm op slot gaat. Met `schermUit` uit neemt de service nooit op, maar stopt een opname als het scherm uitgaat.
+
+Op 24 nov ging het scherm in de zak uit en ging deze ronde via de service, dus met de telefoonmicrofoon (alleen de eerste zin, nog met het scherm aan, ging via "Bluetooth headset"). Nu zonder service, met het scherm aan, zodat alles via de app en de oortjes gaat:
 
 - [ ] `schermUit` **uit**, `oortjesMicrofoon` aan, "Scherm aan houden" aan. Sessie "Mic oortjes zak", telefoon in de borstzak, inspreken met het knopje of de knop in de app.
-- [ ] De twaalf zinnen (hieronder). Stoppen en delen.
+- [ ] De twaalf zinnen (hieronder), rustig, op normale fluistersterkte. Stoppen en delen.
 - [ ] Log: `mic_opened` "Bluetooth headset", `preferHeadset: true`, en **geen** `screen_off_recording`.
 - [ ] Thuis door de testset en vergelijken met ronde 1 van 24 nov (12/12). Niet slechter: de oortjesmicrofoon kan mee (`docs/vrijgave.md`). Duidelijk beter: ook in de service (`setPreferredDevice` in `TrektelOpname`, native).
 
-De twaalf zinnen: (1) Zes overvliegende houtduiven (2) Roepje vink (3) Nee, keep in plaats van vink (4) Twee buizerds, vijfhonderd meter zuid (5) Een grote zilverreiger ter plaatse (6) Nog drie erbij (7) Een groepje van twintig kieviten (8) Die laatste weg (9) Een zingende winterkoning (10) Drie kauwen en een zwarte kraai (11) Een man en een vrouw grote bonte specht (12) Vijftien graspiepers overvliegend naar het zuidwesten.
+De twaalf zinnen (dezelfde als op 24 nov, zodat de rondes te vergelijken zijn):
+
+1. Zes overvliegende houtduiven
+2. Roepje vink
+3. Nee, keep in plaats van vink
+4. Twee buizerds, vijfhonderd meter zuid
+5. Een grote zilverreiger ter plaatse
+6. Nog drie erbij
+7. Een groepje van twintig kieviten
+8. Die laatste weg
+9. Een zingende winterkoning
+10. Drie kauwen en een zwarte kraai
+11. Een man en een vrouw grote bonte specht
+12. Vijftien graspiepers overvliegend naar het zuidwesten
 
 **2.4 Wat er van ronde 3 over is (oortjes, niet de koptelefoon)**
 
