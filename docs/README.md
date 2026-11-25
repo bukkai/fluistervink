@@ -51,7 +51,7 @@ Elk plan begint met datum en status. Een afgerond plan gaat naar `archief/`; de 
 
 - `omgevingen.md`: beta en stabiel, een release naar stable.
 - `google-play.md`: ondertekenen, taggen en uploaden naar Play.
-- `play-store/`: winkelvermelding, gegevensveiligheid, schermafbeeldingen.
+- `play-store/`: winkelvermelding, gegevensveiligheid, schermafbeeldingen; `productietoegang.md`: de vragenlijst voor productie, release notes en de bedankmail aan de testers.
 - `waarneming-nl.md`: importformaat, soortenlijst en codes van waarneming.nl.
 - `proxy.md`: de proxy: toegang, kosten, statistieken en wat testers delen.
 - `kwaliteitsronde.md`: de periodieke ronde over de hele codebase, met logboek.

@@ -72,7 +72,7 @@ Op volgorde (25 nov). Wat de proxy en Play al hebben: daglimiet van het model pe
 
 - [ ] v0.8 (getagd 25 nov, AAB's in `apk/v0.8/`): de beta in de interne test, back-up nagelopen (25 nov); nog de stabiele naar de gesloten test, zodat Google hem beoordeeld heeft. Dezelfde AAB gaat straks naar Productie.
 - [ ] Feedback ophalen (`npm run feedback -- pull` en `notes`) en de testset, voor het verhaal bij de aanvraag (punt 4).
-- [ ] Productietoegang aanvragen in de Play Console (na 14 dagen, als het dashboard het toestaat).
+- [ ] Productietoegang aanvragen in de Play Console (na 14 dagen, als het dashboard het toestaat). Concept voor de vragenlijst, de release notes en de bedankmail: `docs/play-store/productietoegang.md`; de cijfers tussen `[ ]` eerst bijwerken.
 
 **Op de dag van de goedkeuring**
 
