@@ -6,10 +6,9 @@ Wat er in de Play Console staat, zodat het na te kijken en bij te werken is. De 
 
 Stap voor stap, in deze volgorde. Haal een stap hier weg als hij gedaan is; staat er niets meer, dan haal je deze kop ook weg.
 
-1. **Lange beschrijving** — Groei → Winkelaanwezigheid → **Hoofdwinkelvermelding** → App-details → *Volledige beschrijving*: de hele tekst vervangen door het blok onder [Full description](#full-description) (het hele codeblok). Naam en korte beschrijving blijven zoals ze zijn.
-2. **Schermafbeeldingen** — zelfde pagina, kopje Afbeeldingen → *Schermafbeeldingen van telefoon*: de vijf oude verwijderen (prullenbakje bij elke afbeelding) en de zes uit `screenshots/` uploaden. Daarna in deze volgorde slepen: 1-inspreken, 2-trektellen, 3-samenvatting, 4-nalopen, 5-export, 6-start. Onderaan **Opslaan**.
-3. **Verklaring microfoon** — Beleid en programma's → **App-content** → *Foreground service-rechten* (Voorgrondservices) → Beheren: bij het type microfoon (Background audio input) de beschrijving vervangen door het Engelse blok onder [Microfoon](#microfoon-opnemen-met-het-scherm-uit). De video mag blijven. **Opslaan.**
-4. **Ter beoordeling sturen** — linksboven **Publicatieoverzicht**: daar staan de wijzigingen van stap 1–3. *Wijzigingen ter beoordeling sturen*. Na de beoordeling (meestal binnen een paar dagen) staan ze in de winkel; staat *Beheerd publiceren* aan, dan zet je ze daarna zelf live met **Publiceren**. Testers zien de nieuwe tekst en afbeeldingen op de winkelpagina na de deelnamelink.
+1. **Schermafbeeldingen** — zelfde pagina, kopje Afbeeldingen → *Schermafbeeldingen van telefoon*: de vijf oude verwijderen (prullenbakje bij elke afbeelding) en de zes uit `screenshots/` uploaden. Daarna in deze volgorde slepen: 1-inspreken, 2-trektellen, 3-samenvatting, 4-nalopen, 5-export, 6-start. Onderaan **Opslaan**.
+2. **Verklaring microfoon** — Beleid en programma's → **App-content** → *Foreground service-rechten* (Voorgrondservices) → Beheren: bij het type microfoon (Background audio input) de beschrijving vervangen door het Engelse blok onder [Microfoon](#microfoon-opnemen-met-het-scherm-uit). De video mag blijven. **Opslaan.**
+3. **Ter beoordeling sturen** — linksboven **Publicatieoverzicht**: daar staan de wijzigingen van hierboven (ook de lange beschrijving, gedaan 25 nov). *Wijzigingen ter beoordeling sturen*. Na de beoordeling (meestal binnen een paar dagen) staan ze in de winkel; staat *Beheerd publiceren* aan, dan zet je ze daarna zelf live met **Publiceren**. Testers zien de nieuwe tekst en afbeeldingen op de winkelpagina na de deelnamelink.
 
 Pas bij de productierelease (`docs/lancering.md`, punt 5): de **naam** in de Hoofdwinkelvermelding wordt "Fluistervink: vogels inspreken" (zie [App name](#app-name)).
 
@@ -104,7 +103,7 @@ Video: gefilmd met een tweede telefoon (een schermopname toont met het scherm ui
 
 ## Teksten
 
-Play Console → Groei → Winkelaanwezigheid → **Hoofdwinkelvermelding**. Laatst gelijk gezet: 9 nov; wat er nog moet, staat bovenaan.
+Play Console → Groei → Winkelaanwezigheid → **Hoofdwinkelvermelding**. Laatst gelijk gezet: 25 nov (lange beschrijving; de naam nog niet).
 
 ### App name
 
