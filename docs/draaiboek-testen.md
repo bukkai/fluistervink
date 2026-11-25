@@ -18,6 +18,10 @@ Gedaan op 25 nov; wat werkte is weggehaald. Uitslag van de knop op de oortjes (1
 
 - [ ] Een nieuwe installatie van de stabiele Android-app opent meteen de app (`/app/`), niet de voorpagina; een geïnstalleerde PWA ook (#326).
 
+**1.6 Tuintelling zonder eerdere export (#349)**
+
+- [ ] Op een installatie die nooit exporteerde en zonder eBird (bijvoorbeeld de beta in een privévenster, ontwikkeloptie `tuintelling` aan): na een korte tuintelling staat de export ingeklapt ("Ook doorgeven aan waarneming.nl of eBird?"). Bij jezelf staat hij open omdat je eBird aan hebt en al exporteerde; zo bedoeld.
+
 ## 2. Buiten: een wandeling of fietsrit
 
 Een gewone sessie, ontwikkelopties zoals je ze normaal hebt. De zinnen tussen echte waarnemingen door.
