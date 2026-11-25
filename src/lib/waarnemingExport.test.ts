@@ -258,10 +258,13 @@ describe('meer sessies in één export', () => {
     ]);
     expect(a?.status).toBe('reviewed');
     expect(a?.editedAt).toBeUndefined();
-    // Onzeker wordt zeker, zoals met "Klopt"
-    expect(b).toMatchObject({ status: 'reviewed', uncertain: false });
-    expect(b?.uncertainReason).toBeUndefined();
-    expect(b?.editedAt).toBeDefined();
+    // Onzeker blijft onzeker: gaat als "niet zeker" naar waarneming.nl
+    expect(b).toMatchObject({
+      status: 'reviewed',
+      uncertain: true,
+      uncertainReason: 'vink of keep?',
+    });
+    expect(b?.editedAt).toBeUndefined();
     expect(c).toMatchObject({ status: 'exported', uncertain: true });
     expect(d?.status).toBe('draft');
   });
