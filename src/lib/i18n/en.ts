@@ -502,8 +502,9 @@ export const en: Dictionary = {
   'past.renamePrompt':
     'Name of the session (leave empty for automatic, from the area with the most observations):',
   'past.confirmReady': {
-    one: '1 uncertain observation left. Is that one right too? Then it becomes certain.',
-    other: '{n} uncertain observations left. Are those right too? Then they become certain.',
+    one: '1 uncertain observation left. It stays uncertain and goes to waarneming.nl as "not certain". Mark the session ready anyway?',
+    other:
+      '{n} uncertain observations left. They stay uncertain and go to waarneming.nl as "not certain". Mark the session ready anyway?',
   },
   'past.ebirdQuestionLabel': 'Question for eBird',
   'past.forEbird': 'For eBird',

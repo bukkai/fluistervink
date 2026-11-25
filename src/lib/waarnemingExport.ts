@@ -126,23 +126,16 @@ export async function markReady(sessionId: string, ready: boolean): Promise<void
 /**
  * "Alles klopt": alle waarnemingen die nog niet nagelopen waren gelden als
  * nagelopen, en de sessie staat klaar. Telt niet als correctie (geen
- * `editedAt`), behalve bij de onzekere: die worden zeker, net als met "Klopt".
+ * `editedAt`). Een onzekere blijft onzeker: waarneming.nl neemt hem aan als
+ * "niet zeker" (25 nov; eerder werd hij zeker, net als met "Klopt").
  */
 export async function approveSession(sessionId: string): Promise<void> {
-  const editedAt = Date.now();
   await db.transaction('rw', db.sessions, db.observations, async () => {
     await db.observations
       .where('sessionId')
       .equals(sessionId)
-      .filter((obs) => obs.status !== 'exported' && (obs.status === 'draft' || obs.uncertain))
-      .modify((obs) => {
-        obs.status = 'reviewed';
-        if (!obs.uncertain) return;
-        obs.uncertain = false;
-        delete obs.uncertainReason;
-        delete obs.candidates;
-        obs.editedAt = editedAt;
-      });
+      .filter((obs) => obs.status === 'draft')
+      .modify({ status: 'reviewed' });
     await markReady(sessionId, true);
   });
 }

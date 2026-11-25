@@ -494,8 +494,9 @@ export const nl = {
   'past.renamePrompt':
     'Naam van de sessie (leeg laten = automatisch, uit het gebied met de meeste waarnemingen):',
   'past.confirmReady': {
-    one: 'Nog 1 onzekere waarneming. Klopt die ook? Dan wordt hij zeker.',
-    other: 'Nog {n} onzekere waarnemingen. Kloppen die ook? Dan worden ze zeker.',
+    one: 'Nog 1 onzekere waarneming. Die blijft onzeker en gaat als "niet zeker" naar waarneming.nl. Toch klaarzetten?',
+    other:
+      'Nog {n} onzekere waarnemingen. Die blijven onzeker en gaan als "niet zeker" naar waarneming.nl. Toch klaarzetten?',
   },
   'past.ebirdQuestionLabel': 'Vraag voor eBird',
   'past.forEbird': 'Voor eBird',

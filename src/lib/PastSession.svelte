@@ -116,7 +116,7 @@
   /** Uitkomst van de laatste export, om onder de knop te tonen */
   let exportResult = $state<string>();
 
-  /** "Alles klopt": de rest geldt als nagelopen (ook de onzekere), en de sessie staat klaar */
+  /** "Alles klopt": de rest geldt als nagelopen (de onzekere blijven onzeker), en de sessie staat klaar */
   async function ready() {
     if (uncertainCount > 0 && !confirm(t('past.confirmReady', { n: uncertainCount }))) return;
     await approveSession(session.id);
@@ -242,7 +242,8 @@
   <SessionSummary {session} observationCount={$observations?.length ?? 0} />
 {/if}
 
-{#if !session.exportedAt}
+<!-- Na "Alles klopt" niet meer: de onzekere die er dan nog zijn, blijven zo -->
+{#if reviewing}
   <UncertainReview {session} />
 {/if}
 

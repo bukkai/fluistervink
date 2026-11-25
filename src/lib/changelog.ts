@@ -36,6 +36,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       Nalopen: [
         'Twee keer snel tikken op "Klopt" of "Weg" raakt niet meer de volgende waarneming die op die plek verschijnt. Ook "Maak er een waarneming van" maakt er bij dubbel tikken maar één.',
         'Een sessie die klaarstond voor waarneming.nl en die je voortzet, staat niet meer klaar: na het stoppen loop je hem opnieuw na.',
+        '"Alles klopt" maakt onzekere waarnemingen niet meer zeker. Je krijgt nog wel een waarschuwing, en ze gaan als "niet zeker" naar waarneming.nl.',
       ],
       Export: [
         'De herinnering om te exporteren komt niet meer terug voor een sessie zonder waarnemingen, of waarin je bij alles "Exporteren" hebt uitgevinkt.',
