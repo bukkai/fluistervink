@@ -11,3 +11,5 @@ ANTHROPIC_API_KEY=sk-ant-...
 INSTALL_SECRET=iets-willekeurigs
 TURNSTILE_SITE_KEY=1x00000000000000000000AA
 TURNSTILE_SECRET=1x0000000000000000000000000000000AA
+# Alleen lokaal: de testsleutels hierboven toelaten (in een echte omgeving geweigerd)
+TURNSTILE_TEST=1

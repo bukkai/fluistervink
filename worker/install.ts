@@ -25,6 +25,8 @@ const MAX_VERDICT_AGE_MS = 10 * 60 * 1000;
 export interface InstallSecrets {
   INSTALL_SECRET?: string;
   TURNSTILE_SECRET?: string;
+  /** "1" laat de testsleutels van Turnstile toe; alleen in `.dev.vars` (lokaal) */
+  TURNSTILE_TEST?: string;
   /** JSON-sleutel van een serviceaccount in Google Cloud, met toegang tot de Play Integrity API */
   PLAY_SERVICE_ACCOUNT?: string;
 }
@@ -216,11 +218,18 @@ function base64url(bytes: Uint8Array): string {
     .replace(/=+$/, '');
 }
 
-/** Controleert een token van Turnstile bij Cloudflare. */
+/**
+ * Controleert een token van Turnstile bij Cloudflare.
+ * @param allowTestKey De testsleutels van Turnstile (die altijd slagen)
+ *   toelaten: alleen lokaal (`TURNSTILE_TEST=1` in `.dev.vars`). Komt de
+ *   testsecret per ongeluk als geheim in een echte omgeving, dan kan zo niet
+ *   iedereen zonder controle aanmelden.
+ */
 export async function verifyTurnstile(
   token: string,
   secret: string,
   ip: string | null,
+  allowTestKey = false,
 ): Promise<boolean> {
   const form = new FormData();
   form.set('secret', secret);
@@ -237,8 +246,11 @@ export async function verifyTurnstile(
     metadata?: { result_with_testing_key?: boolean };
   };
   // De testsleutels (lokaal, .dev.vars) geven geen actie terug
-  const action = result.metadata?.result_with_testing_key ? 'install' : result.action;
-  return result.success === true && action === 'install';
+  if (result.metadata?.result_with_testing_key) {
+    if (!allowTestKey) console.error('Turnstile: testsleutel geweigerd, alleen lokaal');
+    return allowTestKey && result.success === true;
+  }
+  return result.success === true && result.action === 'install';
 }
 
 interface ServiceAccount {
