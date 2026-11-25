@@ -4,13 +4,20 @@
   haalt uit het manifest wat Google Play nog niet van de stabiele app mag zien.
   Wordt over src/main/AndroidManifest.xml heen gelegd.
 
-  Nu leeg: opnemen met het scherm uit (servicetype microfoon,
+  Opnemen met het scherm uit (servicetype microfoon,
   FOREGROUND_SERVICE_MICROPHONE) gaat sinds v0.7 ook naar de stabiele app; de
   verklaring in de Play Console is goedgekeurd. Een volgende toestemming
-  waarvoor Google een verklaring wil, haal je hier weg tot die er is, bv.:
+  waarvoor Google een verklaring wil, haal je hier weg tot die er is.
 
-    <uses-permission android:name="android.permission.…" tools:node="remove" />
+  Bluetooth (sinds v0.8, vóór productie): alleen voor de ontwikkeloptie
+  "Microfoon van de oortjes" (MicrofoonPlugin). Anders vraagt de stabiele app
+  in Play "Apparaten in de buurt" aan iedereen, zonder dat het iets doet.
+  Zonder de toestemming weigert de plugin netjes en neemt de app op met de
+  telefoon. Pas weghalen als de oortjesmicrofoon naar iedereen gaat
+  (docs/vrijgave.md).
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.BLUETOOTH" tools:node="remove" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" tools:node="remove" />
 </manifest>

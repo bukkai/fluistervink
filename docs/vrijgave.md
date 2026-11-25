@@ -49,7 +49,7 @@ Met "scherm uit" aan start en stopt ook de knop op de oortjes een opname. Daarvo
 
 Opnemen met de microfoon van Bluetooth-oortjes in plaats van die van de telefoon.
 
-- **Soort:** web en native (de toestemming "Apparaten in de buurt"; de stabiele build heeft de plugin niet).
+- **Soort:** web en native (de toestemming "Apparaten in de buurt"). De plugin zit sinds v0.7 in beide builds, maar de stabiele build haalt de toestemming sinds v0.8 uit het manifest (`android/app/src/stable/AndroidManifest.xml`), zodat Play hem niet aan iedereen vraagt. Bij de lancering: die twee regels weghalen, een nieuwe app-versie, en de rubriek Gegevensveiligheid in Play nalopen.
 - **Nog testen:** `draaiboek-testen.md`, 2.3: op 24 nov ging ronde 2 via de service, dus met de telefoonmicrofoon. Daarna de rondes door de testset: kost Bluetooth herkenning?
 - **Open vraag:** moet de trektelling in de service ook de oortjes gebruiken (`setPreferredDevice` in `TrektelOpname`, native)?
 - **Lanceren:** pas als de testset laat zien dat het niet slechter verstaat; plugin in de stabiele build, nieuwe tag, keuze bij Instellingen.
