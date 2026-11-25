@@ -44,3 +44,19 @@ export const NEW_INSTALLS_PER_DAY = 150;
  */
 export const SHARED_BYTES_PER_INSTALL_PER_DAY = 250 * 1024 * 1024;
 export const SHARED_BYTES_PER_DAY = 2 * 1024 * 1024 * 1024;
+
+/**
+ * Gebieden van waarneming.nl opzoeken per installatie per dag (`/api/area`,
+ * de proxy is het doorgeefluik). Eén per uitspraak of verzette plek; een
+ * trektelling van een dag geeft er een paar honderd. Zonder grens kon iemand
+ * met een token waarneming.nl via ons bestoken, en die kan de Worker dan
+ * blokkeren, voor iedereen.
+ */
+export const AREA_LOOKUPS_PER_INSTALL_PER_DAY = 1000;
+
+/**
+ * Anonieme cijfers per installatie per dag: één per sessie. Daarboven
+ * bewaart de proxy ze niet, zodat één installatie Statistieken niet kan
+ * volschrijven.
+ */
+export const SUMMARIES_PER_INSTALL_PER_DAY = 50;

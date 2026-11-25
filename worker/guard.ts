@@ -282,6 +282,29 @@ export async function guardShare(
 }
 
 /**
+ * Telt één verzoek bij een teller van vandaag (`<soort>:<installatie>`) en
+ * zegt of het binnen `limit` valt. De eigenaar valt erbuiten. Bij een fout in
+ * D1 wel: deze verzoeken kosten bijna niets, en de grens per minuut blijft.
+ */
+export async function withinDailyCount(
+  db: D1Database,
+  key: string,
+  tester: string,
+  limit: number,
+  now = new Date(),
+): Promise<boolean> {
+  if (tester === OWNER) return true;
+  try {
+    const n = await bump(db, `${key}:${tester}`, 1, now);
+    if (n === limit + 1) console.error('Grens bereikt', { key, tester, limit });
+    return n <= limit;
+  } catch (error) {
+    console.error('Teller niet bij te houden', key, error);
+    return true;
+  }
+}
+
+/**
  * Stand en noodrem voor Developer (alleen de eigenaar).
  *
  * - GET /api/guard                    { paused, costToday, budget, installsToday, … }

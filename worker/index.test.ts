@@ -12,10 +12,12 @@ import {
 } from './install';
 import { keepFrom, pruneUsage, recordUsage, usageSince } from './usage';
 import {
+  AREA_LOOKUPS_PER_INSTALL_PER_DAY,
   NEW_INSTALLS_PER_DAY,
   NEW_INSTALLS_PER_HOUR,
   SHARED_BYTES_PER_DAY,
   SHARED_BYTES_PER_INSTALL_PER_DAY,
+  SUMMARIES_PER_INSTALL_PER_DAY,
 } from '../src/lib/limits';
 import { dayOf } from '../src/lib/costs';
 
@@ -544,6 +546,22 @@ describe('/api/install (aanmelden zonder code)', () => {
     expect((await getInstall(testersKv as never, ID))?.blocked).toBe(true);
   });
 
+  it('een afgesloten installatie blijft dicht als KV even niet te lezen is', async () => {
+    await putInstall(testersKv as never, ID, {
+      name: 'app-3f9a2b1c',
+      registeredAt: 1000,
+      via: 'turnstile',
+      blocked: true,
+    });
+    const token = await signInstallToken(ID, INSTALL_SECRET);
+    expect((await call('/api/ping', { code: token })).status).toBe(401);
+    // KV weg: een andere installatie mag door (het token is geldig), deze niet
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(testersKv, 'getWithMetadata').mockRejectedValue(new Error('KV weg'));
+    expect((await call('/api/ping', { code: token })).status).toBe(401);
+    expect((await call('/api/ping')).status).toBe(200);
+  });
+
   it('bewaart een opgegeven naam bij de installatie', async () => {
     turnstileAnswers();
     const { token } = (await (await register({ id: ID, turnstile: 'goed' })).json()) as {
@@ -1054,6 +1072,17 @@ describe('/api/area (waarneming.nl)', () => {
   it('geeft null als het punt in geen gebied ligt', async () => {
     upstream.mockResolvedValue(Response.json({ features: [] }));
     expect(await (await call('/api/area?lat=52&lon=4')).json()).toEqual({ area: null });
+  });
+
+  it('begrenst per installatie per dag, de eigenaar niet', async () => {
+    upstream.mockImplementation(async () => Response.json({ features: [] }));
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    await setGuardCount(`area:${ANNA}`, AREA_LOOKUPS_PER_INSTALL_PER_DAY - 1);
+    expect((await call('/api/area?lat=52&lon=4')).status).toBe(200);
+    expect((await call('/api/area?lat=52&lon=4')).status).toBe(429);
+    expect(upstream).toHaveBeenCalledTimes(1);
+    expect(error).toHaveBeenCalledWith('Grens bereikt', expect.objectContaining({ key: 'area' }));
+    expect((await call('/api/area?lat=52&lon=4', { code: OWNER_CODE })).status).toBe(200);
   });
 });
 
@@ -1991,6 +2020,15 @@ describe('/api/summaries (anonieme cijfers per sessie)', () => {
         rows: Record<string, unknown>[];
       }
     ).rows;
+
+  it('bewaart boven de grens per dag niets, maar zegt wel ok (anders probeert de app opnieuw)', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    await setGuardCount(`summary:${ANNA}`, SUMMARIES_PER_INSTALL_PER_DAY);
+    const response = await post(summary);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ ok: true, stored: false });
+    expect(await list()).toEqual([]);
+  });
 
   it('bewaart zonder installatie, alleen met de week waarin die begon', async () => {
     await putInstall(testersKv as never, ANNA_ID, {

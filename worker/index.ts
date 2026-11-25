@@ -3,7 +3,7 @@ import { bill, type BillingKeys } from './billing';
 import { declaredTooLarge, json, MAX_AUDIO_BYTES, OWNER, readBody, tooLarge } from './common';
 import { feedback, testerUsage } from './feedback';
 import { alert } from './alert';
-import { guard, guardAi, guardNewInstall, pruneGuardCounts } from './guard';
+import { guard, guardAi, guardNewInstall, pruneGuardCounts, withinDailyCount } from './guard';
 import {
   cleanDisplayName,
   deviceOf,
@@ -23,7 +23,12 @@ import {
   type InstallSecrets,
 } from './install';
 import { hasActivity, isUnused } from '../src/lib/unusedInstalls';
-import { AUDIO_SECONDS_PER_DAY, MESSAGES_PER_DAY } from '../src/lib/limits';
+import {
+  AREA_LOOKUPS_PER_INSTALL_PER_DAY,
+  AUDIO_SECONDS_PER_DAY,
+  MESSAGES_PER_DAY,
+  SUMMARIES_PER_INSTALL_PER_DAY,
+} from '../src/lib/limits';
 import { checkSummary, storeSummary, summariesSince } from './summaries';
 import {
   activitySince,
@@ -129,6 +134,13 @@ export default {
         return json({ ok: true, tester });
       }
       if (pathname === '/api/area' && request.method === 'GET') {
+        // De proxy is hier een doorgeefluik naar waarneming.nl: per minuut en per dag begrensd
+        if (
+          !(await withinLimit(env, tester, 'area')) ||
+          !(await withinDailyCount(env.USAGE, 'area', tester, AREA_LOOKUPS_PER_INSTALL_PER_DAY))
+        ) {
+          return json({ error: 'Te veel gebieden opgezocht; probeer het later opnieuw' }, 429);
+        }
         return await area(request);
       }
       if (
@@ -621,6 +633,10 @@ async function summaries(request: Request, env: WorkerEnv, tester: string): Prom
   if (!summary) return json({ error: 'Ongeldige samenvatting' }, 400);
   // De app verwacht altijd JSON (zonder denkt hij aan de inlogpagina van een wifi)
   if (tester === OWNER) return json({ ok: true, stored: false });
+  // Boven de grens per dag: niet bewaren, maar wel "ok", anders probeert de app het opnieuw
+  if (!(await withinDailyCount(env.USAGE, 'summary', tester, SUMMARIES_PER_INSTALL_PER_DAY))) {
+    return json({ ok: true, stored: false });
+  }
   const install = tester.startsWith('app-') ? await findInstall(env.TESTERS, tester) : null;
   await storeSummary(env.USAGE, summary, install?.registeredAt);
   return json({ ok: true, stored: true });
@@ -780,6 +796,13 @@ async function area(request: Request): Promise<Response> {
 }
 
 /**
+ * Installaties die deze instantie van de Worker afgesloten zag. Is KV even
+ * niet te lezen, dan blijven die afgesloten (tot 25 nov werkten ze dan even
+ * weer). Een nieuwe instantie begint leeg; KV-storingen zijn kort en zeldzaam.
+ */
+const knownBlocked = new Set<string>();
+
+/**
  * Geeft de naam van de tester: "eigenaar" bij de toegangscode, "app-…" bij een
  * geldig token van een installatie, anders null. Vergelijkt de code in
  * constante tijd (via SHA-256-hashes van gelijke lengte), zodat hij niet via
@@ -800,7 +823,11 @@ async function authorize(
     if (!id) return null;
     try {
       const record = await getInstall(env.TESTERS, id);
-      if (record?.blocked) return null;
+      if (record?.blocked) {
+        knownBlocked.add(id);
+        return null;
+      }
+      knownBlocked.delete(id);
       // Installaties van vóór het toestel: alsnog, eenmalig, na het antwoord
       const device = deviceOf(request.headers.get('User-Agent'));
       if (record && !record.device && device) {
@@ -811,8 +838,10 @@ async function authorize(
         );
       }
     } catch (error) {
-      // KV even niet te lezen: het token zelf is geldig
+      // KV even niet te lezen: het token zelf is geldig. Alles weigeren zou
+      // iedereen stilzetten; alleen wie deze instantie al afgesloten zag, niet.
       console.error('Installatie niet te lezen', error);
+      if (knownBlocked.has(id)) return null;
     }
     return installName(id);
   }
