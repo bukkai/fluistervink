@@ -14,6 +14,7 @@ import { keepFrom, pruneUsage, recordUsage, usageSince } from './usage';
 import {
   NEW_INSTALLS_PER_DAY,
   NEW_INSTALLS_PER_HOUR,
+  SHARED_BYTES_PER_DAY,
   SHARED_BYTES_PER_INSTALL_PER_DAY,
 } from '../src/lib/limits';
 import { dayOf } from '../src/lib/costs';
@@ -2044,6 +2045,159 @@ describe('noodrem en grenzen voor alle installaties samen (guard.ts)', () => {
     await call('/api/guard', { code: OWNER_CODE });
     const { results } = await db.prepare('SELECT key FROM guard_counts').all();
     expect(results).toEqual([{ key: `share:${ANNA}` }]);
+  });
+
+  describe('waarschuwing aan de eigenaar (alert.ts)', () => {
+    const WEBHOOK = 'https://discord.test/api/webhooks/1/geheim';
+    const posts = () =>
+      upstream.mock.calls
+        .filter(([url]) => url === WEBHOOK)
+        .map(([, init]) => JSON.parse(String(init?.body)).content as string);
+    const spend = (dollars: number) =>
+      recordUsage(
+        env.USAGE as never,
+        { tester: PIET, channel: 'stable', session: 's', model: 'claude-haiku-5-5' },
+        // Haiku-invoer kost $0,10 per miljoen tokens
+        { inputTokens: dollars * 10_000_000 },
+      );
+
+    beforeEach(() => {
+      env.ALERT_WEBHOOK = WEBHOOK;
+      upstream.mockImplementation(async (url) =>
+        url === WEBHOOK ? new Response(null, { status: 204 }) : Response.json(message),
+      );
+    });
+
+    it('budget bereikt: één bericht per dag, zonder installatie', async () => {
+      await spend(10);
+      expect((await ask()).status).toBe(503);
+      expect((await ask(PIET_CODE)).status).toBe(503);
+      expect(posts()).toHaveLength(1);
+      expect(posts()[0]).toMatch(
+        /^Fluistervink \(beta\): Dagbudget bereikt \(\$10\.00 van \$5\.00\)/,
+      );
+      expect(posts()[0]).not.toContain(ANNA);
+      expect(posts()[0]).not.toContain(PIET);
+    });
+
+    it('een andere instantie stuurt hem niet nog eens (KV)', async () => {
+      await spend(10);
+      await ask();
+      const day = dayOf(new Date());
+      expect(await testersKv.get(`alert/${day}/budget`)).not.toBeNull();
+      // Zelfde KV-inhoud, maar als een verse instantie: andere KV-binding
+      const fresh = memoryKv();
+      for (const [key, entry] of testersKv.store) fresh.store.set(key, entry);
+      env.TESTERS = fresh;
+      await ask();
+      expect(posts()).toHaveLength(1);
+    });
+
+    it('bij 80% een eerste waarschuwing, en het verzoek gaat gewoon door', async () => {
+      await spend(4.5);
+      expect((await ask()).status).toBe(200);
+      expect(posts()).toHaveLength(1);
+      expect(posts()[0]).toContain('$4.50 van het dagbudget van $5.00 is op');
+    });
+
+    it('onder 80% geen bericht', async () => {
+      await spend(3);
+      expect((await ask()).status).toBe(200);
+      expect(posts()).toEqual([]);
+    });
+
+    it('zonder ALERT_WEBHOOK alleen het log', async () => {
+      delete env.ALERT_WEBHOOK;
+      await spend(10);
+      expect((await ask()).status).toBe(503);
+      expect(posts()).toEqual([]);
+      expect(console.error).toHaveBeenCalledWith(expect.stringContaining('Dagbudget bereikt'));
+    });
+
+    it('een webhook die faalt, laat het verzoek niet mislukken', async () => {
+      upstream.mockImplementation(async (url) => {
+        if (url === WEBHOOK) throw new Error('geen bereik');
+        return Response.json(message);
+      });
+      await spend(4.5);
+      expect((await ask()).status).toBe(200);
+    });
+
+    it('grens voor nieuwe installaties', async () => {
+      await setGuardCount('install', NEW_INSTALLS_PER_DAY);
+      const id = 'c0000000-0000-4000-8000-0000000000c1';
+      env.TURNSTILE_SECRET = 'turnstile';
+      upstream.mockImplementation(async (url) =>
+        url === WEBHOOK
+          ? new Response(null, { status: 204 })
+          : Response.json({ success: true, action: 'install' }),
+      );
+      const response = await call('/api/install', {
+        code: null,
+        method: 'POST',
+        body: JSON.stringify({ id, turnstile: 'bewijs' }),
+      });
+      expect(response.status).toBe(503);
+      expect(posts()).toHaveLength(1);
+      expect(posts()[0]).toContain('Grens voor nieuwe installaties bereikt');
+    });
+
+    it('delen: alleen bij de grens voor iedereen, niet bij één installatie', async () => {
+      await setGuardCount(`share:${ANNA}`, SHARED_BYTES_PER_INSTALL_PER_DAY);
+      await call('/api/feedback/sessions/abc', { method: 'PUT', body: '{"a":1}' });
+      expect(posts()).toEqual([]);
+      await setGuardCount('share', SHARED_BYTES_PER_DAY);
+      await call('/api/feedback/sessions/abc', { code: PIET_CODE, method: 'PUT', body: '{"a":1}' });
+      expect(posts()).toHaveLength(1);
+      expect(posts()[0]).toContain('delen van alle installaties samen');
+    });
+
+    it('Anthropic: tegoed op geeft een bericht, gewone drukte niet', async () => {
+      upstream.mockImplementation(async (url) => {
+        if (url === WEBHOOK) return new Response(null, { status: 204 });
+        return Response.json(
+          { type: 'error', error: { type: 'overloaded_error', message: 'Overloaded' } },
+          { status: 529 },
+        );
+      });
+      await ask();
+      expect(posts()).toEqual([]);
+      upstream.mockImplementation(async (url) => {
+        if (url === WEBHOOK) return new Response(null, { status: 204 });
+        return Response.json(
+          {
+            type: 'error',
+            error: {
+              type: 'invalid_request_error',
+              message: 'Your credit balance is too low to access the Anthropic API.',
+            },
+          },
+          { status: 400 },
+        );
+      });
+      await ask();
+      expect(posts()).toHaveLength(1);
+      expect(posts()[0]).toContain('Anthropic weigert de sleutel of het tegoed is op (400)');
+    });
+
+    it('OpenAI: insufficient_quota geeft een bericht', async () => {
+      upstream.mockImplementation(async (url) => {
+        if (url === WEBHOOK) return new Response(null, { status: 204 });
+        return Response.json(
+          { error: { message: 'You exceeded your current quota', code: 'insufficient_quota' } },
+          { status: 429 },
+        );
+      });
+      const form = new FormData();
+      form.set('audio', new File([new Uint8Array(10)], 'a.webm', { type: 'audio/webm' }));
+      form.set('model', 'gpt-transcribe');
+      form.set('language', 'nl');
+      await call('/api/transcribe', { method: 'POST', body: form });
+      expect(posts()).toHaveLength(1);
+      expect(posts()[0]).toContain(
+        'OpenAI weigert de sleutel of het tegoed is op (429, insufficient_quota)',
+      );
+    });
   });
 
   it('delen: boven de grens per installatie per dag wacht het, en wordt niets bewaard', async () => {
