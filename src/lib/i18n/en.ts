@@ -806,6 +806,7 @@ export const en: Dictionary = {
   'error.refused': 'Request refused (HTTP {status})',
   'error.modelRefused': 'The model refused to process the voice note',
   'error.recordingUnreadable': 'The recording can no longer be read',
+  'error.interrupted': 'Processing kept being interrupted. The recording has been kept.',
   'error.unknownSpecies': '{tool}: unknown species ID {id}',
   'error.invalidCount': '{tool}: invalid count {count}',
   'error.invalidAddCount': '{tool}: invalid count to add {count}',

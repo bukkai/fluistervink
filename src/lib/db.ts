@@ -215,6 +215,11 @@ export interface Utterance {
   waitingSince?: number;
   /** Aantal verwerkingspogingen (meer dan 1 na "Opnieuw" of een herstart) */
   attempts?: number;
+  /**
+   * Zo vaak bleef hij midden in het verwerken hangen (app afgesloten); bij
+   * `MAX_INTERRUPTED` (queue.ts) mislukt hij. Weg bij "Opnieuw".
+   */
+  interrupted?: number;
   /** Meetgegevens van de laatste verwerkingspoging, voor analyse */
   metrics?: ProcessingMetrics;
 }

@@ -1,4 +1,4 @@
-import type { PositionLookup } from './db';
+import { db, type PositionLookup } from './db';
 import { devOptionOn } from './devOptions';
 import { vibrationPattern } from './feedback';
 import { currentPosition } from './location.svelte';
@@ -159,6 +159,28 @@ export async function receiveScreenOffRecording(
     // Het bestand blijft op de telefoon; `wachtend` geeft hem later opnieuw
     handled.delete(recording.id);
     logEvent('screen_off_failed', { id: recording.id, message: String(error) }, context);
+  }
+}
+
+/**
+ * Bij het opstarten van de app: opnames die de service maakte terwijl de app
+ * dicht was. Zonder dit bleven ze op de telefoon tot je weer een sessie
+ * startte met het scherm uit aan, of nooit (keuze uitgezet). Bij een sessie
+ * die er niet meer is (verwijderd), het bestand weg: anders komt hij bij elke
+ * start terug, en een uitspraak zonder sessie ziet niemand.
+ */
+export async function collectPendingScreenOffRecordings(): Promise<void> {
+  for (const recording of await pendingScreenOffRecordings()) {
+    const context = { sessionId: recording.sessieId };
+    const session = await db.sessions.get(recording.sessieId).catch(() => null);
+    // Database niet te lezen: het bestand laten staan, later nog eens
+    if (session === null) continue;
+    if (!session) {
+      logEvent('screen_off_orphan', { id: recording.id, trektel: !!recording.trektel }, context);
+      await doneScreenOffRecording(recording.id);
+      continue;
+    }
+    await receiveScreenOffRecording(recording, undefined);
   }
 }
 

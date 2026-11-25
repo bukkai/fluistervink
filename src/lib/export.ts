@@ -310,6 +310,7 @@ function checkImport(data: {
       // Het land van de soortenlijst (ontwikkeloptie "Spanje")
       optional(u.region, (r) => r === 'es') &&
       optional(u.handled, (h) => h === 'observation' || h === 'none') &&
+      optional(u.interrupted, isNumber) &&
       optional(u.audioData, (a) => typeof a === 'string' && a.startsWith('data:audio/'));
     if (!ok) fail('uitspraak');
   }

@@ -159,6 +159,31 @@ describe('opnemen met het scherm uit', () => {
     expect(logged?.[1].pending).toBe(true);
   });
 
+  it('haalt bij het opstarten van de app op wat de service bewaarde, ook zonder sessie', async () => {
+    const { db } = await import('./db');
+    const { collectPendingScreenOffRecordings } = await import('./screenOff.svelte');
+    await db.sessions.add({ id: 's1', startedAt: 0, status: 'ended' } as never);
+    const rec = recording();
+    // Van een sessie die de gebruiker intussen verwijderde
+    const orphan = recording({ sessieId: 'weg' });
+    native.pendingScreenOffRecordings.mockResolvedValue([rec, orphan]);
+    try {
+      await collectPendingScreenOffRecordings();
+    } finally {
+      await db.sessions.delete('s1');
+    }
+    expect(submitRecording).toHaveBeenCalledTimes(1);
+    expect(submitRecording.mock.calls[0][0]).toBe('s1');
+    expect(native.doneScreenOffRecording).toHaveBeenCalledWith(rec.id);
+    // Het bestand zonder sessie weg, niet bij elke start opnieuw
+    expect(native.doneScreenOffRecording).toHaveBeenCalledWith(orphan.id);
+    expect(logEvent).toHaveBeenCalledWith(
+      'screen_off_orphan',
+      { id: orphan.id, trektel: false },
+      { sessionId: 'weg' },
+    );
+  });
+
   it('bewaart dezelfde opname maar één keer', async () => {
     const rec = recording();
     await Promise.all([

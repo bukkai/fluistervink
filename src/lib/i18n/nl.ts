@@ -801,6 +801,7 @@ export const nl = {
   'error.refused': 'Verzoek geweigerd (HTTP {status})',
   'error.modelRefused': 'Het model weigerde de uitspraak te verwerken',
   'error.recordingUnreadable': 'Opname niet meer te lezen',
+  'error.interrupted': 'Het verwerken werd steeds onderbroken. De opname is bewaard.',
   'error.unknownSpecies': '{tool}: onbekende soort-ID {id}',
   'error.invalidCount': '{tool}: ongeldig aantal {count}',
   'error.invalidAddCount': '{tool}: ongeldig aantal erbij {count}',

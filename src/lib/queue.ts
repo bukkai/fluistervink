@@ -159,11 +159,26 @@ export function onDailyLimit(listener: (limit: DailyLimit) => void): () => void 
 }
 
 export async function retry(utteranceId: string): Promise<void> {
-  await db.utterances.update(utteranceId, { status: 'pending', error: undefined });
+  // Met de hand opnieuw: weer de volle drie kansen (MAX_INTERRUPTED)
+  await db.utterances.update(utteranceId, {
+    status: 'pending',
+    error: undefined,
+    interrupted: undefined,
+  });
   processQueue();
 }
 
 let running = false;
+/** Er kwam een aanroep binnen terwijl de wachtrij liep: daarna nog een ronde */
+let again = false;
+
+/**
+ * Zo vaak mag een uitspraak midden in het verwerken onderbroken worden (app
+ * afgesloten of gecrasht, exemplaar bevroren) voordat hij mislukt met
+ * "Opnieuw". Anders kan één uitspraak die de app laat vastlopen dat bij elke
+ * start opnieuw doen, en ziet de gebruiker nooit wat er is.
+ */
+export const MAX_INTERRUPTED = 3;
 
 const QUEUE_LOCK = 'fluistervink-queue';
 
@@ -178,7 +193,10 @@ const SLOW_MS = 1000;
 
 /**
  * Verwerkt alle wachtende uitspraken op volgorde. Wordt na elke nieuwe
- * uitspraak aangeroepen; een tweede aanroep terwijl hij loopt doet niets.
+ * uitspraak aangeroepen. Een aanroep terwijl hij loopt, start geen tweede
+ * verwerking, maar wel een nieuwe ronde als deze klaar is: een uitspraak die
+ * binnenkwam terwijl de ronde al afrondde, bleef anders liggen tot de
+ * volgende uitspraak of een herstart.
  *
  * Het slot (Web Locks) zorgt dat maar één exemplaar van de app tegelijk
  * verwerkt, ook als hij in een tabblad én als geïnstalleerde app openstaat.
@@ -186,14 +204,21 @@ const SLOW_MS = 1000;
  * kan bevroren op de achtergrond staan en het anders nooit loslaten.
  */
 export async function processQueue({ takeOver = false } = {}): Promise<void> {
-  if (running) return;
+  if (running) {
+    again = true;
+    return;
+  }
   running = true;
   try {
-    if (navigator.locks) {
-      await withQueueLock(takeOver);
-    } else {
-      await runQueue();
-    }
+    do {
+      again = false;
+      if (navigator.locks) {
+        await withQueueLock(takeOver);
+      } else {
+        await runQueue();
+      }
+      takeOver = false;
+    } while (again);
   } catch (error) {
     // Slot afgepakt door een ander exemplaar (dat dan zelf verder verwerkt)
     if (!(error instanceof DOMException && error.name === 'AbortError')) throw error;
@@ -264,9 +289,23 @@ async function runQueue(): Promise<void> {
   if (dbMs >= SLOW_MS) logEvent('queue_db_slow', { dbMs });
   await migrateAudioOnce();
   for (const u of stuck) {
-    logEvent('requeued', undefined, { sessionId: u.sessionId, utteranceId: u.id });
+    const interrupted = (u.interrupted ?? 0) + 1;
+    const ids = { sessionId: u.sessionId, utteranceId: u.id };
+    // Steeds weer onderbroken: mislukt, met de opname bewaard en "Opnieuw"
+    const giveUp = interrupted >= MAX_INTERRUPTED;
+    logEvent(giveUp ? 'requeue_gave_up' : 'requeued', { interrupted }, ids);
     await db.utterances
-      .update(u.id, { status: 'pending' })
+      .update(
+        u.id,
+        giveUp
+          ? {
+              status: 'failed',
+              error: t('error.interrupted'),
+              interrupted,
+              waitingSince: undefined,
+            }
+          : { status: 'pending', interrupted },
+      )
       .catch((error) => queueError(error, u, 'requeue'));
   }
 
@@ -467,7 +506,12 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
     // Opname: eerst spraak naar tekst. Na een fout bij de interpretatie blijft
     // het transcript bewaard, zodat "Opnieuw" alleen die stap herhaalt.
     if (utterance.transcript === undefined && utterance.audio) {
-      utterance = await transcribeUtterance(utterance);
+      const transcribed = await transcribeUtterance(utterance, attempts);
+      if (!transcribed) {
+        logEvent('stale_result', { attempt: attempts, step }, ids);
+        return;
+      }
+      utterance = transcribed;
     }
     const transcript = utterance.transcript ?? '';
     checkZeemeeuw(transcript);
@@ -665,8 +709,15 @@ export function usageKind(utterance: Utterance, session: Session | undefined): U
   return utterance.trektel ? 'trektel' : 'knop';
 }
 
-/** Zet de opname om in tekst en slaat het transcript op. */
-async function transcribeUtterance(utterance: Utterance): Promise<Utterance> {
+/**
+ * Zet de opname om in tekst en slaat het transcript op. Undefined als de
+ * poging intussen niet meer geldt (`isCurrentAttempt`): dan niets opslaan,
+ * want een ander exemplaar verwerkt hem al.
+ */
+async function transcribeUtterance(
+  utterance: Utterance,
+  attempts: number,
+): Promise<Utterance | undefined> {
   const groups = preferenceOn('soortgroepen');
   const language = utterance.language ?? 'nl';
   const session = await db.sessions.get(utterance.sessionId);
@@ -685,6 +736,11 @@ async function transcribeUtterance(utterance: Utterance): Promise<Utterance> {
       confidence,
     },
   };
-  await db.utterances.update(utterance.id, changes);
-  return { ...utterance, ...changes };
+  const current = await db.transaction('rw', db.utterances, async () => {
+    const latest = await db.utterances.get(utterance.id);
+    if (!isCurrentAttempt(latest, attempts)) return false;
+    await db.utterances.update(utterance.id, changes);
+    return true;
+  });
+  return current ? { ...utterance, ...changes } : undefined;
 }

@@ -29,6 +29,7 @@
   } from './lib/tuintelling';
   import { instance } from './lib/instance.svelte';
   import { processQueue } from './lib/queue';
+  import { collectPendingScreenOffRecordings } from './lib/screenOff.svelte';
   import { syncSessionService } from './lib/sessionService';
   import { LEAVE_TREKTEL_TEXT, leavesSessionScreen } from './lib/trektel';
   import { stopTrektel, trektel } from './lib/trektelRecorder.svelte';
@@ -64,6 +65,8 @@
   // Uitspraken die bij het afsluiten nog niet verwerkt waren, alsnog verwerken.
   // Dit exemplaar neemt de wachtrij over van een eventueel ander (tabblad).
   processQueue({ takeOver: true });
+  // Opnames met het scherm uit van terwijl de app dicht was (Android-app)
+  collectPendingScreenOffRecordings().catch(() => {});
 
   // Sessies en feedback delen met de ontwikkelaar (share.ts): bij het
   // opstarten, bij elke schermwissel (bv. klaar met nalopen) en bij weer online
