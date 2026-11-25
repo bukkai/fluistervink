@@ -38,6 +38,10 @@ const SPECIES = {
   boomkruiper: 71,
   sijs: 174,
   grauwegans: 104,
+  spreeuw: 180,
+  graspieper: 103,
+  veldleeuwerik: 192,
+  keep: 127,
 };
 
 interface Spoken {
@@ -214,6 +218,81 @@ export async function seed(now = Date.now()) {
   await db.utterances.bulkAdd(parts.flatMap((p) => p.utterances));
   await db.observations.bulkAdd(parts.flatMap((p) => p.observations));
   return { active: active.id, review: review.id, ready: ready.id, exported: exported.id };
+}
+
+/** Een trektelling op een duintop: stukken van ongeveer een minuut, elk met wat er langskwam */
+// prettier-ignore
+const COUNT: { at: number; text: string; birds: [keyof typeof SPECIES, number][] }[] = [
+  { at: 4, text: 'Vink, achttien. Twee kepen erbij.', birds: [['vink', 18], ['keep', 2]] },
+  { at: 9, text: 'Spreeuwen, vijfendertig.', birds: [['spreeuw', 35]] },
+  { at: 13, text: 'Graspieper, drie.', birds: [['graspieper', 3]] },
+  { at: 18, text: 'Veertig vinken.', birds: [['vink', 40]] },
+  { at: 22, text: 'Veldleeuwerik, twee. Kramsvogels, vijftien.', birds: [['veldleeuwerik', 2], ['kramsvogel', 15]] },
+  { at: 27, text: 'Zestig houtduiven.', birds: [['houtduif', 60]] },
+  { at: 31, text: 'Sijzen, twaalf.', birds: [['sijs', 12]] },
+  { at: 36, text: 'Koperwieken, vijfentwintig.', birds: [['koperwiek', 25]] },
+  { at: 41, text: 'Vink, zesentwintig, en één keep.', birds: [['vink', 26], ['keep', 1]] },
+];
+
+/**
+ * Een lopende sessie met een trektelling van 47 minuten. Het script zet daarna
+ * de stand van de telling zelf (trektelRecorder), zonder microfoon: zo gaat er
+ * niets naar spraakherkenning of model. Geeft de id van de sessie terug.
+ */
+export async function seedTrektel(now = Date.now()) {
+  const area = { id: 3366, name: 'Amsterdamse Waterleidingduinen' };
+  const spot = { lat: 52.3487, lon: 4.5961 };
+  const session: Session = {
+    id: crypto.randomUUID(),
+    startedAt: now - 50 * MINUTE,
+    status: 'active',
+    place: { ...pick(area), source: 'start' },
+  };
+  const countStart = session.startedAt + 3 * MINUTE;
+  const utterances: Utterance[] = [];
+  const observations: Observation[] = [];
+  for (const chunk of COUNT) {
+    const at = countStart + chunk.at * MINUTE;
+    const position = { ...spot, accuracy: 4, fixedAt: at - MINUTE };
+    const utteranceId = crypto.randomUUID();
+    const ids = chunk.birds.map(() => crypto.randomUUID());
+    utterances.push({
+      id: utteranceId,
+      sessionId: session.id,
+      recordedAt: at - MINUTE,
+      savedAt: at,
+      audioDurationMs: 60_000,
+      status: 'done',
+      trektel: true,
+      position,
+      area,
+      transcript: chunk.text,
+      result: 'observation',
+      changes: ids.map((observationId) => ({ type: 'add', observationId })),
+    } as Utterance);
+    chunk.birds.forEach(([species, count], i) =>
+      observations.push({
+        id: ids[i],
+        sessionId: session.id,
+        utteranceId,
+        speciesId: SPECIES[species],
+        count,
+        countingMethodId: 2,
+        activityId: OVERVLIEGEND,
+        methodId: GEZIEN,
+        observedAt: at - MINUTE - i * 1000,
+        createdAt: at + 2000,
+        position,
+        area,
+        uncertain: false,
+        status: 'draft',
+      }),
+    );
+  }
+  await db.sessions.add(session);
+  await db.utterances.bulkAdd(utterances);
+  await db.observations.bulkAdd(observations);
+  return { session: session.id, countStart };
 }
 
 function pick(area: { id: number; name: string }) {

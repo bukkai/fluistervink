@@ -209,6 +209,20 @@ try {
   await open('');
   await shoot('5-start');
 
+  // Een lopende trektelling: de stand van de telling zelf zetten, zonder
+  // microfoon, zodat er niets naar spraakherkenning of model gaat
+  const count = await evaluate(`(async () => {
+    const { seedTrektel } = await import('/scripts/play-screenshots/seed.ts');
+    return seedTrektel();
+  })()`);
+  await open('');
+  await evaluate(`(async () => {
+    const { trektel } = await import('/src/lib/trektelRecorder.svelte.ts');
+    Object.assign(trektel, { status: 'running', startedAt: ${count.countStart}, speaking: false, sent: 9, skipped: 3 });
+  })()`);
+  await sleep(1500);
+  await shoot('6-trektellen');
+
   page.close();
   browser.close();
 } finally {
