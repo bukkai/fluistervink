@@ -287,8 +287,8 @@ describe('/api/install (aanmelden zonder code)', () => {
     return call('/api/install', { code: null, method: 'POST', body: JSON.stringify(body) });
   }
 
-  it('rekent dezelfde nonce uit als de app (zelfde waarde in src/lib/install.test.ts)', () => {
-    expect(integrityNonce(ID)).toBe('M2Y5YTJiMWMtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAx');
+  it('rekent dezelfde nonce uit als de app (zelfde waarde in src/lib/install.test.ts)', async () => {
+    expect(await integrityNonce(ID)).toBe('k0l91YJxDrSWOVtsmDgCOYMhex0GEqkoZqz2DjSfkAI');
   });
 
   it('geeft de openbare instellingen zonder code', async () => {
@@ -598,7 +598,7 @@ describe('/api/install (aanmelden zonder code)', () => {
       verdict = {
         requestDetails: {
           requestPackageName: 'nl.hegmus.fluistervink',
-          nonce: Buffer.from(ID).toString('base64url'),
+          nonce: await integrityNonce(ID),
           timestampMillis: String(Date.now()),
         },
         appIntegrity: { appRecognitionVerdict: 'PLAY_RECOGNIZED' },
@@ -632,6 +632,14 @@ describe('/api/install (aanmelden zonder code)', () => {
       const list = await call('/api/testers', { code: OWNER_CODE });
       const { testers } = (await list.json()) as { testers: { via?: string }[] };
       expect(testers).toContainEqual(expect.objectContaining({ via: 'play' }));
+    });
+
+    it('neemt ook de oude nonce aan (het id zelf, van webcode uit de cache)', async () => {
+      verdict.requestDetails = {
+        ...(verdict.requestDetails as object),
+        nonce: Buffer.from(ID).toString('base64url'),
+      };
+      expect((await register({ id: ID, integrity: 'verklaring' })).status).toBe(200);
     });
 
     it('weigert een verklaring voor een andere installatie', async () => {
