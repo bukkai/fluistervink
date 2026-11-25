@@ -108,7 +108,7 @@ Een vaste plek (vensterbank of vogelhut), `schermUit` aan, `oortjesMicrofoon` ui
 **3.2 Tweede telling, even lang, zonder zichtbare WebView**
 
 - [ ] Ontwikkeloptie **"Scherm uit: webcode laten slapen (accuproef)"** aan (Instellingen → In het veld; webcode, geen nieuwe app-versie). Log: `screen_off_on` met `zichtbaar: false`.
-- [ ] Dezelfde telling, even lang. Verwacht: geen tril na een stuk, alles wordt pas verwerkt als het scherm aangaat. Het verschil in accu met 3.1 is wat de zichtbare WebView kost.
+- [ ] Een telling onder dezelfde omstandigheden als 3.1 (even lang, zelfde plek, podcast, oortjes en helderheid, niet aan de lader, ongeveer even vaak iets inspreken; welke vogels maakt niet uit). Verwacht: geen tril na een stuk, alles wordt pas verwerkt als het scherm aangaat. Het verschil in accu met 3.1 is wat de zichtbare WebView kost.
 - [ ] Daarna de optie weer uit.
 
 ## 4. Met een kind (begin december; #327)
