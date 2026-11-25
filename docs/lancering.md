@@ -66,16 +66,32 @@ Wat met de lancering meegaat en wat achter een schakelaar wacht: `docs/vrijgave.
 
 ## 5. Productie
 
-- [x] Vóór de productierelease: daglimiet van het model per installatie naar 500 per dag (22 nov, `docs/plan-marketing.md`, Kostengrens per stap).
+Op volgorde (25 nov). Wat de proxy en Play al hebben: daglimiet van het model per installatie op 500 (22 nov, `docs/plan-marketing.md`, Kostengrens per stap) en de naam "Fluistervink: vogels inspreken" in de winkelvermelding (25 nov).
+
+**Vóór de aanvraag**
+
+- [ ] v0.8 (getagd 25 nov, AAB's in `apk/v0.8/`): de beta naar de interne test en daarmee een back-up met opnames maken en terugzetten; daarna de stabiele naar de gesloten test, zodat Google hem beoordeeld heeft. Dezelfde AAB gaat straks naar Productie.
+- [ ] Feedback ophalen (`npm run feedback -- pull` en `notes`) en de testset, voor het verhaal bij de aanvraag (punt 4).
 - [ ] Productietoegang aanvragen in de Play Console (na 14 dagen, als het dashboard het toestaat).
-- [ ] Na goedkeuring: de stabiele AAB naar **Productie**. Bij het maken van die release de landen kiezen: Nederland en België. De beta blijft in de interne test.
-- [ ] Zodra de app openbaar in Play staat: op de voorpagina (`index.html`) de zin onder "Open de app" wordt "Werkt in de browser van je telefoon. Op Android ook als app: Fluistervink in Google Play", met een link naar `https://play.google.com/store/apps/details?id=nl.hegmus.fluistervink` (eerder als draft #333, gesloten op 22 nov; opnieuw klaar in de PR "Play-link op de voorpagina", mergen zodra de app openbaar is). Daarvóór geeft die link wie geen tester is een "niet gevonden". Tot dan gaan nieuwe testers met de hand op de e-maillijst van de gesloten test.
-- [ ] `#uitleg` en `#privacy` nalopen op "test"-taal; `CLAUDE.md` en `NOTES.md` bijwerken. Nagelopen op 18 nov: beide schoon (alleen de gesproken bevestiging heet er een proef, en dat is hij nog). Besloten 21 nov: "(proef)" bij Trektelmodus eraf (gesproken bevestiging blijft een proef); "nog in ontwikkeling" in de vraag om te delen (welkom en startscherm) blijft tijdens de test en verandert vóór de productierelease: klaar in de PR "nog in ontwikkeling" (wordt "nieuw"), mergen zodra de productietoegang er is.
-- [ ] Op de dag van de productierelease `LAUNCH_DAY` in `src/lib/testers.ts` invullen (kleine PR, daarna `npm run release`): Statistieken begint dan schoon, de testers van daarvóór staan achter een vinkje (`docs/proxy.md`, Statistieken).
-- [ ] De eerste weken Statistieken en Kosten op Developer volgen.
-- [ ] Drie maanden na de release: op Developer "Testfase opruimen" (testers die sindsdien niets meer deden; ze blijven werken).
-- [x] Naam in de winkelvermelding: "Fluistervink: vogels inspreken" (al gezet op 25 nov) (`docs/play-store/README.md`).
+
+**Op de dag van de goedkeuring**
+
+1. [ ] De stabiele AAB (v0.8) naar **Productie**, met de release notes van de gesloten test. Bij het maken van de release de landen kiezen: Nederland en België. De beta blijft in de interne test.
+2. [ ] Wachten tot de winkelpagina zonder testersaccount te openen is (`https://play.google.com/store/apps/details?id=nl.hegmus.fluistervink`, in een privévenster). Pas dan verder: de webcode op `main` heeft de Play-link op de voorpagina (#363) en "nieuw" in plaats van "nog in ontwikkeling" (#362), en die link geeft wie geen tester is tot dan "niet gevonden".
+3. [ ] `LAUNCH_DAY` in `src/lib/testers.ts` op de datum van vandaag (PR van één regel, mergen): Statistieken begint schoon, de testers van daarvóór staan achter een vinkje (`docs/proxy.md`, Statistieken).
+4. [ ] `npm run release` (`docs/draaiboek-uitbrengen.md`, stap 1, 2 en 5; de changelog is klaar sinds #416). Daarmee gaan ook `ALERT_WEBHOOK` (#394) en de nachtelijke cron (#401) op stable werken.
+5. [ ] Nalopen op `fluistervink.nl`: de voorpagina met de Play-link, `/app/`, `#nieuw`, `/privacy`; de stabiele Android-app en een geïnstalleerde PWA openen meteen de app (`docs/vrijgave.md`, Mee met de lancering).
+6. [ ] `NOTES.md` en `CLAUDE.md` bijwerken (productie, stable op welke commit).
+
+**De dagen erna**
+
+- [ ] De volgende ochtend in Workers Logs nagaan of de cron van #401 gelopen is.
+- [ ] Testers een bedankmail, en de gesloten test "Stabiel" uitfaseren (punt 6).
+- [ ] Kwaliteitsronde op de beta (`docs/kwaliteitsronde.md`), direct na de release naar stable.
+- [ ] De eerste weken Statistieken en Kosten op Developer volgen; bij 80% van het dagbudget komt er een bericht in Discord (`docs/draaiboek-terugdraaien.md`, C).
 - [ ] Bekendheid geven in stappen, eerst in eigen kring: `docs/plan-marketing.md`.
+- [ ] Een paar weken na de release: `legacyIntegrityNonce` in de proxy weghalen (#404).
+- [ ] Drie maanden na de release: op Developer "Testfase opruimen" (testers die sindsdien niets meer deden; ze blijven werken).
 
 ## 6. Na de productierelease: testers die er zelf voor kiezen
 
