@@ -12,11 +12,7 @@ Op de beta, met de Android-app, tenzij er iets anders staat. Vink af wat werkt; 
 
 ## 1. Thuis aan tafel
 
-Gedaan op 25 nov; wat werkte is weggehaald. Uitslag van de knop op de oortjes (1.5 en 1.9) in `docs/vrijgave.md`, Knop op de oortjes.
-
-**1.6 Tuintelling zonder eerdere export (#349)**
-
-- [ ] Op een installatie die nooit exporteerde en zonder eBird (bijvoorbeeld de beta in een privévenster, ontwikkeloptie `tuintelling` aan): na een korte tuintelling staat de export ingeklapt ("Ook doorgeven aan waarneming.nl of eBird?"). Bij jezelf staat hij open omdat je eBird aan hebt en al exporteerde; zo bedoeld.
+Helemaal gedaan op 25 nov; wat werkte is weggehaald. Uitslag van de knop op de oortjes (1.5 en 1.9) in `docs/vrijgave.md`, Knop op de oortjes.
 
 ## 2. Buiten: een wandeling of fietsrit
 
