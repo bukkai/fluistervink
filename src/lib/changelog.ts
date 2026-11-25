@@ -31,6 +31,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026-11-25',
+    topics: {
+      Inspreken: [
+        'Een onzekere waarneming blijft onzeker als je er met de stem alleen iets bij zegt, zoals "nog één erbij": de soort is daarmee niet bevestigd. Een andere soort noemen of "ja, klopt" maakt hem wel zeker, net als aanpassen met de hand.',
+        'Mislukt een uitspraak en probeer je hem later opnieuw, dan gaat "die" of "nog drie erbij" nog steeds over wat je vóór die uitspraak zag, niet over iets van daarna.',
+      ],
+      Trektelling: [
+        '"Ongedaan maken" in een trektelling maakt geen ander stuk van de telling meer ongedaan; zo\'n stuk komt bij "niet begrepen", zodat je het thuis naloopt.',
+      ],
+    },
+  },
+  {
     date: '2026-11-24',
     topics: {
       Inspreken: [

@@ -484,12 +484,16 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
     step = 'interpret';
     const contextStart = Date.now();
     // Positie vers uit de database: de GPS kan na het opslaan van de uitspraak binnengekomen zijn
-    const [recent, fresh, session] = await Promise.all([
+    // Alleen wat er vóór deze uitspraak was: bij "Opnieuw" (of na wachten op
+    // bereik) zijn er misschien al latere waarnemingen, en dan zou "die" of
+    // "nog drie" naar een waarneming van ná deze uitspraak wijzen
+    const [all, fresh, session] = await Promise.all([
       listObservations(utterance.sessionId),
       db.utterances.get(utterance.id),
       db.sessions.get(utterance.sessionId),
     ]);
     const here = fresh?.position;
+    const recent = all.filter((o) => o.observedAt <= utterance.recordedAt);
     contextMs = Date.now() - contextStart;
     interpretation = await interpret(transcript, recent, {
       here,
