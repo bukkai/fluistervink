@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { bill, type BillingKeys } from './billing';
 import { declaredTooLarge, json, MAX_AUDIO_BYTES, OWNER, readBody, tooLarge } from './common';
 import { feedback, testerUsage } from './feedback';
+import { guard, guardAi, guardNewInstall } from './guard';
 import {
   cleanDisplayName,
   deviceOf,
@@ -133,6 +134,11 @@ export default {
       ) {
         return json({ error: 'Te veel verzoeken achter elkaar; probeer het zo opnieuw' }, 429);
       }
+      // Noodrem en plafond voor alle installaties samen (worker/guard.ts)
+      if (pathname === '/api/transcribe' || pathname === '/api/messages') {
+        const refused = await guardAi(env, tester);
+        if (refused) return refused;
+      }
       // Schrijven in KV: sinds aanmelden zonder code kan iedereen met een
       // browser dat, dus ook hier een grens. Delen gaat één voor één en gaat
       // bij een fout later verder (share.ts).
@@ -165,6 +171,9 @@ export default {
       }
       if (pathname === '/api/testers') {
         return await testers(request, env, tester);
+      }
+      if (pathname === '/api/guard') {
+        return await guard(request, env, tester);
       }
       return json({ error: 'Niet gevonden' }, 404);
     } catch (error) {
@@ -235,6 +244,9 @@ async function install(request: Request, env: WorkerEnv): Promise<Response> {
     // met dezelfde naam zouden gedeelde gegevens en verbruik door elkaar halen.
     // De app kiest dan een nieuw id (install.ts).
     if (await findInstall(env.TESTERS, name)) return json({ error: 'Id al in gebruik' }, 409);
+    // Noodrem, en een grens op nieuwe installaties voor alle samen (guard.ts)
+    const refused = await guardNewInstall(env);
+    if (refused) return refused;
     const device = deviceOf(request.headers.get('User-Agent'));
     await putInstall(env.TESTERS, id, { name, registeredAt: Date.now(), via, device });
   }

@@ -2,7 +2,7 @@ import { getTester, putShared } from './api';
 import { audioBlob, audioSize, db, type Observation, type Utterance } from './db';
 import { NO_SESSION } from './devNotes';
 import { APP_VERSION, CHANNEL, logEvent } from './log';
-import { hasPersonalData, redactDeep, redactText } from './personalData';
+import { hasPersonalData, redactDeep } from './personalData';
 
 // Delen met de ontwikkelaar: gestopte sessies (uitspraken, transcripten,
 // uitvoer van het model, de nagelopen waarnemingen, feedback en het log van
@@ -113,26 +113,16 @@ export function lastSharedAt(): number | undefined {
   return read<number | undefined>(SENT_AT_KEY, undefined);
 }
 
-/** De tekst van een uitspraak zonder persoonsgegevens (personalData.ts). */
-function sharedUtterance<U extends Pick<Utterance, 'transcript' | 'llmOutput'>>(u: U): U {
-  return {
-    ...u,
-    transcript: u.transcript && redactText(u.transcript),
-    llmOutput: redactDeep(u.llmOutput),
-  };
-}
+/**
+ * Een uitspraak zonder persoonsgegevens (personalData.ts): alle tekst, niet
+ * alleen transcript en uitvoer van het model. Ook de context voor het model
+ * (`metrics`), de wijzigingen (`changes`, `undid`) en de foutmelding bevatten
+ * opmerkingen en notities van eerdere waarnemingen.
+ */
+const sharedUtterance = <U extends Partial<Utterance>>(u: U): U => redactDeep(u);
 
-/** Idem voor de teksten bij een waarneming. */
-function sharedObservation<
-  O extends Pick<Observation, 'uncertainReason' | 'remarks' | 'privateNote'>,
->(o: O): O {
-  return {
-    ...o,
-    uncertainReason: o.uncertainReason && redactText(o.uncertainReason),
-    remarks: o.remarks && redactText(o.remarks),
-    privateNote: o.privateNote && redactText(o.privateNote),
-  };
-}
+/** Idem voor een waarneming (twijfelreden, opmerking, notitie, kandidaten). */
+const sharedObservation = <O extends Partial<Observation>>(o: O): O => redactDeep(o);
 
 /** Alles van één sessie, in de vorm van de JSON-export (zonder opnames). */
 async function snapshot(sessionId: string) {
