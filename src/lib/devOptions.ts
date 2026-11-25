@@ -22,9 +22,18 @@
  * - `insecten`: met "Ook andere dieren inspreken" ook insecten (kevers,
  *   wantsen, hommels, bijen, wespen, nachtvlinders, sprinkhanen, zweefvliegen;
  *   insects.ts, docs/plan-insecten.md, laag 1)
+ * - `webviewSlapen`: met het scherm uit de WebView níet in beeld houden
+ *   (`keepWebviewVisible` in screenOff.svelte.ts), alleen om de accu te
+ *   vergelijken; dan geen tril en geen verwerking tot het scherm aangaat
  */
 export type DevOption =
-  'oortjesMicrofoon' | 'oortjesKnop' | 'english' | 'spanje' | 'tuintelling' | 'insecten';
+  | 'oortjesMicrofoon'
+  | 'oortjesKnop'
+  | 'english'
+  | 'spanje'
+  | 'tuintelling'
+  | 'insecten'
+  | 'webviewSlapen';
 
 const PREFIX = 'fluistervink.dev.';
 
