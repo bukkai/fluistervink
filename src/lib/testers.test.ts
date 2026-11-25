@@ -12,6 +12,10 @@ import {
   withoutTestPhase,
 } from './testers';
 
+// Geen productiedatum. Niet `undefined`: dan valt een parameter terug op
+// LAUNCH_DAY, en die is na de productierelease ingevuld.
+const NO_LAUNCH = '';
+
 const now = Date.parse('2026-11-11T12:00:00Z');
 const daysAgo = (n: number) => now - n * 24 * 60 * 60 * 1000;
 const tester = (name: string, extra: Partial<Tester> = {}): Tester => ({
@@ -46,6 +50,7 @@ describe('lijst met installaties', () => {
         tester('onbekend'),
       ],
       now,
+      NO_LAUNCH,
     );
     expect(active.map((t) => t.name)).toEqual(['vandaag', 'nieuw']);
     expect(inactive.map((t) => t.name)).toEqual(['niets gedeeld', 'afgesloten', 'oud', 'onbekend']);
@@ -76,6 +81,7 @@ describe('installaties van de eigenaar', () => {
     const { active, inactive } = splitActive(
       testers.map((t) => ({ ...t, usage: used })),
       now,
+      NO_LAUNCH,
     );
     expect(active.map((t) => t.name)).toEqual(['app-22222222']);
     expect(inactive.map((t) => t.name)).toEqual(['app-11111111']);
@@ -96,12 +102,12 @@ describe('testfase (schone lei bij de productierelease)', () => {
   });
 
   it('heeft geen testfase zolang er geen productiedatum is', () => {
-    expect(inTestPhase(tester('a', { invitedAt: at('2026-11-17') }), undefined)).toBe(false);
+    expect(inTestPhase(tester('a', { invitedAt: at('2026-11-17') }), NO_LAUNCH)).toBe(false);
     expect(
       testPhaseNames(
         [{ day: '2026-11-20', tester: 'a', sessions: 1, utterances: 3 }],
         [],
-        undefined,
+        NO_LAUNCH,
       ).size,
     ).toBe(0);
   });
@@ -156,7 +162,7 @@ describe('testfase (schone lei bij de productierelease)', () => {
       launch,
     );
     expect([...left].sort()).toEqual(['gestopt', 'nooit']);
-    expect(leftoverNames([], new Set(['a']), undefined).size).toBe(0);
+    expect(leftoverNames([], new Set(['a']), NO_LAUNCH).size).toBe(0);
   });
 
   it('laat anonieme cijfers van vóór de week van de release weg', () => {
@@ -166,6 +172,6 @@ describe('testfase (schone lei bij de productierelease)', () => {
       launch,
     );
     expect(kept.map((r) => r.cohort)).toEqual(['2026-11-30', '2026-12-07']);
-    expect(withoutTestPhase([row('2026-11-16')], undefined)).toHaveLength(1);
+    expect(withoutTestPhase([row('2026-11-16')], NO_LAUNCH)).toHaveLength(1);
   });
 });
