@@ -196,6 +196,20 @@ describe('buildEbirdExport', () => {
     expect(result.shielded).toHaveLength(3);
   });
 
+  it('meldt een soort die de app niet meer kent, in plaats van hem stil over te slaan', async () => {
+    saveFile.mockResolvedValue({});
+    await db.observations.bulkAdd([
+      observation({ position }),
+      observation({ speciesId: 999_999_999, position }),
+    ]);
+    const result = await buildEbirdExport([session]);
+    expect(result.rows).toBe(1);
+    expect(result.unknown).toHaveLength(1);
+    expect(await exportForEbird([session])).toContain(
+      '1 waarneming met een soort die de app niet meer kent, overgeslagen',
+    );
+  });
+
   it('meldt de afgeschermde waarnemingen na het exporteren', async () => {
     saveFile.mockResolvedValue({});
     await db.observations.bulkAdd([

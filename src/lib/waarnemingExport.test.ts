@@ -283,6 +283,21 @@ describe('exportForWaarneming', () => {
     expect((await db.observations.get(obs.id))?.status).toBe('exported');
   });
 
+  it('laat een soort die de app niet meer kent eruit, meldt hem en markeert hem niet', async () => {
+    await db.sessions.add(session);
+    const known = observation({ position });
+    const unknown = observation({ position, speciesId: 999_999_999 });
+    await db.observations.bulkAdd([known, unknown]);
+    const result = await buildExport([session]);
+    expect(result.exported.map((o) => o.id)).toEqual([known.id]);
+    expect(result.unknown.map((o) => o.id)).toEqual([unknown.id]);
+    saveFile.mockResolvedValueOnce({});
+    expect(await exportForWaarneming([session])).toBe(
+      '1 waarneming geëxporteerd. 1 waarneming met een soort die de app niet meer kent, overgeslagen; voer die met de hand in.',
+    );
+    expect((await db.observations.get(unknown.id))?.status).toBe('draft');
+  });
+
   it('zegt in de app in welke map het bestand staat', async () => {
     await sessionWithObservation();
     saveFile.mockResolvedValueOnce({ folder: 'Downloads' });
