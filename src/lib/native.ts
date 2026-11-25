@@ -174,11 +174,17 @@ export async function sessionServiceStatus(): Promise<{ draait: boolean; fout?: 
 }
 
 interface BestandPlugin {
+  /** Met `data` (base64) in één keer, of met het `id` van `begin` na de stukken */
   opslaan(options: {
     naam: string;
     type: string;
-    data: string;
+    data?: string;
+    id?: string;
   }): Promise<{ opgeslagen: boolean; map?: string }>;
+  /** Sinds v0.8: een bestand in stukken (grote back-up) */
+  begin(): Promise<{ id: string }>;
+  stuk(options: { id: string; data: string }): Promise<void>;
+  afbreken(options: { id: string }): Promise<void>;
 }
 
 const Bestand = registerPlugin<BestandPlugin>('Bestand');
@@ -195,17 +201,51 @@ export type SaveResult = false | { folder?: string };
  * gewone download. Gooit bij een fout.
  */
 export async function saveFileNative(blob: Blob, filename: string): Promise<SaveResult> {
-  const data = await new Promise<string>((resolve, reject) => {
+  // Zonder "; charset=…": het venster kiest de extensie op het kale type
+  const type = blob.type.split(';')[0] || 'application/octet-stream';
+  const id = blob.size > SAVE_CHUNK_BYTES ? await beginChunks() : undefined;
+  if (!id) {
+    const data = await toBase64(blob);
+    const { opgeslagen, map } = await Bestand.opslaan({ naam: filename, type, data });
+    return opgeslagen && { folder: map };
+  }
+  try {
+    for (let start = 0; start < blob.size; start += SAVE_CHUNK_BYTES) {
+      const data = await toBase64(blob.slice(start, start + SAVE_CHUNK_BYTES));
+      await Bestand.stuk({ id, data });
+    }
+    const { opgeslagen, map } = await Bestand.opslaan({ naam: filename, type, id });
+    return opgeslagen && { folder: map };
+  } catch (error) {
+    await Bestand.afbreken({ id }).catch(() => {});
+    throw error;
+  }
+}
+
+/**
+ * Zo groot is elk stuk naar Android. Een back-up met opnames kan honderden MB
+ * zijn; als één base64-string over de brug liet dat de app zonder geheugen
+ * vallen (ronde vóór productie, 25 nov).
+ */
+export const SAVE_CHUNK_BYTES = 512 * 1024;
+
+/** Id van een bestand in stukken, of undefined in een app van vóór v0.8 (dan in één keer) */
+async function beginChunks(): Promise<string | undefined> {
+  try {
+    return (await Bestand.begin()).id;
+  } catch {
+    return undefined;
+  }
+}
+
+function toBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
     // "data:<type>;base64,<data>": alleen het deel na de komma
     reader.onload = () => resolve(String(reader.result).split(',', 2)[1] ?? '');
     reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(blob);
   });
-  // Zonder "; charset=…": het venster kiest de extensie op het kale type
-  const type = blob.type.split(';')[0] || 'application/octet-stream';
-  const { opgeslagen, map } = await Bestand.opslaan({ naam: filename, type, data });
-  return opgeslagen && { folder: map };
 }
 
 interface VersiePlugin {

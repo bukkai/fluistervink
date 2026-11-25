@@ -45,40 +45,88 @@ function fromDataUrl(url: string): StoredAudio {
 /**
  * `withAudio`: alle opnames, geen, of alleen die waarvoor de functie true geeft
  * (de back-up neemt alleen opnames mee die nog nodig zijn, zie backup.ts).
+ *
+ * Uitspraak voor uitspraak opgebouwd, met de opnames in porties uit de
+ * database: een back-up met een seizoen aan opnames werd anders in zijn geheel
+ * een paar keer in het geheugen gezet (alle opnames, alle data-URL's en één
+ * grote JSON-string), en dat kan een telefoon niet aan (ronde vóór productie,
+ * 25 nov). Dezelfde JSON als voorheen, alleen zonder inspringing.
  */
 export async function exportAllJson({
   withAudio = false,
 }: { withAudio?: boolean | ((u: Utterance) => boolean) } = {}): Promise<Blob> {
-  const [sessions, utterances, observations, deletedObservations, events] = await Promise.all([
-    db.sessions.toArray(),
-    db.utterances.toArray(),
-    db.observations.toArray(),
-    db.deletedObservations.toArray(),
-    db.events.toArray(),
-  ]);
-  const data = {
+  const out = new BlobWriter();
+  const header = JSON.stringify({
     exportedAt: new Date().toISOString(),
     appVersion: APP_VERSION,
     channel: CHANNEL,
     platform: PLATFORM,
     tester: getTester(),
-    sessions,
-    utterances: await Promise.all(
-      utterances.map(async (utterance) => {
-        const { audio, ...u } = utterance;
-        const include = typeof withAudio === 'function' ? withAudio(utterance) : withAudio;
-        return {
-          ...u,
-          audioBytes: audio && audioSize(audio),
-          audioData: include && audio ? await toDataUrl(audioBlob(audio)) : undefined,
-        };
-      }),
-    ),
-    observations,
-    deletedObservations,
-    events,
-  };
-  return new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  });
+  // Het object open laten ("{...,"), de lijsten volgen
+  out.write(header.slice(0, -1));
+  out.write(`,"sessions":${JSON.stringify(await db.sessions.toArray())},"utterances":[`);
+  const keys = await db.utterances.toCollection().primaryKeys();
+  let first = true;
+  for (let i = 0; i < keys.length; i += EXPORT_BATCH) {
+    const batch = await db.utterances.bulkGet(keys.slice(i, i + EXPORT_BATCH));
+    for (const utterance of batch) {
+      if (!utterance) continue;
+      const { audio, ...u } = utterance;
+      const include = typeof withAudio === 'function' ? withAudio(utterance) : withAudio;
+      const exported = {
+        ...u,
+        audioBytes: audio && audioSize(audio),
+        audioData: include && audio ? await toDataUrl(audioBlob(audio)) : undefined,
+      };
+      out.write((first ? '' : ',') + JSON.stringify(exported));
+      first = false;
+    }
+  }
+  const [observations, deletedObservations, events] = await Promise.all([
+    db.observations.toArray(),
+    db.deletedObservations.toArray(),
+    db.events.toArray(),
+  ]);
+  out.write(
+    `],"observations":${JSON.stringify(observations)}` +
+      `,"deletedObservations":${JSON.stringify(deletedObservations)}` +
+      `,"events":${JSON.stringify(events)}}`,
+  );
+  return out.blob('application/json');
+}
+
+/** Zoveel uitspraken (met hun opname) tegelijk uit de database */
+const EXPORT_BATCH = 20;
+
+/**
+ * Tekst in delen naar een Blob. Om de paar MB worden de delen samen een Blob,
+ * die de browser zo nodig buiten het geheugen bewaart; zo staat nooit het hele
+ * bestand als tekst in het geheugen.
+ */
+class BlobWriter {
+  private static readonly FLUSH_CHARS = 4 * 1024 * 1024;
+  private blobs: Blob[] = [];
+  private strings: string[] = [];
+  private chars = 0;
+
+  write(text: string): void {
+    this.strings.push(text);
+    this.chars += text.length;
+    if (this.chars >= BlobWriter.FLUSH_CHARS) this.flush();
+  }
+
+  private flush(): void {
+    if (!this.strings.length) return;
+    this.blobs.push(new Blob(this.strings));
+    this.strings = [];
+    this.chars = 0;
+  }
+
+  blob(type: string): Blob {
+    this.flush();
+    return new Blob(this.blobs, { type });
+  }
 }
 
 /**

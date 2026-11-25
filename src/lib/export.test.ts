@@ -201,3 +201,49 @@ describe('importJson en het log', () => {
     expect(await db.sessions.count()).toBe(0);
   });
 });
+
+describe('exportAllJson', () => {
+  // Uitspraak voor uitspraak opgebouwd, in porties uit de database (ronde
+  // vóór productie, 25 nov): hetzelfde resultaat als alles in één keer.
+  it(
+    'geeft na terugzetten alles terug, ook bij veel uitspraken en grote opnames',
+    { timeout: 30_000 },
+    async () => {
+      const { exportAllJson } = await import('./export');
+      await db.sessions.add({ id: 'sessie', startedAt: 1, endedAt: 2, status: 'ended' } as never);
+      // Meer dan één portie, en samen ruim boven de grens waarop de tekst een Blob wordt
+      const big = new Uint8Array(1_500_000).map((_, i) => i % 251);
+      const ids = Array.from({ length: 45 }, (_, i) => `u${String(i).padStart(2, '0')}`);
+      await db.utterances.bulkAdd(
+        ids.map(
+          (id, i) =>
+            ({
+              id,
+              sessionId: 'sessie',
+              recordedAt: i,
+              status: 'done',
+              transcript: `vink ${i} "met" \\ tekens`,
+              ...(i % 10 === 0 && { audio: { data: big.buffer.slice(0), type: 'audio/webm' } }),
+            }) as never,
+        ),
+      );
+      await db.observations.add(observation({ id: 'o1', utteranceId: 'u03' }));
+
+      const blob = await exportAllJson({ withAudio: true });
+      expect(blob.type).toBe('application/json');
+      const data = JSON.parse(await blob.text());
+      expect(data.utterances.map((u: { id: string }) => u.id)).toEqual(ids);
+      expect(data.utterances.filter((u: { audioData?: string }) => u.audioData)).toHaveLength(5);
+      expect(data.observations).toHaveLength(1);
+
+      await Promise.all(db.tables.map((table) => table.clear()));
+      await importJson(new File([blob], 'back-up.json'));
+      expect(await db.utterances.count()).toBe(45);
+      const restored = await db.utterances.get('u10');
+      expect(restored?.transcript).toBe('vink 10 "met" \\ tekens');
+      const audio = restored?.audio as { data: ArrayBuffer } | undefined;
+      expect(new Uint8Array(audio!.data)).toEqual(big);
+      expect(await db.observations.count()).toBe(1);
+    },
+  );
+});

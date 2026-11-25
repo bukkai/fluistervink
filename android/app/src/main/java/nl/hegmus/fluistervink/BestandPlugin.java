@@ -15,8 +15,13 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.UUID;
 
 /**
  * Een bestand opslaan (CSV voor waarneming.nl, JSON-export) vanuit de webcode
@@ -29,6 +34,12 @@ import java.io.OutputStream;
  * extensie, en zo'n CSV was op waarneming.nl uitgegrijsd: het uploadveld
  * accepteert alleen het type "text/csv" (15 okt). Oudere Android-versies
  * houden het venster.
+ *
+ * Grote bestanden (de back-up met opnames) in stukken: `begin`, dan `stuk`
+ * per deel, dan `opslaan` met het id in plaats van data. Eén string van
+ * honderden MB over de brug liet de app zonder geheugen vallen (ronde vóór
+ * productie, 25 nov). Een oudere webcode stuurt nog alles in één keer; dat
+ * blijft werken.
  */
 @CapacitorPlugin(name = "Bestand")
 public class BestandPlugin extends Plugin {
@@ -41,7 +52,7 @@ public class BestandPlugin extends Plugin {
     public void opslaan(PluginCall call) {
         String naam = call.getString("naam");
         String type = call.getString("type", "application/octet-stream");
-        if (naam == null || call.getString("data") == null) {
+        if (naam == null || (call.getString("data") == null && tijdelijk(call) == null)) {
             call.reject("Naam of data ontbreekt");
             return;
         }
@@ -70,7 +81,7 @@ public class BestandPlugin extends Plugin {
             return;
         }
         try {
-            schrijf(uri, call.getString("data"));
+            schrijf(uri, call);
         } catch (IOException | IllegalArgumentException e) {
             resolver.delete(uri, null, null);
             call.reject("Opslaan mislukt: " + e.getMessage());
@@ -97,7 +108,7 @@ public class BestandPlugin extends Plugin {
             return;
         }
         try {
-            schrijf(uri, call.getString("data"));
+            schrijf(uri, call);
         } catch (IOException | IllegalArgumentException e) {
             call.reject("Opslaan mislukt: " + e.getMessage());
             return;
@@ -106,10 +117,84 @@ public class BestandPlugin extends Plugin {
         call.resolve(uitkomst);
     }
 
-    private void schrijf(Uri uri, String data) throws IOException {
+    /** Uit de data van de aanroep, of uit het tijdelijke bestand van `begin` (en dat daarna weg) */
+    private void schrijf(Uri uri, PluginCall call) throws IOException {
+        File bron = tijdelijk(call);
         try (OutputStream out = getContext().getContentResolver().openOutputStream(uri, "wt")) {
             if (out == null) throw new IOException("Kan het bestand niet openen");
-            out.write(Base64.decode(data, Base64.DEFAULT));
+            if (bron == null) {
+                out.write(Base64.decode(call.getString("data"), Base64.DEFAULT));
+                return;
+            }
+            try (InputStream in = new FileInputStream(bron)) {
+                byte[] buffer = new byte[64 * 1024];
+                int n;
+                while ((n = in.read(buffer)) > 0) out.write(buffer, 0, n);
+            }
+        } finally {
+            if (bron != null) bron.delete();
         }
+    }
+
+    /** Begin van een bestand in stukken: { id } van een leeg tijdelijk bestand */
+    @PluginMethod
+    public void begin(PluginCall call) {
+        ruimOp();
+        String id = UUID.randomUUID().toString();
+        try {
+            if (!bestand(id).createNewFile()) throw new IOException("bestaat al");
+        } catch (IOException e) {
+            call.reject("Kan geen tijdelijk bestand maken: " + e.getMessage());
+            return;
+        }
+        JSObject uitkomst = new JSObject();
+        uitkomst.put("id", id);
+        call.resolve(uitkomst);
+    }
+
+    /** { id, data }: data (base64) achter het tijdelijke bestand plakken */
+    @PluginMethod
+    public void stuk(PluginCall call) {
+        File doel = tijdelijk(call);
+        String data = call.getString("data");
+        if (doel == null || data == null) {
+            call.reject("Onbekend id of geen data");
+            return;
+        }
+        try (OutputStream out = new FileOutputStream(doel, true)) {
+            out.write(Base64.decode(data, Base64.DEFAULT));
+        } catch (IOException | IllegalArgumentException e) {
+            call.reject("Schrijven mislukt: " + e.getMessage());
+            return;
+        }
+        call.resolve();
+    }
+
+    /** { id }: het tijdelijke bestand weg (de webcode kreeg een fout) */
+    @PluginMethod
+    public void afbreken(PluginCall call) {
+        File doel = tijdelijk(call);
+        if (doel != null) doel.delete();
+        call.resolve();
+    }
+
+    /** Het tijdelijke bestand van het `id` in de aanroep, als het bestaat; alleen een UUID */
+    private File tijdelijk(PluginCall call) {
+        String id = call.getString("id");
+        if (id == null || !id.matches("[0-9a-f-]{36}")) return null;
+        File doel = bestand(id);
+        return doel.isFile() ? doel : null;
+    }
+
+    private File bestand(String id) {
+        return new File(getContext().getCacheDir(), "opslaan-" + id + ".tmp");
+    }
+
+    /** Tijdelijke bestanden van een eerdere poging die niet afkwam (app gesloten) */
+    private void ruimOp() {
+        File[] oud = getContext().getCacheDir().listFiles((dir, naam) -> naam.startsWith("opslaan-"));
+        if (oud == null) return;
+        long grens = System.currentTimeMillis() - 24 * 60 * 60 * 1000L;
+        for (File f : oud) if (f.lastModified() < grens) f.delete();
     }
 }
