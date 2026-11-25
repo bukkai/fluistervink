@@ -194,6 +194,8 @@ export interface EbirdExport {
   excluded: Observation[];
   /** Andere dieren dan vogels: eBird neemt alleen vogels */
   notBirds: Observation[];
+  /** Soort-ID dat niet (meer) in de soortenlijst staat: niet mee, wel gemeld */
+  unknown: Observation[];
   /** Afgeschermd of onder embargo: eBird kent dat niet en maakt alles openbaar */
   shielded: Observation[];
   /** Waarom het (nog) niet kan; leeg = klaar om te exporteren */
@@ -209,6 +211,7 @@ export async function buildEbirdExport(sessions: Session[]): Promise<EbirdExport
   const exported: Observation[] = [];
   const excluded: Observation[] = [];
   const notBirds: Observation[] = [];
+  const unknown: Observation[] = [];
   const shielded: Observation[] = [];
   const today = isoDate(new Date());
   const problems: string[] = [];
@@ -225,6 +228,7 @@ export async function buildEbirdExport(sessions: Session[]): Promise<EbirdExport
       (a, b) => a.observedAt - b.observedAt || a.createdAt - b.createdAt,
     );
     excluded.push(...observations.filter((obs) => obs.skipExport));
+    unknown.push(...observations.filter((obs) => !obs.skipExport && !getSpecies(obs.speciesId)));
     let included = observations.filter((obs) => !obs.skipExport && getSpecies(obs.speciesId));
     notBirds.push(...included.filter((obs) => groupOf(obs.speciesId) !== BIRDS));
     included = included.filter((obs) => groupOf(obs.speciesId) === BIRDS);
@@ -269,6 +273,7 @@ export async function buildEbirdExport(sessions: Session[]): Promise<EbirdExport
     rows: rows.length,
     excluded,
     notBirds,
+    unknown,
     shielded,
     problems,
     warnings,
@@ -314,6 +319,7 @@ export async function exportForEbird(sessions: Session[]): Promise<string | unde
     saved.folder && t('export.savedIn', { folder: saved.folder }),
     result.excluded.length && t('export.excluded', { n: result.excluded.length }),
     result.notBirds.length && t('ebirdExport.notBirds', { n: result.notBirds.length }),
+    result.unknown.length && t('export.unknownSpecies', { n: result.unknown.length }),
     result.shielded.length && t('ebirdExport.shielded', { n: result.shielded.length }),
   ]
     .filter(Boolean)

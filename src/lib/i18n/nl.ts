@@ -729,6 +729,11 @@ export const nl = {
     other: '{n} waarnemingen uit {sessions} sessies geëxporteerd.',
   },
   'export.skippedNoLocation': '{n} zonder locatie overgeslagen; voer die met de hand in.',
+  'export.unknownSpecies': {
+    one: '1 waarneming met een soort die de app niet meer kent, overgeslagen; voer die met de hand in.',
+    other:
+      '{n} waarnemingen met een soort die de app niet meer kent, overgeslagen; voer die met de hand in.',
+  },
   'ebirdExport.sessionPrefix': '{name}: ',
   'ebirdExport.defaultSessionName': 'Sessie',
   'ebirdExport.needComplete': '{prefix}vul eerst in of je alles hebt genoteerd.',

@@ -59,6 +59,11 @@ export interface WaarnemingExport {
   skipped: Observation[];
   /** Uitgevinkt in de review */
   excluded: Observation[];
+  /**
+   * Soort-ID dat niet (meer) in de soortenlijst staat (na een update van de
+   * lijst): zonder wetenschappelijke naam weigert de import de regel
+   */
+  unknown: Observation[];
 }
 
 /** Eén CSV voor een of meer sessies (waarneming.nl neemt er tot 5000 tegelijk). */
@@ -73,7 +78,8 @@ export async function buildExport(
     .sort((a, b) => a.observedAt - b.observedAt || a.createdAt - b.createdAt);
   const excluded = observations.filter((obs) => obs.skipExport);
   const included = observations.filter((obs) => !obs.skipExport);
-  const exported = included.filter((obs) => obs.position);
+  const unknown = included.filter((obs) => !getSpecies(obs.speciesId));
+  const exported = included.filter((obs) => obs.position && getSpecies(obs.speciesId));
   const skipped = included.filter((obs) => !obs.position);
   const rows = exported.map(toRow);
   return {
@@ -83,6 +89,7 @@ export async function buildExport(
     exported,
     skipped,
     excluded,
+    unknown,
   };
 }
 
@@ -184,6 +191,7 @@ export async function exportForWaarneming(sessions: Session[]): Promise<string |
       : t('export.done', { n }),
     saved.folder && t('export.savedIn', { folder: saved.folder }),
     result.skipped.length && t('export.skippedNoLocation', { n: result.skipped.length }),
+    result.unknown.length && t('export.unknownSpecies', { n: result.unknown.length }),
     result.excluded.length && t('export.excluded', { n: result.excluded.length }),
     stricter && t('export.obscurityLater', { n: stricter }),
   ]

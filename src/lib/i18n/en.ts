@@ -736,6 +736,10 @@ export const en: Dictionary = {
     other: '{n} observations from {sessions} sessions exported.',
   },
   'export.skippedNoLocation': '{n} without a location skipped; enter those by hand.',
+  'export.unknownSpecies': {
+    one: '1 observation with a species the app no longer knows skipped; enter it by hand.',
+    other: '{n} observations with a species the app no longer knows skipped; enter those by hand.',
+  },
   'ebirdExport.sessionPrefix': '{name}: ',
   'ebirdExport.defaultSessionName': 'Session',
   'ebirdExport.needComplete': '{prefix}first say whether you recorded everything.',
