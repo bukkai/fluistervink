@@ -60,6 +60,8 @@
   "ratelimits": [
     { "name": "AI_LIMIT", "namespace_id": "1001", "simple": { "limit": 60, "period": 60 } },
   ],
+  // Geen cron in de beta; die staat in env.stable (opruimen, één keer per nacht).
+  "triggers": { "crons": [] },
   // Previews: een eigen versie per branch (Workers Builds draait daarvoor
   // `wrangler preview`), op <branch>-fluistervink.stephanmullernl.workers.dev.
   // Een preview erft de variabelen en koppelingen hierboven níet: zonder dit
@@ -133,6 +135,9 @@
       "ratelimits": [
         { "name": "AI_LIMIT", "namespace_id": "1001", "simple": { "limit": 60, "period": 60 } },
       ],
+      // Elke nacht opruimen (`scheduled` in worker/index.ts), 03:17 UTC. Alleen
+      // hier: de beta deelt de D1, en twee keer tegelijk samenvatten telt dubbel.
+      "triggers": { "crons": ["17 3 * * *"] },
     },
   },
 }
