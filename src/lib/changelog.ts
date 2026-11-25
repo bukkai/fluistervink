@@ -39,6 +39,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       ],
       Export: [
         'De herinnering om te exporteren komt niet meer terug voor een sessie zonder waarnemingen, of waarin je bij alles "Exporteren" hebt uitgevinkt.',
+        'In het bestand voor eBird staat het land alleen nog als de plek zeker in Nederland, België of Spanje ligt; anders laat de app het leeg (de plek staat er met coördinaten in). Eerder stond er altijd Nederland.',
       ],
       'Over de app': ['De uitleg zegt nu hoe het trilt als je met het scherm uit opneemt.'],
       Inspreken: [
