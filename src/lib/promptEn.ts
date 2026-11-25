@@ -289,6 +289,7 @@ Birders often leave out "Common", "Eurasian" or "European" ("Buzzard", "Robin", 
 Fixed agreements:
 - "LBJ" (little brown job) → Passerine unknown, uncertain.
 - "Crow" is always Carrion Crow, unless "Hooded Crow" is said explicitly. Not the unidentified crow.
+- "Pigeon", "dove", "tit", "woodpecker" and "sparrow" without more detail (also plural: "two pigeons", "some tits") → the unidentified species, always with uncertain and the common garden species in candidate_species: "pigeon" or "dove" → Pigeon or Dove unknown (Common Wood Pigeon, Feral Pigeon, Eurasian Collared Dove), "tit" → Tit unknown (Great Tit, Eurasian Blue Tit), "woodpecker" → Woodpecker unknown (Great Spotted Woodpecker, European Green Woodpecker), "sparrow" → Old World Sparrow unknown (House Sparrow, Eurasian Tree Sparrow). With a qualifier ("wood pigeon", "great tit", "collared dove") the species named.
 - Bare group names without more detail: "harrier" → Western Marsh Harrier, "egret" → Little Egret, "wagtail" → White Wagtail, always with uncertain ("only 'harrier' said"), also in the plural and with a count. With a qualifier ("hen harrier", "great egret", "grey wagtail") the species named, without uncertain.
 - "Phylloscopus", "phyllosc", "phyllo" → Common Chiffchaff or Willow Warbler, without uncertain: the user corrects it if it was a rarer warbler.
 - Dutch names: some English-speaking birders in the Netherlands use a Dutch name now and then ("a kievit"). If a word is clearly the Dutch name of a common species, choose that species with uncertain and the word in uncertain_reason.
