@@ -54,7 +54,7 @@ De teksten staan in `docs/play-store/README.md`; daar ook bijwerken als hier iet
 - **Titel** (max. 30 tekens): "Fluistervink: vogels inspreken" (besloten 22 nov). Op "Fluistervink" zoekt nog niemand.
 - **Korte beschrijving** (nu "Spreek je vogelwaarnemingen in en zet ze thuis op waarneming.nl."): "waarneming.nl" en "inspreken" staan er al in; eventueel "handen vrij" of "verrekijker" erbij.
 - **Lange beschrijving:** Google zoekt ook daarin. Woorden die vogelaars typen: vogels, vogelaar, waarnemingen, waarneming.nl, tellen, tuintelling, trektellen, spraak.
-- **Promotievideo** (YouTube-link in de winkelvermelding): het filmpje uit Het verhaal. Opnemen kan samen met de draaiboeken voor buiten (`docs/draaiboek-buiten.md`).
+- **Promotievideo** (YouTube-link in de winkelvermelding): het filmpje uit Het verhaal. Opnemen kan samen met de proeven buiten (`docs/draaiboek-testen.md`, deel 2).
 - **Schermafbeeldingen:** opnieuw met het nieuwe logo (`npm run play-screenshots`); in januari een over de tuintelling.
 - **Recensies:** de testers bij de lancering vragen om een eerlijke recensie; de eerste paar bepalen de indruk. Nooit iets aanbieden in ruil voor een recensie (regel van Google). Later eventueel de in-app review van Google (native, nieuwe app-versie), alleen na een geslaagde sessie en hooguit eens per paar maanden.
 

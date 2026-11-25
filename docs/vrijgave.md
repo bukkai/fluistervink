@@ -15,7 +15,7 @@ Alles wat op `main` staat zonder schakelaar. Testers krijgen het met de volgende
 
 | Onderdeel | Getest | Nog te doen |
 | --- | --- | --- |
-| Model: dezelfde soort is een nieuwe waarneming, feedback wordt nooit uitgevoerd, "lifer", "die hadden we al" (#342, #346, #351, #356) | testset | `draaiboek-release.md`, S |
+| Model: dezelfde soort is een nieuwe waarneming, feedback wordt nooit uitgevoerd, "lifer", "die hadden we al" (#342, #346, #351, #356) | testset | `draaiboek-testen.md`, 2.1 |
 | Afschermen en embargo, "onbekend aantal" (#336–#345) | draaiboek thuis H, 22 nov | |
 | Nalopen: soortveld, aanpassen maakt zeker (#344, #347) | draaiboek release R, 23 nov | |
 | Stop tijdens het inspreken bewaart de opname (#366) | test | |
@@ -42,7 +42,7 @@ Met "scherm uit" aan start en stopt ook de knop op de oortjes een opname. Daarvo
 
 - **Soort:** native (vanaf v0.7) en web. Hangt af van de keuze "Opnemen met het scherm uit" (v0.7).
 - **Bekend probleem:** bij een koptelefoon met twee apparaten (Sony XM5) stopt de muziek van het andere apparaat, en de koptelefoon stuurt zelf een pauzetoets die als druk telde. Mogelijk ook de reden dat de gesproken bevestiging niet klonk.
-- **Nog testen:** de proef in #372, met de optie aan en uit. Dan beslissen: alleen claimen als er niets speelt, of de knop alleen voor wie hem aanzet.
+- **Nog testen:** de proef in #372, met de optie aan en uit (`draaiboek-testen.md`, 1.5). Dan beslissen: alleen claimen als er niets speelt, of de knop alleen voor wie hem aanzet.
 - **Lanceren:** als aparte keuze bij Instellingen ("Ook de knop op de oortjes"), standaard uit.
 
 ### Microfoon van de oortjes (`oortjesMicrofoon`, #267)
@@ -50,7 +50,7 @@ Met "scherm uit" aan start en stopt ook de knop op de oortjes een opname. Daarvo
 Opnemen met de microfoon van Bluetooth-oortjes in plaats van die van de telefoon.
 
 - **Soort:** web en native (de toestemming "Apparaten in de buurt"; de stabiele build heeft de plugin niet).
-- **Nog testen:** `draaiboek-buiten.md`, A ronde 2 opnieuw: op 24 nov ging ronde 2 via de service, dus met de telefoonmicrofoon. Daarna de rondes door de testset: kost Bluetooth herkenning?
+- **Nog testen:** `draaiboek-testen.md`, 2.3: op 24 nov ging ronde 2 via de service, dus met de telefoonmicrofoon. Daarna de rondes door de testset: kost Bluetooth herkenning?
 - **Open vraag:** moet de trektelling in de service ook de oortjes gebruiken (`setPreferredDevice` in `TrektelOpname`, native)?
 - **Lanceren:** pas als de testset laat zien dat het niet slechter verstaat; plugin in de stabiele build, nieuwe tag, keuze bij Instellingen.
 
@@ -59,7 +59,7 @@ Opnemen met de microfoon van Bluetooth-oortjes in plaats van die van de telefoon
 Een half uur tellen met een resultaat per soort (`docs/plan-tuintelling.md`).
 
 - **Soort:** web. Gebruikt de trektelmodus (die is voor iedereen); met het scherm uit alleen met de keuze "Opnemen met het scherm uit".
-- **Nog testen:** de woorden van beginners ("duif", "mus", "mees"; `draaiboek-buiten.md`, B), de kinderstem (`draaiboek-thuis.md`, G, begin december), en de fixes van 22 nov bij een volgende telling.
+- **Nog testen:** de woorden van beginners ("duif", "mus", "mees"; `draaiboek-testen.md`, 2.5), de kinderstem (`draaiboek-testen.md`, deel 4, begin december), en de fixes van 22 nov bij een volgende telling.
 - **Open:** de beslissingen onderaan het plan, na het gesprek met Vogelbescherming.
 - **Lanceren:** vóór de Nationale Tuinvogeltelling (29–31 jan 2027): de knop op het startscherm voor iedereen, met uitleg en changelog.
 

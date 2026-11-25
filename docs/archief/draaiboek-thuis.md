@@ -1,5 +1,7 @@
 # Draaiboek 1: thuis aan tafel
 
+_Gearchiveerd op 25 nov: wat nog openstond, staat nu in `docs/draaiboek-testen.md`._
+
 Proeven op de telefoon die geen buiten en geen telling nodig hebben. Op de beta, met de Android-app. Vink af wat werkt; schrijf bij een afwijking op wat je zag en spreek het in als feedback ("feedback, …"). Na afloop de sessies stoppen en delen, dan `npm run feedback -- pull`. Een punt dat werkt, gaat uit `NOTES.md`; als alles af is, gaat dit draaiboek naar `docs/archief/`.
 
 Ronde A–F en H gedaan op 22 nov; die stappen en de uitslag zijn eruit (terug te vinden in git, bevindingen opgelost in #342–#346). Over: G, met een kind, begin december.

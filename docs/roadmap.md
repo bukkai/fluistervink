@@ -17,7 +17,7 @@ De vier sporen van 13 okt, met de stand op 12 nov:
 
 ## Komende stappen (22 nov)
 
-1. **Proeven op de telefoon** met de draaiboeken (`docs/draaiboek-*.md`): thuis gedaan op 22 nov, buiten en de telling nog.
+1. **Proeven op de telefoon:** alles wat nog moet in `docs/draaiboek-testen.md` (thuis, buiten en de telling deels gedaan op 22–24 nov).
 2. **Tot ongeveer 1 dec:** de aanvraag voorbereiden (`docs/lancering.md`, punt 4): feedback van de testers en de testset, de afvinklijst bijwerken, de laatste release een paar dagen laten staan.
 3. **Na de goedkeuring:** de stabiele AAB naar Productie; dan opnemen met het scherm uit, de microfoon delen en het wake word (geparkeerd sinds 19 nov, #290), eerst als proef die alleen logt.
 

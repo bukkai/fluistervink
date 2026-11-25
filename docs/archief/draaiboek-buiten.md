@@ -1,5 +1,7 @@
 # Draaiboek 2: buiten wandelen
 
+_Gearchiveerd op 25 nov: wat nog openstond, staat nu in `docs/draaiboek-testen.md`._
+
 Proeven die buiten moeten: de oortjesmicrofoon vergelijken, opnames voor de testset die nu ontbreken, en een lange trektelling met het scherm uit (C, mag ook thuis bij het raam). Het sluiterknopje (was B) is gedaan op 23 nov: met het scherm uit en een podcast aan kwam elke druk binnen als volume omhoog. Op de beta, met oortjes. Vink af wat werkt; schrijf bij een afwijking op wat je zag en spreek het in als feedback. Na afloop alles delen, `npm run feedback -- pull`, en pas dan de testset (per sessie). Een punt dat werkt, gaat uit `NOTES.md`; als alles af is, gaat dit draaiboek naar `docs/archief/`.
 
 Duur: ongeveer een uur. Liefst een rustige plek en een plek met wind of verkeer.

@@ -1,5 +1,7 @@
 # Draaiboek 4: vóór de laatste release naar stable
 
+_Gearchiveerd op 25 nov: wat nog openstond, staat nu in `docs/draaiboek-testen.md`._
+
 Wat er sinds de vorige release (21 nov, 0c31293) op `main` staat en straks bij de testers komt, één keer op de telefoon nalopen. Op de beta, met de Android-app. Vink af wat werkt; schrijf bij een afwijking op wat je zag en spreek het in als feedback. Daarna `npm run release`. Als alles af is, gaat dit draaiboek naar `docs/archief/`.
 
 Thuis (R) gedaan op 23 nov: alles goed. Over: S, buiten, een half uur tot drie kwartier.
