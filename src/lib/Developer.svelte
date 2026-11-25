@@ -46,7 +46,7 @@
     versionsInUse,
   } from './stats';
   import { AUDIO_SECONDS_PER_DAY, MESSAGES_PER_DAY } from './limits';
-  import { ACTIVE_DAYS, asOwner, lastSeen, ownInstalls, splitActive } from './testers';
+  import { ACTIVE_DAYS, asOwner, inTestPhase, lastSeen, ownInstalls, splitActive } from './testers';
   import { isUnused } from './unusedInstalls';
   import { describeImport, exportAllJson, importJson, saveFile } from './export';
   import { dateTimeFormat, errorText } from './format';
@@ -872,6 +872,7 @@
                 · {tester.via === 'play' ? 'Play' : 'browser'}
                 {tester.blocked ? '· afgesloten' : ''}
                 {tester.owner ? '· van mij' : ''}
+                {inTestPhase(tester) ? '· testfase' : ''}
               </span>
               <span class="usage muted">{usageText(tester)}</span>
             </span>
@@ -891,8 +892,8 @@
           {showInactive ? 'Toon minder' : `Toon meer (${split.inactive.length})`}
         </button>
         <p class="hint">
-          Onder "Toon meer": afgesloten, van mij, nog niets gedeeld, of meer dan {ACTIVE_DAYS} dagen niet
-          gebruikt.
+          Onder "Toon meer": afgesloten, van mij, uit de testfase, nog niets gedeeld, of meer dan {ACTIVE_DAYS}
+          dagen niet gebruikt.
         </p>
       {/if}
       {#if unusedCount > 0}

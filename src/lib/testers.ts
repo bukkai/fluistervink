@@ -1,4 +1,6 @@
 import { OWNER, type Tester } from './api';
+import { dayOf } from './costs';
+import { weekOf, type ActivityRow, type SummaryRow } from './stats';
 
 // De lijst met installaties op Developer: wie de laatste tijd actief was
 // bovenaan, de rest achter "Toon meer".
@@ -20,13 +22,17 @@ export function lastSeen(tester: Tester): number | undefined {
  * Actieve installaties (niet afgesloten, iets gedeeld, en gezien in de laatste
  * `ACTIVE_DAYS` dagen), en de rest; allebei met de laatst geziene bovenaan.
  * Wie nog niets deelde staat ook bij de rest: daar valt voor de eigenaar
- * (nog) niets aan te zien. Zijn eigen installaties ook.
+ * (nog) niets aan te zien. Zijn eigen installaties ook, en die uit de testfase.
  */
-export function splitActive(testers: Tester[], now = Date.now()) {
+export function splitActive(testers: Tester[], now = Date.now(), launchDay = LAUNCH_DAY) {
   const since = now - ACTIVE_DAYS * 24 * 60 * 60 * 1000;
   const sorted = [...testers].sort((a, b) => (lastSeen(b) ?? 0) - (lastSeen(a) ?? 0));
   const isActive = (t: Tester) =>
-    !t.blocked && !t.owner && t.usage !== undefined && (lastSeen(t) ?? 0) >= since;
+    !t.blocked &&
+    !t.owner &&
+    !inTestPhase(t, launchDay) &&
+    t.usage !== undefined &&
+    (lastSeen(t) ?? 0) >= since;
   return { active: sorted.filter(isActive), inactive: sorted.filter((t) => !isActive(t)) };
 }
 
@@ -42,4 +48,52 @@ export function ownInstalls(testers: Tester[]): Set<string> {
 export function asOwner<T extends { tester: string }>(rows: T[], own: Set<string>): T[] {
   if (!own.size) return rows;
   return rows.map((row) => (own.has(row.tester) ? { ...row, tester: OWNER } : row));
+}
+
+// --- Schone lei bij de productierelease. De testers van de gesloten test
+// gebruiken dezelfde stabiele app als productie en houden hun installatie;
+// wissen zou ze als nieuwe gebruikers laten tellen. Daarom niets wissen, maar
+// Statistieken laat ze standaard weg (docs/proxy.md, Statistieken).
+
+/**
+ * Dag van de productierelease in Google Play (`2026-12-03`). Wie zich daarvóór
+ * aanmeldde, hoort bij de testfase. `undefined` zolang er geen productie is:
+ * dan telt iedereen gewoon mee.
+ */
+export const LAUNCH_DAY: string | undefined = undefined;
+
+/** Een installatie uit de testfase: aangemeld vóór de productierelease. */
+export function inTestPhase(tester: Tester, launchDay = LAUNCH_DAY): boolean {
+  if (!launchDay || tester.owner) return false;
+  return tester.invitedAt === undefined || dayOf(new Date(tester.invitedAt)) < launchDay;
+}
+
+/**
+ * Namen die bij de testfase horen: installaties die zich vóór de release
+ * aanmeldden, en wie al vóór de release iets insprak (ook testers van vóór het
+ * aanmelden zonder code, of als de lijst met installaties niet te laden was).
+ * De eigenaar hoort er niet bij; die heeft een eigen vinkje.
+ */
+export function testPhaseNames(
+  rows: ActivityRow[],
+  installs: Tester[],
+  launchDay = LAUNCH_DAY,
+): Set<string> {
+  const names = new Set<string>();
+  if (!launchDay) return names;
+  for (const install of installs) if (inTestPhase(install, launchDay)) names.add(install.name);
+  for (const row of rows) if (row.day < launchDay && row.tester !== OWNER) names.add(row.tester);
+  return names;
+}
+
+/**
+ * Anonieme cijfers per sessie zonder de testfase. Die hebben geen installatie,
+ * alleen de week waarin de installatie begon: alles van vóór de week van de
+ * release valt weg, en ook cijfers zonder die week. Een installatie uit de
+ * week van de release zelf, maar van vóór de dag, telt dus wel mee.
+ */
+export function withoutTestPhase(rows: SummaryRow[], launchDay = LAUNCH_DAY): SummaryRow[] {
+  if (!launchDay) return rows;
+  const week = weekOf(launchDay);
+  return rows.filter((row) => row.cohort && row.cohort >= week);
 }
