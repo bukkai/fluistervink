@@ -1,4 +1,5 @@
 import { t } from './i18n';
+import { logEvent } from './log';
 import { db, type Change, type Observation, type Utterance } from './db';
 import type { Action } from './interpret';
 import { codesForNewSpecies, listUtterances, moveToBin } from './observations';
@@ -80,17 +81,6 @@ export function isBareNo(transcript: string | undefined): boolean {
   if (words[0] !== 'nee' || words.length < 2 || words.length > 4) return false;
   return !words.slice(1).some((word) => CORRECTION_WORDS.has(word));
 }
-
-/** Velden die een onzekere waarneming bij een update niet zeker maken */
-const NOT_A_CORRECTION: string[] = [
-  'remarks',
-  'privateNote',
-  'spokenPlace',
-  'obscurity',
-  'embargoUntil',
-  'embargoNoDate',
-  'clearEmbargo',
-];
 
 /** Embargo gezegd zonder datum: onzeker, zodat de gebruiker thuis de datum zet */
 const embargoReason = (fields: { embargoNoDate?: boolean }) =>
@@ -215,15 +205,19 @@ export async function applyActions(
           if (base + action.addCount < 1)
             belowOne = t('reason.belowOne', { base, minus: -action.addCount });
         }
-        // Een correctie zonder twijfel maakt een eerder onzekere waarneming
-        // zeker; alleen een opmerking of notitie toevoegen niet
-        const onlyRemarks =
-          !action.addCount &&
-          Object.keys(action.fields).every((key) => NOT_A_CORRECTION.includes(key));
-        if (!onlyRemarks) {
+        // De twijfel gaat er met de stem alleen af als het model dat zegt
+        // (uncertain: false bij "ja, klopt" of "het was een fitis") of als er
+        // een andere soort gekozen is. Een ander aantal, gedrag of een
+        // opmerking bevestigt de soort niet ("nog één erbij" bij "fitis of
+        // tjiftjaf"). Met de hand in de bewerker wordt hij wel altijd zeker.
+        // Besloten 25 nov (ronde vóór productie).
+        if (
+          action.fields.speciesId !== undefined &&
+          action.fields.speciesId !== current.speciesId
+        ) {
           patch.uncertain ??= false;
-          if (!patch.uncertain) patch.uncertainReason = undefined;
         }
+        if (patch.uncertain === false) patch.uncertainReason = undefined;
         if (
           action.fields.speciesId !== undefined &&
           action.fields.speciesId !== current.speciesId &&
@@ -300,12 +294,28 @@ export async function applyActions(
         break;
       }
 
+      // Niet in een trektelstuk: dat knipt de app zelf, dus "de vorige" is een
+      // willekeurig stuk van een minuut met misschien tien soorten, en "nee,
+      // dat was fout" ging over iets in dit stuk. Zonder andere actie wordt
+      // het stuk "niet begrepen", en ziet de gebruiker het bij het nalopen.
       case 'undo':
-        if (await undoPrevious(utterance)) acted = true;
+        if (utterance.trektel)
+          logEvent(
+            'undo_skipped',
+            { trektel: true },
+            { sessionId: utterance.sessionId, utteranceId: utterance.id },
+          );
+        else if (await undoPrevious(utterance)) acted = true;
         break;
 
       case 'redo':
-        if (await redoUndo(utterance)) acted = true;
+        if (utterance.trektel)
+          logEvent(
+            'redo_skipped',
+            { trektel: true },
+            { sessionId: utterance.sessionId, utteranceId: utterance.id },
+          );
+        else if (await redoUndo(utterance)) acted = true;
         break;
 
       case 'dev_note':
