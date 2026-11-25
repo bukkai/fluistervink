@@ -58,6 +58,8 @@ export class InstallError extends Error {
   constructor(
     message: string,
     readonly status: number,
+    /** Eigen foutcode van de proxy, bv. `install_limit` */
+    readonly code?: string,
   ) {
     super(message);
   }
@@ -129,7 +131,8 @@ async function call(method: 'GET' | 'POST', body?: object): Promise<unknown> {
   }
   const result = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new InstallError(result.error ?? `HTTP ${response.status}`, response.status);
+    const code = typeof result.code === 'string' ? result.code : undefined;
+    throw new InstallError(result.error ?? `HTTP ${response.status}`, response.status, code);
   }
   return result;
 }

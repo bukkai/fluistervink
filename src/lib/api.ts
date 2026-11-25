@@ -194,8 +194,8 @@ async function getCredential(): Promise<string> {
     localStorage.setItem(TESTER_KEY, tester);
     return token;
   } catch (error) {
-    const status = (error as { status?: number }).status ?? 0;
-    throw new ApiError(error instanceof Error ? error.message : String(error), status);
+    const { status = 0, code } = error as { status?: number; code?: string };
+    throw new ApiError(error instanceof Error ? error.message : String(error), status, code);
   }
 }
 

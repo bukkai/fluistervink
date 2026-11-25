@@ -26,7 +26,7 @@ Niet gemeten: regio, tijdstip van de dag, soorten, openen zonder inspreken.
 
 ## Waarschuwingen
 
-Sinds 26 nov, vóór de productierelease. Als de proxy iets tegenhoudt voor iedereen, ziet een gebruiker alleen dat zijn uitspraken wachten. Daarom stuurt de proxy de eigenaar dan een bericht (`worker/alert.ts`), naar de webhook in het geheim `ALERT_WEBHOOK` (formaat van Discord: `{ content }`):
+Sinds 25 nov, vóór de productierelease. Als de proxy iets tegenhoudt voor iedereen, ziet een gebruiker alleen dat zijn uitspraken wachten. Daarom stuurt de proxy de eigenaar dan een bericht (`worker/alert.ts`), naar de webhook in het geheim `ALERT_WEBHOOK` (formaat van Discord: `{ content }`):
 
 - `budget_bijna`: 80% van het dagbudget voor alle installaties samen is op; het verzoek gaat gewoon door;
 - `budget`: het dagbudget is op, uitspraken wachten tot morgen;

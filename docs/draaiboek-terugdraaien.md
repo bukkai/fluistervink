@@ -1,6 +1,6 @@
 # Draaiboek: als het misgaat in stable
 
-26 nov 2026, vóór de productierelease in Play. Wat te doen als `fluistervink.nl` (en dus de stabiele app, die zijn webcode live van dat adres laadt) stuk is na een release of hotfix, of als de proxy voor iedereen stilvalt. Eén keer geoefend op de beta voordat het echt nodig is (zie Oefenen, onderaan).
+25 nov 2026, vóór de productierelease in Play. Wat te doen als `fluistervink.nl` (en dus de stabiele app, die zijn webcode live van dat adres laadt) stuk is na een release of hotfix, of als de proxy voor iedereen stilvalt. Eén keer geoefend op de beta voordat het echt nodig is (zie Oefenen, onderaan).
 
 ## Eerst: wat is er stuk?
 

@@ -90,6 +90,12 @@
     ),
   );
   let waiting = $derived(Number.isFinite(waitingSince));
+  // Niet het bereik, maar de proxy die het voor iedereen even tegenhoudt
+  // (noodrem, dagbudget): dan niet "Geen bereik" zeggen, want dat klopt niet
+  let waitingFor = $derived(
+    ($utterances ?? []).find((u) => u.status === 'pending' && u.waitingSince && u.waitingFor)
+      ?.waitingFor,
+  );
   // Al lang (trektelling: de stukken stapelen zich op). Opnieuw bekeken bij
   // elke nieuwe uitspraak, dus bij een trektelling elke minuut.
   let longWait = $derived(waiting && Date.now() - waitingSince >= LONG_WAIT_MS);
@@ -267,7 +273,8 @@
     if (u.undone) return t('log.status.undone');
     switch (u.status) {
       case 'pending':
-        return u.waitingSince ? t('log.status.waiting') : t('log.status.queued');
+        if (!u.waitingSince) return t('log.status.queued');
+        return u.waitingFor ? t('log.status.waitingBusy') : t('log.status.waiting');
       case 'processing':
         return u.transcript === undefined && u.audio
           ? t('log.status.transcribing')
@@ -284,7 +291,16 @@
 {#if waiting}
   <div class="queue waiting">
     <p role="status">
-      {t(longWait ? 'log.waitingLong' : 'log.waiting', { n: queued })}
+      {t(
+        waitingFor === 'paused'
+          ? 'log.waitingPaused'
+          : waitingFor === 'busy'
+            ? 'log.waitingBusy'
+            : longWait
+              ? 'log.waitingLong'
+              : 'log.waiting',
+        { n: queued },
+      )}
     </p>
     <button
       class="retry"

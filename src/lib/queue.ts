@@ -7,6 +7,7 @@ import {
   type ProcessingMetrics,
   type Session,
   type Utterance,
+  type WaitingFor,
 } from './db';
 import { ApiError, type UsageKind } from './api';
 import { applyActions } from './applyActions';
@@ -303,6 +304,7 @@ async function runQueue(): Promise<void> {
               error: t('error.interrupted'),
               interrupted,
               waitingSince: undefined,
+              waitingFor: undefined,
             }
           : { status: 'pending', interrupted },
       )
@@ -395,6 +397,17 @@ const TEMPORARY_STATUS = new Set([0, 502, 503, 504, 529]);
 
 function isTemporary(error: unknown): boolean {
   return error instanceof ApiError && TEMPORARY_STATUS.has(error.status);
+}
+
+/**
+ * Wacht hij op iets anders dan bereik? De proxy zegt het met een eigen code
+ * (worker/guard.ts): de noodrem, of een grens voor iedereen samen.
+ */
+export function waitingFor(error: unknown): WaitingFor | undefined {
+  const code = error instanceof ApiError ? error.code : undefined;
+  if (code === 'paused') return 'paused';
+  if (code === 'budget' || code === 'install_limit') return 'busy';
+  return undefined;
 }
 
 /**
@@ -571,7 +584,13 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
       await db.transaction('rw', db.utterances, async () => {
         const latest = await db.utterances.get(utterance.id);
         if (isCurrentAttempt(latest, attempts))
-          await db.utterances.update(utterance.id, { status: 'pending', waitingSince });
+          await db.utterances.update(utterance.id, {
+            status: 'pending',
+            waitingSince,
+            // Bij elke poging opnieuw: de reden kan veranderen (eerst de
+            // noodrem, dan geen bereik)
+            waitingFor: waitingFor(error),
+          });
       });
       return 'wait';
     }
@@ -598,6 +617,7 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
           status: 'failed',
           error: step === 'transcribe' ? t('error.transcribePrefix', { message }) : message,
           waitingSince: undefined,
+          waitingFor: undefined,
         });
     });
     // De opname blijft bewaard: morgen met "Opnieuw" alsnog verwerken
@@ -663,6 +683,7 @@ async function processUtterance(utterance: Utterance): Promise<'wait' | void> {
     await db.utterances.update(utterance.id, {
       status: 'done',
       waitingSince: undefined,
+      waitingFor: undefined,
       llmOutput: interpretation.response,
       metrics: { ...metrics, saveMs: Date.now() - saveStart },
       changes,
@@ -695,6 +716,7 @@ async function finishWithout(
       await db.utterances.update(utteranceId, {
         status: 'done',
         waitingSince: undefined,
+        waitingFor: undefined,
         ...fields,
       });
   });

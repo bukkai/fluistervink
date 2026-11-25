@@ -45,6 +45,7 @@ import {
   stopWaiting,
   submitRecording,
   submitText,
+  waitingFor,
 } from './queue';
 import { gps } from './location.svelte';
 import { setPreference } from './preferences';
@@ -1345,6 +1346,47 @@ describe('netwerk weg', () => {
     expect(u?.error).toBeUndefined();
     expect(vibrations).toEqual([WAITING]);
     expect(interpret).not.toHaveBeenCalled();
+  });
+
+  it('reden van het wachten uit de code van de proxy', () => {
+    expect(waitingFor(new ApiError('x', 503, 'paused'))).toBe('paused');
+    expect(waitingFor(new ApiError('x', 503, 'budget'))).toBe('busy');
+    // Nieuwe installatie die zich niet kan aanmelden (te veel tegelijk)
+    expect(waitingFor(new ApiError('x', 503, 'install_limit'))).toBe('busy');
+    expect(waitingFor(new ApiError('x', 0))).toBeUndefined();
+    expect(waitingFor(new ApiError('x', 503))).toBeUndefined();
+  });
+
+  it('noodrem of dagbudget: wacht met de reden erbij, en die gaat weg als het weer gaat', async () => {
+    const answers: (() => Response)[] = [
+      () => Response.json({ error: 'gepauzeerd', code: 'paused' }, { status: 503 }),
+      () => {
+        throw new TypeError('Failed to fetch');
+      },
+      () => Response.json({ error: 'druk', code: 'budget' }, { status: 503 }),
+      () => Response.json({ text: 'Roepje vink.' }),
+    ];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => answers.shift()!()),
+    );
+    model.respond = () => toolResponse(['add_observation', { species_id: VINK, count: 1 }]);
+    const id = await record();
+
+    await processQueue();
+    expect(await db.utterances.get(id)).toMatchObject({ status: 'pending', waitingFor: 'paused' });
+    // Daarna geen bereik: dan is het weer gewoon wachten op bereik
+    await processQueue();
+    const offline = await db.utterances.get(id);
+    expect(offline?.status).toBe('pending');
+    expect(offline?.waitingFor).toBeUndefined();
+    await processQueue();
+    expect(await db.utterances.get(id)).toMatchObject({ status: 'pending', waitingFor: 'busy' });
+    await processQueue();
+    const done = await db.utterances.get(id);
+    expect(done?.status).toBe('done');
+    expect(done?.waitingFor).toBeUndefined();
+    expect(done?.waitingSince).toBeUndefined();
   });
 
   it('fout van het model na het verstaan: transcript blijft, opnieuw slaat het verstaan over', async () => {

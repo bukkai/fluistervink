@@ -31,18 +31,6 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
-    date: '2026-11-26',
-    topics: {
-      Inspreken: [
-        'Een uitspraak die je inspreekt net als de vorige klaar is, wordt meteen verwerkt. Soms bleef hij liggen tot je weer iets insprak.',
-        'Blijft het verwerken van een uitspraak steeds hangen, dan staat hij na drie keer bij "mislukt", met de opname bewaard, in plaats van het eindeloos opnieuw te proberen.',
-      ],
-      'Android-app': [
-        'Opnames met het scherm uit die de app nog niet had, komen binnen zodra je de app opent, ook als je geen nieuwe sessie start.',
-      ],
-    },
-  },
-  {
     date: '2026-11-25',
     topics: {
       Nalopen: [
@@ -51,6 +39,9 @@ export const CHANGELOG: ChangelogEntry[] = [
       ],
       'Over de app': ['De uitleg zegt nu hoe het trilt als je met het scherm uit opneemt.'],
       Inspreken: [
+        'Wacht een uitspraak omdat Fluistervink het even druk heeft of gepauzeerd is, dan staat dat er, in plaats van "Geen bereik". Hij gaat later vanzelf door.',
+        'Een uitspraak die je inspreekt net als de vorige klaar is, wordt meteen verwerkt. Soms bleef hij liggen tot je weer iets insprak.',
+        'Blijft het verwerken van een uitspraak steeds hangen, dan staat hij na drie keer bij "mislukt", met de opname bewaard, in plaats van het eindeloos opnieuw te proberen.',
         'Een onzekere waarneming blijft onzeker als je er met de stem alleen iets bij zegt, zoals "nog één erbij": de soort is daarmee niet bevestigd. Een andere soort noemen of "ja, klopt" maakt hem wel zeker, net als aanpassen met de hand.',
         'Mislukt een uitspraak en probeer je hem later opnieuw, dan gaat "die" of "nog drie erbij" nog steeds over wat je vóór die uitspraak zag, niet over iets van daarna.',
       ],
@@ -58,6 +49,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         '"Ongedaan maken" in een trektelling maakt geen ander stuk van de telling meer ongedaan; zo\'n stuk komt bij "niet begrepen", zodat je het thuis naloopt.',
       ],
       'Android-app': [
+        'Opnames met het scherm uit die de app nog niet had, komen binnen zodra je de app opent, ook als je geen nieuwe sessie start.',
         'Opnemen met het scherm uit: als je telefoon vol is, blijft de opname op de telefoon staan in plaats van verloren te gaan.',
       ],
     },

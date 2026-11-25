@@ -344,6 +344,17 @@ export const nl = {
     other:
       'Geen bereik, al meer dan 2 uur: {n} uitspraken wachten. Ze worden verwerkt zodra er verbinding is.',
   },
+  // De proxy houdt het voor iedereen even tegen (worker/guard.ts): geen "Geen bereik"
+  'log.waitingPaused': {
+    one: 'Fluistervink is even gepauzeerd: 1 uitspraak wacht. Hij wordt later vanzelf verwerkt; je hoeft niets te doen.',
+    other:
+      'Fluistervink is even gepauzeerd: {n} uitspraken wachten. Ze worden later vanzelf verwerkt; je hoeft niets te doen.',
+  },
+  'log.waitingBusy': {
+    one: 'Het is erg druk bij Fluistervink: 1 uitspraak wacht. Hij wordt later vanzelf verwerkt; je hoeft niets te doen.',
+    other:
+      'Het is erg druk bij Fluistervink: {n} uitspraken wachten. Ze worden later vanzelf verwerkt; je hoeft niets te doen.',
+  },
   'log.retry': 'Probeer opnieuw',
   'log.queued': {
     one: '1 uitspraak in de wachtrij (zie Uitspraken)',
@@ -401,6 +412,7 @@ export const nl = {
   'log.status.feedback': 'feedback',
   'log.status.undone': 'teruggedraaid',
   'log.status.waiting': 'wacht op bereik',
+  'log.status.waitingBusy': 'wacht, het is druk',
   'log.status.queued': 'in wachtrij',
   'log.status.transcribing': 'verstaan…',
   'log.status.processing': 'bezig…',

@@ -352,6 +352,16 @@ export const en: Dictionary = {
     other:
       'No signal for over 2 hours: {n} voice notes are waiting. They’ll be processed as soon as there’s a connection.',
   },
+  'log.waitingPaused': {
+    one: 'Fluistervink is paused for a moment: 1 voice note is waiting. It will be processed later on its own; you don’t need to do anything.',
+    other:
+      'Fluistervink is paused for a moment: {n} voice notes are waiting. They will be processed later on their own; you don’t need to do anything.',
+  },
+  'log.waitingBusy': {
+    one: 'Fluistervink is very busy: 1 voice note is waiting. It will be processed later on its own; you don’t need to do anything.',
+    other:
+      'Fluistervink is very busy: {n} voice notes are waiting. They will be processed later on their own; you don’t need to do anything.',
+  },
   'log.retry': 'Try again',
   'log.queued': {
     one: '1 voice note in the queue (see Voice notes)',
@@ -409,6 +419,7 @@ export const en: Dictionary = {
   'log.status.feedback': 'feedback',
   'log.status.undone': 'undone',
   'log.status.waiting': 'waiting for signal',
+  'log.status.waitingBusy': 'waiting, it is busy',
   'log.status.queued': 'queued',
   'log.status.transcribing': 'listening…',
   'log.status.processing': 'working…',

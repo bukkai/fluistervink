@@ -359,6 +359,7 @@ function checkImport(data: {
       optional(u.region, (r) => r === 'es') &&
       optional(u.handled, (h) => h === 'observation' || h === 'none') &&
       optional(u.interrupted, isNumber) &&
+      optional(u.waitingFor, (w) => w === 'paused' || w === 'busy') &&
       optional(u.audioData, (a) => typeof a === 'string' && a.startsWith('data:audio/'));
     if (!ok) fail('uitspraak');
   }
