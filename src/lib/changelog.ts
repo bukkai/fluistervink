@@ -37,6 +37,9 @@ export const CHANGELOG: ChangelogEntry[] = [
         'Twee keer snel tikken op "Klopt" of "Weg" raakt niet meer de volgende waarneming die op die plek verschijnt. Ook "Maak er een waarneming van" maakt er bij dubbel tikken maar één.',
         'Een sessie die klaarstond voor waarneming.nl en die je voortzet, staat niet meer klaar: na het stoppen loop je hem opnieuw na.',
       ],
+      Export: [
+        'De herinnering om te exporteren komt niet meer terug voor een sessie zonder waarnemingen, of waarin je bij alles "Exporteren" hebt uitgevinkt.',
+      ],
       'Over de app': ['De uitleg zegt nu hoe het trilt als je met het scherm uit opneemt.'],
       Inspreken: [
         'Wacht een uitspraak omdat Fluistervink het even druk heeft of gepauzeerd is, dan staat dat er, in plaats van "Geen bereik". Hij gaat later vanzelf door.',

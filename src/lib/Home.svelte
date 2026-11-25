@@ -7,7 +7,8 @@
   import { t } from './i18n';
   import { dayFormat, formatMoment } from './format';
   import type { Session } from './db';
-  import { exportReminder, reminderText, snooze, snoozedAt } from './exportReminder';
+  import { liveQuery } from 'dexie';
+  import { exportContent, exportReminder, reminderText, snooze, snoozedAt } from './exportReminder';
   import { CHANNEL } from './log';
   import { isAndroidApp } from './native';
   import { preferenceOn } from './preferences';
@@ -69,8 +70,11 @@
 
   // Herinnering aan de export (instelling, standaard aan; exportReminder.ts)
   let snoozed = $state(snoozedAt());
+  const content = liveQuery(exportContent);
   let reminder = $derived(
-    preferenceOn('exportHerinnering') ? exportReminder(sessions, now, snoozed) : undefined,
+    preferenceOn('exportHerinnering')
+      ? exportReminder(sessions, $content, now, snoozed)
+      : undefined,
   );
   function remindLater() {
     snooze();
