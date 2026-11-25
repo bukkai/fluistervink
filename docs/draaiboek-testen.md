@@ -14,10 +14,6 @@ Op de beta, met de Android-app, tenzij er iets anders staat. Vink af wat werkt; 
 
 Gedaan op 25 nov; wat werkte is weggehaald. Uitslag van de knop op de oortjes (1.5 en 1.9) in `docs/vrijgave.md`, Knop op de oortjes.
 
-**1.8 Stabiele versie (`fluistervink.nl`, wat testers nu hebben)**
-
-- [ ] Een nieuwe installatie van de stabiele Android-app opent meteen de app (`/app/`), niet de voorpagina; een geïnstalleerde PWA ook (#326).
-
 **1.6 Tuintelling zonder eerdere export (#349)**
 
 - [ ] Op een installatie die nooit exporteerde en zonder eBird (bijvoorbeeld de beta in een privévenster, ontwikkeloptie `tuintelling` aan): na een korte tuintelling staat de export ingeklapt ("Ook doorgeven aan waarneming.nl of eBird?"). Bij jezelf staat hij open omdat je eBird aan hebt en al exporteerde; zo bedoeld.
