@@ -93,6 +93,10 @@ section p {
   margin: 0;
 }
 
+section p + p {
+  margin-top: 0.75rem;
+}
+
 .examples {
   display: flex;
   flex-wrap: wrap;
@@ -165,5 +169,12 @@ footer {
 }
 
 footer a {
+  color: var(--muted);
+}
+
+footer p {
+  flex-basis: 100%;
+  margin: 0;
+  text-align: center;
   color: var(--muted);
 }
