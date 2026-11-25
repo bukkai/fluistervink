@@ -1,6 +1,6 @@
 <script lang="ts">
   import { t } from './i18n';
-  import { dateYearTimeFormat } from './format';
+  import { dateYearTimeFormat, errorText } from './format';
   // Back-up maken en terugzetten, voor een nieuwe telefoon of als de app weg
   // was. Zie backup.ts.
   import { onMount } from 'svelte';
@@ -35,7 +35,7 @@
     } catch (error) {
       failed = true;
       message = t('backup.failed', {
-        error: String(error instanceof Error ? error.message : error),
+        error: errorText(error),
       });
     } finally {
       busy = false;
@@ -55,7 +55,7 @@
     } catch (error) {
       failed = true;
       message = t('backup.restoreFailed', {
-        error: String(error instanceof Error ? error.message : error),
+        error: errorText(error),
       });
     } finally {
       busy = false;

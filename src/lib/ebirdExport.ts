@@ -9,6 +9,7 @@ import {
 } from './db';
 import { ebirdProtocol, sessionDurationMs } from './effort';
 import { saveFile } from './export';
+import { errorText } from './format';
 import { t } from './i18n';
 import { logEvent } from './log';
 import { listObservations, listUtterances } from './observations';
@@ -263,7 +264,7 @@ export async function exportForEbird(sessions: Session[]): Promise<string | unde
   } catch (error) {
     logEvent('export_failed', { error: String(error), target: 'ebird' });
     return t('export.saveFailed', {
-      error: String(error instanceof Error ? error.message : error),
+      error: errorText(error),
     });
   }
   const ebirdExportedAt = Date.now();

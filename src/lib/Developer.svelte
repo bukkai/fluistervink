@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { dateTimeFormat } from './format';
   // Alleen voor de eigenaar (menu en route in App.svelte): feedback van testers
   // lezen, installaties bekijken en afsluiten, kosten bekijken, exporteren voor
   // de testset en importeren. Afgeschermd in de interface; de proxy staat het
@@ -50,6 +49,7 @@
   import { ACTIVE_DAYS, asOwner, lastSeen, ownInstalls, splitActive } from './testers';
   import { isUnused } from './unusedInstalls';
   import { describeImport, exportAllJson, importJson, saveFile } from './export';
+  import { dateTimeFormat, errorText } from './format';
 
   // Noodrem en grenzen voor alle installaties samen (worker/guard.ts)
   let guard = $state<GuardStatus>();
@@ -61,7 +61,7 @@
       guard = await fetchGuard();
       guardError = '';
     } catch (error) {
-      guardError = `Noodrem ophalen mislukt: ${error instanceof Error ? error.message : error}`;
+      guardError = `Noodrem ophalen mislukt: ${errorText(error)}`;
     }
   }
   loadGuard();
@@ -81,7 +81,7 @@
       guard = await setGuardPaused(paused);
       guardError = '';
     } catch (error) {
-      guardError = `Noodrem zetten mislukt: ${error instanceof Error ? error.message : error}`;
+      guardError = `Noodrem zetten mislukt: ${errorText(error)}`;
     } finally {
       guardBusy = false;
     }
@@ -103,7 +103,7 @@
       testers = await listTesters();
       testersError = '';
     } catch (error) {
-      testersError = `Testers ophalen mislukt: ${error instanceof Error ? error.message : error}`;
+      testersError = `Testers ophalen mislukt: ${errorText(error)}`;
     }
   }
   loadTesters();
@@ -132,7 +132,7 @@
       notes = await listSharedNotes();
       notesError = '';
     } catch (error) {
-      notesError = `Feedback ophalen mislukt: ${error instanceof Error ? error.message : error}`;
+      notesError = `Feedback ophalen mislukt: ${errorText(error)}`;
     }
   }
   loadNotes();
@@ -143,7 +143,7 @@
       const changed = new Set(ids);
       notes = notes?.map((n) => (changed.has(n.id) ? { ...n, processed } : n));
     } catch (error) {
-      notesError = `Opslaan mislukt: ${error instanceof Error ? error.message : error}`;
+      notesError = `Opslaan mislukt: ${errorText(error)}`;
     }
   }
 
@@ -157,7 +157,7 @@
       notes = notes?.filter((n) => !gone.has(n.id));
       showProcessed = false;
     } catch (error) {
-      notesError = `Wissen mislukt: ${error instanceof Error ? error.message : error}`;
+      notesError = `Wissen mislukt: ${errorText(error)}`;
     }
   }
 
@@ -184,7 +184,7 @@
         sessions.flatMap((session) => (session?.place ? [[session.id, session.place.name]] : [])),
       );
     } catch (error) {
-      costsError = `Kosten ophalen mislukt: ${error instanceof Error ? error.message : error}`;
+      costsError = `Kosten ophalen mislukt: ${errorText(error)}`;
     }
   }
   loadCosts();
@@ -193,7 +193,7 @@
     try {
       billing = await fetchBilling();
     } catch (error) {
-      billingError = `Rekening ophalen mislukt: ${error instanceof Error ? error.message : error}`;
+      billingError = `Rekening ophalen mislukt: ${errorText(error)}`;
     }
   }
   loadBilling();
@@ -219,18 +219,14 @@
       : text;
   }
 
-  const centsFormat = new Intl.NumberFormat('nl-NL', {
+  const dollars: Intl.NumberFormatOptions = {
     style: 'currency',
     currency: 'USD',
     currencyDisplay: 'narrowSymbol',
-  });
+  };
+  const centsFormat = new Intl.NumberFormat('nl-NL', dollars);
   // Een uitspraak kost een fractie van een cent
-  const smallFormat = new Intl.NumberFormat('nl-NL', {
-    style: 'currency',
-    currency: 'USD',
-    currencyDisplay: 'narrowSymbol',
-    maximumSignificantDigits: 2,
-  });
+  const smallFormat = new Intl.NumberFormat('nl-NL', { ...dollars, maximumSignificantDigits: 2 });
   const money = (amount: number) =>
     (amount > 0 && amount < 0.01 ? smallFormat : centsFormat).format(amount);
   /** "anna · 24 okt · 42 uitspraken" (de tester alleen als de naam van de sessie ervoor staat) */
@@ -309,7 +305,7 @@
       const gone = new Set(await cleanupTesters());
       testers = testers?.filter((t) => !gone.has(t.name));
     } catch (error) {
-      testersError = `Opruimen mislukt: ${error instanceof Error ? error.message : error}`;
+      testersError = `Opruimen mislukt: ${errorText(error)}`;
     }
   }
 
@@ -325,7 +321,7 @@
       await removeTester(tester.name);
       changeTester(tester.name, { blocked: true });
     } catch (error) {
-      testersError = `Afsluiten mislukt: ${error instanceof Error ? error.message : error}`;
+      testersError = `Afsluiten mislukt: ${errorText(error)}`;
     }
   }
 
@@ -334,7 +330,7 @@
       await markOwnInstall(tester.name, !tester.owner);
       changeTester(tester.name, { owner: !tester.owner || undefined });
     } catch (error) {
-      testersError = `Aanpassen mislukt: ${error instanceof Error ? error.message : error}`;
+      testersError = `Aanpassen mislukt: ${errorText(error)}`;
     }
   }
 
@@ -344,7 +340,7 @@
       await hideTester(tester.name);
       testers = testers?.filter((t) => t.name !== tester.name);
     } catch (error) {
-      testersError = `Verwijderen mislukt: ${error instanceof Error ? error.message : error}`;
+      testersError = `Verwijderen mislukt: ${errorText(error)}`;
     }
   }
 
@@ -380,7 +376,7 @@
     try {
       importMessage = describeImport(await importJson(file));
     } catch (error) {
-      importMessage = `Importeren mislukt: ${error instanceof Error ? error.message : error}`;
+      importMessage = `Importeren mislukt: ${errorText(error)}`;
     }
   }
 
@@ -388,11 +384,13 @@
   let withAudio = $state(false);
 
   let exportMessage = $state('');
+  let exportFailed = $state(false);
 
   async function exportData() {
     const date = new Date().toISOString().slice(0, 10);
     const suffix = withAudio ? '-met-opnames' : '';
     exportMessage = '';
+    exportFailed = false;
     try {
       const saved = await saveFile(
         await exportAllJson({ withAudio }),
@@ -400,7 +398,8 @@
       );
       if (saved && saved.folder) exportMessage = `Opgeslagen in ${saved.folder}.`;
     } catch (error) {
-      exportMessage = `Exporteren mislukt: ${error instanceof Error ? error.message : error}`;
+      exportMessage = `Exporteren mislukt: ${errorText(error)}`;
+      exportFailed = true;
     }
   }
 </script>
@@ -921,7 +920,7 @@
       Alle gegevens exporteren (JSON)
     </button>
     {#if exportMessage}
-      <p class="message error">{exportMessage}</p>
+      <p class="message" class:error={exportFailed}>{exportMessage}</p>
     {/if}
     <label class="btn secondary block file">
       Sessies importeren (JSON)
@@ -938,18 +937,6 @@
 </details>
 
 <style>
-  label:not(.check, .file) {
-    display: grid;
-    gap: 0.25rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--muted);
-  }
-
-  label input {
-    font-weight: 400;
-  }
-
   .testers {
     margin: 0;
     padding: 0;

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { t } from './i18n';
-  import { dateYearTimeFormat } from './format';
+  import { dateYearTimeFormat, errorText } from './format';
   import { getDisplayName, setDisplayName } from './api';
   // Delen met de ontwikkelaar aan/uit, met of zonder opnames, en handmatig
   // versturen. Zie share.ts; de eerste keuze vraagt het welkom (of anders het hoofdscherm).
@@ -42,7 +42,7 @@
     } catch (error) {
       nameStatus = 'error';
       nameMessage = t('settings.saveFailed', {
-        error: String(error instanceof Error ? error.message : error),
+        error: errorText(error),
       });
     }
   }
@@ -65,7 +65,7 @@
     } catch (error) {
       shareStatus = 'error';
       shareMessage = t('share.failed', {
-        error: String(error instanceof Error ? error.message : error),
+        error: errorText(error),
       });
     }
   }
