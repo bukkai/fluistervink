@@ -48,6 +48,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         '"Probeer het eens" in het welkom zegt niets meer over trillen op een toestel dat niet trilt, zoals een laptop.',
       ],
       Inspreken: [
+        '"Twee duiven", "een meesje", "spechten" of "musjes" zonder soort wordt een onzekere waarneming, met de gewone tuinsoorten om uit te kiezen (bij duif: houtduif, stadsduif of Turkse tortel). Eerder werd het "Vogel onbekend".',
         'Wacht een uitspraak omdat Fluistervink het even druk heeft of gepauzeerd is, dan staat dat er, in plaats van "Geen bereik". Hij gaat later vanzelf door.',
         'Een uitspraak die je inspreekt net als de vorige klaar is, wordt meteen verwerkt. Soms bleef hij liggen tot je weer iets insprak.',
         'Blijft het verwerken van een uitspraak steeds hangen, dan staat hij na drie keer bij "mislukt", met de opname bewaard, in plaats van het eindeloos opnieuw te proberen.',

@@ -75,8 +75,10 @@ const GROUPS = [
     // vroeger soort 67, zie REPLACED in src/lib/vocab.ts), verzamelsoorten voor
     // "een vogel" en "KBV" (klein bruin vogeltje), die zeldzaamheid 0 hebben, en
     // Vale Pijlstormvogel ("vaaltje"; in de bron een ondersoort, zeer zeldzaam,
-    // maar jaarlijks langs de kust).
-    extraIds: [255102, 18926, 1003144, 369],
+    // maar jaarlijks langs de kust). Duif, Specht, Mees en Mus onbekend: de
+    // woorden van beginners in de tuintelling ("twee spechten", "een duifje"),
+    // anders werd het Vogel onbekend (testset 25 nov).
+    extraIds: [255102, 18926, 1003144, 369, 643156, 643161, 643256, 643341],
     names: { 1003144: 'Zangvogel onbekend', 255102: 'Bonte Kraai' },
   },
   {
