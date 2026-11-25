@@ -43,6 +43,9 @@ export const CHANGELOG: ChangelogEntry[] = [
         'In het bestand voor eBird staat het land alleen nog als de plek zeker in Nederland, België of Spanje ligt; anders laat de app het leeg (de plek staat er met coördinaten in). Eerder stond er altijd Nederland.',
         'Staat er een soort in een sessie die de app na een update niet meer kent, dan meldt de export dat, in plaats van hem stil over te slaan.',
       ],
+      'Back-up': [
+        'Een back-up met veel opnames lukt nu ook, zonder dat de app vastloopt of sluit. In de Android-app vanaf versie 0.8.',
+      ],
       'Over de app': [
         'De uitleg zegt nu hoe het trilt als je met het scherm uit opneemt.',
         '"Probeer het eens" in het welkom zegt niets meer over trillen op een toestel dat niet trilt, zoals een laptop.',
