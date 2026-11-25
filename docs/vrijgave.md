@@ -41,8 +41,11 @@ Elk met een eigen schakelaar. De volgorde na de lancering staat in `docs/roadmap
 Met "scherm uit" aan start en stopt ook de knop op de oortjes een opname. Daarvoor claimt de app de mediaknop met een kort stil geluid.
 
 - **Soort:** native (vanaf v0.7) en web. Hangt af van de keuze "Opnemen met het scherm uit" (v0.7).
-- **Bekend probleem:** bij een koptelefoon met twee apparaten (Sony XM5) stopt de muziek van het andere apparaat, en de koptelefoon stuurt zelf een pauzetoets die als druk telde. Mogelijk ook de reden dat de gesproken bevestiging niet klonk.
-- **Nog testen:** de proef in #372, met de optie aan en uit (`draaiboek-testen.md`, 1.5). Dan beslissen: alleen claimen als er niets speelt, of de knop alleen voor wie hem aanzet.
+- **Getest 25 nov** (`draaiboek-testen.md`, 1.5 en 1.9, Sony XM5, Speak-to-Chat uit):
+  - Met `oortjesKnop` uit claimt de app niets (geen `screen_off_knop_claim`), de muziek op de laptop blijft spelen, de volumeknop werkt met het scherm uit, en de gesproken bevestiging is te horen (de laptopmuziek pauzeert 2–3 s, acceptabel). Het wegvallen van de stem op 24 nov kwam dus door het claimen.
+  - Met `oortjesKnop` aan werkt de knop alleen als geen andere app de mediaknop heeft: muziek op de laptop, of een muziek- of podcastapp die op de telefoon nog open staat (ook als hij niet speelt), pakt de druk.
+  - De spookdrukken blijven met Speak-to-Chat uit: telkens een `KEYCODE_MEDIA_PAUSE` 4,5–4,7 s na het claimen (`sindsClaimMs`), en een druk als je de muziek op de laptop pauzeert of start. De koptelefoon geeft de toestand van het andere apparaat door als toets. Speak-to-Chat was het dus niet.
+- **Voorstel:** de knop alleen voor wie hem zelf aanzet (keuze, standaard uit, met de uitleg dat een muziek- of podcastapp hem kan afpakken). Native, bij een volgende app-versie: een mediatoets binnen ~6 s na het claimen negeren. Wie een betrouwbare knop wil: het sluiterknopje (volume omhoog) of de volumeknop.
 - **Lanceren:** als aparte keuze bij Instellingen ("Ook de knop op de oortjes"), standaard uit.
 
 ### Microfoon van de oortjes (`oortjesMicrofoon`, #267)

@@ -8,67 +8,15 @@ Op de beta, met de Android-app, tenzij er iets anders staat. Vink af wat werkt; 
 
 ## Voorbereiding
 
-- [ ] Debug-APK `apk/fluistervink-0.7+38-native-opruimen.apk` (#390, native v0.8) op de telefoon zetten. Hij heeft ook de oortjesknop (#372) en de oortjesmicrofoon (#267).
-- [ ] XM5: Speak-to-Chat **uit** in de Sony-app (de spookdrukken van 23 nov; zie 1.9).
 - [ ] Accu van telefoon en oortjes noteren bij het begin van deel 2 en 3.
 
 ## 1. Thuis aan tafel
 
-**1.1 Stop tijdens het inspreken (#366)**
-
-- [ ] Inspreken ("twee merels") en tijdens het praten op Stop. Goed als: de uitspraak staat in de gestopte sessie en is even later verwerkt.
-
-**1.2 Twijfel blijft staan (#388)**
-
-- [ ] "Misschien een grauwe kiekendief" (wordt onzeker), dan "nog één erbij". Goed als: aantal 2 en nog steeds onzeker.
-
-**1.3 Nalopen met dubbele tikken (#389)**
-
-- [ ] Een sessie met drie onzekere waarnemingen, één voor één nalopen en twee keer snel op Klopt tikken. Goed als: alleen de eerste is zeker, de tweede staat er nog.
-- [ ] Hetzelfde in de lijst met Weg: de rij die omhoogschuift, blijft staan.
-- [ ] Een niet-begrepen uitspraak, twee keer snel op "Maak er een waarneming van": één waarneming.
-- [ ] Een sessie op "klaar voor waarneming.nl" zetten, dan voortzetten. Goed als: hij staat niet meer klaar.
-
-**1.4 Opnemen met het scherm uit, snel achter elkaar (#390, debug-APK)**
-
-- [ ] "Opnemen met het scherm uit" aan. Met de volumeknop opnemen, stoppen en meteen opnieuw starten. Goed als: beide opnames komen aan.
-- [ ] Een trektelling starten en stoppen vanuit de app: stukken komen aan, geen fout.
-
-**1.5 Knop op de oortjes (#372), met de XM5**
-
-- [ ] `oortjesKnop` **uit**, muziek op het andere apparaat (laptop), sessie starten. Goed als: de muziek blijft spelen; de volumeknop start en stopt met het scherm uit; in het log geen `screen_off_knop_claim`, een mediatoets als `knop_uit`.
-- [ ] Gesproken bevestiging aan (nog steeds `oortjesKnop` uit): is hij te horen? Dit beslist of de stem door het claimen van de knop wegviel.
-- [ ] `oortjesKnop` **aan**: de knop op de koptelefoon start en stopt een opname, zoals vroeger.
-- [ ] Beslissen (`docs/vrijgave.md`): alleen claimen als er niets speelt, of de knop alleen voor wie hem aanzet.
-
-**1.6 Tuintelling (ontwikkeloptie `tuintelling`; #347, #375, #377, #379)**
-
-- [ ] Een korte tuintelling (vijf minuten): "twee merels", later "nu nog maar één merel". Goed als: de kaart zegt Merel 2.
-- [ ] Een vogel zonder gedrag is ter plaatse, niet overvliegend (#347).
-- [ ] Volumeknop begint, pauzeert en hervat het tellen (#347).
-- [ ] Na afloop is de export ingeklapt: "Ook doorgeven aan waarneming.nl of eBird?" (#349).
-- [ ] Het welkom in een privévenster (Chrome) met de ontwikkeloptie aan (#377).
-
-**1.7 Developer (#369–#371)**
-
-- [ ] De app met de code openen op elk eigen toestel (dat markeert hem als eigen).
-- [ ] Installaties → **Ongebruikte opruimen**; daarna de overgebleven `app-…` van jezelf op "Van mij". Goed als: de lijst werkt meteen bij en de trechter op Statistieken zakt.
-- [ ] Kosten: bedragen rechts op één regel, "Meer" als rijen.
+Gedaan op 25 nov; wat werkte is weggehaald. Uitslag van de knop op de oortjes (1.5 en 1.9) in `docs/vrijgave.md`, Knop op de oortjes.
 
 **1.8 Stabiele versie (`fluistervink.nl`, wat testers nu hebben)**
 
-- [ ] De stabiele Android-app opent meteen de app (`/app/`), niet de voorpagina; een geïnstalleerde PWA ook (#326).
-- [ ] `/privacy` en `/privacy-en` lezen, en `#privacy` in de app: kort bovenaan, details ingeklapt, klopt met wat er gedeeld wordt (#368, #384).
-- [ ] Een tuintelling (de knop hoort er buiten het telweekend niet te zijn), een waarneming openen, de regel onder de knop is weg.
-
-**1.9 Spookdrukken van de XM5 (lage prioriteit)**
-
-- [ ] Een avond met Speak-to-Chat uit en "Opnemen met het scherm uit" aan, koptelefoon op. Goed als: de opname gaat niet meer vanzelf aan en uit (log: geen `KEYCODE_MEDIA_PAUSE` als druk). Verdwijnt het, dan een zin in de uitleg.
-
-**1.10 Easter eggs (#350), als je eraan denkt**
-
-- [ ] Na een wespendief "nee, toch een buizerd": de buizerd springt in beeld, eigen tril een seconde na de gewone.
-- [ ] "Een appelvink, was een lifer": slingers en de vink met feesthoedje.
+- [ ] Een nieuwe installatie van de stabiele Android-app opent meteen de app (`/app/`), niet de voorpagina; een geïnstalleerde PWA ook (#326).
 
 ## 2. Buiten: een wandeling of fietsrit
 
