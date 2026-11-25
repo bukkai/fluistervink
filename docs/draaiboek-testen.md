@@ -123,9 +123,47 @@ Voor de regel "Leuk met kinderen" op de tuintellingpagina. Liefst een jong en ee
 
 ## 5. iPhone (weekend; #360, `docs/plan-ios.md` fase 1)
 
-- [ ] De iOS-schil op de eigen iPhone zetten (Xcode, gratis account).
-- [ ] Trillen: opgeslagen (kort), onzeker (kort-lang), niet begrepen (twee). Voelbaar en te onderscheiden?
-- [ ] Opnemen en GPS zonder tweede vraag, zoals in de simulator.
+Een uur aan tafel, daarna een korte wandeling. Nodig: de Mac met Xcode (26.5 staat erop), de iPhone, een kabel die data doet, je Apple-account.
+
+**A. De Mac klaarzetten** (vijf minuten)
+
+- [ ] In de map van het project: `git pull`, `npm ci`, `npm run build` en `npx cap sync ios` (zonder build mist `dist/client`, dat Capacitor als terugval meelevert).
+- [ ] `xcode-select -p` moet `/Applications/Xcode.app/Contents/Developer` geven; anders `sudo xcode-select -s /Applications/Xcode.app`.
+- [ ] Xcode → Settings → Accounts → + → Apple ID, aanmelden. Een gratis account is genoeg; er verschijnt een "Personal Team".
+
+**B. De iPhone koppelen** (tien minuten, eenmalig)
+
+- [ ] iPhone ontgrendelen en met de kabel aansluiten; op de iPhone "Vertrouw deze computer" en de toegangscode.
+- [ ] In Xcode: Window → Devices and Simulators. Wacht tot de iPhone klaar is ("Preparing…" kan even duren).
+- [ ] Pas nu staat op de iPhone Instellingen → Privacy en beveiliging → **Ontwikkelaarsmodus** (helemaal onderaan). Aanzetten, de iPhone herstart, daarna "Zet aan" bevestigen.
+
+**C. De app erop zetten**
+
+- [ ] `npx cap open ios`. Links het project App, target App, tab Signing & Capabilities: "Automatically manage signing" aan, Team = je Personal Team. Komt er een rode melding dat `nl.hegmus.fluistervink` niet beschikbaar is: zet het bundle ID tijdelijk op `nl.hegmus.fluistervink.proef` en commit dat niet.
+- [ ] Bovenin bij het doel je iPhone kiezen (niet een simulator) en Run ▶. De eerste build duurt een paar minuten.
+- [ ] Opent hij niet ("Niet-vertrouwde ontwikkelaar"): op de iPhone Instellingen → Algemeen → VPN en apparaatbeheer → je Apple-account → Vertrouw. Daarna opnieuw Run ▶ of de app op het beginscherm openen.
+- [ ] Let op: met een gratis account werkt de app 7 dagen. Daarna opnieuw aansluiten en Run ▶; de gegevens blijven staan.
+
+**D. Aan tafel**
+
+- [ ] Het welkom doorlopen: één vraag voor de microfoon, één voor de locatie, beide in het Nederlands. Daarna "Microfoon: in orde / Locatie: in orde".
+- [ ] Instellingen: de versie staat er (bijv. "0.8+… (hash)"), niet leeg.
+- [ ] Sessie starten, de kopbalk staat onder het Dynamic Island, de knop boven de thuisbalk. Locatie ±… m.
+- [ ] Zet in de instellingen van de iPhone (Geluiden en haptiek) "Systeemhaptiek" aan, anders voel je misschien niets.
+- [ ] **Trillen**, telkens telefoon in de hand, zonder te kijken:
+  - "een vink" → opgeslagen: één korte tril.
+  - "een duif" → onzeker: kort, lang (sinds #414 wordt een kale "duif" onzeker).
+  - "hallo, hoe gaat het" → niet begrepen: twee korte.
+  - Vliegtuigmodus aan, "een merel" → wacht op bereik: lang, kort. Vliegtuigmodus uit; komt de waarneming binnen?
+- [ ] Zijn de vier zonder te kijken uit elkaar te houden? Te zwak, te kort, te lang? Opschrijven per patroon (dat is de uitkomst van fase 1).
+- [ ] App wegvegen en weer openen: de sessie loopt door, geen nieuwe vraag om de locatie.
+
+**E. Korte wandeling** (half uur)
+
+- [ ] Een gewone sessie met een paar soorten, ook een correctie ("nee, keep in plaats van vink"). Werkt het zoals in Safari?
+- [ ] Voel je de tril in de jaszak of alleen in de hand?
+- [ ] Proef voor fase 2 (scherm uit): inspreken, direct het scherm op slot. Komt de tril nog, en staat de waarneming er bij het ontgrendelen? Waarschijnlijk niet; dat is ook een uitkomst.
+- [ ] Stoppen en delen, met opnames: het log laat zien wat er op de achtergrond gebeurde (`npm run feedback`).
 
 ## Niet in dit draaiboek
 
