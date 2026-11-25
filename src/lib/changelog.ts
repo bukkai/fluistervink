@@ -31,6 +31,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026-11-26',
+    topics: {
+      Inspreken: [
+        'Een uitspraak die je inspreekt net als de vorige klaar is, wordt meteen verwerkt. Soms bleef hij liggen tot je weer iets insprak.',
+        'Blijft het verwerken van een uitspraak steeds hangen, dan staat hij na drie keer bij "mislukt", met de opname bewaard, in plaats van het eindeloos opnieuw te proberen.',
+      ],
+      'Android-app': [
+        'Opnames met het scherm uit die de app nog niet had, komen binnen zodra je de app opent, ook als je geen nieuwe sessie start.',
+      ],
+    },
+  },
+  {
     date: '2026-11-25',
     topics: {
       Nalopen: [

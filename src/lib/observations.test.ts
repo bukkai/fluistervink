@@ -1161,6 +1161,62 @@ describe('wachtrij', () => {
     expect((await db.utterances.get(id))?.status).toBe('done');
   });
 
+  it('mislukt na drie keer onderbroken, met de opname bewaard; opnieuw geeft weer drie kansen', async () => {
+    model.respond = () => toolResponse(['add_observation', { species_id: VINK, count: 1 }]);
+    const id = await queue('vink');
+    // Twee keer bleef hij hangen (app gecrasht tijdens het verwerken)
+    await db.utterances.update(id, { status: 'processing', interrupted: 2 });
+    await processQueue();
+    expect(await db.utterances.get(id)).toMatchObject({
+      status: 'failed',
+      interrupted: 3,
+      error: 'Het verwerken werd steeds onderbroken. De opname is bewaard.',
+    });
+    expect(interpret).not.toHaveBeenCalled();
+
+    await retry(id);
+    await vi.waitFor(async () => expect((await db.utterances.get(id))?.status).toBe('done'));
+    expect((await db.utterances.get(id))?.interrupted).toBeUndefined();
+    expect(await db.observations.count()).toBe(1);
+  });
+
+  it('telt elke onderbreking, en gaat tot de derde gewoon door', async () => {
+    model.respond = () => toolResponse(['add_observation', { species_id: VINK, count: 1 }]);
+    const id = await queue('vink');
+    await db.utterances.update(id, { status: 'processing', interrupted: 1 });
+    await processQueue();
+    expect(await db.utterances.get(id)).toMatchObject({ status: 'done', interrupted: 2 });
+  });
+
+  it('een uitspraak die binnenkomt terwijl de wachtrij afrondt, blijft niet liggen', async () => {
+    model.respond = () => toolResponse(['add_observation', { species_id: VINK, count: 1 }]);
+    const first = await queue('vink');
+    let late: string | undefined;
+    // Na de laatste uitspraak kijkt de wachtrij nog naar de sessies (naam,
+    // gebieden). Precies dan een nieuwe uitspraak, die processQueue aanroept.
+    const get = db.sessions.get.bind(db.sessions);
+    const spy = vi.spyOn(db.sessions, 'get').mockImplementation(((key: string) => {
+      const result = get(key);
+      if (!late) {
+        return db.utterances.get(first).then(async (u) => {
+          if (u?.status === 'done' && !late) {
+            late = await queue('nog een vink');
+            void processQueue();
+          }
+          return result;
+        });
+      }
+      return result;
+    }) as typeof db.sessions.get);
+    try {
+      await processQueue();
+    } finally {
+      spy.mockRestore();
+    }
+    expect(late).toBeDefined();
+    expect((await db.utterances.get(late!))?.status).toBe('done');
+  });
+
   it('een uitspraak waarbij de database faalt, houdt de rest niet op', async () => {
     // Zoals Safari met een Blob uit IndexedDB (28 okt)
     model.respond = () => toolResponse(['add_observation', { species_id: VINK, count: 1 }]);
@@ -1310,6 +1366,26 @@ describe('netwerk weg', () => {
     await vi.waitFor(async () => expect((await db.utterances.get(id))?.status).toBe('done'));
     expect(transcribeCalls).toBe(1);
     expect(await db.observations.count()).toBe(1);
+  });
+
+  it('spraakherkenning van een verouderde poging schrijft geen transcript', async () => {
+    const id = await record();
+    // Terwijl de spraakherkenning loopt, neemt een ander exemplaar het over
+    // (deze stond bevroren): die poging telt dan, deze niet meer
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        transcribeCalls++;
+        await db.utterances.update(id, { attempts: 5 });
+        return new Response(JSON.stringify({ text: 'Roepje vink.' }), { status: 200 });
+      }),
+    );
+    await processQueue();
+    const u = await db.utterances.get(id);
+    expect(transcribeCalls).toBe(1);
+    expect(u?.transcript).toBeUndefined();
+    expect(u?.attempts).toBe(5);
+    expect(interpret).not.toHaveBeenCalled();
   });
 
   it('plafond per dag: opname blijft bewaard, het sessiescherm hoort het', async () => {
