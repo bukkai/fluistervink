@@ -97,12 +97,11 @@ Eén sessie "Testset lastig". Achteraf bij het nalopen het juiste label zetten, 
 
 Een vaste plek (vensterbank of vogelhut), `schermUit` aan, `oortjesMicrofoon` uit, niet aan de lader. Af en toe een zin inspreken.
 
-**3.1 Eerste telling, een uur (zoals nu)**
+**3.1 Eerste telling, een uur (zoals nu)** — gedaan 26 nov, 22:54–23:49, met een podcast aan
 
-- [ ] Start- en stoptril met het scherm uit, **met een podcast aan** op de telefoon.
-- [ ] Na een kwartier een paar keer het scherm aan, de lijst bekijken, weer uit. Goed als: geen gat en geen dubbel stuk rond die momenten.
-- [ ] Let op de reden bij onzeker: was die te lang (zoals op 22 nov)?
-- [ ] Eindtijd en accu noteren. Log: `trektel_native_end` (`accuBegin`, `accuEind`), `trektel_stuk` met `hidden: false`, geen `page_frozen`.
+Uitslag uit het log: 55 minuten, 54 stukken zonder gat of dubbel stuk, ook rond de vijf keer scherm aan; alle stukken `hidden: false` en binnen 4–17 s verwerkt (mediaan 7 s). Accu 62 → 51% (`trektel_native_end`), ruwweg 12% per uur. De acht `page_frozen` hebben geen duur (een `resume` zonder `freeze`, geen stilstand). Redenen bij onzeker kort genoeg. De Android-terugknop stopte de telling zonder waarschuwing; de twee stukken van dat moment kwamen via `wachtend` toch binnen.
+
+- [ ] Start- en stoptril met het scherm uit, met een podcast aan: niet in het log te zien, nog bevestigen.
 
 **3.2 Tweede telling, even lang, zonder zichtbare WebView**
 
