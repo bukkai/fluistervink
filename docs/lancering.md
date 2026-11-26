@@ -12,7 +12,7 @@ Een persoonlijk ontwikkelaarsaccount dat na november 2023 is aangemaakt, mag pas
 - Nieuwe versies tijdens de test mogen: de teller hoort bij de testers, niet bij de versie. Releases in de gesloten test worden wel door Google beoordeeld (uren tot dagen), de interne test niet.
 - Het dashboard in de Play Console toont de stand.
 
-Grove planning: gesloten test vanaf ~10 nov, aanvragen ~24 nov, openbaar rond begin december.
+Grove planning: gesloten test vanaf ~10 nov, aanvragen ~24 nov, openbaar rond begin december. Bijgesteld op 26 nov: de teller stond op 2 dagen (met precies 12 testers kostte één afmelding de hele telling), dus aanvragen op zijn vroegst ~8 dec en openbaar half december. Testers aanvullen tot 15 à 20.
 
 ## 1. Nu (vóór en tijdens de start van de gesloten test)
 
@@ -71,6 +71,7 @@ Op volgorde (25 nov). Wat de proxy en Play al hebben: daglimiet van het model pe
 **Vóór de aanvraag**
 
 - [ ] v0.8 (getagd 25 nov, AAB's in `apk/v0.8/`): de beta in de interne test, back-up nagelopen (25 nov); nog de stabiele naar de gesloten test, zodat Google hem beoordeeld heeft. Dezelfde AAB gaat straks naar Productie.
+- [ ] Testers aanvullen tot 15 à 20 op de e-maillijst van de gesloten test (26 nov: met precies 12 begon de teller opnieuw), en in de Console nagaan dat de teller doorloopt.
 - [ ] Feedback ophalen (`npm run feedback -- pull` en `notes`) en de testset, voor het verhaal bij de aanvraag (punt 4).
 - [ ] Productietoegang aanvragen in de Play Console (na 14 dagen, als het dashboard het toestaat). Concept voor de vragenlijst, de release notes en de bedankmail: `docs/play-store/productietoegang.md`; de cijfers tussen `[ ]` eerst bijwerken.
 

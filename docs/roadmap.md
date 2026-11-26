@@ -6,7 +6,7 @@ Eén overzicht van waar Fluistervink naartoe gaat, met verwijzingen naar de plan
 
 Werkdefinitie (13 okt): een vogelaar die je niet persoonlijk begeleidt, kan de app installeren, een hele wandeling gebruiken zonder naar het scherm te kijken, en thuis zonder gedoe naar waarneming.nl exporteren.
 
-**Nu:** de lancering, `docs/lancering.md`: gesloten test met minstens 12 testers gedurende 14 dagen, dan productietoegang aanvragen; openbaar rond begin december. Uploaden en ondertekenen: `docs/google-play.md`; winkelvermelding: `docs/play-store/README.md`.
+**Nu:** de lancering, `docs/lancering.md`: gesloten test met minstens 12 testers gedurende 14 dagen, dan productietoegang aanvragen (op zijn vroegst ~8 dec: de teller begon rond 24 nov opnieuw); openbaar half december. Uploaden en ondertekenen: `docs/google-play.md`; winkelvermelding: `docs/play-store/README.md`.
 
 De vier sporen van 13 okt, met de stand op 12 nov:
 
@@ -18,7 +18,7 @@ De vier sporen van 13 okt, met de stand op 12 nov:
 ## Komende stappen (22 nov)
 
 1. **Proeven op de telefoon:** alles wat nog moet in `docs/draaiboek-testen.md` (thuis, buiten en de telling deels gedaan op 22–24 nov).
-2. **Tot ongeveer 1 dec:** de aanvraag voorbereiden (`docs/lancering.md`, punt 4): feedback van de testers en de testset, de afvinklijst bijwerken, de laatste release een paar dagen laten staan.
+2. **Tot ongeveer 8 dec:** de aanvraag voorbereiden (`docs/lancering.md`, punt 4): feedback van de testers en de testset, de afvinklijst bijwerken, de laatste release een paar dagen laten staan.
 3. **Na de goedkeuring:** de stabiele AAB naar Productie; dan opnemen met het scherm uit, de microfoon delen en het wake word (geparkeerd sinds 19 nov, #290), eerst als proef die alleen logt.
 
 De stand per plan staat in `docs/README.md`.
