@@ -70,8 +70,10 @@ Op volgorde (25 nov). Wat de proxy en Play al hebben: daglimiet van het model pe
 
 **Vóór de aanvraag**
 
-- [ ] v0.8 (getagd 25 nov, AAB's in `apk/v0.8/`): de beta in de interne test, back-up nagelopen (25 nov); nog de stabiele naar de gesloten test, zodat Google hem beoordeeld heeft. Dezelfde AAB gaat straks naar Productie.
-- [ ] Testers aanvullen tot 15 à 20 op de e-maillijst van de gesloten test (26 nov: met precies 12 begon de teller opnieuw), en in de Console nagaan dat de teller doorloopt.
+- [x] v0.8 (getagd 25 nov, AAB's in `apk/v0.8/`): de beta in de interne test, back-up nagelopen (25 nov); de stabiele op 26 nov naar de gesloten test, zodat Google hem beoordeeld heeft. Dezelfde AAB gaat straks naar Productie.
+- [ ] Testers aanvullen tot 15 à 20 (26 nov: met precies 12 begon de teller opnieuw), en in de Console nagaan dat de teller doorloopt.
+  - Een track heeft óf een e-maillijst óf een Google Group. Daarom sinds 26 nov een tweede gesloten track **"Stabiel – Sovon"** met de stabiele v0.8 en de groep `fluistervink-sovon` (iedereen mag lid worden), voor wie zich op de Landelijke Sovon-dag (28 nov) aanmeldt. Aanmelden: lid worden van de groep (`https://groups.google.com/g/fluistervink-sovon`), dan de app uit Play (`https://play.google.com/store/apps/details?id=nl.hegmus.fluistervink`). Printkaartje met QR-codes: `docs/play-store/sovon-kaartje.html`.
+  - Niet zeker of Google de testers van beide tracks samen telt voor de 12. Na de eerste aanmelding in de Console kijken of het aantal aangemelde testers van 12 omhoog gaat. Zo niet: de adressen uit de ledenlijst van de groep ook op de e-maillijst van "Stabiel" zetten (extra testers zetten de teller niet terug).
 - [ ] Feedback ophalen (`npm run feedback -- pull` en `notes`) en de testset, voor het verhaal bij de aanvraag (punt 4).
 - [ ] Productietoegang aanvragen in de Play Console (na 14 dagen, als het dashboard het toestaat). Concept voor de vragenlijst, de release notes en de bedankmail: `docs/play-store/productietoegang.md`; de cijfers tussen `[ ]` eerst bijwerken.
 
@@ -87,7 +89,7 @@ Op volgorde (25 nov). Wat de proxy en Play al hebben: daglimiet van het model pe
 **De dagen erna**
 
 - [ ] De volgende ochtend in Workers Logs nagaan of de cron van #401 gelopen is.
-- [ ] Testers een bedankmail, en de gesloten test "Stabiel" uitfaseren (punt 6).
+- [ ] Testers een bedankmail, en de gesloten tests "Stabiel" en "Stabiel – Sovon" uitfaseren (punt 6).
 - [ ] Kwaliteitsronde op de beta (`docs/kwaliteitsronde.md`), direct na de release naar stable.
 - [ ] De eerste weken Statistieken en Kosten op Developer volgen; bij 80% van het dagbudget komt er een bericht in Discord (`docs/draaiboek-terugdraaien.md`, C).
 - [ ] Bekendheid geven in stappen, eerst in eigen kring: `docs/plan-marketing.md`.
@@ -98,7 +100,7 @@ Op volgorde (25 nov). Wat de proxy en Play al hebben: daglimiet van het model pe
 
 Plan: `docs/plan-testers.md`.
 
-- [ ] De gesloten test "Stabiel" uitfaseren: geen nieuwe releases meer, lijst leeg, de testers een bedankmail (stap 1 van het plan).
+- [ ] De gesloten tests "Stabiel" en "Stabiel – Sovon" uitfaseren: geen nieuwe releases meer, lijst leeg en groep `fluistervink-sovon` opheffen, de testers een bedankmail (stap 1 van het plan).
 - [ ] Google Group (alleen mededelingen) en een nieuwe gesloten track "Beta" met de beta-AAB (stap 2).
 - [ ] **Uitproberen met het tweede account**, zodra "Beta" er is: eerst via de link van de interne test "Programma verlaten" (het account is daar sinds 18 nov tester), de app verwijderen en Fluistervink uit productie installeren. Dan lid worden van de groep, tester worden van "Beta" en kijken of Play de app bijwerkt naar de beta of dat verwijderen nodig is. Ook nagaan of de back-up van stabiel goed terugkomt in de beta. De uitkomst bepaalt de stappen op de kaart (stap 4 van het plan).
 

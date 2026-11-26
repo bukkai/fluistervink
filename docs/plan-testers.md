@@ -23,7 +23,9 @@ Dit hoeft niet langzaam: de gesloten test en productie hebben dezelfde stabiele 
 3. De testers een korte mail: de test is klaar, dank je wel, je hoeft niets te doen, de app blijft gewoon werken. Wie wil blijven testen: later komt er een uitnodiging in de app.
 4. `docs/lancering.md` en `NOTES.md` bijwerken; de feedback uit Discord blijft in `testset/feedback/discord/`.
 
-Hergebruik "Stabiel" **niet** voor de nieuwe testers: wie zich daar ooit heeft aangemeld, zou dan zonder het te vragen de beta krijgen.
+Hetzelfde geldt voor de tweede gesloten track "Stabiel – Sovon" (sinds 26 nov, groep `fluistervink-sovon`, voor de testers van de Sovon-dag): geen nieuwe releases meer, de testers dezelfde mail, de groep opheffen.
+
+Hergebruik "Stabiel" en "Stabiel – Sovon" **niet** voor de nieuwe testers: wie zich daar ooit heeft aangemeld, zou dan zonder het te vragen de beta krijgen.
 
 ## Stap 2: een nieuwe track met een Google Group
 
