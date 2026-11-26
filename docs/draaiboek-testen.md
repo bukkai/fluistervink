@@ -99,9 +99,7 @@ Een vaste plek (vensterbank of vogelhut), `schermUit` aan, `oortjesMicrofoon` ui
 
 **3.1 Eerste telling, een uur (zoals nu)** — gedaan 26 nov, 22:54–23:49, met een podcast aan
 
-Uitslag uit het log: 55 minuten, 54 stukken zonder gat of dubbel stuk, ook rond de vijf keer scherm aan; alle stukken `hidden: false` en binnen 4–17 s verwerkt (mediaan 7 s). Accu 62 → 51% (`trektel_native_end`), ruwweg 12% per uur. De acht `page_frozen` hebben geen duur (een `resume` zonder `freeze`, geen stilstand). Redenen bij onzeker kort genoeg. De Android-terugknop stopte de telling zonder waarschuwing; de twee stukken van dat moment kwamen via `wachtend` toch binnen.
-
-- [ ] Start- en stoptril met het scherm uit, met een podcast aan: niet in het log te zien, nog bevestigen.
+Uitslag uit het log: 55 minuten, 54 stukken zonder gat of dubbel stuk, ook rond de vijf keer scherm aan; alle stukken `hidden: false` en binnen 4–17 s verwerkt (mediaan 7 s). Accu 62 → 51% (`trektel_native_end`), ruwweg 12% per uur. De acht `page_frozen` hebben geen duur (een `resume` zonder `freeze`, geen stilstand). Redenen bij onzeker kort genoeg. Start- en stoptril waren met de podcast aan goed te voelen. De Android-terugknop stopte de telling zonder waarschuwing; de twee stukken van dat moment kwamen via `wachtend` toch binnen.
 
 **3.2 Tweede telling, even lang, zonder zichtbare WebView**
 
