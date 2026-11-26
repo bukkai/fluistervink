@@ -71,7 +71,7 @@ De twaalf zinnen (dezelfde als op 24 nov, zodat de rondes te vergelijken zijn):
 - [ ] Tijdens een trektelling met `oortjesMicrofoon` aan één oortje in het doosje: één lange tril, de telling gaat verder met de telefoonmicrofoon.
 - [ ] Mobiele data even uit (niet wifi, buiten): lang-kort tril, na een minuut weer aan, alles komt binnen.
 
-**2.5 Opnames voor de testset (robuustheid #6, #7, #19; #157; tuintelling punt 10)**
+**2.5 Opnames voor de testset (robuustheid #6, #7, #19; #157)**
 
 Eén sessie "Testset lastig". Achteraf bij het nalopen het juiste label zetten, ook als dat "niets" is.
 
@@ -81,7 +81,6 @@ Eén sessie "Testset lastig". Achteraf bij het nalopen het juiste label zetten, 
 - [ ] **Verwijzing ver terug:** na minstens tien andere waarnemingen "die buizerd van een kwartier geleden vloog naar het oosten". Verwacht: de buizerd van toen wordt overvliegend, geen nieuwe.
 - [ ] **Latijnse namen:** "Fringilla coelebs", "Buteo buteo", "Erithacus rubecula". Verwacht: vink, buizerd, roodborst.
 - [ ] **"Drie houtduiven", dan "nee, het waren duiven".** Verwacht: houtduif blijft of wordt een duif, niet Vogel onbekend.
-- [ ] **Beginnerswoorden:** "een duif", "twee mussen", "een mees", "een kraai", "een specht", en verkleinwoorden ("twee musjes", "een meesje"). Nodig voor de tuintelling.
 - [ ] Een paar uit de tweede tabel van "Uitspraken om te proberen" in `docs/plan-robuustheid.md`.
 
 **2.6 Gebeld worden in een gewone opname (robuustheid #12)**
