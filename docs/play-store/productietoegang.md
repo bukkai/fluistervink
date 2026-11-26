@@ -30,7 +30,7 @@ Keuze: redelijk makkelijk (het midden van de schaal of één erboven). Toelichti
 >
 > - Speech recognition sometimes confused similar bird names.
 > - Importing the export file into waarneming.nl failed at first, because some terms were in English.
-> - Testers wanted to use the app without holding the phone: phone in a pocket, on a bike, with gloves.
+> - Testers wanted to use the app without holding the phone: phone in a pocket, on a bike, with gloves. A tester who counts migrating birds from a fixed spot found the one-minute limit per recording too short and suggested continuous listening in short chunks; another wanted to log birds by voice while cycling to work, with the screen off.
 > - Requests for scientific names, adding a location to a sighting ("buzzard 100 m to the east"), copying an observation, deleting recordings, and keeping the screen on during a session.
 > - Hiding the location of sensitive species, as waarneming.nl allows.
 > - Privacy questions about what happens to the voice recordings.
@@ -56,6 +56,7 @@ Keuze: de laagste reeks (tot 10.000). Bekendheid komt in stappen, eerst in eigen
 
 > - Speech recognition: switched to a newer transcription model chosen on a test set of real field recordings from several speakers, and added common bird nicknames. Unclear names now become "uncertain" with two or three candidate species to choose from, instead of a wrong species.
 > - Export: the file for waarneming.nl now uses Dutch terms, and the import works. An eBird export was added.
+> - Migration count mode, built from a tester's suggestion: the microphone stays on and the app cuts the recording into chunks of about a minute, each processed as a separate note. The tester called it "really handy".
 > - Hands-free use: the volume button starts and stops a recording, also with the screen off and the phone in a pocket, and a migration count keeps recording with the screen off (an option in Settings).
 > - Added on request: scientific names, location in the sentence, copying an observation, deleting recordings, keeping the screen on, hiding or embargoing a sighting by voice, adjusting the location on a map.
 > - Reliability: a queue that waits for coverage and keeps the order, a backup in Settings, and recordings are never silently lost.
