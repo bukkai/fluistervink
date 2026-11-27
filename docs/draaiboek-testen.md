@@ -103,6 +103,8 @@ Uitslag uit het log: 55 minuten, 54 stukken zonder gat of dubbel stuk, ook rond 
 
 **3.2 Tweede telling, even lang, zonder zichtbare WebView**
 
+Eerste poging 27 nov 10:15, na 8 minuten gestopt: slecht verstaan, maar de opnames zelf zijn in orde (geen gaten, zelfde formaat). De spraak was 15–20 dB zachter dan bij 3.1; de telefoon lag waarschijnlijk verder weg. Opnieuw op 27 nov 's avonds, met de telefoon op dezelfde plek als bij 3.1.
+
 - [ ] Ontwikkeloptie **"Scherm uit: webcode laten slapen (accuproef)"** aan (Instellingen → In het veld; webcode, geen nieuwe app-versie). Log: `screen_off_on` met `zichtbaar: false`.
 - [ ] Een telling onder dezelfde omstandigheden als 3.1 (even lang, zelfde plek, podcast, oortjes en helderheid, niet aan de lader, ongeveer even vaak iets inspreken; welke vogels maakt niet uit). Verwacht: geen tril na een stuk, alles wordt pas verwerkt als het scherm aangaat. Het verschil in accu met 3.1 is wat de zichtbare WebView kost.
 - [ ] Daarna de optie weer uit.
