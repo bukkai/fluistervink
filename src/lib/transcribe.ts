@@ -114,6 +114,76 @@ const promptFor = (withGroups: boolean, language: Language = 'nl') =>
       ? PROMPT_WITH_GROUPS
       : PROMPT;
 
+// ---------------------------------------------------------------------------
+// Teruggegeven prompt. Bij een stuk met weinig of zachte spraak geeft de
+// spraakherkenning soms een stuk van de prompt terug als tekst: de
+// voorbeeldzinnen, of de hele soortenlijst (twee keer op 27 nov, in een
+// trektelling). Het model maakte er de eerste keer waarnemingen van.
+
+/** Zoveel delen van de prompt achter elkaar is geen spraak meer */
+const MIN_ECHO_PARTS = 8;
+
+const normalize = (part: string) =>
+  part
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim();
+
+/** Delen van een tekst tussen komma's en leestekens, met hun plek in de tekst */
+function partsOf(text: string): { part: string; start: number; end: number }[] {
+  return [...text.matchAll(/[^,.!?:;"\n]+/g)]
+    .map((m) => ({ part: normalize(m[0]), start: m.index, end: m.index + m[0].length }))
+    .filter((p) => p.part);
+}
+
+/** Per deel van de prompt de plekken waar het staat */
+function promptIndex(prompt: string): Map<string, number[]> {
+  const index = new Map<string, number[]>();
+  partsOf(prompt).forEach(({ part }, i) => index.set(part, [...(index.get(part) ?? []), i]));
+  return index;
+}
+
+const promptIndexes = new Map<string, Map<string, number[]>>();
+
+/**
+ * Haalt teruggegeven stukken prompt uit een transcript: een reeks van minstens
+ * `MIN_ECHO_PARTS` delen die in de prompt staan, in dezelfde volgorde. Zo'n
+ * reeks spreekt niemand in (zeker niet zonder aantallen, op de volgorde van de
+ * soortenlijst); wat ervoor of erna staat, blijft. `removed`: hoeveel delen
+ * eruit gingen (0 = niets teruggegeven).
+ */
+export function stripPromptEcho(text: string, prompt: string): { text: string; removed: number } {
+  let index = promptIndexes.get(prompt);
+  if (!index) promptIndexes.set(prompt, (index = promptIndex(prompt)));
+  const parts = partsOf(text);
+  const runs: { from: number; to: number }[] = [];
+  let run: { from: number; to: number; at: number } | undefined;
+  parts.forEach(({ part }, i) => {
+    const next = index.get(part)?.find((at) => run === undefined || at > run.at);
+    if (run && next !== undefined) {
+      run.to = i;
+      run.at = next;
+      return;
+    }
+    if (run && run.to - run.from + 1 >= MIN_ECHO_PARTS) runs.push(run);
+    const first = index.get(part)?.[0];
+    run = first === undefined ? undefined : { from: i, to: i, at: first };
+  });
+  if (run && run.to - run.from + 1 >= MIN_ECHO_PARTS) runs.push(run);
+  if (!runs.length) return { text, removed: 0 };
+  let rest = text;
+  for (const { from, to } of [...runs].reverse()) {
+    // Met de leestekens erachter, zodat er geen losse punt blijft staan
+    const end = parts[to].end + /^[\s,.!?:;"]*/.exec(rest.slice(parts[to].end))![0].length;
+    rest = rest.slice(0, parts[from].start) + rest.slice(end);
+  }
+  rest = rest.trim();
+  return {
+    text: /[\p{L}\p{N}]/u.test(rest) ? rest : '',
+    removed: runs.reduce((n, { from, to }) => n + to - from + 1, 0),
+  };
+}
+
 /** Korte hash van model en prompt, zoals bij de interpretatie. */
 export function transcribePromptVersionFor(
   withGroups = false,
@@ -127,6 +197,8 @@ export function transcribePromptVersionFor(
 }
 
 /**
+ * `promptEcho`: hoeveel delen van de prompt de spraakherkenning teruggaf en de
+ * app eruit haalde (`stripPromptEcho`).
  * `model`: alleen anders voor de testset (scripts/testset.mjs). `sessionId`:
  * voor het verbruik per sessie. `groups`: ook namen van andere dieren.
  * `language`: de taal waarin is ingesproken (prompt en spraakherkenning).
@@ -146,13 +218,20 @@ export async function transcribe(
     language?: Language;
     kind?: UsageKind;
   } = {},
-): Promise<{ text: string; confidence?: number; timing: Timing }> {
+): Promise<{ text: string; confidence?: number; timing: Timing; promptEcho?: number }> {
+  const prompt = promptFor(groups, language);
   const { data, timing } = await transcribeAudio(audio, {
     model,
-    prompt: promptFor(groups, language),
+    prompt,
     sessionId,
     language,
     kind,
   });
-  return { text: data.text.trim(), confidence: data.confidence, timing };
+  const { text, removed } = stripPromptEcho(data.text.trim(), prompt);
+  return {
+    text,
+    confidence: data.confidence,
+    timing,
+    ...(removed ? { promptEcho: removed } : {}),
+  };
 }

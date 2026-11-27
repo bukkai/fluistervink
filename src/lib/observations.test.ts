@@ -1410,6 +1410,30 @@ describe('netwerk weg', () => {
     expect(await db.observations.count()).toBe(1);
   });
 
+  it('teruggegeven prompt gaat niet naar het model, en staat in het log', async () => {
+    // Zoals op 27 nov: een stuk zonder spraak werd de voorbeeldzinnen uit de prompt
+    const echo =
+      'Fluistervink, zes overvliegende houtduiven. Roepje vink. Twee zingende tjiftjaffen. ' +
+      'Nee, keep in plaats van vink. Nog drie erbij. Die laatste weg. Wielewaal, een lifer! ' +
+      'Feedback: de knop reageert traag.';
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ text: echo }), { status: 200 })),
+    );
+    const id = await record();
+    await processQueue();
+    const u = await db.utterances.get(id);
+    expect(u).toMatchObject({ status: 'done', result: 'ignored', transcript: '' });
+    expect(u?.transcription?.promptEcho).toBe(12);
+    expect(interpret).not.toHaveBeenCalled();
+    expect(await db.observations.count()).toBe(0);
+    await vi.waitFor(async () =>
+      expect(
+        await db.events.where('type').equals('transcribe_prompt_echo').toArray(),
+      ).toMatchObject([{ utteranceId: id, data: { parts: 12, kept: 0 } }]),
+    );
+  });
+
   it('spraakherkenning van een verouderde poging schrijft geen transcript', async () => {
     const id = await record();
     // Terwijl de spraakherkenning loopt, neemt een ander exemplaar het over

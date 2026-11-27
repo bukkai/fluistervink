@@ -242,6 +242,8 @@ export interface TranscriptionMetrics {
   upstreamMs?: number;
   /** Zekerheid van de spraakherkenning (0–1), zie `MIN_CONFIDENCE` */
   confidence?: number;
+  /** Zoveel delen van de prompt gaf de spraakherkenning terug; uit het transcript gehaald */
+  promptEcho?: number;
 }
 
 export interface ProcessingMetrics {
