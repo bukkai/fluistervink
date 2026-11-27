@@ -31,6 +31,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026-11-27',
+    topics: {
+      Trektelling: [
+        'Druk je tijdens een trektelling op de terugknop van je telefoon, dan vraagt de app eerst of je de telling wilt stoppen. Eerder stopte hij meteen.',
+      ],
+    },
+  },
+  {
     date: '2026-11-25',
     topics: {
       Nalopen: [
