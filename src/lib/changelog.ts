@@ -36,6 +36,9 @@ export const CHANGELOG: ChangelogEntry[] = [
       Inspreken: [
         'Soms maakte de spraakherkenning van een stuk zonder spraak een rij soortnamen of voorbeeldzinnen, waar de app dan waarnemingen van maakte. Dat herkent de app nu en slaat hij over.',
       ],
+      Trektelling: [
+        'Druk je tijdens een trektelling op de terugknop van je telefoon, dan vraagt de app eerst of je de telling wilt stoppen. Eerder stopte hij meteen.',
+      ],
     },
   },
   {

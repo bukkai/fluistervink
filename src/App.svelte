@@ -33,6 +33,7 @@
   import { syncSessionService } from './lib/sessionService';
   import { LEAVE_TREKTEL_TEXT, leavesSessionScreen } from './lib/trektel';
   import { stopTrektel, trektel } from './lib/trektelRecorder.svelte';
+  import { trektelBackGuard } from './lib/trektelBack';
   import { listenShortcut, setShortcut } from './lib/native';
   import {
     SHARE_CHANGED,
@@ -143,6 +144,18 @@
   };
   document.addEventListener('click', guardTrektel, true);
   onDestroy(() => document.removeEventListener('click', guardTrektel, true));
+
+  // Hetzelfde voor de terugknop van Android en de browser (trektelBack.ts)
+  const backGuard = trektelBackGuard({
+    active: () => trektel.status !== 'idle',
+    ask: () => confirm(LEAVE_TREKTEL_TEXT),
+    stop: () => stopTrektel(),
+  });
+  $effect(() => {
+    if (trektel.status === 'idle') backGuard.disarm();
+    else backGuard.arm();
+  });
+  onDestroy(() => backGuard.dispose());
 
   let opened = $derived(
     route.startsWith('sessie/')
