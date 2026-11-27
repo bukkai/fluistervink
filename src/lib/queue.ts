@@ -743,7 +743,7 @@ async function transcribeUtterance(
   const groups = preferenceOn('soortgroepen');
   const language = utterance.language ?? 'nl';
   const session = await db.sessions.get(utterance.sessionId);
-  const { text, confidence, timing } = await transcribe(audioBlob(utterance.audio!), {
+  const { text, confidence, timing, promptEcho } = await transcribe(audioBlob(utterance.audio!), {
     sessionId: utterance.sessionId,
     groups,
     language,
@@ -756,8 +756,16 @@ async function transcribeUtterance(
       promptVersion: await transcribePromptVersionFor(groups, language),
       ...timing,
       confidence,
+      ...(promptEcho ? { promptEcho } : {}),
     },
   };
+  if (promptEcho) {
+    logEvent(
+      'transcribe_prompt_echo',
+      { parts: promptEcho, kept: text.length },
+      { sessionId: utterance.sessionId, utteranceId: utterance.id },
+    );
+  }
   const current = await db.transaction('rw', db.utterances, async () => {
     const latest = await db.utterances.get(utterance.id);
     if (!isCurrentAttempt(latest, attempts)) return false;

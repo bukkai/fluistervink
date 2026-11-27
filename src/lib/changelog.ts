@@ -31,6 +31,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026-11-27',
+    topics: {
+      Inspreken: [
+        'Soms maakte de spraakherkenning van een stuk zonder spraak een rij soortnamen of voorbeeldzinnen, waar de app dan waarnemingen van maakte. Dat herkent de app nu en slaat hij over.',
+      ],
+    },
+  },
+  {
     date: '2026-11-25',
     topics: {
       Nalopen: [

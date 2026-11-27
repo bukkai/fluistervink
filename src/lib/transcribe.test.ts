@@ -1,6 +1,6 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { transcribe as transcribeAudio, type TranscribeOptions } from './api';
-import { transcribe, transcribePromptVersionFor } from './transcribe';
+import { stripPromptEcho, transcribe, transcribePromptVersionFor } from './transcribe';
 
 // Wat de app naar de spraakherkenning stuurt (via de proxy), zonder echte
 // aanroep: het verzoek zelf wordt nagebootst.
@@ -43,5 +43,61 @@ describe('transcribe', () => {
       transcribePromptVersionFor(true, 'en'),
     ]);
     expect(new Set(versions).size).toBe(4);
+  });
+});
+
+describe('stripPromptEcho', () => {
+  let prompt: string;
+  let promptEn: string;
+  beforeAll(async () => {
+    await transcribe(audio);
+    prompt = sent().prompt!;
+    await transcribe(audio, { language: 'en' });
+    promptEn = sent().prompt!;
+  });
+
+  const examples =
+    'Fluistervink, zes overvliegende houtduiven. Roepje vink. Twee zingende tjiftjaffen. ' +
+    'Nee, keep in plaats van vink. Nog drie erbij. Die laatste weg. Wielewaal, een lifer! ' +
+    'Feedback: de knop reageert traag.';
+
+  it('haalt de teruggegeven voorbeeldzinnen weg (27 nov 10:23)', () => {
+    expect(stripPromptEcho(examples, prompt)).toEqual({ text: '', removed: 12 });
+  });
+
+  it('haalt een teruggegeven soortenlijst weg (27 nov 13:44)', () => {
+    const list = prompt.split('Vogelnamen: ')[1].split('.')[0] + '.';
+    expect(stripPromptEcho(list, prompt)).toEqual({ text: '', removed: expect.any(Number) });
+    // Ook een stuk uit het midden van de lijst
+    const middle =
+      'Heggenmus, Ringmus, Huismus, Witte Kwikstaart, Boompieper, Graspieper, Keep, Vink.';
+    expect(stripPromptEcho(middle, prompt)).toEqual({ text: '', removed: 8 });
+  });
+
+  it('laat echte spraak voor of na de teruggegeven prompt staan', () => {
+    expect(stripPromptEcho(`Twee boerenzwaluwen. ${examples}`, prompt).text).toBe(
+      'Twee boerenzwaluwen.',
+    );
+  });
+
+  it('laat gewone uitspraken staan, ook een opsomming van soorten', () => {
+    for (const text of [
+      'Roepje vink.',
+      'Nee, keep in plaats van vink. Nog drie erbij.',
+      'Kauw, ekster, twee Turkse tortels en een koolmees.',
+      // Zeven soorten zonder aantal, op de volgorde van de lijst: net te weinig
+      'Heggenmus, Ringmus, Huismus, Witte Kwikstaart, Boompieper, Graspieper, Vink.',
+      // Acht, maar niet op volgorde
+      'Vink, keep, koolmees, pimpelmees, merel, roodborst, winterkoning, heggenmus.',
+    ]) {
+      expect(stripPromptEcho(text, prompt)).toEqual({ text, removed: 0 });
+    }
+  });
+
+  it('werkt ook met de Engelse prompt', () => {
+    const echo =
+      'Fluistervink, six Woodpigeons flying over. Chaffinch calling. Two Chiffchaffs singing. ' +
+      'No, Brambling instead of Chaffinch. Three more. Scratch that last one.';
+    expect(stripPromptEcho(echo, promptEn)).toEqual({ text: '', removed: 8 });
   });
 });
